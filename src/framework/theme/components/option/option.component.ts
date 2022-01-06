@@ -256,4 +256,8 @@ export class NbOptionComponent<T = any> implements OnDestroy, AfterViewInit, NbF
     this._active = false;
     this.cd.markForCheck();
   }
+
+  getHostElement(): HTMLElement {
+    return this.elementRef.nativeElement;
+  }
 }

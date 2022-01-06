@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Input, HostBinding } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, HostBinding, ViewChild, ElementRef } from '@angular/core';
 
 import { NbComponentSize } from '../component-size';
 import { NbPosition } from '../cdk/overlay/overlay-position';
@@ -22,7 +22,7 @@ import { NbPosition } from '../cdk/overlay/overlay-position';
 @Component({
     selector: 'nb-option-list',
     template: `
-    <ul class="option-list">
+    <ul class="option-list" #list>
       <ng-content></ng-content>
     </ul>
   `,
@@ -34,6 +34,8 @@ export class NbOptionListComponent<T> {
   @Input() size: NbComponentSize = 'medium';
 
   @Input() position: NbPosition;
+
+  @ViewChild('list') list: ElementRef;
 
   @HostBinding('class.position-top')
   get positionTop(): boolean {
@@ -68,5 +70,15 @@ export class NbOptionListComponent<T> {
   @HostBinding('class.size-giant')
   get sizeGiant(): boolean {
     return this.size === 'giant';
+  }
+
+  setScrollTop(scrollTop: number): void {
+    if (this.list) {
+      this.list.nativeElement.scrollTop = scrollTop;
+    }
+  }
+
+  getScrollTop(): number {
+    return this.list ? this.list.nativeElement.scrollTop : 0;
   }
 }
