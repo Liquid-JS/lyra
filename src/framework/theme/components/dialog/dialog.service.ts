@@ -4,7 +4,8 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-import { Inject, Injectable, Injector, signal, TemplateRef, Type } from '@angular/core';
+import { Inject, Injectable, Injector, Optional, signal, TemplateRef, Type } from '@angular/core';
+import { NavigationStart, Router } from '@angular/router';
 import { fromEvent as observableFromEvent } from 'rxjs';
 import { filter, takeUntil } from 'rxjs/operators';
 
@@ -120,6 +121,9 @@ import { SIGNAL } from '@angular/core/primitives/signals';
  * Default is true.
  * @stacked-example(Escape hit, dialog/dialog-esc.component)
  *
+ * `closeOnNavigation` - close dialog on router navigation, e.g. when the browser back button is pressed.
+ * Default is true.
+ *
  * `hasScroll` - Disables scroll on content under dialog if true and does nothing otherwise.
  * Default is false.
  * Please, open dialogs in the separate window and try to scroll.
@@ -143,6 +147,7 @@ export class NbDialogService {
               protected positionBuilder: NbPositionBuilderService,
               protected overlay: NbOverlayService,
               protected injector: Injector,
+              @Optional() protected router: Router,
   ) {
   }
 
@@ -253,6 +258,15 @@ export class NbDialogService {
   protected registerCloseListeners<T>(config: NbDialogConfig, overlayRef: NbOverlayRef, dialogRef: NbDialogRef<T>) {
     if (config.closeOnBackdropClick) {
       overlayRef.backdropClick().subscribe(() => dialogRef.close());
+    }
+
+    if (config.closeOnNavigation && this.router) {
+      this.router.events
+        .pipe(
+          filter((event) => event instanceof NavigationStart),
+          takeUntil(dialogRef.onClose),
+        )
+        .subscribe(() => dialogRef.close());
     }
 
     if (config.closeOnEsc) {

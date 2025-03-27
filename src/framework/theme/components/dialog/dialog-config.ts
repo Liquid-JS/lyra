@@ -64,6 +64,11 @@ export class NbDialogConfig<D = any> {
    */
   viewContainerRef: ViewContainerRef;
 
+  /**
+   * Closes the dialog automatically on router navigation, e.g. when the browser back button is pressed.
+   * */
+  closeOnNavigation: boolean = true;
+
   context: DialogData<D>;
 
   constructor(config: Partial<NbDialogConfig>) {
