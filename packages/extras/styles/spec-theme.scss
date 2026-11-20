@@ -1,0 +1,10 @@
+// The default theme, which specs don't load otherwise; for the specs' host components.
+@use '@liquid-js/lyr-core/styles/all' as *;
+@use '@liquid-js/lyr-core/styles/global/components' as components;
+
+$nb-enabled-themes: (default);
+
+@include nb-install() {
+  @include nb-theme-base();
+  @include components.nb-theme-components();
+}

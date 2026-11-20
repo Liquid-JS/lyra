@@ -1,0 +1,124 @@
+{
+  "name": "@liquid-js/lyr-extras",
+  "version": "22.0.0",
+  "type": "module",
+  "description": "Lyra components built on other libraries: QR codes, charts, markdown editor, colour picker, phone input and input masks",
+  "author": "HitkoDev <development@hitko.si>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Liquid-JS/lyra.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Liquid-JS/lyra/issues"
+  },
+  "homepage": "https://github.com/Liquid-JS/lyra/tree/master/packages/extras#readme",
+  "keywords": [
+    "angular",
+    "typescript",
+    "lyra",
+    "ui",
+    "components",
+    "qr-code",
+    "markdown",
+    "phone-input",
+    "mask",
+    "color-picker",
+    "chart"
+  ],
+  "scripts": {
+    "build": "run -T ng build extras --configuration production",
+    "watch": "run -T ng build extras --configuration development --watch",
+    "test": "run -T ng test extras --no-watch",
+    "test:watch": "run -T ng test extras",
+    "lint": "run -T ng lint extras",
+    "lint:fix": "run -T ng lint extras --fix",
+    "lint:styles": "run -T stylelint \"**/*.scss\"",
+    "lint:styles:fix": "run -T stylelint \"**/*.scss\" --fix"
+  },
+  "peerDependencies": {
+    "@angular/core": "^22.0.0",
+    "@angular/forms": "^22.0.0",
+    "@liquid-js/lyr-core": "^22.0.0",
+    "@liquid-js/qr-code-styling": "^5.7.0-3",
+    "@liquid-js/qrcode-generator": "^1.1.7",
+    "@liquid-js/underflow": "^4.0.0-14",
+    "@videojs/core": "~10.5.0",
+    "@videojs/media": "~10.5.0",
+    "@videojs/store": "~10.5.0",
+    "chart.js": "^4.6.1",
+    "highlight.js": "^11.11.1",
+    "i18n-iso-countries": "^7.14.0",
+    "libphonenumber-js": "^1.13.15",
+    "maska": "^3.2.2",
+    "ngx-remark": "^0.2.2",
+    "nxt-color-picker": "^22.2.1",
+    "nxt-flags": "^22.2.0",
+    "nxt-highlightjs": "^22.1.0",
+    "remark": "^15.0.1",
+    "remark-frontmatter": "^5.0.0",
+    "remark-gfm": "^4.0.1",
+    "remark-smartypants": "^3.0.3",
+    "tslib": "^2.9.1"
+  },
+  "peerDependenciesMeta": {
+    "@liquid-js/qr-code-styling": {
+      "optional": true
+    },
+    "@liquid-js/qrcode-generator": {
+      "optional": true
+    },
+    "@liquid-js/underflow": {
+      "optional": true
+    },
+    "@videojs/core": {
+      "optional": true
+    },
+    "@videojs/media": {
+      "optional": true
+    },
+    "@videojs/store": {
+      "optional": true
+    },
+    "chart.js": {
+      "optional": true
+    },
+    "highlight.js": {
+      "optional": true
+    },
+    "i18n-iso-countries": {
+      "optional": true
+    },
+    "libphonenumber-js": {
+      "optional": true
+    },
+    "maska": {
+      "optional": true
+    },
+    "ngx-remark": {
+      "optional": true
+    },
+    "nxt-color-picker": {
+      "optional": true
+    },
+    "nxt-flags": {
+      "optional": true
+    },
+    "nxt-highlightjs": {
+      "optional": true
+    },
+    "remark": {
+      "optional": true
+    },
+    "remark-frontmatter": {
+      "optional": true
+    },
+    "remark-gfm": {
+      "optional": true
+    },
+    "remark-smartypants": {
+      "optional": true
+    }
+  },
+  "sideEffects": false
+}
