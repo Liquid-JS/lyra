@@ -63,9 +63,9 @@
     .hero {
         padding-block: 0 4rem;
 
-        // The faint white waves over the brand's blue; the public asset's own address, which the build leaves as it is.
+        // The faint white waves over the brand's blue, which the build bundles.
         background:
-            url("/assets/img/bg.svg") center top / cover no-repeat,
+            url("./bg.svg") center top / cover no-repeat,
             linear-gradient(160deg, $brand, $brand-dark);
         color: #ffffff;
 
