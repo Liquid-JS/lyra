@@ -1,48 +1,43 @@
-import { Component } from '@angular/core';
-import { NewsService } from './news.service';
+import { Component, inject, signal } from '@angular/core';
+import { NewsPost, NewsService } from './news.service';
+import { NbCardComponent, NbListComponent, NbListItemComponent, NbInfiniteListDirective } from '@liquid-js/lyr-core';
+import { NewsPostComponent } from './components/news-post.component';
+import { NewsPostPlaceholderComponent } from './components/news-post-placeholder.component';
 
 @Component({
-    template: `
-    <nb-card>
-      <nb-list
-        nbInfiniteList
-        listenWindowScroll
-        [threshold]="500"
-        (bottomThreshold)="loadNext()">
-        <nb-list-item *ngFor="let newsPost of news">
-          <nb-news-post [post]="newsPost"></nb-news-post>
-        </nb-list-item>
-        <nb-list-item *ngFor="let _ of placeholders">
-          <nb-news-post-placeholder></nb-news-post-placeholder>
-        </nb-list-item>
-      </nb-list>
-    </nb-card>
-  `,
-    styleUrls: ['infinite-news-list.component.scss'],
-    providers: [NewsService],
-    standalone: false
+  templateUrl: './infinite-list-showcase.component.html',
+  styleUrls: ['infinite-news-list.component.scss'],
+  providers: [NewsService],
+  imports: [
+    NbCardComponent,
+    NbListComponent,
+    NbInfiniteListDirective,
+    NbListItemComponent,
+    NewsPostComponent,
+    NewsPostPlaceholderComponent,
+  ],
 })
 export class InfiniteListShowcaseComponent {
+  private readonly newsService = inject(NewsService);
 
-  news = [];
-  placeholders = [];
+  readonly news = signal<NewsPost[]>([]);
+  readonly placeholders = signal<unknown[]>([]);
   pageSize = 10;
   pageToLoadNext = 1;
   loading = false;
 
-  constructor(private newsService: NewsService) {}
-
   loadNext() {
-    if (this.loading) { return }
+    if (this.loading) {
+      return;
+    }
 
     this.loading = true;
-    this.placeholders = new Array(this.pageSize);
-    this.newsService.load(this.pageToLoadNext, this.pageSize)
-      .subscribe(news => {
-        this.placeholders = [];
-        this.news.push(...news);
-        this.loading = false;
-        this.pageToLoadNext++;
-      });
+    this.placeholders.set(new Array(this.pageSize));
+    this.newsService.load(this.pageToLoadNext, this.pageSize).subscribe((news) => {
+      this.placeholders.set([]);
+      this.news.update((loaded) => [...loaded, ...news]);
+      this.loading = false;
+      this.pageToLoadNext++;
+    });
   }
 }

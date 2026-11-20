@@ -1,18 +1,10 @@
-import { Component, Input } from '@angular/core';
+import { Component, input } from '@angular/core';
 import { NewsPost } from '../news.service';
 
 @Component({
-    selector: 'nb-news-post',
-    template: `
-    <article>
-      <h2 class="h5">{{post.title}}</h2>
-      <p>{{post.text}}</p>
-      <a [attr.href]="post.link">Read full article</a>
-    </article>
-  `,
-    standalone: false
+  selector: 'nb-news-post',
+  templateUrl: './news-post.component.html',
 })
 export class NewsPostComponent {
-  @Input()
-  post: NewsPost;
+  readonly post = input.required<NewsPost>();
 }

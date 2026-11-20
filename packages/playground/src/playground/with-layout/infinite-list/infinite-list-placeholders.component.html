@@ -1,0 +1,27 @@
+<nb-card>
+  <nb-list nbInfiniteList
+    listenWindowScroll
+    [threshold]="500"
+    (topThreshold)="loadPrevious()"
+    (bottomThreshold)="loadNext()"
+    nbListPageTracker
+    [pageSize]="pageSize"
+    [startPage]="startPage()"
+    (pageChange)="updateUrl($event)">
+    @for (_ of topPlaceholders(); track $index) {
+    <nb-list-item>
+      <nb-news-post-placeholder />
+    </nb-list-item>
+    }
+    @for (newsPost of news(); track newsPost) {
+    <nb-list-item>
+      <nb-news-post [post]="newsPost" />
+    </nb-list-item>
+    }
+    @for (_ of bottomPlaceholders(); track $index) {
+    <nb-list-item>
+      <nb-news-post-placeholder />
+    </nb-list-item>
+    }
+  </nb-list>
+</nb-card>

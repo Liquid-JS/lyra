@@ -1,19 +1,19 @@
-import { Component, ViewChild, ElementRef } from '@angular/core';
-import { TestBed, ComponentFixture, fakeAsync, tick, ComponentFixtureAutoDetect } from '@angular/core/testing';
-import { NbListModule, NbListComponent } from '@nebular/theme';
+import { Component, ElementRef, viewChild, signal } from '@angular/core';
+import { TestBed, ComponentFixture, ComponentFixtureAutoDetect } from '@angular/core/testing';
+import { NbListModule, NbListComponent } from '@liquid-js/lyr-core';
+import type { MockInstance } from 'vitest';
 
-function waitForSpyCall(spy: jasmine.Spy, checkInterval: number = 40, timeout: number = 1000): Promise<any> {
-  const initialCallsCount = spy.calls.count();
+function waitForSpyCall(spy: MockInstance, checkInterval: number = 40, timeout: number = 1000): Promise<any> {
+  const initialCallsCount = spy.mock.calls.length;
 
   return new Promise<void>((resolve, reject) => {
-    let intervalId;
     const timeoutId = setTimeout(() => {
       clearInterval(intervalId);
       reject();
     }, timeout);
 
-    intervalId = setInterval(() => {
-      if (spy.calls.count() > initialCallsCount) {
+    const intervalId = setInterval(() => {
+      if (spy.mock.calls.length > initialCallsCount) {
         clearTimeout(timeoutId);
         clearInterval(intervalId);
         resolve();
@@ -26,21 +26,23 @@ const ITEMS_PER_PAGE: number = 10;
 const ITEM_HEIGHT: number = 100;
 const LIST_HEIGHT: number = 500;
 const PAGE_HEIGHT: number = ITEMS_PER_PAGE * ITEM_HEIGHT;
-let initialItemsCount: number = 100;
+let initialItemsCount = 100;
 
 @Component({
-    template: `
+  template: `
     <nb-list
       nbListPageTracker
-      [pageSize]="pageSize"
-      [startPage]="startPage"
+      [pageSize]="pageSize()"
+      [startPage]="startPage()"
       (pageChange)="pageChanged($event)"
       class="list"
     >
-      <nb-list-item *ngFor="let _ of items" class="list-item"></nb-list-item>
+      @for (_ of items(); track $index) {
+        <nb-list-item class="list-item" />
+      }
     </nb-list>
   `,
-    styles: [
+  styles: [
         `
       .list {
         background: lightslategray;
@@ -54,60 +56,52 @@ let initialItemsCount: number = 100;
         height: ${ITEM_HEIGHT * 0.98}px;
       }
     `,
-    ],
-    standalone: false
+  ],
+  imports: [NbListModule],
 })
 class PagerTestComponent {
-  @ViewChild(NbListComponent, { read: ElementRef }) listElementRef: ElementRef;
+  readonly listElementRef = viewChild.required(NbListComponent, { read: ElementRef });
 
   get listElement(): Element {
-    return this.listElementRef.nativeElement;
+    return this.listElementRef().nativeElement;
   }
 
-  items = new Array(initialItemsCount);
-  pageSize = ITEMS_PER_PAGE;
-  startPage = 1;
+  readonly items = signal(new Array(initialItemsCount));
+  readonly pageSize = signal(ITEMS_PER_PAGE);
+  readonly startPage = signal(1);
 
-  pageChanged() {}
+  pageChanged(_page?: number) {}
 }
 
 let fixture: ComponentFixture<PagerTestComponent>;
 let testComponent: PagerTestComponent;
-let pageChangedSpy: jasmine.Spy;
+let pageChangedSpy: MockInstance;
 
 describe('Directive: NbListPageTrackerDirective', () => {
-  let initialTimeoutInterval;
-  beforeAll(() => {
-    initialTimeoutInterval = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-    jasmine.DEFAULT_TIMEOUT_INTERVAL = 5000;
-  });
-  afterAll(() => (jasmine.DEFAULT_TIMEOUT_INTERVAL = initialTimeoutInterval));
-
   beforeEach(() => {
     fixture = TestBed.configureTestingModule({
-      imports: [NbListModule],
-      declarations: [PagerTestComponent],
+      imports: [NbListModule, PagerTestComponent],
       providers: [{ provide: ComponentFixtureAutoDetect, useValue: true }],
     }).createComponent(PagerTestComponent);
 
     testComponent = fixture.componentInstance;
     fixture.detectChanges();
 
-    pageChangedSpy = spyOn(testComponent, 'pageChanged');
+    pageChangedSpy = vi.spyOn(testComponent, 'pageChanged').mockImplementation(() => undefined);
   });
 
-  afterEach(fakeAsync(() => {
+  afterEach(async () => {
     fixture.destroy();
-    tick();
+    await fixture.whenStable();
     fixture.nativeElement.remove();
-  }));
+  });
 
   describe('initial page', () => {
     it('should emit initial page change when list was prefilled', async () => {
       try {
         await waitForSpyCall(pageChangedSpy);
       } catch {
-        fail('Page change should be emmited');
+        expect.fail('Page change should be emmited');
       }
 
       expect(pageChangedSpy).toHaveBeenCalledTimes(1);
@@ -115,7 +109,7 @@ describe('Directive: NbListPageTrackerDirective', () => {
     });
 
     describe('empty list', () => {
-      let initialItemsCountBefore;
+      let initialItemsCountBefore: number;
       beforeAll(() => {
         initialItemsCountBefore = initialItemsCount;
         initialItemsCount = 0;
@@ -125,19 +119,19 @@ describe('Directive: NbListPageTrackerDirective', () => {
       it('should not emit initial page change when list is empty', async () => {
         try {
           await waitForSpyCall(pageChangedSpy);
-          fail('Page change should not be emmited');
+          expect.fail('Page change should not be emmited');
         } catch {}
 
         expect(pageChangedSpy).not.toHaveBeenCalled();
       });
 
       it(`should emit initial page change when items added to empty list`, async () => {
-        testComponent.items = new Array(initialItemsCountBefore);
+        testComponent.items.set(new Array(initialItemsCountBefore));
         fixture.detectChanges();
         try {
           await waitForSpyCall(pageChangedSpy);
         } catch {
-          fail('Page change should be emmited');
+          expect.fail('Page change should be emmited');
         }
 
         expect(pageChangedSpy).toHaveBeenCalledTimes(1);
@@ -147,7 +141,7 @@ describe('Directive: NbListPageTrackerDirective', () => {
   });
 
   describe('start page', () => {
-    let initialItemsCountBefore;
+    let initialItemsCountBefore: number;
     beforeAll(() => {
       initialItemsCountBefore = initialItemsCount;
       initialItemsCount = 0;
@@ -158,13 +152,13 @@ describe('Directive: NbListPageTrackerDirective', () => {
       const startPage = 5;
       const { listElement } = testComponent;
 
-      testComponent.items = new Array(initialItemsCountBefore);
-      testComponent.startPage = startPage;
+      testComponent.items.set(new Array(initialItemsCountBefore));
+      testComponent.startPage.set(startPage);
       fixture.detectChanges();
       try {
         await waitForSpyCall(pageChangedSpy);
       } catch {
-        fail('pageChanged should be called after adding new items to empty list');
+        expect.fail('pageChanged should be called after adding new items to empty list');
       }
       expect(pageChangedSpy).toHaveBeenCalledTimes(1);
       expect(pageChangedSpy).toHaveBeenCalledWith(startPage);
@@ -177,7 +171,7 @@ describe('Directive: NbListPageTrackerDirective', () => {
           await waitForSpyCall(pageChangedSpy);
           timesPageShouldBeChanged++;
         } catch {
-          fail(`pageChanged should be called after scrolling ${startPage + nPagesToScroll} pages down`);
+          expect.fail(`pageChanged should be called after scrolling ${startPage + nPagesToScroll} pages down`);
         }
 
         expect(pageChangedSpy).toHaveBeenCalledTimes(timesPageShouldBeChanged);
@@ -195,7 +189,7 @@ describe('Directive: NbListPageTrackerDirective', () => {
       }
       // 'pageChanged' will be called once after list initialization, since list has items.
       // Reset to start counting from zero calls.
-      pageChangedSpy.calls.reset();
+      pageChangedSpy.mockClear();
     });
 
     it('should not emit page change when scrolling within current page', async () => {
@@ -225,7 +219,7 @@ describe('Directive: NbListPageTrackerDirective', () => {
           await waitForSpyCall(pageChangedSpy);
           timesPageShouldBeChanged++;
         } catch {
-          fail(`pageChanged should be called after scrolling to ${startPage + pagesToScroll} page`);
+          expect.fail(`pageChanged should be called after scrolling to ${startPage + pagesToScroll} page`);
         }
 
         expect(pageChangedSpy).toHaveBeenCalledTimes(timesPageShouldBeChanged);

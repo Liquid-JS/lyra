@@ -1,0 +1,12 @@
+// The default theme's list and button styles, which specs don't load otherwise.
+@use '@liquid-js/lyr-core/styles/all' as *;
+@use 'list.component.theme' as list;
+@use '../button/button.component.theme' as button;
+
+$nb-enabled-themes: (default);
+
+@include nb-install() {
+  @include nb-theme-base();
+  @include list.nb-list-theme();
+  @include button.nb-buttons-theme();
+}

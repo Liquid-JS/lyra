@@ -1,50 +1,41 @@
-import {
-  Directive,
-  Input,
-  HostListener,
-  ElementRef,
-  EventEmitter,
-  Output,
-  OnDestroy,
-  AfterViewInit,
-  ContentChildren,
-  QueryList,
-} from '@angular/core';
-import { Observable, forkJoin, of as observableOf, interval, timer, Subject, merge, BehaviorSubject } from 'rxjs';
-import { filter, switchMap, map, takeUntil, take, throttle } from 'rxjs/operators';
-import { convertToBoolProperty, NbBooleanInput } from '../helpers';
-import { NbLayoutScrollService } from '../../services/scroll.service';
-import { NbLayoutRulerService } from '../../services/ruler.service';
+import { AfterViewInit, DestroyRef, Directive, ElementRef, contentChildren, inject, input, output } from '@angular/core';
+import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
+import { Observable, asapScheduler, forkJoin, of as observableOf, interval, timer, Subject, merge } from 'rxjs';
+import { filter, switchMap, map, observeOn, take, throttle, skip, takeUntil } from 'rxjs/operators';
+import { ɵconvertToBoolProperty as convertToBoolProperty, NbBooleanInput } from '@liquid-js/lyr-core/base';
+import { NbLayoutScrollService } from '@liquid-js/lyr-core/base';
+import { NbLayoutRulerService } from '@liquid-js/lyr-core/base';
 import { NbListItemComponent } from './list.component';
 
-export class NbScrollableContainerDimensions {
+export interface NbScrollableContainerDimensions {
   scrollTop: number;
   scrollHeight: number;
   clientHeight: number;
 }
 
 /**
- * Infinite List Directive
+ * Tells when a list is scrolled near its top or bottom, e.g. to load more items.
  *
  * ```html
  *  <nb-list nbInfiniteList [threshold]="500" (bottomThreshold)="loadNext()">
- *    <nb-list-item *ngFor="let item of items"></nb-list-item>
+ *    @for (item of items; track item) {
+ *      <nb-list-item></nb-list-item>
+ *    }
  *  </nb-list>
  * ```
  *
  * @stacked-example(Simple infinite list, infinite-list/infinite-list-showcase.component)
  *
- * Directive will notify when list scrolled up or down to a given threshold.
- * By default it listen to scroll of list on which applied, but also can be set to listen to window scroll.
+ * `bottomThreshold` emits when the list is scrolled down to within `threshold` pixels of its end, and `topThreshold`
+ * when it's scrolled up to within `threshold` of its start; both are checked at the start and when items are added
+ * or removed, so a list that doesn't fill its container asks for more. By default the list itself scrolls; with
+ * `listenWindowScroll`, the page does, as the layout reports it.
  *
  * @stacked-example(Scroll modes, infinite-list/infinite-list-scroll-modes.component)
  *
- * To improve UX of infinite lists, it's better to keep current page in url,
- * so user able to return to the last viewed page or to share a link to this page.
- * `nbListPageTracker` directive will help you to know, what page user currently viewing.
- * Just put it on a list, set page size and it will calculate page that currently in viewport.
- * You can [open the example](example/infinite-list/infinite-news-list.component)
- * in a new tab to check out this feature.
+ * Keeping the page in the URL lets the user return to it, or share it. `nbListPageTracker` on the list, with the
+ * page size, tells which page is in view. You can
+ * [open the example](example/infinite-list/infinite-news-list.component) in a new tab to see it work.
  *
  * @stacked-example(Infinite list with pager, infinite-list/infinite-news-list.component)
  *
@@ -52,110 +43,83 @@ export class NbScrollableContainerDimensions {
  *
  */
 @Directive({
-    selector: '[nbInfiniteList]',
-    standalone: false
+  selector: '[nbInfiniteList]',
+  host: {
+    '(scroll)': 'onElementScroll()',
+  },
 })
-export class NbInfiniteListDirective implements AfterViewInit, OnDestroy {
-  private destroy$ = new Subject<void>();
-  private lastScrollPosition;
-  windowScroll = false;
-  private get elementScroll() {
-    return !this.windowScroll;
-  }
-  private elementScroll$ = new Subject<void>();
-  private windowScroll$ = this.scrollService.onScroll().pipe(filter(() => this.windowScroll));
-  private bottomThreshold$ = new Subject<void>();
-  private topThreshold$ = new Subject<void>();
-  private throttleTime$ = new BehaviorSubject<number>(0);
+export class NbInfiniteListDirective implements AfterViewInit {
+  private readonly elementRef = inject(ElementRef);
+  private readonly scrollService = inject(NbLayoutScrollService);
+  private readonly dimensionsService = inject(NbLayoutRulerService);
+  private readonly destroyRef = inject(DestroyRef);
+
+  private lastScrollPosition?: number;
+
+  /** How close to the list's end or start, in pixels, the scroll position is when the thresholds emit. */
+  readonly threshold = input.required<number>();
+
+  /** For how long after an emission, in milliseconds, a threshold doesn't emit again. */
+  readonly throttleTime = input<number>(0);
+
+  /** Watches the page's scroll position, as the layout reports it, instead of the list's own. */
+  readonly listenWindowScroll = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
 
   /**
-   * Threshold after which event load more event will be emited.
-   * In pixels.
+   * Emits when the scroll position comes within `threshold` of the list's end: scrolling down, at the start, and
+   * after items change while the position stays.
    */
-  @Input()
-  threshold: number;
+  readonly bottomThreshold = output();
 
-  /**
-   * Prevent subsequent bottom/topThreshold emissions for specified duration after emitting once.
-   * In milliseconds.
-   */
-  @Input()
-  set throttleTime(value: number) {
-    this.throttleTime$.next(value);
-  }
-  get throttleTime() {
-    return this.throttleTime$.value;
-  }
+  /** Emits when the scroll position comes within `threshold` of the list's start: scrolling up, and at the start. */
+  readonly topThreshold = output();
 
-  /**
-   * By default component observes list scroll position.
-   * If set to `true`, component will observe position of page scroll instead.
-   */
-  @Input()
-  set listenWindowScroll(value) {
-    this.windowScroll = convertToBoolProperty(value);
-  }
-  static ngAcceptInputType_listenWindowScroll: NbBooleanInput;
+  protected readonly listItems = contentChildren(NbListItemComponent);
 
-  /**
-   * Emits when distance between list bottom and current scroll position is less than threshold.
-   */
-  @Output()
-  bottomThreshold = new EventEmitter(true);
+  private readonly elementScroll$ = new Subject<void>();
+  private readonly windowScroll$ = this.scrollService.onScroll().pipe(filter(() => this.listenWindowScroll()));
+  private readonly bottomThreshold$ = new Subject<void>();
+  private readonly topThreshold$ = new Subject<void>();
+  // Emits after list items are added or removed, not for the initial items.
+  private readonly listItemsChange$ = toObservable(this.listItems).pipe(skip(1));
 
-  /**
-   * Emits when distance between list top and current scroll position is less than threshold.
-   */
-  @Output()
-  topThreshold = new EventEmitter(true);
-
-  @HostListener('scroll')
   onElementScroll() {
-    if (this.elementScroll) {
+    if (!this.listenWindowScroll()) {
       this.elementScroll$.next();
     }
   }
-
-  @ContentChildren(NbListItemComponent) listItems: QueryList<NbListItemComponent>;
-
-  constructor(
-    private elementRef: ElementRef,
-    private scrollService: NbLayoutScrollService,
-    private dimensionsService: NbLayoutRulerService,
-  ) {}
 
   ngAfterViewInit() {
     merge(this.windowScroll$, this.elementScroll$)
       .pipe(
         switchMap(() => this.getContainerDimensions()),
-        takeUntil(this.destroy$),
+        takeUntilDestroyed(this.destroyRef),
       )
       .subscribe((dimensions) => this.checkPosition(dimensions));
 
-    this.throttleTime$
+    // The throttle window starts from the current throttleTime each time. Thresholds are often reached during
+    // change detection (the first check runs after the view init), and listeners usually load more items, so they
+    // are emitted after it.
+    this.topThreshold$
       .pipe(
-        switchMap(() => this.topThreshold$.pipe(throttle(() => interval(this.throttleTime)))),
-        takeUntil(this.destroy$),
+        throttle(() => interval(this.throttleTime())),
+        observeOn(asapScheduler),
+        takeUntilDestroyed(this.destroyRef),
       )
-      .subscribe(() => {
-        this.topThreshold.emit();
-      });
+      .subscribe(() => this.topThreshold.emit());
 
-    this.throttleTime$
+    this.bottomThreshold$
       .pipe(
-        switchMap(() => this.bottomThreshold$.pipe(throttle(() => interval(this.throttleTime)))),
-        takeUntil(this.destroy$),
+        throttle(() => interval(this.throttleTime())),
+        observeOn(asapScheduler),
+        takeUntilDestroyed(this.destroyRef),
       )
-      .subscribe(() => {
-        this.bottomThreshold.emit();
-      });
+      .subscribe(() => this.bottomThreshold.emit());
 
-    this.listItems.changes
+    this.listItemsChange$
       .pipe(
-        // For some reason, changes are emitted before list item removed from dom,
-        // so dimensions will be incorrect.
-        // Check every 50ms for a second if dom and query are in sync.
-        // Once they synchronized, we can get proper dimensions.
+        // The query changes before a removed item leaves the DOM, when the dimensions are still the old ones:
+        // wait, up to a second, until the DOM and the query agree.
         switchMap(() =>
           interval(50).pipe(
             filter(() => this.inSyncWithDom()),
@@ -164,33 +128,26 @@ export class NbInfiniteListDirective implements AfterViewInit, OnDestroy {
           ),
         ),
         switchMap(() => this.getContainerDimensions()),
-        takeUntil(this.destroy$),
+        takeUntilDestroyed(this.destroyRef),
       )
       .subscribe((dimensions) => this.checkPosition(dimensions));
 
     this.getContainerDimensions().subscribe((dimensions) => this.checkPosition(dimensions));
   }
 
-  ngOnDestroy() {
-    this.topThreshold$.complete();
-    this.bottomThreshold$.complete();
-    this.elementScroll$.complete();
-    this.destroy$.next();
-    this.destroy$.complete();
-  }
-
   checkPosition({ scrollHeight, scrollTop, clientHeight }: NbScrollableContainerDimensions) {
-    const initialCheck = this.lastScrollPosition == null;
-    const manualCheck = this.lastScrollPosition === scrollTop;
-    const scrollUp = scrollTop < this.lastScrollPosition;
-    const scrollDown = scrollTop > this.lastScrollPosition;
+    const lastScrollPosition = this.lastScrollPosition;
+    const initialCheck = lastScrollPosition == null;
+    const manualCheck = lastScrollPosition === scrollTop;
+    const scrollUp = !initialCheck && scrollTop < lastScrollPosition;
+    const scrollDown = !initialCheck && scrollTop > lastScrollPosition;
     const distanceToBottom = scrollHeight - scrollTop - clientHeight;
 
-    if ((initialCheck || manualCheck || scrollDown) && distanceToBottom <= this.threshold) {
+    if ((initialCheck || manualCheck || scrollDown) && distanceToBottom <= this.threshold()) {
       this.bottomThreshold$.next();
     }
 
-    if ((initialCheck || scrollUp) && scrollTop <= this.threshold) {
+    if ((initialCheck || scrollUp) && scrollTop <= this.threshold()) {
       this.topThreshold$.next();
     }
 
@@ -198,7 +155,7 @@ export class NbInfiniteListDirective implements AfterViewInit, OnDestroy {
   }
 
   private getContainerDimensions(): Observable<NbScrollableContainerDimensions> {
-    if (this.elementScroll) {
+    if (!this.listenWindowScroll()) {
       const { scrollTop, scrollHeight, clientHeight } = this.elementRef.nativeElement;
       return observableOf({ scrollTop, scrollHeight, clientHeight });
     }
@@ -213,6 +170,6 @@ export class NbInfiniteListDirective implements AfterViewInit, OnDestroy {
   }
 
   private inSyncWithDom(): boolean {
-    return this.elementRef.nativeElement.children.length === this.listItems.length;
+    return this.elementRef.nativeElement.children.length === this.listItems().length;
   }
 }

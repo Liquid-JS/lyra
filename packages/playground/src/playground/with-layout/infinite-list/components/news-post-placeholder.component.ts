@@ -1,16 +1,9 @@
-import { Component, HostBinding } from '@angular/core';
+import { Component } from '@angular/core';
 
 @Component({
-    selector: 'nb-news-post-placeholder',
-    template: `
-    <div class="title-placeholder"></div>
-    <div class="text-placeholder"></div>
-    <div class="link-placeholder"></div>
-  `,
-    styleUrls: ['../news-post-placeholder.component.scss'],
-    standalone: false
+  selector: 'nb-news-post-placeholder',
+  templateUrl: './news-post-placeholder.component.html',
+  styleUrls: ['../news-post-placeholder.component.scss'],
+  host: { 'aria-label': 'Loading' },
 })
-export class NewsPostPlaceholderComponent {
-  @HostBinding('attr.aria-label')
-  label = 'Loading';
-}
+export class NewsPostPlaceholderComponent {}

@@ -1,88 +1,97 @@
-import { Component, ViewChildren, ElementRef, QueryList, OnInit, Inject, PLATFORM_ID, OnDestroy } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
+import {
+  Component,
+  ElementRef,
+  OnInit,
+  PLATFORM_ID,
+  OnDestroy,
+  inject,
+  signal,
+  viewChildren,
+  afterNextRender,
+  Injector,
+} from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { concat } from 'rxjs';
-import { take, toArray } from 'rxjs/operators';
-import { NbListItemComponent, NbLayoutScrollService, NB_WINDOW, NbLayoutRulerService } from '@nebular/theme';
-import { NewsService } from './news.service';
+import { forkJoin, Observable } from 'rxjs';
+import { map, switchMap } from 'rxjs/operators';
+import {
+  NbListItemComponent,
+  NbLayoutScrollService,
+  NB_WINDOW,
+  NbLayoutRulerService,
+  NbCardComponent,
+  NbListComponent,
+  NbListItemComponent as NbListItemComponent_1,
+  NbInfiniteListDirective,
+  NbListPageTrackerDirective,
+} from '@liquid-js/lyr-core';
+import { NewsPost, NewsService } from './news.service';
+import { NewsPostPlaceholderComponent } from './components/news-post-placeholder.component';
+import { NewsPostComponent } from './components/news-post.component';
 
 @Component({
-    template: `
-    <nb-card>
-      <nb-list
-        nbInfiniteList
-        listenWindowScroll
-        [threshold]="500"
-        (topThreshold)="loadPrevious()"
-        (bottomThreshold)="loadNext()"
-        nbListPageTracker
-        [pageSize]="pageSize"
-        [startPage]="startPage"
-        (pageChange)="updateUrl($event)">
-        <nb-list-item *ngFor="let _ of topPlaceholders">
-          <nb-news-post-placeholder></nb-news-post-placeholder>
-        </nb-list-item>
-        <nb-list-item *ngFor="let newsPost of news">
-          <nb-news-post [post]="newsPost"></nb-news-post>
-        </nb-list-item>
-        <nb-list-item *ngFor="let _ of bottomPlaceholders">
-          <nb-news-post-placeholder></nb-news-post-placeholder>
-        </nb-list-item>
-      </nb-list>
-    </nb-card>
-  `,
-    styleUrls: ['infinite-news-list.component.scss'],
-    providers: [NewsService],
-    standalone: false
+  templateUrl: './infinite-list-placeholders.component.html',
+  styleUrls: ['infinite-news-list.component.scss'],
+  providers: [NewsService],
+  imports: [
+    NbCardComponent,
+    NbListComponent,
+    NbInfiniteListDirective,
+    NbListPageTrackerDirective,
+    NbListItemComponent_1,
+    NewsPostPlaceholderComponent,
+    NewsPostComponent,
+  ],
 })
 export class InfiniteListPlaceholdersComponent implements OnInit, OnDestroy {
+  private readonly newsService = inject(NewsService);
+  private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
+  private readonly scrollService = inject(NbLayoutScrollService);
+  private readonly layoutService = inject(NbLayoutRulerService);
+  private readonly platformId = inject(PLATFORM_ID);
+  private readonly window = inject(NB_WINDOW);
 
-  news = [];
-  topPlaceholders = [];
-  bottomPlaceholders = [];
+  readonly news = signal<NewsPost[]>([]);
+  readonly topPlaceholders = signal<unknown[]>([]);
+  readonly bottomPlaceholders = signal<unknown[]>([]);
   pageSize = 10;
-  startPage: number;
-  pageToLoadNext: number;
+  readonly startPage = signal(1);
+  pageToLoadNext = 1;
   loadingNext = false;
   loadingPrevious = false;
-  initialScrollRestoration: ScrollRestoration;
+  initialScrollRestoration?: ScrollRestoration;
 
-  @ViewChildren(NbListItemComponent, { read: ElementRef }) listItems: QueryList<ElementRef<HTMLElement>>;
+  private readonly listItems = viewChildren(NbListItemComponent, { read: ElementRef<HTMLElement> });
+  private readonly injector = inject(Injector);
 
-  constructor(
-    private newsService: NewsService,
-    private router: Router,
-    private route: ActivatedRoute,
-    private scrollService: NbLayoutScrollService,
-    private layoutService: NbLayoutRulerService,
-    @Inject(PLATFORM_ID) private platformId,
-    @Inject(NB_WINDOW) private window,
-  ) {
-    if (isPlatformBrowser(this.platformId) && this.window.history.scrollRestoration) {
+  constructor() {
+    const window = this.window;
+
+    if (window?.history.scrollRestoration) {
       // Prevent browsers from scrolling down to last scroll position, when navigating back to this page.
       // It doesn't make sense here, since list is dynamic and we handle last user position ourselves,
       // by storing page number in URL. So for this component, we disable scroll restoration.
       // Don't forget to re-enable it in 'OnDestroy', since this configuration preserved for the whole session
       // and it will not be reset after page reload.
       this.initialScrollRestoration = window.history.scrollRestoration;
-      history.scrollRestoration = 'manual';
+      window.history.scrollRestoration = 'manual';
     }
   }
 
   ngOnInit() {
     const { page } = this.route.snapshot.queryParams;
-    this.startPage = page ? Number.parseInt(page, 10) : 100;
-    this.pageToLoadNext = this.startPage;
+    this.startPage.set(page ? Number.parseInt(page, 10) : 100);
+    this.pageToLoadNext = this.startPage();
   }
 
   ngOnDestroy() {
-    if (this.initialScrollRestoration) {
+    if (this.initialScrollRestoration && this.window) {
       this.window.history.scrollRestoration = this.initialScrollRestoration;
     }
   }
 
-  updateUrl(page) {
-    this.router.navigate(['.'], {
+  updateUrl(page: number) {
+    void this.router.navigate(['.'], {
       queryParams: { page },
       replaceUrl: true,
       relativeTo: this.route,
@@ -91,23 +100,22 @@ export class InfiniteListPlaceholdersComponent implements OnInit, OnDestroy {
   }
 
   loadPrevious() {
-    if (this.loadingPrevious || this.startPage === 1) {
+    if (this.loadingPrevious || this.startPage() === 1) {
       return;
     }
 
     this.loadingPrevious = true;
-    this.topPlaceholders = new Array(this.pageSize);
+    this.topPlaceholders.set(new Array(this.pageSize));
     this.restoreScrollPosition();
-    this.startPage--;
-    this.newsService.load(this.startPage, this.pageSize)
-      .subscribe(
-        news => {
-          this.topPlaceholders = [];
-          this.news.unshift(...news);
-          this.loadingPrevious = false;
-        },
-        error => this.startPage++,
-      );
+    this.startPage.update((page) => page - 1);
+    this.newsService.load(this.startPage(), this.pageSize).subscribe({
+      next: (news) => {
+        this.topPlaceholders.set([]);
+        this.news.update((loaded) => [...news, ...loaded]);
+        this.loadingPrevious = false;
+      },
+      error: () => this.startPage.update((page) => page + 1),
+    });
   }
 
   loadNext() {
@@ -116,26 +124,26 @@ export class InfiniteListPlaceholdersComponent implements OnInit, OnDestroy {
     }
 
     this.loadingNext = true;
-    this.bottomPlaceholders = new Array(this.pageSize);
-    this.newsService.load(this.pageToLoadNext, this.pageSize)
-      .subscribe(news => {
-        this.bottomPlaceholders = [];
-        this.news.push(...news);
-        this.loadingNext = false;
-        this.pageToLoadNext++;
-      });
+    this.bottomPlaceholders.set(new Array(this.pageSize));
+    this.newsService.load(this.pageToLoadNext, this.pageSize).subscribe((news) => {
+      this.bottomPlaceholders.set([]);
+      this.news.update((loaded) => [...loaded, ...news]);
+      this.loadingNext = false;
+      this.pageToLoadNext++;
+    });
   }
 
   private restoreScrollPosition() {
-    concat(
-        this.layoutService.getDimensions(),
-        this.scrollService.getPosition(),
-        this.listItems.changes.pipe(take(1)),
-        this.layoutService.getDimensions(),
-        this.scrollService.getPosition(),
+    // Measure before the placeholders render and again after, then keep the visible items in place.
+    const measure = () => forkJoin([this.layoutService.getDimensions(), this.scrollService.getPosition()]);
+    measure()
+      .pipe(
+        switchMap((before) => nextRender(this.injector).pipe(
+          switchMap(() => measure()),
+          map((after) => [before, after] as const),
+        )),
       )
-      .pipe(toArray())
-      .subscribe(([ oldDimensions, oldScrollPosition, , dimensions, scrollPosition ]) => {
+      .subscribe(([[oldDimensions, oldScrollPosition], [dimensions, scrollPosition]]) => {
         const oldHeight = oldDimensions.scrollHeight;
         const oldScrollTop = oldScrollPosition.y;
         const currentHeight = dimensions.scrollHeight;
@@ -148,7 +156,21 @@ export class InfiniteListPlaceholdersComponent implements OnInit, OnDestroy {
         }
 
         const newScrollTop = currentScrollTop + heightDiff;
-        this.scrollService.scrollTo(null, newScrollTop);
+        this.scrollService.scrollTo(undefined, newScrollTop);
       });
   }
+
+}
+
+/**
+ * Emits once after the next render.
+ */
+function nextRender(injector: Injector): Observable<void> {
+  return new Observable<void>((subscriber) => {
+    const render = afterNextRender(() => {
+      subscriber.next();
+      subscriber.complete();
+    }, { injector });
+    return () => render.destroy();
+  });
 }

@@ -1,21 +1,11 @@
 import { Component } from '@angular/core';
 import { fruits } from './fruits-list';
+import { NbCardComponent, NbCardHeaderComponent, NbListComponent, NbListItemComponent } from '@liquid-js/lyr-core';
 
 @Component({
-    template: `
-    <nb-card size="medium">
-      <nb-card-header>
-        Some fruits
-      </nb-card-header>
-      <nb-list>
-        <nb-list-item *ngFor="let fruit of fruits">
-          {{ fruit }}
-        </nb-list-item>
-      </nb-list>
-    </nb-card>
-  `,
-    styleUrls: ['./simple-list-showcase.component.scss'],
-    standalone: false
+  templateUrl: './simple-list-showcase.component.html',
+  styleUrls: ['./simple-list-showcase.component.scss'],
+  imports: [NbCardComponent, NbCardHeaderComponent, NbListComponent, NbListItemComponent],
 })
 export class SimpleListShowcaseComponent {
   fruits = fruits;

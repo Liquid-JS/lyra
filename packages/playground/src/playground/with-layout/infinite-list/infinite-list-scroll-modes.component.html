@@ -1,0 +1,36 @@
+<nb-card class="own-scroll">
+  <nb-card-header> Own scroll </nb-card-header>
+  <nb-list nbInfiniteList
+    [threshold]="500"
+    (bottomThreshold)="loadNext(firstCard)">
+    @for (newsPost of firstCard.news(); track newsPost) {
+    <nb-list-item>
+      <nb-news-post [post]="newsPost" />
+    </nb-list-item>
+    }
+    @for (_ of firstCard.placeholders(); track $index) {
+    <nb-list-item>
+      <nb-news-post-placeholder />
+    </nb-list-item>
+    }
+  </nb-list>
+</nb-card>
+
+<nb-card>
+  <nb-card-header> Window scroll </nb-card-header>
+  <nb-list nbInfiniteList
+    listenWindowScroll
+    [threshold]="500"
+    (bottomThreshold)="loadNext(secondCard)">
+    @for (newsPost of secondCard.news(); track newsPost) {
+    <nb-list-item>
+      <nb-news-post [post]="newsPost" />
+    </nb-list-item>
+    }
+    @for (_ of secondCard.placeholders(); track $index) {
+    <nb-list-item>
+      <nb-news-post-placeholder />
+    </nb-list-item>
+    }
+  </nb-list>
+</nb-card>
