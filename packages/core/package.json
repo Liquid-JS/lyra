@@ -1,35 +1,46 @@
 {
-  "name": "@nebular/theme",
-  "version": "17.0.0",
-  "description": "@nebular/theme",
-  "author": "akveo",
+  "name": "@liquid-js/lyr-core",
+  "version": "22.0.0",
+  "type": "module",
+  "description": "Lyra core: Angular UI components and theming (a maintained fork of Nebular)",
+  "author": "HitkoDev <development@hitko.si>",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/akveo/nebular.git"
+    "url": "git+https://github.com/Liquid-JS/lyra.git"
   },
   "bugs": {
-    "url": "https://github.com/akveo/nebular/issues"
+    "url": "https://github.com/Liquid-JS/lyra/issues"
   },
-  "homepage": "https://github.com/akveo/nebular#readme",
+  "homepage": "https://github.com/Liquid-JS/lyra/tree/master/packages/core#readme",
   "keywords": [
     "angular",
     "typescript",
-    "ng2-admin",
-    "ngx-admin",
-    "theme",
-    "nebular"
+    "lyra",
+    "ui",
+    "components",
+    "theme"
   ],
-  "peerDependencies": {
-    "@angular/animations": "^21.0.0",
-    "@angular/common": "^21.0.0",
-    "@angular/core": "^21.0.0",
-    "@angular/router": "^21.0.0",
-    "@angular/cdk": "^21.0.0",
-    "rxjs": "^6.5.3 || ^7.4.0"
+  "scripts": {
+    "build": "run -T ng build core --configuration production",
+    "watch": "run -T ng build core --configuration development --watch",
+    "test": "run -T ng test core --no-watch",
+    "test:watch": "run -T ng test core",
+    "lint": "run -T ng lint core",
+    "lint:fix": "run -T ng lint core --fix",
+    "lint:styles": "run -T stylelint \"**/*.scss\"",
+    "lint:styles:fix": "run -T stylelint \"**/*.scss\" --fix"
   },
-  "dependencies": {
-    "tslib": "^2.3.0"
+  "peerDependencies": {
+    "@angular/cdk": "^22.0.0",
+    "@angular/common": "^22.0.0",
+    "@angular/core": "^22.0.0",
+    "@angular/forms": "^22.0.0",
+    "@angular/localize": "^22.0.0",
+    "@angular/platform-browser": "^22.0.0",
+    "@angular/router": "^22.0.0",
+    "rxjs": "^6.5.3 || ^7.4.0",
+    "tslib": "^2.9.1"
   },
   "schematics": "./schematics/collection.json",
   "sideEffects": false,
@@ -58,6 +69,12 @@
     "./styles/prebuilt/default.css": {
       "style": "./styles/prebuilt/default.css"
     },
+    "./styles/prebuilt/material-dark.css": {
+      "style": "./styles/prebuilt/material-dark.css"
+    },
+    "./styles/prebuilt/material-light.css": {
+      "style": "./styles/prebuilt/material-light.css"
+    },
     "./styles/themes/corporate": {
       "sass": "./styles/themes/_corporate.scss"
     },
@@ -84,6 +101,11 @@
     },
     "./styles/theming": {
       "sass": "./styles/_theming.scss"
+    }
+  },
+  "peerDependenciesMeta": {
+    "@angular/localize": {
+      "optional": true
     }
   }
 }

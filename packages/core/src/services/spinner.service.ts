@@ -1,69 +1,50 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-import { Injectable, Inject } from '@angular/core';
+import { inject, Service } from '@angular/core';
 import { NB_DOCUMENT } from '../theme.options';
 
 /**
- * Service to control the global page spinner.
+ * Shows the page's loading spinner, the element with the id `nb-global-spinner` in `index.html`, until the registered
+ * loaders finish.
+ *
+ * Without such an element, `load` only waits for the loaders.
  */
-@Injectable()
+@Service()
 export class NbSpinnerService {
+  private readonly document = inject(NB_DOCUMENT);
 
-  private loaders: Promise<any>[] = [];
-  private selector: string = 'nb-global-spinner';
+  private loaders = new Array<Promise<unknown>>();
+  private selector = 'nb-global-spinner';
 
-  constructor(@Inject(NB_DOCUMENT) private document) {}
-
-  /**
-   * Appends new loader to the list of loader to be completed before
-   * spinner will be hidden
-   * @param method Promise<any>
-   */
-  registerLoader(method: Promise<any>): void {
+  /** Adds a promise `load` waits for. */
+  registerLoader(method: Promise<unknown>) {
     this.loaders.push(method);
   }
 
-  /**
-   * Clears the list of loader
-   */
-  clear(): void {
+  /** Forgets the registered loaders. */
+  clear() {
     this.loaders = [];
   }
 
   /**
-   * Start the loader process, show spinnder and execute loaders
+   * Shows the spinner until the registered loaders finish, and hides it whether they succeed or fail: resolves with
+   * their values, or rejects with the first failure.
    */
-  load(): void {
+  load(): Promise<unknown[]> {
     this.showSpinner();
-    this.executeAll();
+    return Promise.all(this.loaders).finally(() => this.hideSpinner());
   }
 
-  private executeAll(done = (values) => {}): void {
-    Promise.all(this.loaders).then((values) => {
-      this.hideSpinner();
-      done.call(null, values);
-    })
-      .catch((error) => {
-        // TODO: Promise.reject
-        console.error(error);
-      });
-  }
-
-  // TODO is there any better way of doing this?
-  private showSpinner(): void {
+  // The spinner is in index.html, outside the app, so it's shown and hidden through the DOM.
+  private showSpinner() {
     const el = this.getSpinnerElement();
     if (el) {
-      el.style['display'] = 'block';
+      el.style.display = 'block';
     }
   }
 
-  private hideSpinner(): void {
+  private hideSpinner() {
     const el = this.getSpinnerElement();
     if (el) {
-      el.style['display'] = 'none';
+      el.style.display = 'none';
     }
   }
 

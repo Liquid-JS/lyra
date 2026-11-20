@@ -1,7 +1,7 @@
-import { Component, ElementRef, ViewChild } from '@angular/core';
+import { Component, ElementRef, viewChild, signal } from '@angular/core';
 import { APP_BASE_HREF } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { TestBed, ComponentFixture, fakeAsync, tick, inject, waitForAsync } from '@angular/core/testing';
+import { TestBed, ComponentFixture, inject } from '@angular/core/testing';
 import {
   NbLayoutScrollService,
   NbScrollPosition,
@@ -9,60 +9,60 @@ import {
   NbThemeService,
   NbThemeModule,
   NB_WINDOW,
-} from '@nebular/theme';
+} from '@liquid-js/lyr-core';
 
-let currentWindow;
+let currentWindow: Window;
 let fixture: ComponentFixture<ScrollTestComponent>;
 let componentInstance: ScrollTestComponent;
 let scrollService: NbLayoutScrollService;
 
 @Component({
-    template: `
-    <nb-layout [withScroll]="localScroll" #layout>
+  template: `
+    <nb-layout [withScroll]="localScroll()" #layout>
       <nb-layout-column>
         <div #resize></div>
       </nb-layout-column>
     </nb-layout>
   `,
-    styles: [
+  styles: [
         `
       ::ng-deep nb-layout.with-scroll .scrollable-container {
         overflow: auto;
         height: 100vh;
       }
     `,
-    ],
-    standalone: false
+  ],
+  imports: [NbLayoutModule, RouterModule],
 })
 class ScrollTestComponent {
-  @ViewChild('resize', { read: ElementRef }) private resizeElement: ElementRef;
-  @ViewChild('layout', { read: ElementRef }) private layout: ElementRef;
-  localScroll = false;
+  private readonly resizeElement = viewChild.required('resize', { read: ElementRef });
+  private readonly layout = viewChild.required('layout', { read: ElementRef });
+  readonly localScroll = signal(false);
 
   setSize(width: string, height: string) {
-    this.resizeElement.nativeElement.style.width = width;
-    this.resizeElement.nativeElement.style.height = height;
+    const resizeElement = this.resizeElement();
+    resizeElement.nativeElement.style.width = width;
+    resizeElement.nativeElement.style.height = height;
   }
 
   useLocalScroll() {
-    this.localScroll = true;
+    this.localScroll.set(true);
   }
 
   useGlobalScroll() {
-    this.localScroll = false;
+    this.localScroll.set(false);
   }
 
   getScrollableElement() {
-    return this.layout.nativeElement.querySelector('.scrollable-container');
+    return this.layout().nativeElement.querySelector('.scrollable-container');
   }
 }
 
 describe('NbScrollService', () => {
   beforeEach(() => {
     fixture = TestBed.configureTestingModule({
-      imports: [RouterModule.forRoot([]), NbThemeModule.forRoot(), NbLayoutModule],
+      imports: [RouterModule.forRoot([]), NbThemeModule.forRoot(), NbLayoutModule, ScrollTestComponent],
       providers: [NbLayoutScrollService, NbThemeService, { provide: APP_BASE_HREF, useValue: '/' }],
-      declarations: [ScrollTestComponent],
     }).createComponent(ScrollTestComponent);
 
     componentInstance = fixture.componentInstance;
@@ -70,29 +70,27 @@ describe('NbScrollService', () => {
     fixture.detectChanges();
   });
 
-  beforeEach(waitForAsync(
-    inject([NbLayoutScrollService, NB_WINDOW], (_scrollService, _window) => {
-      scrollService = _scrollService;
-      currentWindow = _window;
-    }),
-  ));
-
-  afterEach(fakeAsync(() => {
-    fixture.destroy();
-    tick();
-    fixture.nativeElement.remove();
+  beforeEach(inject([NbLayoutScrollService, NB_WINDOW], (_scrollService: NbLayoutScrollService, _window: Window) => {
+    scrollService = _scrollService;
+    currentWindow = _window;
   }));
 
-  it('should get initial scroll position', (done) => {
+  afterEach(async () => {
+    fixture.destroy();
+    await fixture.whenStable();
+    fixture.nativeElement.remove();
+  });
+
+  it('should get initial scroll position', () => new Promise<void>((done) => {
     fixture.detectChanges();
     scrollService.getPosition().subscribe((pos: NbScrollPosition) => {
       expect(pos.x).toEqual(0);
       expect(pos.y).toEqual(0);
       done();
     });
-  });
+  }));
 
-  it('should get initial scroll position as nothing to scroll', (done) => {
+  it('should get initial scroll position as nothing to scroll', () => new Promise<void>((done) => {
     currentWindow.scrollTo(10, 10);
     fixture.detectChanges();
     scrollService.getPosition().subscribe((pos: NbScrollPosition) => {
@@ -100,9 +98,9 @@ describe('NbScrollService', () => {
       expect(pos.y).toEqual(0);
       done();
     });
-  });
+  }));
 
-  it('should get updated scroll position', (done) => {
+  it('should get updated scroll position', () => new Promise<void>((done) => {
     componentInstance.setSize('10000px', '10000px');
     fixture.detectChanges();
     currentWindow.scrollTo(10, 10);
@@ -111,9 +109,9 @@ describe('NbScrollService', () => {
       expect(pos.y).toEqual(10);
       done();
     });
-  });
+  }));
 
-  it('should get initial scroll position on scrollable', (done) => {
+  it('should get initial scroll position on scrollable', () => new Promise<void>((done) => {
     componentInstance.useLocalScroll();
     fixture.detectChanges();
     const scrollable = componentInstance.getScrollableElement();
@@ -122,9 +120,9 @@ describe('NbScrollService', () => {
       expect(pos.y).toEqual(scrollable.scrollTop);
       done();
     });
-  });
+  }));
 
-  it('should get updated scroll position on scrollable', (done) => {
+  it('should get updated scroll position on scrollable', () => new Promise<void>((done) => {
     componentInstance.useLocalScroll();
     componentInstance.setSize('10000px', '10000px');
     fixture.detectChanges();
@@ -136,9 +134,9 @@ describe('NbScrollService', () => {
       expect(pos.y).toEqual(10);
       done();
     });
-  });
+  }));
 
-  it('should scroll using service', (done) => {
+  it('should scroll using service', () => new Promise<void>((done) => {
     componentInstance.useLocalScroll();
     componentInstance.setSize('10000px', '10000px');
     fixture.detectChanges();
@@ -149,67 +147,67 @@ describe('NbScrollService', () => {
       expect(pos.y).toEqual(10);
       done();
     });
-  });
+  }));
 
-  it('should scroll using service (with default x)', (done) => {
+  it('should scroll using service (with default x)', () => new Promise<void>((done) => {
     componentInstance.useLocalScroll();
     componentInstance.setSize('10000px', '10000px');
     fixture.detectChanges();
-    scrollService.scrollTo(null, 10);
+    scrollService.scrollTo(undefined, 10);
     fixture.detectChanges();
     scrollService.getPosition().subscribe((pos: NbScrollPosition) => {
       expect(pos.x).toEqual(0);
       expect(pos.y).toEqual(10);
       done();
     });
-  });
+  }));
 
-  it('should scroll using service (with default y)', (done) => {
+  it('should scroll using service (with default y)', () => new Promise<void>((done) => {
     componentInstance.useLocalScroll();
     componentInstance.setSize('10000px', '10000px');
     fixture.detectChanges();
-    scrollService.scrollTo(10, null);
+    scrollService.scrollTo(10, undefined);
     fixture.detectChanges();
     scrollService.getPosition().subscribe((pos: NbScrollPosition) => {
       expect(pos.x).toEqual(10);
       expect(pos.y).toEqual(0);
       done();
     });
-  });
+  }));
 
-  it('should scroll using service (with default x)', (done) => {
+  it('should scroll using service (keeping the current x)', () => new Promise<void>((done) => {
     componentInstance.useLocalScroll();
     componentInstance.setSize('10000px', '10000px');
     fixture.detectChanges();
     scrollService.scrollTo(10, 10);
     fixture.detectChanges();
 
-    scrollService.scrollTo(null, 20);
+    scrollService.scrollTo(undefined, 20);
     fixture.detectChanges();
     scrollService.getPosition().subscribe((pos: NbScrollPosition) => {
       expect(pos.x).toEqual(10);
       expect(pos.y).toEqual(20);
       done();
     });
-  });
+  }));
 
-  it('should scroll using service (with default y)', (done) => {
+  it('should scroll using service (keeping the current y)', () => new Promise<void>((done) => {
     componentInstance.useLocalScroll();
     componentInstance.setSize('10000px', '10000px');
     fixture.detectChanges();
     scrollService.scrollTo(10, 10);
     fixture.detectChanges();
 
-    scrollService.scrollTo(20, null);
+    scrollService.scrollTo(20, undefined);
     fixture.detectChanges();
     scrollService.getPosition().subscribe((pos: NbScrollPosition) => {
       expect(pos.x).toEqual(20);
       expect(pos.y).toEqual(10);
       done();
     });
-  });
+  }));
 
-  it('should scroll using service back to 0,0', (done) => {
+  it('should scroll using service back to 0,0', () => new Promise<void>((done) => {
     componentInstance.useLocalScroll();
     componentInstance.setSize('10000px', '10000px');
     fixture.detectChanges();
@@ -223,9 +221,9 @@ describe('NbScrollService', () => {
       expect(pos.y).toEqual(0);
       done();
     });
-  });
+  }));
 
-  it('should scroll using service back (with default x,y)', (done) => {
+  it('should scroll using service back (with default x,y)', () => new Promise<void>((done) => {
     componentInstance.useLocalScroll();
     componentInstance.setSize('10000px', '10000px');
     fixture.detectChanges();
@@ -239,14 +237,14 @@ describe('NbScrollService', () => {
       expect(pos.y).toEqual(10);
       done();
     });
-  });
+  }));
 
-  it('should listen to scroll', (done) => {
+  it('should listen to scroll', () => new Promise<void>((done) => {
     scrollService.onScroll().subscribe((event: any) => {
       expect(event).not.toBeNull();
       done();
     });
 
     currentWindow.dispatchEvent(new Event('scroll'));
-  });
+  }));
 });

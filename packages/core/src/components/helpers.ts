@@ -1,13 +1,12 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 export type NbNullableInput = string | null | undefined;
 export type NbBooleanInput = boolean | NbNullableInput;
 
-export function convertToBoolProperty(val: any): boolean {
+/**
+ * Classes as a `[class]` binding takes them: a space-separated string, an array, or an object of class names to flags.
+ */
+export type NbClassInput = string | string[] | Record<string, unknown> | null | undefined;
+
+export function convertToBoolProperty(val: NbBooleanInput): boolean {
   if (typeof val === 'string') {
     val = val.toLowerCase().trim();
 
@@ -17,14 +16,7 @@ export function convertToBoolProperty(val: any): boolean {
   return !!val;
 }
 
-export function getElementHeight(el) {
-  /**
-   *
-   * TODO: Move helpers in separate common module.
-   * TODO: Provide window through di token.
-   * */
-  const style = window.getComputedStyle(el);
-  const marginTop = parseInt(style.getPropertyValue('margin-top'), 10);
-  const marginBottom = parseInt(style.getPropertyValue('margin-bottom'), 10);
-  return el.offsetHeight + marginTop + marginBottom;
+/** As `convertToBoolProperty`, but an input that isn't set stays `undefined`, so it can fall back to a default. */
+export function convertToOptionalBoolProperty(val: NbBooleanInput): boolean | undefined {
+  return val === undefined ? undefined : convertToBoolProperty(val);
 }

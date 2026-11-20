@@ -1,7 +1,7 @@
-import { Component, ElementRef, ViewChild } from '@angular/core';
+import { Component, ElementRef, viewChild, signal } from '@angular/core';
 import { APP_BASE_HREF } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { TestBed, ComponentFixture, fakeAsync, tick, inject, waitForAsync } from '@angular/core/testing';
+import { TestBed, ComponentFixture, inject } from '@angular/core/testing';
 import {
   NbLayoutRulerService,
   NbLayoutDimensions,
@@ -9,43 +9,44 @@ import {
   NbThemeService,
   NbThemeModule,
   NB_DOCUMENT,
-} from '@nebular/theme';
+} from '@liquid-js/lyr-core';
 
-let currentDocument;
+let currentDocument: Document;
 let fixture: ComponentFixture<RulerTestComponent>;
 let componentInstance: RulerTestComponent;
 let rulerService: NbLayoutRulerService;
 
 @Component({
-    template: `
-    <nb-layout [withScroll]="localScroll" #layout>
+  template: `
+    <nb-layout [withScroll]="localScroll()" #layout>
       <nb-layout-column>
         <div #resize></div>
       </nb-layout-column>
     </nb-layout>
   `,
-    standalone: false
+  imports: [NbLayoutModule, RouterModule],
 })
 class RulerTestComponent {
-  @ViewChild('resize', { read: ElementRef }) private resizeElement: ElementRef;
-  @ViewChild('layout', { read: ElementRef }) private layout: ElementRef;
-  localScroll = false;
+  private readonly resizeElement = viewChild.required('resize', { read: ElementRef });
+  private readonly layout = viewChild.required('layout', { read: ElementRef });
+  readonly localScroll = signal(false);
 
   setSize(width: string, height: string) {
-    this.resizeElement.nativeElement.style.width = width;
-    this.resizeElement.nativeElement.style.height = height;
+    const resizeElement = this.resizeElement();
+    resizeElement.nativeElement.style.width = width;
+    resizeElement.nativeElement.style.height = height;
   }
 
   useLocalScroll() {
-    this.localScroll = true;
+    this.localScroll.set(true);
   }
 
   useGlobalScroll() {
-    this.localScroll = false;
+    this.localScroll.set(false);
   }
 
   getScrollableElement() {
-    return this.layout.nativeElement.querySelector('.scrollable-container');
+    return this.layout().nativeElement.querySelector('.scrollable-container');
   }
 }
 
@@ -53,9 +54,8 @@ class RulerTestComponent {
 describe('NbLayoutRulerService', () => {
   beforeEach(() => {
     fixture = TestBed.configureTestingModule({
-      imports: [RouterModule.forRoot([]), NbThemeModule.forRoot(), NbLayoutModule],
+      imports: [RouterModule.forRoot([]), NbThemeModule.forRoot(), NbLayoutModule, RulerTestComponent],
       providers: [NbLayoutRulerService, NbThemeService, { provide: APP_BASE_HREF, useValue: '/' }],
-      declarations: [RulerTestComponent],
     }).createComponent(RulerTestComponent);
 
     componentInstance = fixture.componentInstance;
@@ -63,20 +63,18 @@ describe('NbLayoutRulerService', () => {
     fixture.detectChanges();
   });
 
-  beforeEach(waitForAsync(
-    inject([NbLayoutRulerService, NB_DOCUMENT], (_rulerService, _document) => {
-      rulerService = _rulerService;
-      currentDocument = _document;
-    }),
-  ));
-
-  afterEach(fakeAsync(() => {
-    fixture.destroy();
-    tick();
-    fixture.nativeElement.remove();
+  beforeEach(inject([NbLayoutRulerService, NB_DOCUMENT], (_rulerService: NbLayoutRulerService, _document: Document) => {
+    rulerService = _rulerService;
+    currentDocument = _document;
   }));
 
-  it('should get dimensions from document', (done) => {
+  afterEach(async () => {
+    fixture.destroy();
+    await fixture.whenStable();
+    fixture.nativeElement.remove();
+  });
+
+  it('should get dimensions from document', () => new Promise<void>((done) => {
     fixture.detectChanges();
     rulerService.getDimensions().subscribe((size: NbLayoutDimensions) => {
       expect(size.clientHeight).toEqual(currentDocument.documentElement.clientHeight);
@@ -85,9 +83,9 @@ describe('NbLayoutRulerService', () => {
       expect(size.scrollWidth).toEqual(currentDocument.documentElement.scrollWidth);
       done();
     });
-  });
+  }));
 
-  it('should get dimensions from document when scrolls', (done) => {
+  it('should get dimensions from document when scrolls', () => new Promise<void>((done) => {
     componentInstance.setSize('10000px', '10000px');
     fixture.detectChanges();
     rulerService.getDimensions().subscribe((size: NbLayoutDimensions) => {
@@ -97,9 +95,9 @@ describe('NbLayoutRulerService', () => {
       expect(size.scrollWidth).toEqual(currentDocument.documentElement.scrollWidth);
       done();
     });
-  });
+  }));
 
-  it('should get dimensions from scrollable', (done) => {
+  it('should get dimensions from scrollable', () => new Promise<void>((done) => {
     componentInstance.useLocalScroll();
     fixture.detectChanges();
     const scrollable = componentInstance.getScrollableElement();
@@ -110,9 +108,9 @@ describe('NbLayoutRulerService', () => {
       expect(size.scrollWidth).toEqual(scrollable.scrollWidth);
       done();
     });
-  });
+  }));
 
-  it('should get dimensions from scrollable when scrolls', (done) => {
+  it('should get dimensions from scrollable when scrolls', () => new Promise<void>((done) => {
     componentInstance.useLocalScroll();
     componentInstance.setSize('10000px', '10000px');
     fixture.detectChanges();
@@ -124,5 +122,5 @@ describe('NbLayoutRulerService', () => {
       expect(size.scrollWidth).toEqual(scrollable.scrollWidth);
       done();
     });
-  });
+  }));
 });
