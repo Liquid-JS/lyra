@@ -1,9 +1,7 @@
-import { Component, ElementRef, Input, NgModule, Type, ViewChild } from '@angular/core';
-import { ComponentFixture, fakeAsync, TestBed, tick, waitForAsync } from '@angular/core/testing';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { RouterTestingModule } from '@angular/router/testing';
+import { Component, ElementRef, NgModule, Type, viewChild, viewChildren, signal } from '@angular/core';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Subject } from 'rxjs';
-import createSpy = jasmine.createSpy;
 import {
   NbThemeModule,
   NbLayoutModule,
@@ -18,72 +16,130 @@ import {
   NbTooltipComponent,
   NbIconLibraries,
   NbOverlayConfig,
-} from '@nebular/theme';
+  NbValidationModule,
+} from '@liquid-js/lyr-core';
+import { RouterModule } from '@angular/router';
+import { NbLayoutComponent, NbLayoutColumnComponent } from '../layout/layout.component';
+import { NbTooltipDirective as NbTooltipDirective_1 } from './tooltip.directive';
 
 @Component({
-    selector: 'nb-tooltip-default-test',
-    template: `
+  selector: 'nb-tooltip-default-test',
+  template: `
     <nb-layout>
       <nb-layout-column>
         <button #button nbTooltip="test">show tooltip</button>
       </nb-layout-column>
     </nb-layout>
   `,
-    standalone: false
+  imports: [NbLayoutComponent, NbLayoutColumnComponent, NbTooltipDirective_1, RouterModule],
 })
 export class NbTooltipDefaultTestComponent {
-  @ViewChild('button') button: ElementRef;
-  @ViewChild(NbTooltipDirective) tooltip: NbTooltipDirective;
+  readonly button = viewChild<ElementRef>('button');
+  readonly tooltip = viewChild.required(NbTooltipDirective);
 }
 
 @Component({
-    selector: 'nb-tooltip-bindings-test',
-    template: `
+  selector: 'nb-tooltip-bindings-test',
+  template: `
     <nb-layout>
       <nb-layout-column>
         <button
           #button
-          [nbTooltip]="content"
-          [nbTooltipTrigger]="trigger"
-          [nbTooltipPlacement]="position"
-          [nbTooltipAdjustment]="adjustment"
-          [nbTooltipStatus]="status"
-          [nbTooltipIcon]="icon"
-          [nbTooltipClass]="tooltipClass"
+          [nbTooltip]="content()"
+          [nbTooltipTrigger]="trigger()"
+          [nbTooltipPlacement]="position()"
+          [nbTooltipAdjustment]="adjustment()"
+          [nbTooltipStatus]="status()"
+          [nbTooltipIcon]="icon()"
+          [nbTooltipClass]="tooltipClass()"
         ></button>
       </nb-layout-column>
     </nb-layout>
   `,
-    standalone: false
+  imports: [NbLayoutComponent, NbLayoutColumnComponent, NbTooltipDirective_1, RouterModule],
 })
 export class NbTooltipBindingsTestComponent {
-  @ViewChild(NbTooltipDirective) tooltip: NbTooltipDirective;
-  @ViewChild('button') button: ElementRef;
-  @Input() content: any = '';
-  @Input() status = 'primary';
-  @Input() icon = '';
-  @Input() trigger = NbTrigger.CLICK;
-  @Input() position = NbPosition.TOP;
-  @Input() adjustment = NbAdjustment.CLOCKWISE;
-  tooltipClass = '';
+  readonly tooltip = viewChild.required(NbTooltipDirective);
+  readonly button = viewChild<ElementRef>('button');
+  readonly content = signal<any>('');
+  readonly status = signal('primary');
+  readonly icon = signal('');
+  readonly trigger = signal(NbTrigger.CLICK);
+  readonly position = signal(NbPosition.TOP);
+  readonly adjustment = signal(NbAdjustment.CLOCKWISE);
+  readonly tooltipClass = signal('');
 }
 
 @Component({
-    selector: 'nb-tooltip-instance-test',
-    template: `
+  selector: 'nb-tooltip-template-test',
+  template: `
     <nb-layout>
       <nb-layout-column>
-        <button #button nbTooltip="test"></button>
+        <button [nbTooltip]="shortcut" [nbTooltipContext]="key()" nbTooltipIcon="some-icon">Save</button>
+        <ng-template #shortcut let-key>Save the draft <kbd>Ctrl+{{ key }}</kbd></ng-template>
+      </nb-layout-column>
+    </nb-layout>
+  `,
+  imports: [NbLayoutComponent, NbLayoutColumnComponent, NbTooltipDirective_1, RouterModule],
+})
+export class NbTooltipTemplateTestComponent {
+  readonly tooltip = viewChild.required(NbTooltipDirective);
+  readonly key = signal('S');
+}
+
+@Component({
+  selector: 'nb-tooltip-described-test',
+  template: `
+    <nb-layout>
+      <nb-layout-column>
+        <button class="plain" nbTooltip="Saves the draft" aria-describedby="own-hint">Save</button>
+        <span id="own-hint">Own hint</span>
+        <input class="validated" [formControl]="name" nbValidation nbTooltip="Your full name" />
+      </nb-layout-column>
+    </nb-layout>
+  `,
+  imports: [
+    NbLayoutComponent,
+    NbLayoutColumnComponent,
+    NbTooltipDirective_1,
+    RouterModule,
+    ReactiveFormsModule,
+    NbValidationModule,
+  ],
+})
+export class NbTooltipDescribedTestComponent {
+  readonly tooltips = viewChildren(NbTooltipDirective);
+  readonly name = new FormControl('');
+}
+
+@Component({
+  selector: 'nb-tooltip-instance-test',
+  template: `
+    <nb-layout>
+      <nb-layout-column>
+        <button #button
+          [nbTooltip]="content()"
+          [nbTooltipPlacement]="position()"
+          [nbTooltipAdjustment]="adjustment()"
+          [nbTooltipTrigger]="trigger()"
+          [nbTooltipStatus]="status()"
+          [nbTooltipIcon]="icon()"></button>
       </nb-layout-column>
     </nb-layout>
 
     <ng-template>Some Template</ng-template>
   `,
-    standalone: false
+  imports: [NbLayoutComponent, NbLayoutColumnComponent, NbTooltipDirective_1, RouterModule],
 })
 export class NbTooltipInstanceTestComponent {
-  @ViewChild(NbTooltipDirective) tooltip: NbTooltipDirective;
-  @ViewChild('button') button: ElementRef;
+  readonly content = signal('test');
+  readonly position = signal(NbPosition.TOP);
+  readonly adjustment = signal(NbAdjustment.CLOCKWISE);
+  readonly trigger = signal(NbTrigger.HINT);
+  readonly status = signal<string | undefined>(undefined);
+  readonly icon = signal<string | undefined>(undefined);
+  readonly tooltip = viewChild.required(NbTooltipDirective);
+  readonly button = viewChild<ElementRef>('button');
 }
 
 const dynamicOverlayIsShow$ = new Subject();
@@ -96,14 +152,14 @@ const dynamicOverlay = {
 };
 
 export class NbDynamicOverlayHandlerMock {
-  _componentType: Type<NbRenderableContainer>;
-  _host: ElementRef;
-  _context: Object = {};
-  _content: NbOverlayContent;
+  _componentType?: Type<NbRenderableContainer>;
+  _host?: ElementRef;
+  _context: object = {};
+  _content?: NbOverlayContent;
   _trigger: NbTrigger = NbTrigger.NOOP;
   _position: NbPosition = NbPosition.TOP;
   _adjustment: NbAdjustment = NbAdjustment.NOOP;
-  _offset: number;
+  _offset?: number;
   _overlayConfig: NbOverlayConfig = {};
   _disabled = false;
 
@@ -139,7 +195,7 @@ export class NbDynamicOverlayHandlerMock {
     return this;
   }
 
-  context(context: {}) {
+  context(context: object) {
     this._context = context;
     return this;
   }
@@ -174,30 +230,48 @@ export class NbDynamicOverlayHandlerMock {
   destroy() {}
 }
 
-const TEST_COMPONENTS = [NbTooltipDefaultTestComponent, NbTooltipBindingsTestComponent, NbTooltipInstanceTestComponent];
+@Component({
+  selector: 'nb-tooltip-content-test',
+  template: `
+    <nb-layout>
+      <nb-layout-column>
+        <button [nbTooltip]="content()">show tooltip</button>
+      </nb-layout-column>
+    </nb-layout>
+  `,
+  imports: [NbLayoutComponent, NbLayoutColumnComponent, NbTooltipDirective_1, RouterModule],
+})
+export class NbTooltipContentTestComponent {
+  readonly tooltip = viewChild.required(NbTooltipDirective);
+  readonly content = signal('');
+}
+
+const TEST_COMPONENTS = [
+  NbTooltipDefaultTestComponent,
+  NbTooltipBindingsTestComponent,
+  NbTooltipInstanceTestComponent,
+  NbTooltipContentTestComponent,
+];
 
 @NgModule({
-  imports: [NbLayoutModule, NbTooltipModule],
+  imports: [NbLayoutModule, NbTooltipModule, ...TEST_COMPONENTS],
   exports: [...TEST_COMPONENTS],
-  declarations: [...TEST_COMPONENTS],
 })
 class PopoverTestModule {}
 
 describe('Directive: NbTooltipDirective', () => {
   const overlayHandler = new NbDynamicOverlayHandlerMock();
 
-  beforeEach(
-    waitForAsync(() => {
-      TestBed.resetTestingModule();
-      TestBed.configureTestingModule({
-        imports: [NoopAnimationsModule, RouterTestingModule.withRoutes([]), NbThemeModule.forRoot(), PopoverTestModule],
-      });
+  beforeEach(() => {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      imports: [RouterModule.forRoot([]), NbThemeModule.forRoot(), PopoverTestModule],
+    });
 
-      const iconLibs: NbIconLibraries = TestBed.inject(NbIconLibraries);
-      iconLibs.registerSvgPack('test', { 'some-icon': '<svg>some-icon</svg>' });
-      iconLibs.setDefaultPack('test');
-    }),
-  );
+    const iconLibs: NbIconLibraries = TestBed.inject(NbIconLibraries);
+    iconLibs.registerSvgPack('test', { 'some-icon': '<svg>some-icon</svg>' });
+    iconLibs.setDefaultPack('test');
+  });
 
   describe('smoke ', () => {
     let fixture: ComponentFixture<any>;
@@ -209,34 +283,82 @@ describe('Directive: NbTooltipDirective', () => {
     it('should render string', () => {
       fixture = TestBed.createComponent(NbTooltipDefaultTestComponent);
       fixture.detectChanges();
-      fixture.componentInstance.tooltip.show();
+      fixture.componentInstance.tooltip().show();
       fixture.detectChanges();
 
       const textContainer = fixture.nativeElement.querySelector('nb-tooltip .content span');
       expect(textContainer.textContent).toContain('test');
+      // The text takes its own direction.
+      expect(textContainer.getAttribute('dir')).toBe('auto');
     });
 
-    it('should hide', fakeAsync(() => {
+    it('should not show without content', () => {
+      fixture = TestBed.createComponent(NbTooltipContentTestComponent);
+      fixture.detectChanges();
+      fixture.componentInstance.tooltip().show();
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('nb-tooltip')).toBeNull();
+
+      fixture.componentInstance.content.set('now with content');
+      fixture.detectChanges();
+      fixture.componentInstance.tooltip().show();
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('nb-tooltip').textContent).toContain('now with content');
+    });
+
+    it('should describe its host while it shows, keeping the host\'s own description', async () => {
+      fixture = TestBed.createComponent(NbTooltipDescribedTestComponent);
+      fixture.detectChanges();
+      await fixture.whenStable();
+      const [plainTooltip, validatedTooltip] = fixture.componentInstance.tooltips();
+      const plain = fixture.nativeElement.querySelector('.plain') as HTMLElement;
+      const validated = fixture.nativeElement.querySelector('.validated') as HTMLElement;
+
+      plainTooltip.show();
+      fixture.detectChanges();
+      const tooltip = fixture.nativeElement.querySelector('nb-tooltip') as HTMLElement;
+      expect(tooltip.getAttribute('role')).toBe('tooltip');
+      expect(tooltip.id).toBeTruthy();
+      expect(plain.getAttribute('aria-describedby')?.split(' ')).toEqual(['own-hint', tooltip.id]);
+
+      plainTooltip.hide();
+      fixture.detectChanges();
+      await fixture.whenStable();
+      expect(plain.getAttribute('aria-describedby')).toBe('own-hint');
+
+      // With nbValidation, the tooltip joins the validation's descriptions.
+      validatedTooltip.show();
+      fixture.detectChanges();
+      await fixture.whenStable();
+      const validatedId = (fixture.nativeElement.querySelector('nb-tooltip') as HTMLElement).id;
+      expect(validated.getAttribute('aria-describedby')).toBe(validatedId);
+      validatedTooltip.hide();
+      fixture.detectChanges();
+      await fixture.whenStable();
+      expect(validated.hasAttribute('aria-describedby')).toBe(false);
+    });
+
+    it('should hide', async () => {
       fixture = TestBed.createComponent(NbTooltipDefaultTestComponent);
       fixture.detectChanges();
-      fixture.componentInstance.tooltip.show();
+      fixture.componentInstance.tooltip().show();
       fixture.detectChanges();
 
       const textContainer = fixture.nativeElement.querySelector('nb-tooltip .content span');
       expect(textContainer.textContent).toContain('test');
-      fixture.componentInstance.tooltip.hide();
+      fixture.componentInstance.tooltip().hide();
       fixture.detectChanges();
 
-      tick(); // we need this tick for animations
+      await fixture.whenStable(); // we need this tick for animations
       const tooltip = fixture.nativeElement.querySelector('nb-tooltip');
       expect(tooltip).toBeNull();
-    }));
+    });
 
     it('should render different content', () => {
       fixture = TestBed.createComponent(NbTooltipDefaultTestComponent);
       fixture.detectChanges();
 
-      fixture.componentInstance.tooltip.show();
+      fixture.componentInstance.tooltip().show();
       fixture.detectChanges();
 
       fixture.componentInstance.content = 'new string';
@@ -249,22 +371,41 @@ describe('Directive: NbTooltipDirective', () => {
       fixture = TestBed.createComponent(NbTooltipBindingsTestComponent);
       fixture.detectChanges();
 
-      fixture.componentInstance.icon = 'some-icon';
+      fixture.componentInstance.icon.set('some-icon');
       fixture.detectChanges();
-      fixture.componentInstance.tooltip.show();
+      fixture.componentInstance.tooltip().show();
       fixture.detectChanges();
 
       const iconContainer = fixture.nativeElement.querySelector('nb-tooltip .content nb-icon');
       expect(iconContainer.textContent).toContain('some-icon');
     });
 
+    it('should render a template with its context, next to the icon', async () => {
+      fixture = TestBed.createComponent(NbTooltipTemplateTestComponent);
+      fixture.detectChanges();
+      fixture.componentInstance.tooltip().show();
+      fixture.detectChanges();
+
+      const content = fixture.nativeElement.querySelector('nb-tooltip .content') as HTMLElement;
+      expect(content.querySelector('nb-icon')).not.toBeNull();
+      expect(content.querySelector('kbd')?.textContent).toBe('Ctrl+S');
+      expect(content.textContent).toContain('Save the draft');
+
+      fixture.componentInstance.key.set('D');
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('nb-tooltip kbd')?.textContent).toBe('Ctrl+D');
+    });
+
     it('should display status', () => {
       fixture = TestBed.createComponent(NbTooltipBindingsTestComponent);
       fixture.detectChanges();
 
-      fixture.componentInstance.status = 'danger';
+      fixture.componentInstance.content.set('status tooltip');
+      fixture.componentInstance.status.set('danger');
       fixture.detectChanges();
-      fixture.componentInstance.tooltip.show();
+      fixture.componentInstance.tooltip().show();
       fixture.detectChanges();
 
       const iconContainer = fixture.nativeElement.querySelector('nb-tooltip');
@@ -274,39 +415,39 @@ describe('Directive: NbTooltipDirective', () => {
     it('should emit show state change event when shows up', () => {
       fixture = TestBed.createComponent(NbTooltipDefaultTestComponent);
       fixture.detectChanges();
-      const tooltip: NbTooltipDirective = fixture.componentInstance.tooltip;
+      const tooltip: NbTooltipDirective = fixture.componentInstance.tooltip();
 
-      const stateChangeSpy = createSpy('stateChangeSpy');
+      const stateChangeSpy = vi.fn();
       tooltip.nbTooltipShowStateChange.subscribe(stateChangeSpy);
 
       tooltip.show();
       fixture.detectChanges();
 
       expect(stateChangeSpy).toHaveBeenCalledTimes(1);
-      expect(stateChangeSpy).toHaveBeenCalledWith(jasmine.objectContaining({ isShown: true }));
+      expect(stateChangeSpy).toHaveBeenCalledWith(expect.objectContaining({ isShown: true }));
     });
 
     it('should emit show state change event when hides', () => {
       fixture = TestBed.createComponent(NbTooltipDefaultTestComponent);
       fixture.detectChanges();
-      const tooltip: NbTooltipDirective = fixture.componentInstance.tooltip;
+      const tooltip: NbTooltipDirective = fixture.componentInstance.tooltip();
       tooltip.show();
       fixture.detectChanges();
 
-      const stateChangeSpy = createSpy('stateChangeSpy');
+      const stateChangeSpy = vi.fn();
       tooltip.nbTooltipShowStateChange.subscribe(stateChangeSpy);
 
       tooltip.hide();
       fixture.detectChanges();
 
       expect(stateChangeSpy).toHaveBeenCalledTimes(1);
-      expect(stateChangeSpy).toHaveBeenCalledWith(jasmine.objectContaining({ isShown: false }));
+      expect(stateChangeSpy).toHaveBeenCalledWith(expect.objectContaining({ isShown: false }));
     });
 
     it('should set isShown to false when hidden', () => {
       fixture = TestBed.createComponent(NbTooltipDefaultTestComponent);
       fixture.detectChanges();
-      const tooltip: NbTooltipDirective = fixture.componentInstance.tooltip;
+      const tooltip: NbTooltipDirective = fixture.componentInstance.tooltip();
 
       expect(tooltip.isShown).toEqual(false);
     });
@@ -314,7 +455,7 @@ describe('Directive: NbTooltipDirective', () => {
     it('should set isShown to true when shown', () => {
       fixture = TestBed.createComponent(NbTooltipDefaultTestComponent);
       fixture.detectChanges();
-      const tooltip: NbTooltipDirective = fixture.componentInstance.tooltip;
+      const tooltip: NbTooltipDirective = fixture.componentInstance.tooltip();
       tooltip.show();
       fixture.detectChanges();
 
@@ -323,18 +464,16 @@ describe('Directive: NbTooltipDirective', () => {
   });
 
   describe('mocked services', () => {
-    beforeEach(
-      waitForAsync(() => {
-        TestBed.resetTestingModule();
-        TestBed.configureTestingModule({
-          imports: [RouterTestingModule.withRoutes([]), NbThemeModule.forRoot(), PopoverTestModule],
-        }).overrideDirective(NbTooltipDirective, {
-          set: {
-            providers: [{ provide: NbDynamicOverlayHandler, useValue: overlayHandler }],
-          },
-        });
-      }),
-    );
+    beforeEach(() => {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        imports: [RouterModule.forRoot([]), NbThemeModule.forRoot(), PopoverTestModule],
+      }).overrideDirective(NbTooltipDirective, {
+        set: {
+          providers: [{ provide: NbDynamicOverlayHandler, useValue: overlayHandler }],
+        },
+      });
+    });
     describe('default tooltip', () => {
       let fixture: ComponentFixture<NbTooltipDefaultTestComponent>;
 
@@ -343,23 +482,23 @@ describe('Directive: NbTooltipDirective', () => {
       });
 
       it('should build', () => {
-        const componentSpy = spyOn(overlayHandler, 'componentType').and.callThrough();
-        const hostSpy = spyOn(overlayHandler, 'host').and.callThrough();
-        const positionSpy = spyOn(overlayHandler, 'position').and.callThrough();
-        const triggerSpy = spyOn(overlayHandler, 'trigger').and.callThrough();
-        const adjustmentSpy = spyOn(overlayHandler, 'adjustment').and.callThrough();
-        const contentSpy = spyOn(overlayHandler, 'content').and.callThrough();
-        const contextSpy = spyOn(overlayHandler, 'context').and.callThrough();
-        const offsetSpy = spyOn(overlayHandler, 'offset').and.callThrough();
-        const buildSpy = spyOn(overlayHandler, 'build').and.callThrough();
-        const rebuildSpy = spyOn(overlayHandler, 'rebuild').and.callThrough();
+        const componentSpy = vi.spyOn(overlayHandler, 'componentType');
+        const hostSpy = vi.spyOn(overlayHandler, 'host');
+        const positionSpy = vi.spyOn(overlayHandler, 'position');
+        const triggerSpy = vi.spyOn(overlayHandler, 'trigger');
+        const adjustmentSpy = vi.spyOn(overlayHandler, 'adjustment');
+        const contentSpy = vi.spyOn(overlayHandler, 'content');
+        const contextSpy = vi.spyOn(overlayHandler, 'context');
+        const offsetSpy = vi.spyOn(overlayHandler, 'offset');
+        const buildSpy = vi.spyOn(overlayHandler, 'build');
+        const rebuildSpy = vi.spyOn(overlayHandler, 'rebuild');
 
         fixture = TestBed.createComponent(NbTooltipDefaultTestComponent);
         fixture.detectChanges();
 
         expect(componentSpy).toHaveBeenCalledTimes(1);
         expect(componentSpy).toHaveBeenCalledWith(NbTooltipComponent);
-        expect(hostSpy).toHaveBeenCalledWith(fixture.componentInstance.button);
+        expect(hostSpy).toHaveBeenCalledWith(fixture.componentInstance.button());
         expect(hostSpy).toHaveBeenCalledTimes(1);
         expect(offsetSpy).toHaveBeenCalledTimes(1);
         expect(offsetSpy).toHaveBeenCalledWith(8);
@@ -372,7 +511,7 @@ describe('Directive: NbTooltipDirective', () => {
         expect(contentSpy).toHaveBeenCalledTimes(2);
         expect(contentSpy).toHaveBeenCalledWith('test');
         expect(contextSpy).toHaveBeenCalledTimes(2);
-        expect(contextSpy).toHaveBeenCalledWith({});
+        expect(contextSpy).toHaveBeenCalledWith({ id: expect.any(String) });
         expect(buildSpy).toHaveBeenCalledTimes(1);
         expect(rebuildSpy).toHaveBeenCalledTimes(1);
       });
@@ -380,25 +519,25 @@ describe('Directive: NbTooltipDirective', () => {
       it('should show/hide/toggle', () => {
         fixture = TestBed.createComponent(NbTooltipDefaultTestComponent);
         fixture.detectChanges();
-        const showSpy = spyOn(dynamicOverlay, 'show').and.callThrough();
-        const hideSpy = spyOn(dynamicOverlay, 'hide').and.callThrough();
-        const toggleSpy = spyOn(dynamicOverlay, 'toggle').and.callThrough();
+        const showSpy = vi.spyOn(dynamicOverlay, 'show');
+        const hideSpy = vi.spyOn(dynamicOverlay, 'hide');
+        const toggleSpy = vi.spyOn(dynamicOverlay, 'toggle');
 
-        fixture.componentInstance.tooltip.show();
+        fixture.componentInstance.tooltip().show();
         fixture.detectChanges();
 
         expect(showSpy).toHaveBeenCalledTimes(1);
         expect(hideSpy).toHaveBeenCalledTimes(0);
         expect(toggleSpy).toHaveBeenCalledTimes(0);
 
-        fixture.componentInstance.tooltip.hide();
+        fixture.componentInstance.tooltip().hide();
         fixture.detectChanges();
 
         expect(showSpy).toHaveBeenCalledTimes(1);
         expect(hideSpy).toHaveBeenCalledTimes(1);
         expect(toggleSpy).toHaveBeenCalledTimes(0);
 
-        fixture.componentInstance.tooltip.toggle();
+        fixture.componentInstance.tooltip().toggle();
         fixture.detectChanges();
 
         expect(showSpy).toHaveBeenCalledTimes(1);
@@ -415,32 +554,32 @@ describe('Directive: NbTooltipDirective', () => {
       });
 
       it('should rebuild', () => {
-        const componentSpy = spyOn(overlayHandler, 'componentType').and.callThrough();
-        const hostSpy = spyOn(overlayHandler, 'host').and.callThrough();
-        const positionSpy = spyOn(overlayHandler, 'position').and.callThrough();
-        const triggerSpy = spyOn(overlayHandler, 'trigger').and.callThrough();
-        const adjustmentSpy = spyOn(overlayHandler, 'adjustment').and.callThrough();
-        const contentSpy = spyOn(overlayHandler, 'content').and.callThrough();
-        const contextSpy = spyOn(overlayHandler, 'context').and.callThrough();
-        const offsetSpy = spyOn(overlayHandler, 'offset').and.callThrough();
-        const buildSpy = spyOn(overlayHandler, 'build').and.callThrough();
-        const rebuildSpy = spyOn(overlayHandler, 'rebuild').and.callThrough();
+        const componentSpy = vi.spyOn(overlayHandler, 'componentType');
+        const hostSpy = vi.spyOn(overlayHandler, 'host');
+        const positionSpy = vi.spyOn(overlayHandler, 'position');
+        const triggerSpy = vi.spyOn(overlayHandler, 'trigger');
+        const adjustmentSpy = vi.spyOn(overlayHandler, 'adjustment');
+        const contentSpy = vi.spyOn(overlayHandler, 'content');
+        const contextSpy = vi.spyOn(overlayHandler, 'context');
+        const offsetSpy = vi.spyOn(overlayHandler, 'offset');
+        const buildSpy = vi.spyOn(overlayHandler, 'build');
+        const rebuildSpy = vi.spyOn(overlayHandler, 'rebuild');
 
         fixture = TestBed.createComponent(NbTooltipBindingsTestComponent);
         fixture.detectChanges();
 
-        fixture.componentInstance.adjustment = NbAdjustment.HORIZONTAL;
-        fixture.componentInstance.trigger = NbTrigger.CLICK;
-        fixture.componentInstance.content = 'new string';
-        fixture.componentInstance.status = 'success';
-        fixture.componentInstance.icon = 'home';
-        fixture.componentInstance.position = NbPosition.LEFT;
+        fixture.componentInstance.adjustment.set(NbAdjustment.HORIZONTAL);
+        fixture.componentInstance.trigger.set(NbTrigger.CLICK);
+        fixture.componentInstance.content.set('new string');
+        fixture.componentInstance.status.set('success');
+        fixture.componentInstance.icon.set('home');
+        fixture.componentInstance.position.set(NbPosition.LEFT);
 
         fixture.detectChanges();
 
         expect(componentSpy).toHaveBeenCalledTimes(1);
         expect(componentSpy).toHaveBeenCalledWith(NbTooltipComponent);
-        expect(hostSpy).toHaveBeenCalledWith(fixture.componentInstance.button);
+        expect(hostSpy).toHaveBeenCalledWith(fixture.componentInstance.button());
         expect(hostSpy).toHaveBeenCalledTimes(1);
         expect(offsetSpy).toHaveBeenCalledTimes(1);
         expect(offsetSpy).toHaveBeenCalledWith(8);
@@ -453,18 +592,18 @@ describe('Directive: NbTooltipDirective', () => {
         expect(contentSpy).toHaveBeenCalledTimes(3);
         expect(contentSpy).toHaveBeenCalledWith('new string');
         expect(contextSpy).toHaveBeenCalledTimes(3);
-        expect(contextSpy).toHaveBeenCalledWith({ status: 'success', icon: 'home' });
+        expect(contextSpy).toHaveBeenCalledWith({ id: expect.any(String), status: 'success', icon: 'home' });
         expect(buildSpy).toHaveBeenCalledTimes(1);
         expect(rebuildSpy).toHaveBeenCalledTimes(2);
       });
 
       it('should accept different content', () => {
-        const contentSpy = spyOn(overlayHandler, 'content').and.callThrough();
+        const contentSpy = vi.spyOn(overlayHandler, 'content');
 
         fixture = TestBed.createComponent(NbTooltipBindingsTestComponent);
         fixture.detectChanges();
 
-        fixture.componentInstance.content = 'new string';
+        fixture.componentInstance.content.set('new string');
         fixture.detectChanges();
         expect(contentSpy).toHaveBeenCalledTimes(3);
         expect(contentSpy).toHaveBeenCalledWith('new string');
@@ -472,13 +611,13 @@ describe('Directive: NbTooltipDirective', () => {
 
       it('should set overlay config', () => {
         const tooltipClass = 'custom-popover-class';
-        const overlayConfigSpy = spyOn(overlayHandler, 'overlayConfig').and.callThrough();
+        const overlayConfigSpy = vi.spyOn(overlayHandler, 'overlayConfig');
 
         fixture = TestBed.createComponent(NbTooltipBindingsTestComponent);
-        fixture.componentInstance.tooltipClass = tooltipClass;
+        fixture.componentInstance.tooltipClass.set(tooltipClass);
         fixture.detectChanges();
 
-        expect(overlayConfigSpy).toHaveBeenCalledWith(jasmine.objectContaining({ panelClass: tooltipClass }));
+        expect(overlayConfigSpy).toHaveBeenCalledWith(expect.objectContaining({ panelClass: tooltipClass }));
       });
     });
 
@@ -490,32 +629,32 @@ describe('Directive: NbTooltipDirective', () => {
       });
 
       it('should rebuild', () => {
-        const componentSpy = spyOn(overlayHandler, 'componentType').and.callThrough();
-        const hostSpy = spyOn(overlayHandler, 'host').and.callThrough();
-        const positionSpy = spyOn(overlayHandler, 'position').and.callThrough();
-        const triggerSpy = spyOn(overlayHandler, 'trigger').and.callThrough();
-        const adjustmentSpy = spyOn(overlayHandler, 'adjustment').and.callThrough();
-        const contentSpy = spyOn(overlayHandler, 'content').and.callThrough();
-        const contextSpy = spyOn(overlayHandler, 'context').and.callThrough();
-        const offsetSpy = spyOn(overlayHandler, 'offset').and.callThrough();
-        const buildSpy = spyOn(overlayHandler, 'build').and.callThrough();
-        const rebuildSpy = spyOn(overlayHandler, 'rebuild').and.callThrough();
+        const componentSpy = vi.spyOn(overlayHandler, 'componentType');
+        const hostSpy = vi.spyOn(overlayHandler, 'host');
+        const positionSpy = vi.spyOn(overlayHandler, 'position');
+        const triggerSpy = vi.spyOn(overlayHandler, 'trigger');
+        const adjustmentSpy = vi.spyOn(overlayHandler, 'adjustment');
+        const contentSpy = vi.spyOn(overlayHandler, 'content');
+        const contextSpy = vi.spyOn(overlayHandler, 'context');
+        const offsetSpy = vi.spyOn(overlayHandler, 'offset');
+        const buildSpy = vi.spyOn(overlayHandler, 'build');
+        const rebuildSpy = vi.spyOn(overlayHandler, 'rebuild');
 
         fixture = TestBed.createComponent(NbTooltipInstanceTestComponent);
         fixture.detectChanges();
 
-        fixture.componentInstance.tooltip.adjustment = NbAdjustment.HORIZONTAL;
-        fixture.componentInstance.tooltip.trigger = NbTrigger.CLICK;
-        fixture.componentInstance.tooltip.content = 'new string';
-        fixture.componentInstance.tooltip.status = 'success';
-        fixture.componentInstance.tooltip.icon = 'home';
-        fixture.componentInstance.tooltip.position = NbPosition.LEFT;
+        fixture.componentInstance.adjustment.set(NbAdjustment.HORIZONTAL);
+        fixture.componentInstance.trigger.set(NbTrigger.CLICK);
+        fixture.componentInstance.content.set('new string');
+        fixture.componentInstance.status.set('success');
+        fixture.componentInstance.icon.set('home');
+        fixture.componentInstance.position.set(NbPosition.LEFT);
 
-        fixture.componentInstance.tooltip.rebuild();
+        fixture.detectChanges();
 
         expect(componentSpy).toHaveBeenCalledTimes(1);
         expect(componentSpy).toHaveBeenCalledWith(NbTooltipComponent);
-        expect(hostSpy).toHaveBeenCalledWith(fixture.componentInstance.button);
+        expect(hostSpy).toHaveBeenCalledWith(fixture.componentInstance.button());
         expect(hostSpy).toHaveBeenCalledTimes(1);
         expect(positionSpy).toHaveBeenCalledTimes(3);
         expect(positionSpy).toHaveBeenCalledWith(NbPosition.LEFT);
@@ -528,7 +667,7 @@ describe('Directive: NbTooltipDirective', () => {
         expect(contentSpy).toHaveBeenCalledTimes(3);
         expect(contentSpy).toHaveBeenCalledWith('new string');
         expect(contextSpy).toHaveBeenCalledTimes(3);
-        expect(contextSpy).toHaveBeenCalledWith({ status: 'success', icon: 'home' });
+        expect(contextSpy).toHaveBeenCalledWith({ id: expect.any(String), status: 'success', icon: 'home' });
         expect(buildSpy).toHaveBeenCalledTimes(1);
         expect(rebuildSpy).toHaveBeenCalledTimes(2);
       });

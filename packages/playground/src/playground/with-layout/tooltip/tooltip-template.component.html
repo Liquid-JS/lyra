@@ -1,0 +1,20 @@
+<nb-card>
+  <nb-card-body class="example-items-rows">
+    <button nbButton
+      [nbTooltip]="shortcut"
+      nbTooltipContext="S">Save</button>
+
+    <button nbButton
+      [nbTooltip]="usage"
+      [nbTooltipContext]="storage"
+      nbTooltipIcon="info-outline">Storage</button>
+  </nb-card-body>
+</nb-card>
+
+<ng-template #shortcut
+  let-key>Save the draft <kbd>Ctrl+{{ key }}</kbd></ng-template>
+
+<ng-template #usage
+  let-storage>
+  <strong>{{ storage.used }}</strong> of {{ storage.total }} used
+</ng-template>

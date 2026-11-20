@@ -1,22 +1,14 @@
-/*
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
+import { NgTemplateOutlet } from '@angular/common';
+import { Component, computed, inject, input, TemplateRef } from '@angular/core';
 
-import { Component, HostBinding, Input } from '@angular/core';
-import { animate, state, style, transition, trigger } from '@angular/animations';
-
-import { NbStatusService } from '../../services/status.service';
-import { NbComponentOrCustomStatus } from '../component-status';
-import { NbRenderableContainer } from '../cdk/overlay/overlay-container';
-import { NbPosition } from '../cdk/overlay/overlay-position';
-import { NbIconConfig } from '../icon/icon.component';
-
+import { NbStatusService } from '@liquid-js/lyr-core/base';
+import { NbComponentOrCustomStatus } from '@liquid-js/lyr-core/base';
+import { NbRenderableContainer } from '@liquid-js/lyr-core/cdk';
+import { NbPosition } from '@liquid-js/lyr-core/cdk';
+import { NbIconConfig, NbIconComponent } from '@liquid-js/lyr-core/icon';
 
 /**
- * Tooltip container.
- * Renders provided tooltip inside.
+ * The bubble `nbTooltip` opens, with the directive's text or template and an optional icon.
  *
  * @styles
  *
@@ -58,67 +50,50 @@ import { NbIconConfig } from '../icon/icon.component';
  * tooltip-shadow:
  */
 @Component({
-    selector: 'nb-tooltip',
-    styleUrls: ['./tooltip.component.scss'],
-    template: `
-    <span class="arrow"></span>
-    <div class="content">
-      <nb-icon *ngIf="context?.icon" [config]="context.icon"></nb-icon>
-      <span *ngIf="content">{{ content }}</span>
-    </div>
-  `,
-    animations: [
-        trigger('showTooltip', [
-            state('in', style({ opacity: 1 })),
-            transition('void => *', [
-                style({ opacity: 0 }),
-                animate(100),
-            ]),
-            transition('* => void', [
-                animate(100, style({ opacity: 0 })),
-            ]),
-        ]),
-    ],
-    standalone: false
+  selector: 'nb-tooltip',
+  styleUrls: ['./tooltip.component.scss'],
+  templateUrl: './tooltip.component.html',
+  imports: [NgTemplateOutlet, NbIconComponent],
+  host: {
+    role: 'tooltip',
+    '[id]': 'context()?.id',
+    '[class]': 'binding()',
+    'animate.enter': 'nb-tooltip-enter',
+    'animate.leave': 'nb-tooltip-leave',
+  },
 })
 export class NbTooltipComponent implements NbRenderableContainer {
+  protected readonly statusService = inject(NbStatusService);
 
-  @Input()
-  content: string;
+  readonly content = input<string | TemplateRef<unknown>>();
 
-  /**
-   * Popover position relatively host element.
-   * */
-  @Input()
-  position: NbPosition = NbPosition.TOP;
+  protected readonly text = computed(() => {
+    const content = this.content();
+    return typeof content === 'string' ? content : undefined;
+  });
 
-  @HostBinding('class')
-  get binding() {
-    return `${this.position} ${this.statusClass}`;
-  }
+  protected readonly template = computed(() => {
+    const content = this.content();
+    return content instanceof TemplateRef ? content : undefined;
+  });
 
-  @HostBinding('@showTooltip')
-  get show() {
-    return true;
-  }
+  /** The side of the host the tooltip is on, which places its arrow. */
+  readonly position = input<NbPosition>(NbPosition.TOP);
 
-  @Input()
-  context: { icon?: string | NbIconConfig, status?: NbComponentOrCustomStatus } = {};
+  /** The directive's icon, status and template context, and the id its host is described by. */
+  readonly context = input<{
+    icon?: string | NbIconConfig;
+    status?: NbComponentOrCustomStatus;
+    templateContext?: unknown;
+    id?: string;
+  }>({});
 
-  get statusClass() {
-    if (this.context.status) {
-      return this.statusService.getStatusClass(this.context.status);
-    }
+  readonly statusClass = computed(() => {
+    const status = this.context()?.status;
+    return status ? this.statusService.getStatusClass(status) : '';
+  });
 
-    return '';
-  }
+  protected readonly binding = computed(() => `${this.position()} ${this.statusClass()}`);
 
-  constructor(protected statusService: NbStatusService) {
-  }
-
-  /**
-   * The method is empty since we don't need to do anything additionally
-   * render is handled by change detection
-   */
   renderContent() {}
 }

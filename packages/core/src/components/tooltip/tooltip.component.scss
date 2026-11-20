@@ -1,9 +1,3 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 @use 'sass:math';
 
 @use '../../styles/theming' as *;
@@ -29,11 +23,20 @@ $arrow-size: 6px;
     height: 0;
   }
 
+  // The page's direction, not the text's: the span takes the direction of its text.
   nb-icon + span {
-    margin-left: 0.5rem;
+    @include nb-ltr(margin-left, 0.5rem);
+    @include nb-rtl(margin-right, 0.5rem);
   }
   &.right nb-icon + span {
-    margin-right: 0.5rem;
+    @include nb-ltr() {
+      margin-left: 0;
+      margin-right: 0.5rem;
+    }
+    @include nb-rtl() {
+      margin-right: 0;
+      margin-left: 0.5rem;
+    }
   }
 
   .arrow {
@@ -83,17 +86,31 @@ $arrow-size: 6px;
 
 :host(.start-top) {
   .arrow {
-    right: math.round(-$arrow-size - math.div($arrow-size, 2.5));
+    $inline-offset: math.round(-$arrow-size - math.div($arrow-size, 2.5));
+    @include nb-ltr() {
+      right: $inline-offset;
+      transform: rotate(90deg);
+    }
+    @include nb-rtl() {
+      left: $inline-offset;
+      transform: rotate(270deg);
+    }
     bottom: $arrow-size;
-    transform: rotate(90deg);
   }
 }
 
 :host(.start-bottom) {
   .arrow {
-    right: math.round(-$arrow-size - math.div($arrow-size, 2.5));
+    $inline-offset: math.round(-$arrow-size - math.div($arrow-size, 2.5));
+    @include nb-ltr() {
+      right: $inline-offset;
+      transform: rotate(90deg);
+    }
+    @include nb-rtl() {
+      left: $inline-offset;
+      transform: rotate(270deg);
+    }
     top: $arrow-size;
-    transform: rotate(90deg);
   }
 }
 
@@ -141,16 +158,52 @@ $arrow-size: 6px;
 
 :host(.end-top) {
   .arrow {
-    left: calc(-#{$arrow-size} - #{$arrow-size} / 2.5);
+    $inline-offset: calc(-#{$arrow-size} - #{$arrow-size} / 2.5);
+    @include nb-ltr() {
+      left: $inline-offset;
+      transform: rotate(270deg);
+    }
+    @include nb-rtl() {
+      right: $inline-offset;
+      transform: rotate(90deg);
+    }
     bottom: $arrow-size;
-    transform: rotate(270deg);
   }
 }
 
 :host(.end-bottom) {
   .arrow {
-    left: calc(-#{$arrow-size} - #{$arrow-size} / 2.5);
+    $inline-offset: calc(-#{$arrow-size} - #{$arrow-size} / 2.5);
+    @include nb-ltr() {
+      left: $inline-offset;
+      transform: rotate(270deg);
+    }
+    @include nb-rtl() {
+      right: $inline-offset;
+      transform: rotate(90deg);
+    }
     top: $arrow-size;
-    transform: rotate(270deg);
+  }
+}
+
+// Fades in when shown and out when hidden.
+:host(.nb-tooltip-enter) {
+  animation: nb-tooltip-fade 100ms linear;
+}
+
+:host(.nb-tooltip-leave) {
+  animation: nb-tooltip-fade 100ms linear reverse forwards;
+}
+
+@keyframes nb-tooltip-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :host(.nb-tooltip-enter),
+  :host(.nb-tooltip-leave) {
+    animation: none;
   }
 }

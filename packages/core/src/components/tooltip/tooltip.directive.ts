@@ -1,37 +1,47 @@
-/*
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 import {
   AfterViewInit,
+  computed,
+  DestroyRef,
   Directive,
   ElementRef,
-  Input,
+  inject,
+  input,
   OnChanges,
   OnDestroy,
   OnInit,
-  Output,
-  EventEmitter,
+  output,
+  TemplateRef,
 } from '@angular/core';
-import { skip, takeUntil } from 'rxjs/operators';
-import { Subject } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { skip } from 'rxjs/operators';
 
-import { NbComponentOrCustomStatus } from '../component-status';
-import { NbAdjustment, NbPosition, NbPositionValues, NbAdjustmentValues } from '../cdk/overlay/overlay-position';
-import { NbTrigger } from '../cdk/overlay/overlay-trigger';
-import { NbDynamicOverlay } from '../cdk/overlay/dynamic/dynamic-overlay';
-import { NbDynamicOverlayHandler } from '../cdk/overlay/dynamic/dynamic-overlay-handler';
-import { NbOverlayConfig } from '../cdk/overlay/mapping';
+import { NbComponentOrCustomStatus } from '@liquid-js/lyr-core/base';
+import { NbAdjustment, NbPosition, NbPositionValues, NbAdjustmentValues } from '@liquid-js/lyr-core/cdk';
+import { NbTrigger, NbTriggerValues } from '@liquid-js/lyr-core/cdk';
+import { NbDynamicOverlay } from '@liquid-js/lyr-core/cdk';
+import { NbDynamicOverlayHandler, nbCreateDynamicOverlayHandler } from '@liquid-js/lyr-core/cdk';
+import { NbOverlayConfig } from '@liquid-js/lyr-core/cdk';
 import { NbTooltipComponent } from './tooltip.component';
-import { NbIconConfig } from '../icon/icon.component';
+import { NbIconConfig } from '@liquid-js/lyr-core/icon';
+import { NbValidationDirective } from '@liquid-js/lyr-core/validation';
+import { ɵconvertToBoolProperty as convertToBoolProperty, NbBooleanInput } from '@liquid-js/lyr-core/base';
+
+let lastTooltipId = 0;
 
 /**
- *
- * Tooltip directive for small text/icon hints.
+ * Shows a short hint, text and/or an icon, beside its host element.
  *
  * ### Installation
+ *
+ * Import `NbTooltipDirective` into your standalone component:
+ * ```ts
+ * @Component({
+ *   imports: [NbTooltipDirective],
+ * })
+ * export class PageComponent { }
+ * ```
+ *
+ * With NgModules:
  *
  * Import `NbTooltipModule` to your feature module.
  * ```ts
@@ -47,127 +57,127 @@ import { NbIconConfig } from '../icon/icon.component';
  *
  * @stacked-example(Showcase, tooltip/tooltip-showcase.component)
  *
- * Tooltip can accept a hint text and/or an icon:
+ * `nbTooltipIcon` adds an icon before the text, or stands alone:
  * @stacked-example(With Icon, tooltip/tooltip-with-icon.component)
  *
- * Same way as Popover, tooltip can accept placement position with `nbTooltipPlacement` property:
+ * `nbTooltipPlacement` places it on a side of the host, as a popover's does:
  * @stacked-example(Placements, tooltip/tooltip-placements.component)
  *
- * It is also possible to specify tooltip color using `nbTooltipStatus` property:
+ * A template shows richer content, such as a few lines or a keyboard shortcut. `nbTooltipContext` is the template's
+ * `$implicit` context. Keep it to text and icons: a tooltip can't be reached with the keyboard, so it must not hold
+ * links or buttons (use a popover for those).
+ *
+ * ```html
+ * <button nbButton [nbTooltip]="shortcut" [nbTooltipContext]="'S'">Save</button>
+ * <ng-template #shortcut let-key>Save the draft <kbd>Ctrl+{{ key }}</kbd></ng-template>
+ * ```
+ *
+ * @stacked-example(Template content, tooltip/tooltip-template.component)
+ *
+ * `nbTooltipStatus` colours it:
  * @stacked-example(Colored Tooltips, tooltip/tooltip-colors.component)
  *
- * Tooltip has a number of triggers which provides an ability to show and hide the component in different ways:
+ * While it shows, the tooltip describes its host element (`aria-describedby`), so assistive technologies read it.
  *
- * - Click mode shows the component when a user clicks on the host element and hides when the user clicks
- * somewhere on the document outside the component.
- * - Hint provides capability to show the component when the user hovers over the host element
- * and hide when the user hovers out of the host.
- * - Hover works like hint mode with one exception - when the user moves mouse from host element to
- * the container element the component remains open, so that it is possible to interact with it content.
- * - Focus mode is applied when user focuses the element.
- * - Noop mode - the component won't react to the user interaction.
+ * `nbTooltipTrigger` sets what shows and hides it:
+ *
+ * - `hint` (default) shows it while the mouse is over the host or the keyboard focus is in it, and hides it on
+ * Escape.
+ * - `hover` is `hint` for the mouse only, and keeps the tooltip open while the mouse moves into it.
+ * - `click` shows it on a click on the host and hides it on a click anywhere else, and on Escape.
+ * - `focus` shows it while the focus is in the host, and hides it on a click outside.
+ * - `noop` leaves it to `show()`, `hide()` and `toggle()`.
  */
 @Directive({
-    selector: '[nbTooltip]',
-    exportAs: 'nbTooltip',
-    providers: [NbDynamicOverlayHandler, NbDynamicOverlay],
-    standalone: false
+  selector: '[nbTooltip]',
+  exportAs: 'nbTooltip',
 })
 export class NbTooltipDirective implements OnInit, OnChanges, AfterViewInit, OnDestroy {
-  protected destroy$ = new Subject<void>();
+  protected readonly hostRef = inject(ElementRef);
+  protected readonly destroyRef = inject(DestroyRef);
+
   protected tooltipComponent = NbTooltipComponent;
-  protected dynamicOverlay: NbDynamicOverlay;
+  protected dynamicOverlay?: NbDynamicOverlay;
+  protected readonly tooltipId = `nb-tooltip-${lastTooltipId++}`;
+  // A host with `nbValidation` binds its own `aria-describedby`; the tooltip joins its descriptions.
+  protected readonly validation = inject(NbValidationDirective, { self: true, optional: true });
+  protected describing = false;
 
-  context: Object = {};
+  /** The hint: text, or a template. Without text or an icon the tooltip doesn't show. */
+  readonly content = input<string | TemplateRef<unknown>>(undefined, { alias: 'nbTooltip' });
+
+  /** The `$implicit` context of a template in `nbTooltip`. */
+  readonly templateContext = input<unknown>(undefined, { alias: 'nbTooltipContext' });
 
   /**
-   * Tooltip message
+   * The side of the host the tooltip opens on: `top` (default), `bottom`, `left`, `right`, `start` or `end`, or a
+   * corner such as `top-start` or `end-bottom`.
    */
-  @Input('nbTooltip')
-  content: string;
+  readonly position = input<NbPosition, NbPositionValues>(NbPosition.TOP, {
+    alias: 'nbTooltipPlacement',
+    transform: (value) => value as NbPosition,
+  });
 
   /**
-   * Position will be calculated relatively host element based on the position.
-   * Can be top, right, bottom, left, start or end.
+   * The order in which other sides are tried when the tooltip doesn't fit the viewport: `clockwise` (default),
+   * `counterclockwise`, `vertical`, `horizontal`, or `noop` to keep the placement.
    */
-  // eslint-disable-next-line @angular-eslint/no-input-rename
-  @Input('nbTooltipPlacement')
-  position: NbPosition = NbPosition.TOP;
-  static ngAcceptInputType_position: NbPositionValues;
+  readonly adjustment = input<NbAdjustment, NbAdjustmentValues>(NbAdjustment.CLOCKWISE, {
+    alias: 'nbTooltipAdjustment',
+    transform: (value) => value as NbAdjustment,
+  });
 
-  /**
-   * Container position will change automatically based on this strategy if container can't fit view port.
-   * Set this property to `noop` value if you want to disable automatic adjustment.
-   * Available values: `clockwise` (default), `counterclockwise`, `vertical`, `horizontal`, `noop`.
-   */
-  @Input('nbTooltipAdjustment')
-  get adjustment(): NbAdjustment {
-    return this._adjustment;
-  }
-  set adjustment(value: NbAdjustment) {
-    this._adjustment = value;
-  }
-  protected _adjustment: NbAdjustment = NbAdjustment.CLOCKWISE;
-  static ngAcceptInputType_adjustment: NbAdjustmentValues;
+  /** A class for the overlay pane. */
+  readonly tooltipClass = input('', { alias: 'nbTooltipClass' });
 
-  @Input('nbTooltipClass')
-  get tooltipClass(): string {
-    return this._tooltipClass;
-  }
-  set tooltipClass(value: string) {
-    if (value !== this.tooltipClass) {
-      this._tooltipClass = value;
-      this.overlayConfig = { panelClass: this.tooltipClass };
-    }
-  }
-  _tooltipClass: string = '';
+  /** An icon before the text: its name, or an `NbIconConfig` with its pack, status or options. */
+  readonly icon = input<string | NbIconConfig>(undefined, { alias: 'nbTooltipIcon' });
 
-  /**
-   * Accepts icon name or icon config object
-   * @param {string | NbIconConfig} icon name or config object
-   */
-  @Input('nbTooltipIcon')
-  set icon(icon: string | NbIconConfig) {
-    this.context = Object.assign(this.context, { icon });
-  }
+  /** Colours the tooltip: `basic`, `primary`, `success`, `info`, `warning`, `danger` or `control`. */
+  readonly status = input<NbComponentOrCustomStatus>(undefined, { alias: 'nbTooltipStatus' });
 
-  /**
-   *
-   * @param {string} status
-   */
-  @Input('nbTooltipStatus')
-  set status(status: NbComponentOrCustomStatus) {
-    this.context = Object.assign(this.context, { status });
-  }
+  /** What shows and hides the tooltip: `hint` (default), `hover`, `click`, `focus` or `noop`. */
+  readonly trigger = input<NbTrigger, NbTriggerValues>(NbTrigger.HINT, {
+    alias: 'nbTooltipTrigger',
+    transform: (value) => value as NbTrigger,
+  });
 
-  /**
-   * Describes when the container will be shown.
-   * Available options: `click`, `hover`, `hint`, `focus` and `noop`
-   * */
-  @Input('nbTooltipTrigger')
-  trigger: NbTrigger = NbTrigger.HINT;
+  /** The distance from the host, in pixels; read once, when the directive initialises. */
+  readonly offset = input(8, { alias: 'nbTooltipOffset' });
 
-  /**
-   * Determines tooltip overlay offset (in pixels).
-   **/
-  @Input('nbTooltipOffset') offset = 8;
+  /** Keeps the tooltip closed. */
+  readonly disabled = input<boolean, NbBooleanInput>(false, {
+    alias: 'nbTooltipDisabled',
+    transform: convertToBoolProperty,
+  });
 
-  /** Disables the display of the tooltip. */
-  @Input('nbTooltipDisabled') disabled: boolean = false;
+  /** Emits when the tooltip opens or closes, after the view initialises. */
+  readonly nbTooltipShowStateChange = output<{ isShown: boolean }>();
 
-  @Output()
-  nbTooltipShowStateChange = new EventEmitter<{ isShown: boolean }>();
+  /** The context the tooltip renders its icon, status and template with. */
+  readonly context = computed(() => {
+    const icon = this.icon();
+    const status = this.status();
+    const templateContext = this.templateContext();
+    return {
+      id: this.tooltipId,
+      ...(icon !== undefined && { icon }),
+      ...(status !== undefined && { status }),
+      ...(templateContext !== undefined && { templateContext }),
+    };
+  });
 
-  protected overlayConfig: NbOverlayConfig = { panelClass: this.tooltipClass };
+  protected readonly overlayConfig = computed<NbOverlayConfig>(() => ({ panelClass: this.tooltipClass() }));
 
   get isShown(): boolean {
     return !!(this.dynamicOverlay && this.dynamicOverlay.isAttached);
   }
 
-  constructor(protected hostRef: ElementRef, protected dynamicOverlayHandler: NbDynamicOverlayHandler) {}
+  protected readonly dynamicOverlayHandler =
+    inject(NbDynamicOverlayHandler, { optional: true, self: true }) ?? nbCreateDynamicOverlayHandler();
 
   ngOnInit() {
-    this.dynamicOverlayHandler.host(this.hostRef).componentType(this.tooltipComponent).offset(this.offset);
+    this.dynamicOverlayHandler.host(this.hostRef).componentType(this.tooltipComponent).offset(this.offset());
   }
 
   ngOnChanges() {
@@ -178,40 +188,78 @@ export class NbTooltipDirective implements OnInit, OnChanges, AfterViewInit, OnD
     this.dynamicOverlay = this.configureDynamicOverlay().build();
 
     this.dynamicOverlay.isShown
-      .pipe(skip(1), takeUntil(this.destroy$))
+      .pipe(skip(1), takeUntilDestroyed(this.destroyRef))
       .subscribe((isShown: boolean) => this.nbTooltipShowStateChange.emit({ isShown }));
+    this.dynamicOverlay.isShown
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((isShown: boolean) => this.describeHost(isShown));
   }
 
+  /** Applies settings changed in code; bindings apply on their own. */
   rebuild() {
     this.dynamicOverlay = this.configureDynamicOverlay().rebuild();
   }
 
   show() {
-    this.dynamicOverlay.show();
+    this.builtOverlay().show();
   }
 
   hide() {
-    this.dynamicOverlay.hide();
+    this.builtOverlay().hide();
   }
 
   toggle() {
-    this.dynamicOverlay.toggle();
+    this.builtOverlay().toggle();
   }
 
   ngOnDestroy() {
+    this.describeHost(false);
     this.dynamicOverlayHandler.destroy();
-    this.destroy$.next();
-    this.destroy$.complete();
+  }
+
+  /** Adds the shown tooltip to the host's `aria-describedby`, or takes it away. */
+  protected describeHost(describe: boolean) {
+    if (describe === this.describing) {
+      return;
+    }
+    this.describing = describe;
+    if (this.validation) {
+      if (describe) {
+        this.validation.addDescription(this.tooltipId);
+      } else {
+        this.validation.removeDescription(this.tooltipId);
+      }
+      return;
+    }
+    const host: HTMLElement = this.hostRef.nativeElement;
+    const ids = (host.getAttribute('aria-describedby') ?? '').split(/\s+/).filter((id) => id && id !== this.tooltipId);
+    if (describe) {
+      ids.push(this.tooltipId);
+    }
+    if (ids.length) {
+      host.setAttribute('aria-describedby', ids.join(' '));
+    } else {
+      host.removeAttribute('aria-describedby');
+    }
+  }
+
+  private builtOverlay(): NbDynamicOverlay {
+    if (!this.dynamicOverlay) {
+      throw new Error('NbTooltipDirective: the tooltip is built once the view initialises.');
+    }
+    return this.dynamicOverlay;
   }
 
   protected configureDynamicOverlay() {
+    const content = this.content();
     return this.dynamicOverlayHandler
-      .position(this.position)
-      .trigger(this.trigger)
-      .disabled(this.disabled)
-      .adjustment(this.adjustment)
-      .content(this.content)
-      .context(this.context)
-      .overlayConfig(this.overlayConfig);
+      .position(this.position())
+      .trigger(this.trigger())
+      // Without text or an icon the tooltip would be an empty bubble.
+      .disabled(this.disabled() || ((content == null || content === '') && !this.icon()))
+      .adjustment(this.adjustment())
+      .content(content)
+      .context(this.context())
+      .overlayConfig(this.overlayConfig());
   }
 }
