@@ -1,0 +1,104 @@
+:host {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  cursor: pointer;
+
+  &.disabled {
+    cursor: default;
+  }
+}
+
+.prompt {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.file-list,
+.file {
+  // A field's text, not the global list typography.
+  color: inherit;
+  font: inherit;
+}
+
+.file-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.file {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+// The size goes under the name, so the name keeps the width beside the remove button.
+.file-info {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.file-name,
+.file-size {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.drop-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: inherit;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 150ms ease-out;
+}
+
+:host(.drag-over) .drop-overlay {
+  opacity: 1;
+}
+
+// The overlay is only tinted, so the content under it is hidden while files are dragged over.
+:host(.drag-over) > :not(.drop-overlay) {
+  visibility: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .drop-overlay {
+    transition: none;
+  }
+}
+
+// Like the select's toggle: a bare icon at the end of the field, at the same size and inset.
+.file-remove {
+  display: flex;
+  flex-shrink: 0;
+  // The icon sits where a select's toggle does: 0.2em of its 1.5em from the edge. The padding gives the hover and focus
+  // background room; the negative margin keeps the icon in place and the row as tall as the text.
+  margin-block: -0.15em;
+  margin-inline: 0 0.15em;
+  padding: 0.15em;
+  border: 0;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+  outline: none;
+
+  nb-icon {
+    font-size: 1.5em;
+  }
+
+  &:disabled {
+    cursor: default;
+  }
+}

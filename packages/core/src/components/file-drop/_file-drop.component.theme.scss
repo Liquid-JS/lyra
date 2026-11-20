@@ -1,0 +1,164 @@
+@use '../../styles/theming' as *;
+
+@mixin nb-file-drop-theme() {
+  nb-file-drop {
+    border-style: nb-theme(file-drop-border-style);
+    border-width: nb-theme(file-drop-border-width);
+    // Files read like a field's value and the prompt like its placeholder.
+    font-family: nb-theme(input-text-font-family);
+
+    // Animates like an input once rendered, see enableTransitionsAfterRender.
+    &.nb-transition {
+      @include nb-component-animation(border-color, background-color, color);
+
+      .file-remove {
+        @include nb-component-animation(background-color, color, box-shadow);
+      }
+    }
+
+    .prompt {
+      font-family: nb-theme(input-placeholder-text-font-family);
+    }
+
+    .file-list {
+      display: flex;
+      flex-direction: column;
+    }
+
+    // Like other fields: sized by size, capped by the size's max width, filling the container with fullWidth.
+    @each $size in nb-get-sizes() {
+      &.size-#{$size} {
+        width: nb-theme(input-#{$size}-width);
+        max-width: nb-theme(input-#{$size}-max-width);
+        gap: nb-theme(file-drop-#{$size}-gap);
+        min-height: nb-theme(file-drop-#{$size}-min-height);
+        padding: nb-theme(file-drop-#{$size}-padding);
+        // Its content starts where a field's text does.
+        padding-inline: nb-theme(input-#{$size}-padding);
+        font-size: nb-theme(input-#{$size}-text-font-size);
+        font-weight: nb-theme(input-#{$size}-text-font-weight);
+        line-height: nb-theme(input-#{$size}-text-line-height);
+
+        .prompt {
+          gap: calc(#{nb-theme(file-drop-#{$size}-gap)} * 0.5);
+          font-size: nb-theme(input-#{$size}-placeholder-text-font-size);
+          font-weight: nb-theme(input-#{$size}-placeholder-text-font-weight);
+          line-height: nb-theme(input-#{$size}-placeholder-text-line-height);
+
+          nb-icon {
+            font-size: nb-theme(file-drop-#{$size}-icon-size);
+          }
+        }
+
+        .file-list {
+          gap: calc(#{nb-theme(file-drop-#{$size}-gap)} * 0.5);
+        }
+
+        .file-size {
+          font-family: nb-theme(input-placeholder-text-font-family);
+          font-size: nb-theme(input-#{$size}-placeholder-text-font-size);
+          font-weight: nb-theme(input-#{$size}-placeholder-text-font-weight);
+          line-height: nb-theme(input-#{$size}-placeholder-text-line-height);
+        }
+      }
+    }
+
+    &.full-width {
+      width: 100%;
+      max-width: none;
+    }
+
+    // With the default list, the remove buttons sit where a select's toggle does.
+    &.has-file-list {
+      padding-inline-end: 0;
+    }
+
+    // At rest a remove button is a bare icon, like a select's toggle. Under the pointer and with keyboard focus it
+    // looks like a ghost danger button, so it's clear what has focus and that removing is destructive.
+    .file-remove {
+      border-radius: nb-theme(file-drop-remove-border-radius);
+
+      &:enabled:hover {
+        background-color: nb-theme(file-drop-remove-hover-background-color);
+        color: nb-theme(file-drop-remove-highlight-color);
+      }
+
+      &:enabled:focus-visible {
+        background-color: nb-theme(file-drop-remove-focus-background-color);
+        color: nb-theme(file-drop-remove-highlight-color);
+        @include nb-outline(nb-theme(file-drop-remove-outline-width), nb-theme(file-drop-remove-outline-color));
+      }
+
+      &:enabled:active {
+        background-color: nb-theme(file-drop-remove-active-background-color);
+        color: nb-theme(file-drop-remove-highlight-color);
+      }
+    }
+
+    .drop-overlay {
+      background-color: nb-theme(file-drop-drag-background-color);
+      color: nb-theme(file-drop-drag-text-color);
+    }
+
+    &.drag-over {
+      border-color: nb-theme(file-drop-drag-border-color);
+    }
+
+    @each $shape in nb-get-shapes() {
+      &.shape-#{$shape} {
+        border-radius: nb-theme(input-#{$shape}-border-radius);
+      }
+    }
+
+    @each $status in nb-get-statuses() {
+      &.status-#{$status} {
+        background-color: nb-theme(input-#{$status}-background-color);
+        border-color: nb-theme(input-#{$status}-border-color);
+        color: nb-theme(input-#{$status}-text-color);
+
+        .prompt,
+        .file-size {
+          color: nb-theme(input-#{$status}-placeholder-text-color);
+        }
+
+        .file-remove {
+          color: nb-theme(select-outline-#{$status}-icon-color);
+        }
+
+        &:hover {
+          background-color: nb-theme(input-#{$status}-hover-background-color);
+          border-color: nb-theme(input-#{$status}-hover-border-color);
+        }
+
+        &.focused {
+          background-color: nb-theme(input-#{$status}-focus-background-color);
+          border-color: nb-theme(input-#{$status}-focus-border-color);
+        }
+
+        &.focused:hover {
+          background-color: nb-theme(input-#{$status}-focus-and-hover-background-color);
+          border-color: nb-theme(input-#{$status}-focus-and-hover-border-color);
+        }
+
+        &.disabled {
+          background-color: nb-theme(input-#{$status}-disabled-background-color);
+          border-color: nb-theme(input-#{$status}-disabled-border-color);
+          color: nb-theme(input-#{$status}-disabled-text-color);
+
+          .prompt,
+          .file-size {
+            color: nb-theme(input-#{$status}-disabled-placeholder-text-color);
+          }
+
+          .file-remove {
+            color: nb-theme(select-outline-#{$status}-disabled-icon-color);
+          }
+        }
+
+        &.drag-over {
+          border-color: nb-theme(file-drop-drag-border-color);
+        }
+      }
+    }
+  }
+}

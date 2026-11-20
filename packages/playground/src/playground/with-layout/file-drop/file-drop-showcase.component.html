@@ -1,0 +1,13 @@
+<nb-card>
+  <nb-card-body>
+    <label class="label"
+      for="file-drop-attachment">Attachment</label>
+    <nb-file-drop fullWidth
+      id="file-drop-attachment"
+      accept="image/*,.pdf"
+      [formControl]="attachment"
+      nbValidation
+      #validation="nbValidation" />
+    <nb-validation-errors [for]="validation" />
+  </nb-card-body>
+</nb-card>
