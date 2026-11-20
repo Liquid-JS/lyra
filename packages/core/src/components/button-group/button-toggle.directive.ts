@@ -1,151 +1,82 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
+import { Directive, inject, input, linkedSignal, output } from '@angular/core';
 
-import {
-  ChangeDetectorRef,
-  Directive,
-  ElementRef,
-  EventEmitter,
-  HostBinding,
-  HostListener,
-  Inject,
-  Input,
-  NgZone,
-  Optional,
-  Output,
-  Renderer2,
-} from '@angular/core';
-import { Observable, Subject } from 'rxjs';
-
-import { NbStatusService } from '../../services/status.service';
-import { convertToBoolProperty, NbBooleanInput } from '../helpers';
-import { NbButton, NbButtonAppearance } from '../button/base-button';
+import { ɵconvertToBoolProperty as convertToBoolProperty, NbBooleanInput } from '@liquid-js/lyr-core/base';
+import { NbButton } from '../button/base-button';
+import type { NbButtonAppearance } from '@liquid-js/lyr-core/base';
 import { NB_BUTTON_GROUP } from './button-group-injection-tokens';
+import type { NbButtonToggleAppearance } from '@liquid-js/lyr-core/base';
 
-export type NbButtonToggleAppearance = Exclude<NbButtonAppearance, 'hero'>;
-
-export interface NbButtonToggleChange {
-  source: NbButtonToggleDirective;
-  pressed: boolean;
-}
+const toggleStatuses = ['primary', 'success', 'info', 'warning', 'danger', 'control'];
 
 /**
- * `[nbButtonToggle]` is a directive to add a `pressed` state to a button.
+ * A button with a pressed state, `aria-pressed` for assistive technologies. It's `basic` until pressed, then in its
+ * status, or `primary` for a `basic` one. In an `nb-button-group` without `multiple` a click doesn't unpress it, as
+ * with radio buttons.
  */
 @Directive({
-    selector: 'button[nbButtonToggle]',
-    providers: [{ provide: NbButton, useExisting: NbButtonToggleDirective }],
-    exportAs: 'nbButtonToggle',
-    standalone: false
+  selector: 'button[nbButtonToggle]',
+  providers: [{ provide: NbButton, useExisting: NbButtonToggleDirective }],
+  exportAs: 'nbButtonToggle',
+  host: {
+    '[attr.aria-pressed]': 'isPressed()',
+    '(click)': 'onClick()',
+  },
 })
-export class NbButtonToggleDirective extends NbButton {
-  protected readonly _pressedChange$ = new Subject<NbButtonToggleChange>();
+export class NbButtonToggleDirective<T = unknown> extends NbButton<NbButtonToggleAppearance> {
+  protected readonly buttonGroup = inject(NB_BUTTON_GROUP, { optional: true });
 
-  get pressedChange$(): Observable<NbButtonToggleChange> {
-    return this._pressedChange$.asObservable();
+  /** The buttons' default appearance, but `filled` for `hero`, which toggles don't have. */
+  protected override defaultAppearance(appearance?: NbButtonAppearance): NbButtonToggleAppearance {
+    return appearance && appearance !== 'hero' ? appearance : 'filled';
   }
 
-  @Input() appearance: NbButtonToggleAppearance = 'filled';
-
   /**
-   * A value associated with the button.
+   * Value the button group emits in `valueChange` while the toggle is pressed.
    */
-  @Input() value: any;
+  readonly value = input<T>();
 
   /**
-   * Controls button pressed state
-   **/
-  @Input()
-  @HostBinding('attr.aria-pressed')
-  get pressed(): boolean {
-    return this._pressed;
-  }
-  set pressed(value: boolean) {
-    if (this.pressed !== convertToBoolProperty(value)) {
-      this._pressed = !this.pressed;
-      this.pressedChange.emit(this.pressed);
-      this._pressedChange$.next({ source: this, pressed: this.pressed });
-    }
-  }
-  protected _pressed: boolean = false;
-  static ngAcceptInputType_pressed: NbBooleanInput;
-
-  /**
-   * Emits whenever button pressed state change
-   **/
-  @Output() readonly pressedChange = new EventEmitter<boolean>();
-
-  @HostBinding('class.status-basic')
-  get basic(): boolean {
-    // By design, all toggle buttons should have a `basic` status when not pressed.
-    return !this.pressed;
-  }
-
-  @HostBinding('class.status-primary')
-  get primary(): boolean {
-    return this.pressed && (this.status === 'basic' || this.status === 'primary');
-  }
-
-  @HostBinding('class.status-success')
-  get success(): boolean {
-    return this.pressed && this.status === 'success';
-  }
-
-  @HostBinding('class.status-info')
-  get info(): boolean {
-    return this.pressed && this.status === 'info';
-  }
-
-  @HostBinding('class.status-warning')
-  get warning(): boolean {
-    return this.pressed && this.status === 'warning';
-  }
-
-  @HostBinding('class.status-danger')
-  get danger(): boolean {
-    return this.pressed && this.status === 'danger';
-  }
-
-  @HostBinding('class.status-control')
-  get control(): boolean {
-    return this.pressed && this.status === 'control';
-  }
-
-  @HostBinding('class')
-  get additionalClasses(): string[] {
-    if (this.statusService.isCustomStatus(this.status)) {
-      return [this.statusService.getStatusClass(this.status)];
-    }
-    return [];
-  }
-
-  @HostListener('click')
-  onClick(): void {
-    // Don't remove the pressed state of the button in single-toggle button-groups
-    if (this.buttonGroup?.multiple || !this.pressed) {
-      this.pressed = !this.pressed;
-    }
-  }
-
-  constructor(
-    protected renderer: Renderer2,
-    protected hostElement: ElementRef<HTMLElement>,
-    protected cd: ChangeDetectorRef,
-    protected zone: NgZone,
-    protected statusService: NbStatusService,
-    @Optional() @Inject(NB_BUTTON_GROUP) protected buttonGroup?,
-  ) {
-    super(renderer, hostElement, cd, zone, statusService);
-  }
-
-  /**
-   * @docs-private
+   * Whether the button is pressed. Supports two-way binding with `[(pressed)]`.
    */
-  _updatePressed(value: boolean) {
-    this.pressed = value;
-    this.cd.markForCheck();
+  readonly pressed = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
+
+  /**
+   * Emits when a click or the button group changes the pressed state.
+   */
+  readonly pressedChange = output<boolean>();
+
+  /**
+   * The current pressed state: the `pressed` input, until a click or the button group changes it.
+   */
+  readonly isPressed = linkedSignal(() => this.pressed());
+
+  protected override statusClasses() {
+    const status = this.properties().status;
+    // A toggle is `basic` until pressed, and a `basic` one is `primary` when pressed.
+    const pressedStatus = status === 'basic' ? 'primary' : status;
+    return [
+      !this.isPressed() ? 'status-basic' : toggleStatuses.includes(pressedStatus) ? `status-${pressedStatus}` : undefined,
+      // `success` isn't one of the status service's core statuses, so check the toggle's own list first.
+      !toggleStatuses.includes(status) && this.statusService.isCustomStatus(status)
+        ? this.statusService.getStatusClass(status)
+        : undefined,
+    ];
+  }
+
+  onClick() {
+    // In a group without `multiple` a click doesn't unpress the toggle, as with radio buttons.
+    if (this.buttonGroup?.multiple() || !this.isPressed()) {
+      this.setPressed(!this.isPressed());
+    }
+  }
+
+  /**
+   * Sets the pressed state and emits `pressedChange` when it changes.
+   */
+  setPressed(pressed: boolean) {
+    if (this.isPressed() !== pressed) {
+      this.isPressed.set(pressed);
+      this.pressedChange.emit(pressed);
+    }
   }
 }

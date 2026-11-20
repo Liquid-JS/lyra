@@ -1,15 +1,9 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { Component } from '@angular/core';
+import { NbCardComponent, NbCardBodyComponent, NbButtonGroupComponent, NbButtonComponent } from '@liquid-js/lyr-core';
 
 @Component({
-    templateUrl: './button-group-statuses.component.html',
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  templateUrl: './button-group-statuses.component.html',
+  imports: [NbCardComponent, NbCardBodyComponent, NbButtonGroupComponent, NbButtonComponent],
 })
 export class ButtonGroupStatusesComponent {
 }

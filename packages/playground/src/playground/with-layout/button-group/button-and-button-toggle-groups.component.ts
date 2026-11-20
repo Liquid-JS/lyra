@@ -1,16 +1,22 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { Component } from '@angular/core';
+import {
+  NbCardComponent,
+  NbCardBodyComponent,
+  NbButtonGroupComponent,
+  NbButtonComponent,
+  NbButtonToggleDirective,
+} from '@liquid-js/lyr-core';
 
 @Component({
-    templateUrl: './button-and-button-toggle-groups.component.html',
-    styleUrls: ['./button-group-spacing.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  templateUrl: './button-and-button-toggle-groups.component.html',
+  styleUrls: ['./button-group-spacing.scss'],
+  imports: [
+    NbCardComponent,
+    NbCardBodyComponent,
+    NbButtonGroupComponent,
+    NbButtonComponent,
+    NbButtonToggleDirective,
+  ],
 })
 export class ButtonAndButtonToggleGroupsComponent {
 }

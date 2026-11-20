@@ -1,41 +1,74 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 import {
-  AfterContentInit,
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
   Component,
-  ContentChildren,
-  EventEmitter,
-  HostBinding,
-  Input,
-  OnChanges,
-  Output,
-  QueryList,
-  SimpleChanges,
+  computed,
+  contentChildren,
+  DestroyRef,
+  effect,
+  ElementRef,
+  forwardRef,
+  inject,
+  input,
+  linkedSignal,
+  output,
+  PLATFORM_ID,
+  untracked,
 } from '@angular/core';
-import { from, merge, Observable, Subject } from 'rxjs';
-import { debounceTime, filter, startWith, switchMap, takeUntil } from 'rxjs/operators';
+import { isPlatformBrowser } from '@angular/common';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { fromEvent, merge } from 'rxjs';
+import { filter, switchMap } from 'rxjs/operators';
+import { NB_DOCUMENT } from '@liquid-js/lyr-core/base';
 
-import { NbStatusService } from '../../services/status.service';
-import { convertToBoolProperty, NbBooleanInput } from '../helpers';
-import { NbComponentSize } from '../component-size';
-import { NbComponentShape } from '../component-shape';
-import { NbComponentOrCustomStatus } from '../component-status';
-import { NbButton } from '../button/base-button';
-import { NbButtonToggleAppearance, NbButtonToggleChange, NbButtonToggleDirective } from './button-toggle.directive';
+import { injectNbDefaults } from '@liquid-js/lyr-core/base';
+import { NbStatusService } from '@liquid-js/lyr-core/base';
+import { ɵconvertToBoolProperty as convertToBoolProperty, NbBooleanInput } from '@liquid-js/lyr-core/base';
+import { NbComponentSize } from '@liquid-js/lyr-core/base';
+import { NbComponentShape } from '@liquid-js/lyr-core/base';
+import { NbComponentOrCustomStatus } from '@liquid-js/lyr-core/base';
+import { NbButtonProperties } from '../button/base-button';
+import { NbButtonToggleDirective } from './button-toggle.directive';
+import type { NbButtonToggleAppearance } from '@liquid-js/lyr-core/base';
+
 import { NB_BUTTON_GROUP } from './button-group-injection-tokens';
 
+// The value a group starts with, until it or the app sets one.
+const NO_VALUE = Symbol('no value');
+
 /**
- * `<nb-button-group>` visually groups buttons together and allow to control buttons properties and the state as a
- * group.
+ * Whether a group's `multiple` isn't given. Angular's template type checker doesn't apply a type parameter's default:
+ * without a `multiple` binding it infers `M` as its whole constraint (or `any`), which no binding gives.
+ */
+type NbButtonGroupMultipleUnset<M> = 0 extends 1 & M ? true : [NbBooleanInput] extends [M] ? true : false;
+
+/**
+ * A button group's value, for toggles of value `T` and a `multiple` of `M`, as a select's: the pressed toggle's value,
+ * or `null` when none is pressed; with `multiple` (`true`, `''` or `'true'`), the values of all pressed toggles.
+ */
+export type NbButtonGroupValue<T, M extends NbBooleanInput = NbBooleanInput> =
+  NbButtonGroupMultipleUnset<M> extends true ? T | null : M extends true | '' | 'true' ? T[] : T | null;
+
+// The values a group's value holds.
+function valuesOf<T>(value: T | T[] | null | undefined): T[] {
+  return Array.isArray(value) ? value : value == null ? [] : [value];
+}
+
+/**
+ * Groups buttons into one strip, and sets their appearance, size, shape, status and disabled state as a group.
+ *
  * @stacked-example(Button Group Showcase, button-group/button-group-showcase.component)
  *
  * ### Installation
+ *
+ * Import `NbButtonGroupComponent`, `NbButtonToggleDirective` into your standalone component:
+ * ```ts
+ * @Component({
+ *   imports: [NbButtonGroupComponent, NbButtonToggleDirective],
+ * })
+ * export class PageComponent { }
+ * ```
+ *
+ * With NgModules:
  *
  * Import `NbButtonGroupModule` to your feature module.
  * ```ts
@@ -50,24 +83,24 @@ import { NB_BUTTON_GROUP } from './button-group-injection-tokens';
  *
  * ### Usage
  *
- * You can use `<nb-button-group>` to group a series of `[nbButton]` or `[nbButtonToggle]` components.
+ * A group holds `[nbButton]`s or `[nbButtonToggle]`s.
  * @stacked-example(Button and Button Toggle Groups, button-group/button-and-button-toggle-groups.component)
  *
- * For a group of multiple `[nbButtonToggle]` you also can control multi-selection behavior. By default, the group
- * component allows only one pressed button toggle at a time (similar to the radio group). To be able to keep multiple
- * toggles pressed, you need to add `multiple` attributes to the `<nb-button-toggle>`.
+ * By default only one toggle in a group is pressed at a time, as in a radio group, and clicking it again keeps it
+ * pressed. With `multiple` on the group any number of toggles stays pressed.
  * @stacked-example(Button Group Multiple, button-group/button-group-multiple.component)
  *
- * To know which buttons are currently pressed listen to `(valueChange)` on the `nb-button-group`. Event
- * contains an array of values of currently pressed button toggles. You can assign a value to the
- * `[nbButtonToggle]` via the `value` input.
+ * The group's value is the value of the pressed toggle, given to a toggle with its `value` input, or `null` when none
+ * is pressed; with `multiple`, it's the values of all pressed toggles, as a select's. Listen to `(valueChange)`, bind
+ * `value` both ways, e.g. `<nb-button-group [(value)]="track">`, to press toggles from the app too, or use the group
+ * in a form, as a radio group, with `formControl`, `ngModel` or `formField`; the values have the type of what it's
+ * bound to.
  * @stacked-example(Button Group Value Change, button-group/button-group-value-change.component)
  *
- * To disable a group of buttons, add a `disabled` attribute to the `<nb-button-group>`.
+ * `disabled` on the group, or its form control, disables all its buttons.
  * @stacked-example(Button Group Disabled, button-group/button-group-disabled.component)
  *
- * The group component controls all visual attributes of buttons such as `appearance`, `status`, `size`, `shape`.
- * You can change it via the appropriate attributes.
+ * The group's `appearance`, `status`, `size` and `shape` replace those of its buttons.
  *
  * Button group appearances:
  * @stacked-example(Button Group Appearances, button-group/button-group-appearances.component)
@@ -98,214 +131,209 @@ import { NB_BUTTON_GROUP } from './button-group-injection-tokens';
  * button-group-filled-danger-divider-color:
  * button-group-filled-control-divider-color:
  * button-group-ghost-divider-color:
+ * button-group-separate-gap:
  **/
 @Component({
-    selector: 'nb-button-group',
-    template: ` <ng-content></ng-content> `,
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    providers: [{ provide: NB_BUTTON_GROUP, useExisting: NbButtonGroupComponent }],
-    standalone: false
+  selector: 'nb-button-group',
+  template: ` <ng-content /> `,
+  providers: [
+    { provide: NB_BUTTON_GROUP, useExisting: NbButtonGroupComponent },
+    { provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => NbButtonGroupComponent), multi: true },
+  ],
+  host: {
+    role: 'group',
+    '[class]': 'customStatusClass()',
+    '[class.separate]': 'separate()',
+  },
 })
-export class NbButtonGroupComponent implements OnChanges, AfterContentInit {
-  protected lastEmittedValue: any[] = [];
+export class NbButtonGroupComponent<T = unknown, M extends NbBooleanInput = NbBooleanInput>
+implements ControlValueAccessor {
+  // The app's defaults for this type, which the inputs below start from.
+  protected readonly nbDefaults = injectNbDefaults('buttonGroup');
 
-  protected readonly destroy$: Subject<void> = new Subject<void>();
-  protected readonly buttonsChange$ = new Subject<NbButton[]>();
+  protected readonly statusService = inject(NbStatusService);
 
-  @ContentChildren(NbButton) readonly buttons: QueryList<NbButton>;
-
-  /**
-   * Button group size, available sizes:
-   * `tiny`, `small`, `medium`, `large`, `giant`
-   */
-  @Input() size: NbComponentSize = 'medium';
+  // The toggles in a group carry values of the group's type.
+  protected readonly toggles = contentChildren<NbButtonToggleDirective<T>>(NbButtonToggleDirective);
 
   /**
-   * Button group status (adds specific styles):
-   * `basic`, `primary`, `info`, `success`, `warning`, `danger`, `control`
+   * Size of the buttons: `tiny`, `small`, `medium`, `large` or `giant`. Unset, it follows the app's default, or
+   * `medium`.
    */
-  @Input() status: NbComponentOrCustomStatus = 'basic';
+  readonly sizeInput = input<NbComponentSize | undefined>(undefined, { alias: 'size' });
+  /** The size in use: the input's, the app's default, or 'medium'. */
+  readonly size = linkedSignal<NbComponentSize>(() => this.sizeInput() ?? this.nbDefaults().size ?? 'medium');
 
   /**
-   * Button group shapes: `rectangle`, `round`, `semi-round`
+   * Status of the buttons: `basic` (default), `primary`, `info`, `success`, `warning`, `danger`, `control` or a
+   * custom one.
    */
-  @Input() shape: NbComponentShape = 'rectangle';
+  readonly status = input<NbComponentOrCustomStatus>('basic');
 
   /**
-   * Button group appearance: `filled`, `outline`, `ghost`
+   * Shape of the buttons: `rectangle`, `semi-round` or `round`. Unset, it follows the app's default, or `rectangle`.
    */
-  @Input() appearance: NbButtonToggleAppearance = 'filled';
+  readonly shapeInput = input<NbComponentShape | undefined>(undefined, { alias: 'shape' });
+  /** The shape in use: the input's, the app's default, or 'rectangle'. */
+  readonly shape = linkedSignal<NbComponentShape>(() => this.shapeInput() ?? this.nbDefaults().shape ?? 'rectangle');
 
-  @Input()
-  get disabled(): boolean {
-    return this._disabled;
-  }
-  set disabled(value: boolean) {
-    if (this.disabled !== convertToBoolProperty(value)) {
-      this._disabled = !this.disabled;
+  /**
+   * Appearance of the buttons: `filled`, `outline` or `ghost`. Unset, it follows the app's default, or `filled`.
+   */
+  readonly appearanceInput = input<NbButtonToggleAppearance | undefined>(undefined, { alias: 'appearance' });
+  /** The appearance in use: the input's, the app's default, or 'filled'. */
+  readonly appearance = linkedSignal<NbButtonToggleAppearance>(() => this.appearanceInput() ?? this.nbDefaults().appearance ?? 'filled');
+
+  /**
+   * Disables the buttons in the group; a form control's disabled state does too.
+   */
+  readonly disabled = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
+
+  /** Whether the buttons are disabled: the `disabled` input, or the form's disabled state, whichever changed last. */
+  readonly isDisabled = linkedSignal(() => this.disabled());
+
+  /**
+   * Keeps the buttons apart, each with its own corners and border, wrapping onto more rows as they need, e.g. for
+   * times to pick from; by default they're joined in one strip.
+   */
+  readonly separate = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
+
+  /**
+   * Lets any number of toggles stay pressed, and makes the value an array. Off by default: the toggle pressed last
+   * stays pressed, and clicking it again doesn't unpress it.
+   */
+  readonly multiple = input<boolean, M>(false, { transform: convertToBoolProperty });
+
+  /**
+   * Sets the `filled` appearance, over `appearance`.
+   */
+  readonly filled = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
+
+  /**
+   * Sets the `outline` appearance, over `appearance` and `filled`.
+   */
+  readonly outline = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
+
+  /**
+   * Sets the `ghost` appearance, over `appearance`, `filled` and `outline`.
+   */
+  readonly ghost = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
+
+  /**
+   * The value of the pressed toggle, or `null`; with `multiple`, the values of the pressed toggles. `valueChange`
+   * emits as they're pressed; set it, or bind it both ways with `[(value)]`, to press the toggles with those values.
+   */
+  readonly value = input<T | T[] | null>();
+  /** Emits the value after the change detection that pressed or unpressed a toggle, and only when it differs. */
+  readonly valueChange = output<NbButtonGroupValue<T, M>>();
+
+  // The value: the `value` input or the form's, whichever changed last, or the pressed toggles'.
+  protected readonly valueState = linkedSignal<T | T[] | null | undefined | typeof NO_VALUE>(() => {
+    const value = this.value();
+    return value === undefined ? NO_VALUE : value;
+  });
+
+  /**
+   * The properties the buttons in the group render with.
+   */
+  readonly buttonProperties = computed<NbButtonProperties>(() => ({
+    appearance: (this.ghost() && 'ghost') || (this.outline() && 'outline') || (this.filled() && 'filled') ||
+      this.appearance(),
+    size: this.size(),
+    shape: this.shape(),
+    status: this.status(),
+    disabled: this.isDisabled(),
+  }));
+
+  protected readonly customStatusClass = computed(() =>
+    this.statusService.isCustomStatus(this.status()) ? [this.statusService.getStatusClass(this.status())] : [],
+  );
+
+  // The value the group set itself, or the default it starts with; a value other than this came from the app.
+  protected ownValue: T | T[] | null | typeof NO_VALUE = NO_VALUE;
+
+  protected readonly hostElement = inject<ElementRef<HTMLElement>>(ElementRef);
+  protected readonly document = inject(NB_DOCUMENT);
+  protected onChange: (value: NbButtonGroupValue<T, M>) => void = () => {};
+  protected onTouched: () => void = () => {};
+
+  constructor() {
+    if (isPlatformBrowser(inject(PLATFORM_ID))) {
+      this.subscribeOnBlur();
     }
-  }
-  protected _disabled = false;
-  static ngAcceptInputType_disabled: NbBooleanInput;
 
-  /**
-   * Allows to keep multiple button toggles pressed. Off by default.
-   */
-  @Input()
-  get multiple(): boolean {
-    return this._multiple;
-  }
-  set multiple(value: boolean) {
-    this._multiple = convertToBoolProperty(value);
-  }
-  protected _multiple: boolean = false;
-  static ngAcceptInputType_multiple: NbBooleanInput;
-
-  /**
-   * Sets `filled` appearance
-   */
-  @Input()
-  get filled(): boolean {
-    return this.appearance === 'filled';
-  }
-  set filled(value: boolean) {
-    if (convertToBoolProperty(value)) {
-      this.appearance = 'filled';
-    }
-  }
-  static ngAcceptInputType_filled: NbBooleanInput;
-
-  /**
-   * Sets `outline` appearance
-   */
-  @Input()
-  get outline(): boolean {
-    return this.appearance === 'outline';
-  }
-  set outline(value: boolean) {
-    if (convertToBoolProperty(value)) {
-      this.appearance = 'outline';
-    }
-  }
-  static ngAcceptInputType_outline: NbBooleanInput;
-
-  /**
-   * Sets `ghost` appearance
-   */
-  @Input()
-  get ghost(): boolean {
-    return this.appearance === 'ghost';
-  }
-  set ghost(value: boolean) {
-    if (convertToBoolProperty(value)) {
-      this.appearance = 'ghost';
-    }
-  }
-  static ngAcceptInputType_ghost: NbBooleanInput;
-
-  /**
-   * Emits when `nbButtonToggle` pressed state change. `$event` contains an array of the currently pressed button
-   * toggles.
-   */
-  @Output() valueChange = new EventEmitter<any[]>();
-
-  @HostBinding('attr.role') role = 'group';
-
-  @HostBinding('class')
-  get additionalClasses(): string[] {
-    if (this.statusService.isCustomStatus(this.status)) {
-      return [this.statusService.getStatusClass(this.status)];
-    }
-    return [];
-  }
-
-  constructor(protected cd: ChangeDetectorRef, protected statusService: NbStatusService) {}
-
-  ngOnChanges({ size, status, shape, multiple, filled, outline, ghost, disabled }: SimpleChanges) {
-    if (size || status || shape || multiple || filled || outline || ghost || disabled) {
-      this.syncButtonsProperties(this.buttons?.toArray() || []);
-    }
-  }
-
-  ngAfterContentInit(): void {
-    this.buttonsChange$.pipe(takeUntil(this.destroy$)).subscribe((buttons: NbButton[]) => {
-      this.listenButtonPressedState(buttons);
-      this.syncButtonsProperties(buttons);
+    // The app's value presses the toggles with its values, and only those.
+    effect(() => {
+      const state = this.valueState();
+      if (state === this.ownValue || state === NO_VALUE) {
+        return;
+      }
+      const value = valuesOf<T>(state);
+      const toggles = this.toggles();
+      untracked(() =>
+        toggles.forEach((toggle) => {
+          const toggleValue = toggle.value();
+          toggle.setPressed(toggleValue !== undefined && value.includes(toggleValue));
+        }),
+      );
     });
 
-    this.buttons.changes
-      .pipe(
-        // `buttons.changes` emit during change detection run after projected content already was initialized.
-        // So at this time, it's too late to update projected buttons properties as updating bindings after
-        // initialization doesn't make sense. Changes won't be picked up and should cause an "expression changed" error.
-        // Instead, we wrap the new buttons list into a promise to defer update to the following microtask and also to
-        // trigger change detection one more time.
-        switchMap((buttons: QueryList<NbButton>) => from(Promise.resolve(buttons.toArray()))),
-        takeUntil(this.destroy$),
-      )
-      .subscribe(this.buttonsChange$);
+    let pressedBefore = new Set<NbButtonToggleDirective<T>>();
+    effect(() => {
+      let pressed = this.toggles().filter((toggle) => toggle.isPressed());
+      // Without `multiple`, the toggle pressed last stays pressed.
+      if (!this.multiple() && pressed.length > 1) {
+        const kept = pressed.filter((toggle) => !pressedBefore.has(toggle)).pop() ?? pressed[0];
+        untracked(() => pressed.filter((toggle) => toggle !== kept).forEach((toggle) => toggle.setPressed(false)));
+        pressed = [kept];
+      }
+      pressedBefore = new Set(pressed);
 
-    this.buttonsChange$.next(this.buttons.toArray());
-  }
-
-  protected listenButtonPressedState(buttons: NbButton[]): void {
-    const toggleButtons: NbButtonToggleDirective[] = buttons.filter((button: NbButton) => {
-      return button instanceof NbButtonToggleDirective;
-    }) as NbButtonToggleDirective[];
-
-    if (!toggleButtons.length) {
-      return;
-    }
-
-    const buttonsPressedChange$: Observable<NbButtonToggleChange>[] = toggleButtons.map(
-      (button: NbButtonToggleDirective) => button.pressedChange$,
-    );
-
-    merge(...buttonsPressedChange$)
-      .pipe(
-        filter(({ pressed }: NbButtonToggleChange) => !this.multiple && pressed),
-        takeUntil(merge(this.buttonsChange$, this.destroy$)),
-      )
-      .subscribe(({ source }: NbButtonToggleChange) => {
-        toggleButtons
-          .filter((button: NbButtonToggleDirective) => button !== source)
-          .forEach((button: NbButtonToggleDirective) => button._updatePressed(false));
-      });
-
-    merge(...buttonsPressedChange$)
-      .pipe(
-        // Use startWith to emit if some buttons are initially pressed.
-        startWith(''),
-        // Use debounce to emit change once when pressed state change in multiple button toggles.
-        debounceTime(0),
-        takeUntil(merge(this.buttonsChange$, this.destroy$)),
-      )
-      .subscribe(() => this.emitCurrentValue(toggleButtons));
-  }
-
-  protected syncButtonsProperties(buttons: NbButton[]): void {
-    buttons.forEach((button: NbButton) => {
-      button.updateProperties({
-        appearance: this.appearance,
-        size: this.size,
-        status: this.status,
-        shape: this.shape,
-        disabled: this.disabled,
-      });
+      const value = pressed.map((toggle) => toggle.value()).filter((item): item is T => typeof item !== 'undefined');
+      // Emit after change detection, as the group did before, so handlers can update what's already rendered.
+      queueMicrotask(() => this.emitValue(value));
     });
   }
 
-  protected emitCurrentValue(toggleButtons: NbButtonToggleDirective[]): void {
-    const pressedToggleValues = toggleButtons
-      .filter((b: NbButtonToggleDirective) => b.pressed && typeof b.value !== 'undefined')
-      .map((b: NbButtonToggleDirective) => b.value);
+  registerOnChange(fn: (value: NbButtonGroupValue<T, M>) => void) {
+    this.onChange = fn;
+  }
 
-    // Prevent multiple emissions of empty value.
-    if (pressedToggleValues.length === 0 && this.lastEmittedValue.length === 0) {
+  registerOnTouched(fn: () => void) {
+    this.onTouched = fn;
+  }
+
+  writeValue(value: NbButtonGroupValue<T, M> | undefined) {
+    this.valueState.set(value ?? null);
+  }
+
+  setDisabledState(isDisabled: boolean) {
+    this.isDisabled.set(isDisabled);
+  }
+
+  protected emitValue(values: T[]) {
+    const state = this.valueState();
+    const last = state === NO_VALUE ? [] : valuesOf<T>(state);
+    if (values.length === last.length && values.every((item, index) => item === last[index])) {
       return;
     }
+    const value = (this.multiple() ? values : (values[0] ?? null)) as NbButtonGroupValue<T, M>;
+    this.ownValue = value;
+    this.valueState.set(value);
+    this.valueChange.emit(value);
+    this.onChange(value);
+  }
 
-    this.valueChange.emit(pressedToggleValues);
-    this.lastEmittedValue = pressedToggleValues;
+  // Leaving the group, by focus or a click elsewhere, touches its control, as leaving a radio group does.
+  protected subscribeOnBlur() {
+    const hostElement = this.hostElement.nativeElement;
+    fromEvent<Event>(hostElement, 'focusin')
+      .pipe(
+        filter((event) => hostElement.contains(event.target as Node)),
+        switchMap(() => merge(fromEvent<Event>(this.document, 'focusin'), fromEvent<Event>(this.document, 'click'))),
+        filter((event) => !hostElement.contains(event.target as Node)),
+        takeUntilDestroyed(inject(DestroyRef)),
+      )
+      .subscribe(() => this.onTouched());
   }
 }

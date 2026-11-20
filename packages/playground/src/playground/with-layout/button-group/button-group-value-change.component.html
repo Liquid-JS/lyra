@@ -5,9 +5,12 @@
     </p>
 
     <nb-button-group (valueChange)="updateSingleSelectGroupValue($event)">
-      <button nbButtonToggle value="One">One</button>
-      <button nbButtonToggle value="Two">Two</button>
-      <button nbButtonToggle value="Three">Three</button>
+      <button nbButtonToggle
+        value="One">One</button>
+      <button nbButtonToggle
+        value="Two">Two</button>
+      <button nbButtonToggle
+        value="Three">Three</button>
     </nb-button-group>
   </nb-card-body>
 </nb-card>
@@ -15,14 +18,17 @@
 <nb-card>
   <nb-card-body>
     <p>
-      Group with single select value: {{ multiSelectGroupValue | json }}
+      Group with multiple select value: {{ multiSelectGroupValue | json }}
     </p>
 
-    <nb-button-group multiple (valueChange)="updateMultiSelectGroupValue($event)">
-      <button nbButtonToggle value="One">One</button>
-      <button nbButtonToggle value="Two">Two</button>
-      <button nbButtonToggle value="Three">Three</button>
+    <nb-button-group multiple
+      (valueChange)="updateMultiSelectGroupValue($event)">
+      <button nbButtonToggle
+        value="One">One</button>
+      <button nbButtonToggle
+        value="Two">Two</button>
+      <button nbButtonToggle
+        value="Three">Three</button>
     </nb-button-group>
   </nb-card-body>
 </nb-card>
-

@@ -1,25 +1,14 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { Component } from '@angular/core';
+import {
+  NbCardComponent,
+  NbCardBodyComponent,
+  NbButtonGroupComponent,
+  NbButtonToggleDirective,
+} from '@liquid-js/lyr-core';
 
 @Component({
-    template: `
-    <nb-card>
-      <nb-card-body>
-        <nb-button-group disabled>
-          <button nbButtonToggle>A</button>
-          <button nbButtonToggle>B</button>
-          <button nbButtonToggle>C</button>
-        </nb-button-group>
-      </nb-card-body>
-    </nb-card>
-  `,
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  templateUrl: './button-group-disabled.component.html',
+  imports: [NbCardComponent, NbCardBodyComponent, NbButtonGroupComponent, NbButtonToggleDirective],
 })
 export class ButtonGroupDisabledComponent {
 }

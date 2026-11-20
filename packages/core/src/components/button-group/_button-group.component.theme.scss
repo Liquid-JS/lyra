@@ -1,40 +1,86 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 @use '../../styles/theming' as *;
 
 @mixin nb-buttons-group-theme() {
   nb-button-group {
     display: inline-flex;
+    // Lines up with fields and buttons of its size by its middle, as they do.
+    vertical-align: middle;
+
+    // Separate buttons, each with its own corners and border, in rows as they fit.
+    &.separate {
+      flex-wrap: wrap;
+      gap: nb-theme(button-group-separate-gap);
+    }
+
+    // Joined buttons: one strip, rounded at its ends, neighbours sharing a border.
+    &:not(.separate) {
+      [nbButton],
+      [nbButtonToggle] {
+        @include nb-ltr() {
+          &:first-child:not(:last-child) {
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+          }
+          &:last-child:not(:first-child) {
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+          }
+        }
+        @include nb-rtl() {
+          &:first-child:not(:last-child) {
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+          }
+          &:last-child:not(:first-child) {
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+          }
+        }
+
+        &:not(:first-child):not(:last-child) {
+          border-radius: 0;
+        }
+
+        // Neighbours share one border, so a divider is as thin as the outline: each button overlaps the one before.
+        position: relative;
+
+        @each $appearance in (filled, outline, ghost) {
+          &.appearance-#{$appearance}:not(:first-child) {
+            margin-inline-start: calc(-1 * #{nb-theme(button-#{$appearance}-border-width)});
+          }
+        }
+
+        // The start border of a filled or ghost button divides it from the one before, hovered or pressed too, so a
+        // button's background shows between its dividers; a focused or disabled one has its own border.
+        @each $status in nb-get-statuses() {
+          &.appearance-filled.status-#{$status}:not(:first-child):not(:focus-visible):not([disabled]) {
+            @include nb-ltr(border-left-color, nb-theme(button-group-filled-#{$status}-divider-color));
+            @include nb-rtl(border-right-color, nb-theme(button-group-filled-#{$status}-divider-color));
+          }
+        }
+
+        &.appearance-ghost:not(:first-child):not(:focus-visible):not([disabled]) {
+          @include nb-ltr(border-left-color, nb-theme(button-group-ghost-divider-color));
+          @include nb-rtl(border-right-color, nb-theme(button-group-ghost-divider-color));
+        }
+      }
+    }
 
     [nbButton],
     [nbButtonToggle] {
-      @include nb-ltr() {
-        &:first-child:not(:last-child) {
-          border-top-right-radius: 0;
-          border-bottom-right-radius: 0;
-        }
-        &:last-child:not(:first-child) {
-          border-top-left-radius: 0;
-          border-bottom-left-radius: 0;
-        }
-      }
-      @include nb-rtl() {
-        &:first-child:not(:last-child) {
-          border-top-left-radius: 0;
-          border-bottom-left-radius: 0;
-        }
-        &:last-child:not(:first-child) {
-          border-top-right-radius: 0;
-          border-bottom-right-radius: 0;
-        }
+      // An outline button in a state shows its whole border over its neighbours, and a focused one its ring; filled and
+      // ghost ones show theirs in their background, between the dividers.
+      &.appearance-outline[aria-pressed='true'] {
+        z-index: 1;
       }
 
-      &:not(:first-child):not(:last-child) {
-        border-radius: 0;
+      &.appearance-outline:hover,
+      &.appearance-outline:active {
+        z-index: 2;
+      }
+
+      &:focus-visible {
+        z-index: 3;
       }
 
       &.appearance-filled,
@@ -46,25 +92,10 @@
 
       &.appearance-filled {
         @each $status in nb-get-statuses() {
-          // I can't figure out any sane selector to turn the start border into a divider for buttons
-          // in the default state only (not hovered, focused, etc.). So I went with this horrible thing.
-          // Another way was to copy button styles here, but then we need to keep track of button styles
-          // all the time. Also, it would increase the number of duplicate button styles.
-          &.status-#{$status}:not(:first-child):not(:hover):not(:focus):not(:active):not([disabled]) {
-            @include nb-ltr(border-left-color, nb-theme(button-group-filled-#{$status}-divider-color));
-            @include nb-rtl(border-right-color, nb-theme(button-group-filled-#{$status}-divider-color));
-          }
-
           &.status-#{$status} {
             color: nb-theme(button-group-filled-button-#{$status}-text-color);
           }
         }
-      }
-
-      // See the comment on the selector above
-      &.appearance-ghost:not(:first-child):not(:hover):not(:focus):not(:active):not([disabled]) {
-        @include nb-ltr(border-left-color, nb-theme(button-group-ghost-divider-color));
-        @include nb-rtl(border-right-color, nb-theme(button-group-ghost-divider-color));
       }
     }
   }
