@@ -1,33 +1,30 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 import {
-  AfterViewInit,
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
   Component,
+  computed,
   ElementRef,
-  EventEmitter,
-  HostBinding,
-  HostListener,
-  Input,
-  NgZone,
+  inject,
+  input,
+  linkedSignal,
   OnDestroy,
-  Output,
-  Renderer2,
+  output,
+  signal,
 } from '@angular/core';
 import { Observable, Subject } from 'rxjs';
 
-import { NbStatusService } from '../../services/status.service';
-import { NbHighlightableOption } from '../cdk/a11y/descendant-key-manager';
-import { convertToBoolProperty, NbBooleanInput } from '../helpers';
-import { NbComponentOrCustomStatus } from '../component-status';
-import { NbComponentSize } from '../component-size';
+import { injectNbDefaults } from '@liquid-js/lyr-core/base';
+import { NbStatusService } from '@liquid-js/lyr-core/base';
+import { ɵNbHighlightableOption as NbHighlightableOption } from '@liquid-js/lyr-core/cdk';
+import { ɵconvertToBoolProperty as convertToBoolProperty, NbBooleanInput } from '@liquid-js/lyr-core/base';
+import { NbComponentOrCustomStatus } from '@liquid-js/lyr-core/base';
+import { NbComponentSize } from '@liquid-js/lyr-core/base';
+import { NbIconComponent } from '@liquid-js/lyr-core/icon';
+import { ɵenableTransitionsAfterRender as enableTransitionsAfterRender } from '@liquid-js/lyr-core/base';
+import { NB_TAG_LIST_SIZE } from './tag-list-size';
+import { injectNbTexts, NbLocalize } from '@liquid-js/lyr-core/base';
 
-export type NbTagAppearance = 'filled' | 'outline';
+/** @internal */
+declare const $localize: NbLocalize;
+import type { NbTagAppearance } from '@liquid-js/lyr-core/base';
 
 export interface NbTagSelectionChange {
   tag: NbTagComponent;
@@ -37,14 +34,16 @@ export interface NbTagSelectionChange {
 let tagUniqueId = 0;
 
 /**
+ * A small label with a status, on its own or in an `nb-tag-list`, where it can be selected and removed.
  *
- * To show a cross on a tag and enable `remove` event add the `removable` attribute.
+ * With `removable`, the tag shows a cross and emits `remove` when the cross is clicked or Backspace or Delete is
+ * pressed on it:
  * @stacked-example(Removable tags, tag/tag-removable.component)
  *
- * You can change appearance via `appearance` input:
+ * The `appearance` is `filled` (default), `outline` or `hero`, the hero button's gradient:
  * @stacked-example(Tag Appearance, tag/tag-appearance.component)
  *
- * You can change status via `status` input:
+ * The `status` colours it:
  * @stacked-example(Tag Status, tag/tag-status.component)
  *
  * @styles
@@ -226,15 +225,94 @@ let tagUniqueId = 0;
  * tag-outline-control-selected-background-color:
  * tag-outline-control-selected-border-color:
  * tag-outline-control-selected-text-color:
+ * tag-hero-text-shadow:
+ * tag-hero-basic-text-color:
+ * tag-hero-basic-left-background-color:
+ * tag-hero-basic-right-background-color:
+ * tag-hero-basic-active-left-background-color:
+ * tag-hero-basic-active-right-background-color:
+ * tag-hero-basic-hover-left-background-color:
+ * tag-hero-basic-hover-right-background-color:
+ * tag-hero-basic-selected-left-background-color:
+ * tag-hero-basic-selected-right-background-color:
+ * tag-hero-primary-text-color:
+ * tag-hero-primary-left-background-color:
+ * tag-hero-primary-right-background-color:
+ * tag-hero-primary-active-left-background-color:
+ * tag-hero-primary-active-right-background-color:
+ * tag-hero-primary-hover-left-background-color:
+ * tag-hero-primary-hover-right-background-color:
+ * tag-hero-primary-selected-left-background-color:
+ * tag-hero-primary-selected-right-background-color:
+ * tag-hero-success-text-color:
+ * tag-hero-success-left-background-color:
+ * tag-hero-success-right-background-color:
+ * tag-hero-success-active-left-background-color:
+ * tag-hero-success-active-right-background-color:
+ * tag-hero-success-hover-left-background-color:
+ * tag-hero-success-hover-right-background-color:
+ * tag-hero-success-selected-left-background-color:
+ * tag-hero-success-selected-right-background-color:
+ * tag-hero-info-text-color:
+ * tag-hero-info-left-background-color:
+ * tag-hero-info-right-background-color:
+ * tag-hero-info-active-left-background-color:
+ * tag-hero-info-active-right-background-color:
+ * tag-hero-info-hover-left-background-color:
+ * tag-hero-info-hover-right-background-color:
+ * tag-hero-info-selected-left-background-color:
+ * tag-hero-info-selected-right-background-color:
+ * tag-hero-warning-text-color:
+ * tag-hero-warning-left-background-color:
+ * tag-hero-warning-right-background-color:
+ * tag-hero-warning-active-left-background-color:
+ * tag-hero-warning-active-right-background-color:
+ * tag-hero-warning-hover-left-background-color:
+ * tag-hero-warning-hover-right-background-color:
+ * tag-hero-warning-selected-left-background-color:
+ * tag-hero-warning-selected-right-background-color:
+ * tag-hero-danger-text-color:
+ * tag-hero-danger-left-background-color:
+ * tag-hero-danger-right-background-color:
+ * tag-hero-danger-active-left-background-color:
+ * tag-hero-danger-active-right-background-color:
+ * tag-hero-danger-hover-left-background-color:
+ * tag-hero-danger-hover-right-background-color:
+ * tag-hero-danger-selected-left-background-color:
+ * tag-hero-danger-selected-right-background-color:
+ * tag-hero-control-text-color:
+ * tag-hero-control-left-background-color:
+ * tag-hero-control-right-background-color:
+ * tag-hero-control-active-left-background-color:
+ * tag-hero-control-active-right-background-color:
+ * tag-hero-control-hover-left-background-color:
+ * tag-hero-control-hover-right-background-color:
+ * tag-hero-control-selected-left-background-color:
+ * tag-hero-control-selected-right-background-color:
  */
 @Component({
   selector: 'nb-tag',
   templateUrl: './tag.component.html',
   exportAs: 'nbTag',
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false,
+  imports: [NbIconComponent],
+  host: {
+    '[class]': 'hostClasses()',
+    '[class.selected]': 'isSelected()',
+    '[attr.aria-selected]': "role() === 'option' ? isSelected() : null",
+    '[class.active]': '_isActive()',
+    '[attr.role]': 'role()',
+    '[attr.id]': '_id',
+    '(keydown.delete)': '_remove()',
+    '(keydown.backspace)': '_remove()',
+  },
 })
-export class NbTagComponent implements AfterViewInit, OnDestroy, NbHighlightableOption {
+export class NbTagComponent implements OnDestroy, NbHighlightableOption {
+  // The app's defaults for this type, which the inputs below start from.
+  protected readonly nbDefaults = injectNbDefaults('tag');
+
+  readonly _hostElement = inject(ElementRef);
+  protected readonly statusService = inject(NbStatusService);
+
   private _destroy$: Subject<NbTagComponent> = new Subject<NbTagComponent>();
 
   get destroy$(): Observable<NbTagComponent> {
@@ -244,214 +322,117 @@ export class NbTagComponent implements AfterViewInit, OnDestroy, NbHighlightable
   /**
    * Tag text.
    */
-  @Input() text: string;
-
-  @Input()
-  @HostBinding('class.selected')
-  @HostBinding('attr.aria-selected')
-  get selected(): boolean {
-    return this._selected;
-  }
-  set selected(value: boolean) {
-    if (this.selected !== convertToBoolProperty(value)) {
-      this._selected = !this.selected;
-      this.selectedChange.emit({ tag: this, selected: this.selected });
-    }
-  }
-  protected _selected: boolean = false;
-  static ngAcceptInputType_selected: NbBooleanInput;
+  readonly text = input<string>();
 
   /**
-   * Controls whether the user can remove a tag or not.
+   * Selects the tag, until a click or its list changes that; see `isSelected`.
    */
-  @Input()
-  get removable(): boolean {
-    return this._removable;
-  }
-  set removable(value: boolean) {
-    this._removable = convertToBoolProperty(value);
-  }
-  protected _removable: boolean = false;
-  static ngAcceptInputType_removable: NbBooleanInput;
+  readonly selected = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
 
   /**
-   * Remove icon name
-   * @param {string} status
+   * Shows a cross and lets the user remove the tag; see `remove`.
    */
-  @Input() removeIcon: string = 'close-outline';
+  readonly removable = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
 
   /**
-   * Remove icon pack name
-   * @param {string} status
+   * Icon of the cross.
    */
-  @Input() removeIconPack: string = 'nebular-essentials';
+  readonly removeIcon = input<string>('close-outline');
 
   /**
-   * Tag appearance: `filled`, `outline`.
+   * Pack of the cross's icon.
    */
-  @Input() appearance: NbTagAppearance = 'filled';
+  readonly removeIconPack = input<string>('essentials');
 
   /**
-   * Tag status: `basic`, `primary`, `info`, `success`, `warning`, `danger`, `control`.
+   * `filled` (default), `outline` or `hero`.
    */
-  @Input() status: NbComponentOrCustomStatus = 'basic';
+  readonly appearanceInput = input<NbTagAppearance | undefined>(undefined, { alias: 'appearance' });
+  /** The appearance in use: the input's, the app's default, or 'filled'. */
+  readonly appearance = linkedSignal<NbTagAppearance>(() => this.appearanceInput() ?? this.nbDefaults().appearance ?? 'filled');
 
   /**
-   * Tag size: `tiny`, `small`, `medium`, `large`, `giant`.
+   * `basic` (default), `primary`, `info`, `success`, `warning`, `danger`, `control` or a custom status.
    */
-  @Input() size: NbComponentSize = 'medium';
-
-  @Input()
-  @HostBinding('attr.role')
-  role: string = 'option';
+  readonly status = input<NbComponentOrCustomStatus>('basic');
 
   /**
-   * Emits when the user removes the tag
-   * (whether by clicking on the remove button or by pressing `delete` or `backspace` key).
+   * Tag size: `tiny`, `small`, `medium`, `large`, `giant`. A tag in an `nb-tag-list` takes the list's size unless it
+   * sets one; others are `medium`.
    */
-  @Output() readonly remove: EventEmitter<NbTagComponent> = new EventEmitter<NbTagComponent>();
+  readonly sizeInput = input<NbComponentSize | undefined>(undefined, { alias: 'size' });
 
-  @Output() readonly selectedChange: EventEmitter<NbTagSelectionChange> = new EventEmitter<NbTagSelectionChange>();
+  protected readonly listSize = inject(NB_TAG_LIST_SIZE, { optional: true });
+  // A tag in a tag list is one of its options; one on its own has a remove button the keyboard reaches.
+  protected readonly inList = this.listSize !== null;
+  protected readonly texts = injectNbTexts('tag', () => ({
+    remove: (text) => $localize`:@@nb.tag.remove:Remove ${text}:text:`,
+  }));
 
-  @HostBinding('class.active')
-  _isActive: boolean = false;
+  /** The tag's size: its own, its list's, or `medium`. */
+  readonly size = computed(() => this.sizeInput() ?? this.listSize?.() ?? this.nbDefaults().size ?? 'medium');
 
-  @HostBinding('attr.id')
-  _id: string = `nb-tag-${tagUniqueId++}`;
+  /** The tag's role: `option` in a tag list, none on its own. */
+  readonly roleInput = input<string | undefined>(undefined, { alias: 'role' });
+  readonly role = computed(() => this.roleInput() ?? (this.inList ? 'option' : null));
 
-  @HostBinding('class.appearance-filled')
-  get filled(): boolean {
-    return this.appearance === 'filled';
-  }
-  set filled(value: boolean) {
-    if (convertToBoolProperty(value)) {
-      this.appearance = 'filled';
-    }
-  }
+  /**
+   * Emits when the user removes a `removable` tag, with its cross or the Backspace or Delete key. The tag stays until
+   * the app, or a managed `nb-tag-list`, takes it out.
+   */
+  readonly remove = output<NbTagComponent>();
 
-  @HostBinding('class.appearance-outline')
-  get outline(): boolean {
-    return this.appearance === 'outline';
-  }
-  set outline(value: boolean) {
-    if (convertToBoolProperty(value)) {
-      this.appearance = 'outline';
-    }
-  }
+  readonly selectedChange = output<NbTagSelectionChange>();
 
-  @HostBinding('class.status-basic')
-  get basic() {
-    return this.status === 'basic';
-  }
+  /**
+   * Whether the tag is selected: the `selected` input, until a user or the tag list changes it.
+   */
+  readonly isSelected = linkedSignal(() => this.selected());
 
-  @HostBinding('class.status-primary')
-  get primary() {
-    return this.status === 'primary';
-  }
+  protected readonly activeState = signal(false);
+  readonly _isActive = this.activeState.asReadonly();
 
-  @HostBinding('class.status-success')
-  get success() {
-    return this.status === 'success';
-  }
+  readonly _id: string = `nb-tag-${tagUniqueId++}`;
 
-  @HostBinding('class.status-info')
-  get info() {
-    return this.status === 'info';
-  }
+  protected readonly hostClasses = computed(() => [
+    `appearance-${this.appearance()}`,
+    this.statusService.getStatusClass(this.status()),
+    `size-${this.size()}`,
+  ]);
 
-  @HostBinding('class.status-warning')
-  get warning() {
-    return this.status === 'warning';
-  }
-
-  @HostBinding('class.status-danger')
-  get danger() {
-    return this.status === 'danger';
-  }
-
-  @HostBinding('class.status-control')
-  get control() {
-    return this.status === 'control';
-  }
-
-  @HostBinding('class.size-tiny')
-  get tiny() {
-    return this.size === 'tiny';
-  }
-
-  @HostBinding('class.size-small')
-  get small() {
-    return this.size === 'small';
-  }
-
-  @HostBinding('class.size-medium')
-  get medium() {
-    return this.size === 'medium';
-  }
-
-  @HostBinding('class.size-large')
-  get large() {
-    return this.size === 'large';
-  }
-
-  @HostBinding('class.size-giant')
-  get giant() {
-    return this.size === 'giant';
-  }
-
-  @HostBinding('class')
-  get additionalClasses(): string[] {
-    if (this.statusService.isCustomStatus(this.status)) {
-      return [this.statusService.getStatusClass(this.status)];
-    }
-    return [];
-  }
-
-  @HostListener('keydown.delete')
-  @HostListener('keydown.backspace')
-  _remove(): void {
-    if (this.removable) {
+  _remove() {
+    if (this.removable()) {
       this.remove.emit(this);
     }
   }
 
-  constructor(
-    public _hostElement: ElementRef,
-    protected cd: ChangeDetectorRef,
-    protected renderer: Renderer2,
-    protected zone: NgZone,
-    protected statusService: NbStatusService,
-  ) {}
-
-  ngAfterViewInit() {
-    // TODO: #2254
-    this.zone.runOutsideAngular(() =>
-      setTimeout(() => {
-        this.renderer.addClass(this._hostElement.nativeElement, 'nb-transition');
-      }),
-    );
+  constructor() {
+    enableTransitionsAfterRender(this._hostElement.nativeElement);
   }
 
   ngOnDestroy() {
     this._destroy$.next(this);
   }
 
-  _toggleSelection(): void {
-    this.selected = !this.selected;
-    this.cd.markForCheck();
-  }
-
-  setActiveStyles(): void {
-    if (!this._isActive) {
-      this._isActive = true;
-      this.cd.markForCheck();
+  /**
+   * Selects or deselects the tag and emits `selectedChange` when that changes its state.
+   */
+  setSelected(selected: boolean) {
+    if (this.isSelected() !== selected) {
+      this.isSelected.set(selected);
+      this.selectedChange.emit({ tag: this, selected });
     }
   }
 
-  setInactiveStyles(): void {
-    if (this._isActive) {
-      this._isActive = false;
-      this.cd.markForCheck();
-    }
+  _toggleSelection() {
+    this.setSelected(!this.isSelected());
+  }
+
+  setActiveStyles() {
+    this.activeState.set(true);
+  }
+
+  setInactiveStyles() {
+    this.activeState.set(false);
   }
 }

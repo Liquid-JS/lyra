@@ -1,10 +1,20 @@
-{{ text }}
-<nb-icon
-  *ngIf="removable"
-  (click)="_remove()"
-  class="nb-tag-remove size-{{ size }}"
-  [icon]="removeIcon"
-  [pack]="removeIconPack"
-  aria-hidden="true"
->
-</nb-icon>
+<span dir="auto">{{ text() }}</span>
+@if (removable()) {
+@if (inList) {
+<!-- An option's content is presentational: in a list, Backspace or Delete removes the active tag. -->
+<nb-icon (click)="_remove()"
+  class="nb-tag-remove size-{{ size() }}"
+  [icon]="removeIcon()"
+  [pack]="removeIconPack()"
+  aria-hidden="true" />
+} @else {
+<button type="button"
+  class="nb-tag-remove nb-tag-remove-button size-{{ size() }}"
+  tabindex="0"
+  [attr.aria-label]="texts().remove(text() ?? '')"
+  (click)="_remove()">
+  <nb-icon [icon]="removeIcon()"
+    [pack]="removeIconPack()" />
+</button>
+}
+}

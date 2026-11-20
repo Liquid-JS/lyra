@@ -1,0 +1,9 @@
+// The default theme, which specs don't load otherwise.
+@use '@liquid-js/lyr-core/styles/all' as *;
+@use '@liquid-js/lyr-core/styles/globals' as *;
+
+$nb-enabled-themes: (default);
+
+@include nb-install() {
+  @include nb-theme-global();
+}

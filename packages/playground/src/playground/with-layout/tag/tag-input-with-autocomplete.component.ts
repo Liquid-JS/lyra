@@ -1,36 +1,58 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { ChangeDetectionStrategy, Component, ElementRef, ViewChild } from '@angular/core';
-import { NbTagComponent, NbTagInputDirective } from '@nebular/theme';
+import { Component, ElementRef, viewChild } from '@angular/core';
+import {
+  NbTagComponent,
+  NbTagInputDirective,
+  NbCardComponent,
+  NbCardBodyComponent,
+  NbFormFieldComponent,
+  NbTagListComponent,
+  NbTagComponent as NbTagComponent_1,
+  NbTagInputDirective as NbTagInputDirective_1,
+  NbAutocompleteDirective,
+  NbIconComponent,
+  NbSuffixDirective,
+  NbAutocompleteComponent,
+  NbOptionComponent,
+} from '@liquid-js/lyr-core';
 
 import { trees } from './trees-list';
 
 @Component({
-    templateUrl: './tag-input-with-autocomplete.component.html',
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  templateUrl: './tag-input-with-autocomplete.component.html',
+  imports: [
+    NbCardComponent,
+    NbCardBodyComponent,
+    NbFormFieldComponent,
+    NbTagListComponent,
+    NbTagComponent_1,
+    NbTagInputDirective_1,
+    NbAutocompleteDirective,
+    NbIconComponent,
+    NbSuffixDirective,
+    NbAutocompleteComponent,
+    NbOptionComponent,
+  ],
 })
 export class TagInputWithAutocompleteComponent {
 
-  tags: Set<string> = new Set<string>();
+  tags = new Set<string>();
   options: string[] = trees;
 
-  @ViewChild(NbTagInputDirective, { read: ElementRef }) tagInput: ElementRef<HTMLInputElement>;
+  readonly tagInput = viewChild.required(NbTagInputDirective, { read: ElementRef });
 
-  onTagRemove(tagToRemove: NbTagComponent): void {
-    this.tags.delete(tagToRemove.text);
-    this.options.push(tagToRemove.text);
+  onTagRemove(tagToRemove: NbTagComponent) {
+    const text = tagToRemove.text();
+    if (text !== undefined) {
+      this.tags.delete(text);
+      this.options.push(text);
+    }
   }
 
-  onTagAdd(value: string): void {
+  onTagAdd(value: string) {
     if (value) {
       this.tags.add(value);
-      this.options = this.options.filter(o => o !== value);
+      this.options = this.options.filter((o) => o !== value);
     }
-    this.tagInput.nativeElement.value = '';
+    this.tagInput().nativeElement.value = '';
   }
 }

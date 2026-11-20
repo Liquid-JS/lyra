@@ -1,12 +1,7 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 @use '../../styles/theming' as *;
 @use 'tag-filled';
 @use 'tag-outline';
+@use 'tag-hero';
 
 @mixin nb-tag-theme() {
   nb-tag {
@@ -37,6 +32,7 @@
 
     @include tag-filled.nb-tag-filled();
     @include tag-outline.nb-tag-outline();
+    @include tag-hero.nb-tag-hero();
   }
 
   .nb-tag-remove {
@@ -55,6 +51,26 @@
           margin-left: nb-theme-var-negative(nb-theme(tag-#{$size}-close-offset));
         }
       }
+    }
+  }
+
+  // A tag on its own: the remove control is a button, which the keyboard reaches and shows the focus ring on.
+  .nb-tag-remove-button {
+    display: inline-flex;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: none;
+    color: inherit;
+    font-family: inherit;
+    line-height: 1;
+
+    &:focus {
+      outline: none;
+    }
+
+    &:focus-visible {
+      box-shadow: 0 0 0 nb-theme(outline-width) nb-theme(outline-color);
     }
   }
 }

@@ -1,9 +1,3 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 @use '../../styles/theming' as *;
 @use '../form-field/form-field.component.theme' as form-field-theme;
 @use '../input/input.directive.theme' as input-theme;
@@ -12,6 +6,8 @@
   nb-tag-list {
     display: inline-flex;
     outline: none;
+    // Lines up with fields and buttons of its size by its middle, as they do.
+    vertical-align: middle;
 
     @each $size in nb-get-sizes() {
       &.size-#{$size} {
@@ -47,6 +43,14 @@
     @each $size in nb-get-sizes() {
       &.size-#{$size} {
         padding: nb-theme(tag-list-with-input-#{$size}-padding);
+        // Its text and tags start where a field's text does.
+        padding-inline: nb-theme(input-#{$size}-padding);
+        // At least as tall as the fields of its size; rows of tags make it taller.
+        min-height: nb-theme(control-#{$size}-height);
+
+        &:not(.input-full-width) {
+          max-width: nb-theme(input-#{$size}-max-width);
+        }
       }
     }
 
@@ -55,12 +59,35 @@
         background-color: nb-theme(tag-input-#{$status}-background-color);
         border-color: nb-theme(tag-input-#{$status}-border-color);
 
+        // A field's colours with focus and disabled, as an input's. Under the pointer only its border follows the
+        // input's: the input's hover background is a filled basic tag's colour in the light themes, so the tags
+        // would vanish into it.
+        &:hover {
+          border-color: nb-theme(tag-input-#{$status}-hover-border-color);
+        }
+
         &.focus {
           background-color: nb-theme(tag-input-#{$status}-focus-background-color);
           border-color: nb-theme(tag-input-#{$status}-focus-border-color);
         }
+
+        &.focus:hover {
+          border-color: nb-theme(tag-input-#{$status}-focus-and-hover-border-color);
+        }
+
+        &.disabled {
+          background-color: nb-theme(tag-input-#{$status}-disabled-background-color);
+          border-color: nb-theme(tag-input-#{$status}-disabled-border-color);
+        }
       }
     }
+  }
+
+  // A filled basic tag lightens under the pointer, which in a field is the field's own colour, so in a list with an
+  // input it takes its active colours instead: a step away from the field, whatever its state.
+  .nb-tag-list-with-input nb-tag.appearance-filled.status-basic:hover {
+    background-color: nb-theme(tag-filled-basic-active-background-color);
+    border-color: nb-theme(tag-filled-basic-active-border-color);
   }
 
   @include form-field-theme.nb-form-field-root-component('nb-tag-list');

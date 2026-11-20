@@ -2,11 +2,27 @@
   <nb-card-body class="example-items-col">
 
     <nb-tag-list>
-      <nb-tag appearance="filled" *ngFor="let tree of trees" [text]="tree" status="primary"></nb-tag>
+      @for (tree of trees; track tree) {
+      <nb-tag appearance="filled"
+        [text]="tree"
+        status="primary" />
+      }
     </nb-tag-list>
 
     <nb-tag-list>
-      <nb-tag appearance="outline" *ngFor="let tree of trees" [text]="tree" status="primary"></nb-tag>
+      @for (tree of trees; track tree) {
+      <nb-tag appearance="outline"
+        [text]="tree"
+        status="primary" />
+      }
+    </nb-tag-list>
+
+    <nb-tag-list>
+      @for (tree of trees; track tree) {
+      <nb-tag appearance="hero"
+        [text]="tree"
+        status="primary" />
+      }
     </nb-tag-list>
 
   </nb-card-body>

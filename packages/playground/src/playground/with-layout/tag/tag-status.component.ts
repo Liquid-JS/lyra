@@ -1,15 +1,9 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { Component } from '@angular/core';
+import { NbCardComponent, NbCardBodyComponent, NbTagListComponent, NbTagComponent } from '@liquid-js/lyr-core';
 
 @Component({
-    templateUrl: './tag-status.component.html',
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  templateUrl: './tag-status.component.html',
+  imports: [NbCardComponent, NbCardBodyComponent, NbTagListComponent, NbTagComponent],
 })
 export class TagStatusComponent {
 }

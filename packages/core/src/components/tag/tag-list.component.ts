@@ -1,51 +1,68 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 import {
-  AfterContentInit,
-  AfterViewInit,
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
   Component,
-  ContentChild,
-  ContentChildren,
+  computed,
+  contentChild,
+  contentChildren,
+  DestroyRef,
+  effect,
   ElementRef,
-  EventEmitter,
-  HostBinding,
-  HostListener,
-  Input,
-  NgZone,
-  OnDestroy,
-  OnInit,
-  Output,
-  QueryList,
-  Renderer2,
+  forwardRef,
+  inject,
+  Injector,
+  input,
+  linkedSignal,
+  model,
+  output,
+  signal,
+  untracked,
+  viewChildren,
+  numberAttribute,
 } from '@angular/core';
-import { merge, Subject } from 'rxjs';
-import { filter, finalize, map, startWith, switchMap, takeUntil } from 'rxjs/operators';
+import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { outputToObservable, takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
+import { EMPTY, fromEvent, merge } from 'rxjs';
+import { filter, map, switchMap } from 'rxjs/operators';
 
-import { NbLayoutDirection, NbLayoutDirectionService } from '../../services/direction.service';
-import { NbStatusService } from '../../services/status.service';
-import { NbFocusMonitor } from '../cdk/a11y/a11y.module';
-import {
-  NbActiveDescendantKeyManager,
-  NbActiveDescendantKeyManagerFactoryService,
-} from '../cdk/a11y/descendant-key-manager';
-import { BACKSPACE, DELETE, SPACE } from '../cdk/keycodes/keycodes';
-import { convertToBoolProperty, NbBooleanInput } from '../helpers';
-import { NbComponentSize } from '../component-size';
-import { NbAutocompleteDirective } from '../autocomplete/autocomplete.directive';
+import { injectNbDefaults } from '@liquid-js/lyr-core/base';
+import { NbLayoutDirectionService } from '@liquid-js/lyr-core/base';
+import { NbStatusService } from '@liquid-js/lyr-core/base';
+import { NbFocusMonitor } from '@liquid-js/lyr-core/cdk';
+import { ɵNbActiveDescendantKeyManager as NbActiveDescendantKeyManager, ɵNbActiveDescendantKeyManagerFactoryService as NbActiveDescendantKeyManagerFactoryService } from '@liquid-js/lyr-core/cdk';
+import { COMMA, ENTER, SEMICOLON, SPACE, TAB } from '@angular/cdk/keycodes';
+import { ɵisComposing as isComposing } from '@liquid-js/lyr-core/base';
+import { ɵconvertToBoolProperty as convertToBoolProperty, NbBooleanInput } from '@liquid-js/lyr-core/base';
+import { NbComponentSize } from '@liquid-js/lyr-core/base';
+import { NbAutocompleteRef } from '../autocomplete/autocomplete-ref';
 import { NbTagComponent } from './tag.component';
+import { NB_TAG_LIST_SIZE } from './tag-list-size';
 import { NbTagInputDirective } from './tag-input.directive';
+import { ɵenableTransitionsAfterRender as enableTransitionsAfterRender } from '@liquid-js/lyr-core/base';
+import { NbValidationDirective } from '@liquid-js/lyr-core/validation';
+
+// The characters separator keys type, which also split pasted or blurred text into tags.
+const SEPARATOR_CHARACTERS: Record<number, string> = { [COMMA]: ',', [SEMICOLON]: ';', [SPACE]: ' ', [TAB]: '\t', [ENTER]: '\n' };
 
 /**
- *
- * `nb-tag-list` component displays a list of `nb-tag` components.
+ * A list of `nb-tag`s, placed in it or managed from a value, with an optional `nbTagInput` to add more.
  *
  * @stacked-example(Tag List Showcase, tag/tag-showcase.component)
+ *
+ * Bound to a form control, `ngModel` or `[(value)]`, the tag list manages its tags: it shows one for each string of
+ * the value, adds what's typed into its `nbTagInput` when a separator key is pressed, the input loses focus, or a
+ * list is pasted, and removes tags with their cross or the Backspace or Delete key. Duplicates are skipped, and text
+ * `tagValidator` rejects stays in the input to be corrected.
+ *
+ * Focused, the list moves through its tags with the arrow keys; Space selects the active tag (one at a time, unless
+ * `multiple`), and Backspace or Delete removes it. Backspace in an empty input moves to the last tag.
+ *
+ * @stacked-example(Form control, tag/tag-form.component)
+ *
+ * The input's `fieldSize`, `status` and `shape` style the whole list, as an `nbInput`'s style its field, and tags
+ * placed in the list take its size unless they set their own. The list has a field's colours, but keeps its
+ * background under the pointer, and a filled basic tag in it darkens under the pointer rather than lightening, so
+ * the tags never match the field:
+ *
+ * @stacked-example(Sizes, tag/tag-list-sizes.component)
  *
  * @styles
  *
@@ -64,239 +81,233 @@ import { NbTagInputDirective } from './tag-input.directive';
  * tag-list-with-input-round-border-radius:
  */
 @Component({
-    selector: 'nb-tag-list',
-    template: `
-    <div class="nb-tag-list-tags-wrapper">
-      <ng-content select="nb-tag, input[nbTagInput]"></ng-content>
-    </div>
-  `,
-    exportAs: 'nbTagList',
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  selector: 'nb-tag-list',
+  templateUrl: './tag-list.component.html',
+  exportAs: 'nbTagList',
+  providers: [
+    { provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => NbTagListComponent), multi: true },
+    // Tags placed in the list take its size.
+    { provide: NB_TAG_LIST_SIZE, useFactory: () => inject(NbTagListComponent).tagSize },
+  ],
+  imports: [NbTagComponent],
+  host: {
+    '[class]': '_inputClasses()',
+    '[class.nb-tag-list-with-input]': '_hasInput()',
+    '[class.focus]': '_isFocused()',
+    '[class.disabled]': 'isDisabled()',
+    '[class.input-full-width]': '_isFullWidth()',
+    '[attr.tabindex]': 'tabIndex()',
+    '[attr.role]': 'role()',
+    '[attr.aria-multiselectable]': 'multiple()',
+    '[attr.aria-activedescendant]': 'activeTagId()',
+    '(keydown)': '_onKeydown($event)',
+    '(click)': '_onClick($event)',
+  },
 })
-export class NbTagListComponent implements OnInit, AfterContentInit, AfterViewInit, OnDestroy {
-  protected readonly destroy$: Subject<void> = new Subject<void>();
-  protected readonly keyDown$: Subject<KeyboardEvent> = new Subject<KeyboardEvent>();
-  protected readonly tagClick$: Subject<NbTagComponent> = new Subject<NbTagComponent>();
-  protected focused: boolean = false;
-  protected keyManager: NbActiveDescendantKeyManager<NbTagComponent>;
+export class NbTagListComponent implements ControlValueAccessor {
+  // The app's defaults for this type, which the inputs below start from.
+  protected readonly nbDefaults = injectNbDefaults('tag');
 
-  @ContentChildren(NbTagComponent) tags: QueryList<NbTagComponent>;
-  @ContentChild(NbTagInputDirective) tagInput: NbTagInputDirective;
-  @ContentChild(NbAutocompleteDirective) autocompleteDirective: NbAutocompleteDirective<any>;
+  protected readonly hostElement = inject<ElementRef<HTMLElement>>(ElementRef);
+  protected readonly focusMonitor = inject(NbFocusMonitor);
+  protected readonly activeDescendantKeyManagerFactory = inject(
+    NbActiveDescendantKeyManagerFactoryService,
+  ) as NbActiveDescendantKeyManagerFactoryService<NbTagComponent>;
+  protected readonly directionService = inject(NbLayoutDirectionService);
+  protected readonly statusService = inject(NbStatusService);
+  protected readonly destroyRef = inject(DestroyRef);
+  protected readonly validation = inject(NbValidationDirective, { self: true, optional: true });
 
-  /**
-   * Controls tags offset.
-   */
-  @Input()
-  size: NbComponentSize = 'medium';
-
-  @Input()
-  @HostBinding('attr.tabindex')
-  tabIndex: number = 0;
-
-  @Input()
-  @HostBinding('attr.role')
-  role: string = 'listbox';
-
-  @Input()
-  @HostBinding('attr.aria-multiselectable')
-  get multiple(): boolean {
-    return this._multiple;
-  }
-  set multiple(value: boolean) {
-    this._multiple = convertToBoolProperty(value);
-  }
-  protected _multiple: boolean = false;
-  static ngAcceptInputType_multiple: NbBooleanInput;
-
-  @HostBinding('attr.aria-activedescendant')
-  activeTagId: string | null = null;
+  protected readonly contentTags = contentChildren(NbTagComponent);
+  protected readonly valueTags = viewChildren(NbTagComponent);
 
   /**
-   * Emits when tag need to be removed (whether because of click on the remove button
-   * or when `delete` or `backspace` key pressed).
+   * All tags of the list: the ones it shows for its value, then the ones placed in it.
    */
-  @Output() readonly tagRemove: EventEmitter<NbTagComponent> = new EventEmitter<NbTagComponent>();
+  readonly tags = computed(() => [...this.valueTags(), ...this.contentTags()]);
+  readonly tagInput = contentChild(NbTagInputDirective);
+  readonly autocompleteDirective = contentChild(NbAutocompleteRef);
 
-  @HostBinding('class.nb-tag-list-with-input')
-  get _hasInput(): boolean {
-    return !!this.tagInput;
-  }
+  /**
+   * The size of the tags and their spacing. With an `nbTagInput`, the input's `fieldSize` sizes the list and its tags
+   * instead, as its `status` and `shape` style it.
+   */
+  readonly sizeInput = input<NbComponentSize | undefined>(undefined, { alias: 'size' });
+  /** The size in use: the input's, the app's default, or 'medium'. */
+  readonly size = linkedSignal<NbComponentSize>(() => this.sizeInput() ?? this.nbDefaults().size ?? 'medium');
 
-  @HostBinding('class.focus')
-  get _isFocused(): boolean {
-    return this.focused;
-  }
+  /** Tabindex of the list, e.g. `tabIndex="-1"`, as a select's. */
+  readonly tabIndex = input<number, unknown>(0, { transform: numberAttribute });
 
-  @HostBinding('class.input-full-width')
-  get _isFullWidth(): boolean {
-    return !!this.tagInput?.fullWidth;
-  }
+  readonly role = input<string>('listbox');
 
-  @HostBinding('class')
-  get _inputClasses(): string[] {
-    if (this._hasInput) {
+  /** Lets several tags be selected at once; otherwise selecting a tag deselects the others. */
+  readonly multiple = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
+
+  /**
+   * The tags, when the list manages them; usually bound through a form control or `ngModel` instead.
+   * Leave it unset to place `nb-tag`s in the list yourself.
+   */
+  readonly value = model<string[]>();
+
+  /**
+   * Decides whether typed text can become a tag; rejected text stays in the input.
+   */
+  readonly tagValidator = input<(tag: string) => boolean>(() => true);
+
+  /**
+   * Whether text left in the input becomes tags when the input loses focus.
+   */
+  readonly addOnBlur = input<boolean, NbBooleanInput>(true, { transform: convertToBoolProperty });
+
+  /**
+   * Whether the list shows and edits the tags of its value.
+   */
+  readonly managed = computed(() => this.value() !== undefined);
+
+  /** Disables the list: its input, and removing its tags. */
+  readonly disabled = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
+
+  /**
+   * Whether it's disabled: the `disabled` input, or the form's disabled state, whichever changed last. A managed list
+   * sets its input's disabled state from this.
+   */
+  readonly isDisabled = linkedSignal(() => this.disabled());
+
+  /**
+   * Emits a tag the user removes, with its cross or the Backspace or Delete key. A managed list also takes it out of
+   * its value; otherwise the app does.
+   */
+  readonly tagRemove = output<NbTagComponent>();
+
+  protected readonly focused = signal(false);
+
+  readonly activeTagId = signal<string | undefined>(undefined);
+
+  protected readonly keyManager: NbActiveDescendantKeyManager<NbTagComponent> = this.activeDescendantKeyManagerFactory
+    .create(this.tags, inject(Injector))
+    .withHorizontalOrientation(this.directionService.getDirection())
+    .withWrap();
+
+  readonly _hasInput = computed(() => !!this.tagInput());
+
+  readonly _isFocused = this.focused.asReadonly();
+
+  readonly _isFullWidth = computed(() => !!this.tagInput()?.fullWidth());
+
+  readonly _inputClasses = computed(() => {
+    const tagInput = this.tagInput();
+    if (tagInput) {
       return [
-        `shape-${this.tagInput.shape}`,
-        `size-${this.tagInput.fieldSize}`,
-        this.statusService.getStatusClass(this.tagInput.status),
+        `shape-${tagInput.shape()}`,
+        `size-${tagInput.fieldSize()}`,
+        // With `nbValidation`, the status it gives while the list shows errors or success.
+        this.statusService.getStatusClass(this.validation?.status() ?? tagInput.status()),
       ];
     }
 
-    return [`size-${this.size}`];
-  }
+    return [`size-${this.size()}`];
+  });
 
-  @HostListener('keydown', ['$event'])
-  _onKeydown(event: KeyboardEvent): void {
-    this.keyDown$.next(event);
-  }
+  /** The size of the list's tags: its input's `fieldSize`, or its `size` without an input. */
+  readonly tagSize = computed(() => this.tagInput()?.fieldSize() ?? this.size());
 
-  @HostListener('click', ['$event'])
-  _onClick({ target }: MouseEvent): void {
-    const clickedTag = this.tags.find((tag: NbTagComponent) => tag._hostElement.nativeElement === target);
-    if (clickedTag) {
-      this.tagClick$.next(clickedTag);
-    }
-  }
+  protected onChange: (value: string[]) => void = () => undefined;
+  protected onTouched = () => {};
 
-  constructor(
-    protected hostElement: ElementRef<HTMLElement>,
-    protected cd: ChangeDetectorRef,
-    protected renderer: Renderer2,
-    protected zone: NgZone,
-    protected focusMonitor: NbFocusMonitor,
-    protected activeDescendantKeyManagerFactory: NbActiveDescendantKeyManagerFactoryService<NbTagComponent>,
-    protected directionService: NbLayoutDirectionService,
-    protected statusService: NbStatusService,
-  ) {}
+  constructor() {
+    enableTransitionsAfterRender(this.hostElement.nativeElement);
+    this.validation?.delegateAria();
 
-  ngOnInit() {
+    // The input carries the field's state for forms and assistive technology.
+    effect(() => {
+      const element = this.tagInput()?._hostElement.nativeElement;
+      if (element && this.managed()) {
+        element.disabled = this.isDisabled();
+      }
+      if (element && this.validation) {
+        setOrRemoveAttribute(element, 'aria-invalid', this.validation.ariaInvalid());
+        setOrRemoveAttribute(element, 'aria-describedby', this.validation.describedBy());
+        // An `nbLabel` names the input; without one, it keeps a name of its own.
+        const labelledBy = this.validation.labelledBy();
+        if (labelledBy) {
+          element.setAttribute('aria-labelledby', labelledBy);
+        }
+        setOrRemoveAttribute(element, 'aria-required', this.validation.ariaRequired());
+      }
+    });
+
+    toObservable(this.tagInput)
+      .pipe(
+        switchMap((tagInput) => {
+          if (!tagInput) {
+            return EMPTY;
+          }
+          const element = tagInput._hostElement.nativeElement;
+          return merge(
+            outputToObservable(tagInput.tagAdd).pipe(map(() => 'separator')),
+            fromEvent(element, 'blur').pipe(
+              filter(() => this.addOnBlur()),
+              map(() => 'blur'),
+            ),
+            // Pasted lists become tags once the text is in the input.
+            fromEvent(element, 'paste').pipe(map(() => 'paste')),
+          ).pipe(map((trigger) => ({ tagInput, trigger })));
+        }),
+        filter(() => this.managed() && !this.isDisabled()),
+        takeUntilDestroyed(),
+      )
+      .subscribe(({ tagInput, trigger }) => {
+        if (trigger === 'paste') {
+          setTimeout(() => this.addFromInput(tagInput, true));
+        } else {
+          this.addFromInput(tagInput, false);
+        }
+      });
+
     this.focusMonitor
       .monitor(this.hostElement, true)
       .pipe(
         map((origin) => !!origin),
-        finalize(() => this.focusMonitor.stopMonitoring(this.hostElement)),
-        takeUntil(this.destroy$),
+        takeUntilDestroyed(),
       )
-      .subscribe((isFocused: boolean) => this.onFocusChange(isFocused));
-  }
+      .subscribe((isFocused: boolean) => untracked(() => this.onFocusChange(isFocused)));
+    this.destroyRef.onDestroy(() => this.focusMonitor.stopMonitoring(this.hostElement));
 
-  ngAfterContentInit() {
-    this.initKeyManager();
-    this.setAutocompleteCustomHost();
-  }
+    this.keyManager.change
+      .pipe(takeUntilDestroyed())
+      .subscribe(() => this.activeTagId.set(this.keyManager.activeItem?._id));
 
-  ngAfterViewInit() {
-    this.listenToLayoutDirectionChange();
-    this.listenListKeyDown();
-    this.listenInputKeyDown();
-    this.listenTagClick();
-    this.listenTagRemove();
-    this.listenTagDestroy();
-    this.listenActiveTagChange();
-    this.listenNoTags();
+    effect(() => this.keyManager.withHorizontalOrientation(this.directionService.direction()));
 
-    // TODO: #2254
-    this.zone.runOutsideAngular(() =>
-      setTimeout(() => {
-        this.renderer.addClass(this.hostElement.nativeElement, 'nb-transition');
-      }),
-    );
-  }
+    // The autocomplete options open below the whole list, not just the input.
+    effect(() => this.autocompleteDirective()?.overlayHost.set(this.hostElement));
 
-  ngOnDestroy() {
-    this.destroy$.next();
-  }
-
-  protected initKeyManager(): void {
-    this.keyManager = this.activeDescendantKeyManagerFactory
-      .create(this.tags)
-      .withHorizontalOrientation(this.directionService.getDirection())
-      .withWrap();
-  }
-
-  protected listenToLayoutDirectionChange(): void {
-    this.directionService
-      .onDirectionChange()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((direction: NbLayoutDirection) => this.keyManager.withHorizontalOrientation(direction));
-  }
-
-  protected listenListKeyDown(): void {
-    const tagListKeyDown$ = this.keyDown$.pipe(
-      filter(({ target }: KeyboardEvent) => target === this.hostElement.nativeElement),
-    );
-    const activeTagKeyDown$ = tagListKeyDown$.pipe(filter(() => !!this.keyManager.activeItem));
-
-    tagListKeyDown$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((event: KeyboardEvent) => this.keyManager.onKeydown(event));
-
-    activeTagKeyDown$
-      .pipe(
-        filter(({ keyCode }: KeyboardEvent) => keyCode === SPACE),
-        takeUntil(this.destroy$),
-      )
-      .subscribe((event: KeyboardEvent) => {
-        this.toggleTag(this.keyManager.activeItem);
-        // Prevents page scroll.
-        event.preventDefault();
-      });
-
-    activeTagKeyDown$
-      .pipe(
-        filter(({ keyCode }: KeyboardEvent) => this.isBackspaceOrDelete(keyCode)),
-        map(() => this.keyManager.activeItem),
-        takeUntil(this.destroy$),
-      )
-      .subscribe((tagToRemove: NbTagComponent) => tagToRemove._remove());
-  }
-
-  protected listenInputKeyDown(): void {
-    const inputKeyDown$ = this.keyDown$.pipe(
-      filter(({ target }: KeyboardEvent) => target === this.tagInput?._hostElement.nativeElement),
-    );
-
-    inputKeyDown$
-      .pipe(
-        filter(({ keyCode }: KeyboardEvent) => {
-          return this.tagInput._value === '' && this.isBackspaceOrDelete(keyCode) && this.tags.length > 0;
-        }),
-        takeUntil(this.destroy$),
-      )
-      .subscribe(() => {
-        this.hostElement.nativeElement.focus();
-        this.keyManager.setLastItemActive();
-        this.cd.markForCheck();
-      });
-  }
-
-  protected listenTagClick(): void {
-    this.tagClick$.pipe(takeUntil(this.destroy$)).subscribe((clickedTag: NbTagComponent) => {
-      this.toggleTag(clickedTag);
-      this.keyManager.setActiveItem(clickedTag);
+    effect(() => {
+      if (this.tags().length === 0) {
+        untracked(() => this.focusInputIfActive());
+      }
     });
-  }
 
-  protected listenTagRemove(): void {
-    this.tags.changes
+    const tags$ = toObservable(this.tags);
+    tags$
       .pipe(
-        startWith(this.tags),
-        switchMap((tags: QueryList<NbTagComponent>) => merge(...tags.map((tag: NbTagComponent) => tag.remove))),
-        takeUntil(this.destroy$),
+        switchMap((tags) => merge(...tags.map((tag) => outputToObservable(tag.remove)))),
+        takeUntilDestroyed(),
       )
-      .subscribe((tagToRemove: NbTagComponent) => this.tagRemove.emit(tagToRemove));
-  }
+      .subscribe((tagToRemove: NbTagComponent) => {
+        this.tagRemove.emit(tagToRemove);
+        if (this.managed() && !this.isDisabled() && this.valueTags().includes(tagToRemove)) {
+          this.setValue((this.value() ?? []).filter((tag) => tag !== tagToRemove.text()));
+        }
+      });
 
-  protected listenTagDestroy(): void {
-    this.tags.changes
+    tags$
       .pipe(
-        startWith(this.tags),
-        switchMap((tags: QueryList<NbTagComponent>) => merge(...tags.map((tag: NbTagComponent) => tag.destroy$))),
+        switchMap((tags) => merge(...tags.map((tag) => tag.destroy$))),
         filter((destroyedTag: NbTagComponent) => destroyedTag === this.keyManager.activeItem),
-        map((destroyedTag: NbTagComponent) => destroyedTag === this.tags.last),
-        takeUntil(this.destroy$),
+        map((destroyedTag: NbTagComponent) => destroyedTag === this.tags().at(-1)),
+        takeUntilDestroyed(),
       )
       .subscribe((isLastTagDestroyed: boolean) => {
         if (isLastTagDestroyed) {
@@ -307,76 +318,163 @@ export class NbTagListComponent implements OnInit, AfterContentInit, AfterViewIn
       });
   }
 
-  protected listenNoTags(): void {
-    this.tags.changes
-      .pipe(
-        startWith(this.tags),
-        filter((tags: QueryList<NbTagComponent>) => tags.length === 0),
-        takeUntil(this.destroy$),
-      )
-      .subscribe(() => this.focusInputIfActive());
+  _onKeydown(event: KeyboardEvent) {
+    const tagInput = this.tagInput();
+    if (event.target === this.hostElement.nativeElement) {
+      this.handleListKeydown(event);
+    } else if (tagInput && event.target === tagInput._hostElement.nativeElement) {
+      this.handleInputKeydown(event, tagInput);
+    }
   }
 
-  protected listenActiveTagChange(): void {
-    this.keyManager.change
-      .pipe(
-        map(() => this.keyManager.activeItem?._id),
-        takeUntil(this.destroy$),
-      )
-      .subscribe((activeTagId: string | null) => {
-        this.activeTagId = activeTagId;
-        this.cd.markForCheck();
-      });
+  _onClick({ target }: MouseEvent) {
+    // The tag clicked anywhere in, e.g. on its text, but not on its remove button, which removes it.
+    const element = target instanceof Element ? target : null;
+    const clickedTag = element?.closest('.nb-tag-remove')
+      ? undefined
+      : this.tags().find((tag: NbTagComponent) => tag._hostElement.nativeElement.contains(element));
+    if (clickedTag) {
+      this.toggleTag(clickedTag);
+      this.keyManager.setActiveItem(clickedTag);
+    }
   }
 
-  protected onFocusChange(isFocused: boolean): void {
-    this.focused = isFocused;
-    this.cd.markForCheck();
+  protected handleListKeydown(event: KeyboardEvent) {
+    this.keyManager.onKeydown(event);
 
-    if (!isFocused || this.tagInput?.focused$.value) {
-      this.keyManager?.setActiveItem(-1);
+    const activeTag = this.keyManager.activeItem;
+    if (!activeTag) {
+      return;
+    }
+    if (event.key === ' ') {
+      this.toggleTag(activeTag);
+      // Prevents page scroll.
+      event.preventDefault();
+    } else if (this.isBackspaceOrDelete(event.key)) {
+      activeTag._remove();
+      // Backspace's default action outside a text field is going back, in Safari and others.
+      event.preventDefault();
+    }
+  }
+
+  protected handleInputKeydown(event: KeyboardEvent, tagInput: NbTagInputDirective) {
+    if (tagInput._value === '' && this.isBackspaceOrDelete(event.key) && !isComposing(event) && this.tags().length > 0) {
+      // Focus moves to the list before the key's default action runs, which there would be going back.
+      event.preventDefault();
+      this.hostElement.nativeElement.focus();
+      this.keyManager.setLastItemActive();
+    }
+  }
+
+  writeValue(value?: string[] | null) {
+    this.value.set(value ?? []);
+  }
+
+  registerOnChange(fn: (value: string[]) => void) {
+    this.onChange = fn;
+  }
+
+  registerOnTouched(fn: () => void) {
+    this.onTouched = fn;
+  }
+
+  setDisabledState(isDisabled: boolean) {
+    this.isDisabled.set(isDisabled);
+  }
+
+  /**
+   * Adds tags to a managed list, skipping empty ones and ones it already has.
+   */
+  addTags(tags: string[]) {
+    const value = this.value() ?? [];
+    const added = tags
+      .map((tag) => tag.trim())
+      .filter((tag, i, all) => tag && !value.includes(tag) && all.indexOf(tag) === i);
+    if (added.length) {
+      this.setValue([...value, ...added]);
+    }
+  }
+
+  protected setValue(value: string[]) {
+    this.value.set(value);
+    this.onChange(value);
+  }
+
+  // Turns the input's text into tags; with `whenSeparated`, only when it holds separated parts, as a pasted list does.
+  protected addFromInput(tagInput: NbTagInputDirective, whenSeparated: boolean) {
+    const separators = [...new Set([...tagInput.separatorKeys().map((key) => SEPARATOR_CHARACTERS[key]), '\n'])]
+      .filter(Boolean);
+    const parts = this.split(tagInput._value, separators);
+    if (whenSeparated && parts.length < 2) {
+      return;
+    }
+    const validator = this.tagValidator();
+    const value = this.value() ?? [];
+    const rejected = parts.filter((part) => !value.includes(part) && !validator(part));
+    this.addTags(parts.filter((part) => validator(part)));
+    // Rejected parts stay in the input, separated as they were typed.
+    const separator = separators.find((candidate) => candidate.trim()) ?? '';
+    tagInput._hostElement.nativeElement.value = rejected.join(`${separator} `);
+  }
+
+  protected split(text: string, separators: string[]): string[] {
+    let parts = [text];
+    for (const separator of separators) {
+      parts = parts.flatMap((part) => part.split(separator));
+    }
+    return parts.map((part) => part.trim()).filter(Boolean);
+  }
+
+  protected onFocusChange(isFocused: boolean) {
+    this.focused.set(isFocused);
+    if (!isFocused) {
+      this.onTouched();
+    }
+
+    if (!isFocused || this.tagInput()?.focused()) {
+      this.keyManager.setActiveItem(-1);
       return;
     }
 
     // Focus input when focusing tag list without tags. Otherwise select first tag.
-    if (this.tags.length === 0 && this._hasInput) {
+    if (this.tags().length === 0 && this._hasInput()) {
       this.focusInput();
     } else {
       this.keyManager.setFirstItemActive();
     }
   }
 
-  protected isBackspaceOrDelete(keyCode: number): boolean {
-    return keyCode === BACKSPACE || keyCode === DELETE;
+  protected isBackspaceOrDelete(key: string): boolean {
+    return key === 'Backspace' || key === 'Delete';
   }
 
-  protected setAutocompleteCustomHost(): void {
-    if (this.autocompleteDirective) {
-      this.autocompleteDirective.customOverlayHost = this.hostElement;
-    }
-  }
-
-  protected toggleTag(tagToToggle: NbTagComponent): void {
+  protected toggleTag(tagToToggle: NbTagComponent) {
     tagToToggle._toggleSelection();
 
-    if (tagToToggle.selected && !this.multiple) {
-      this.tags.forEach((tag: NbTagComponent) => {
+    if (tagToToggle.isSelected() && !this.multiple()) {
+      this.tags().forEach((tag: NbTagComponent) => {
         if (tag !== tagToToggle) {
-          tag.selected = false;
+          tag.setSelected(false);
         }
       });
     }
   }
 
-  protected focusInput(): void {
-    if (this._hasInput) {
-      this.tagInput._hostElement.nativeElement.focus();
-    }
+  protected focusInput() {
+    this.tagInput()?._hostElement.nativeElement.focus();
   }
 
-  protected focusInputIfActive(): void {
-    if (this._isFocused) {
+  protected focusInputIfActive() {
+    if (this._isFocused()) {
       this.focusInput();
     }
+  }
+}
+
+function setOrRemoveAttribute(element: HTMLElement, name: string, value: string | null) {
+  if (value === null) {
+    element.removeAttribute(name);
+  } else {
+    element.setAttribute(name, value);
   }
 }
