@@ -1,49 +1,48 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
+import { Component } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
-import { Observable, of } from 'rxjs';
-
-import { FormControl } from '@angular/forms';
+import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { map, startWith } from 'rxjs/operators';
+import {
+  NbCardComponent,
+  NbCardBodyComponent,
+  NbInputDirective,
+  NbAutocompleteDirective,
+  NbAutocompleteComponent,
+  NbOptionComponent,
+} from '@liquid-js/lyr-core';
 
 @Component({
-    selector: 'nb-autocomplete-custom-display',
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    templateUrl: './autocomplete-custom-display.component.html',
-    standalone: false
+  selector: 'nb-autocomplete-custom-display',
+  templateUrl: './autocomplete-custom-display.component.html',
+  imports: [
+    NbCardComponent,
+    NbCardBodyComponent,
+    NbInputDirective,
+    FormsModule,
+    NbAutocompleteDirective,
+    ReactiveFormsModule,
+    NbAutocompleteComponent,
+    NbOptionComponent,
+  ],
 })
-export class AutocompleteCustomDisplayComponent implements OnInit {
+export class AutocompleteCustomDisplayComponent {
 
-  options: string[];
-  filteredOptions$: Observable<string[]>;
-  inputFormControl: FormControl;
-
-  ngOnInit() {
-
-    this.options = ['Option 1', 'Option 2', 'Option 3'];
-    this.filteredOptions$ = of(this.options);
-
-    this.inputFormControl = new FormControl();
-
-    this.filteredOptions$ = this.inputFormControl.valueChanges
-      .pipe(
-        startWith(''),
-        map(filterString => this.filter(filterString)),
-      );
-
-  }
+  readonly options = ['Option 1', 'Option 2', 'Option 3'];
+  readonly inputFormControl = new FormControl();
+  readonly filteredOptions = toSignal(
+    this.inputFormControl.valueChanges.pipe(
+      startWith(''),
+      map((filterString) => this.filter(filterString)),
+    ),
+  );
 
   private filter(value: string): string[] {
     const filterValue = value.toLowerCase();
-    return this.options.filter(optionValue => optionValue.toLowerCase().includes(filterValue));
+    return this.options.filter((optionValue) => optionValue.toLowerCase().includes(filterValue));
   }
 
   viewHandle(value: string) {
     return value.toUpperCase();
   }
 }
-

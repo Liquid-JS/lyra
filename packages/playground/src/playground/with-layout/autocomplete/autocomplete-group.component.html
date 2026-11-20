@@ -1,8 +1,7 @@
 <nb-card size="medium">
   <nb-card-body>
 
-    <input
-      [formControl]="inputFormControl"
+    <input [formControl]="inputFormControl"
       nbInput
       type="text"
       placeholder="Enter value"
@@ -10,11 +9,15 @@
 
     <nb-autocomplete #auto>
 
-      <nb-option-group *ngFor="let group of filteredGroups$ | async; trackBy: trackByFn"  [title]="group.name" >
-        <nb-option *ngFor="let option of group.children" [value]="option">
+      @for (group of filteredGroups(); track trackByFn($index, group)) {
+      <nb-option-group [title]="group.name">
+        @for (option of group.children; track option) {
+        <nb-option [value]="option">
           {{ option }}
         </nb-option>
+        }
       </nb-option-group>
+      }
 
     </nb-autocomplete>
 

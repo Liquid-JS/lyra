@@ -1,53 +1,58 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 import {
   AfterViewInit,
-  ChangeDetectorRef,
   ComponentRef,
+  computed,
+  DestroyRef,
   Directive,
   ElementRef,
   forwardRef,
-  HostBinding,
-  HostListener,
-  Input,
+  inject,
+  Injector,
+  input,
+  linkedSignal,
   OnDestroy,
-  QueryList,
   Renderer2,
+  signal,
 } from '@angular/core';
+import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
-import { merge, Subject } from 'rxjs';
-import { filter, startWith, switchMap, takeUntil, tap } from 'rxjs/operators';
+import { merge } from 'rxjs';
+import { filter, skip, switchMap } from 'rxjs/operators';
 
-import { NbOverlayRef, NbScrollStrategy } from '../cdk/overlay/mapping';
-import { NbTrigger, NbTriggerStrategy, NbTriggerStrategyBuilderService } from '../cdk/overlay/overlay-trigger';
-import { NbOverlayService } from '../cdk/overlay/overlay-service';
-import { ENTER, ESCAPE } from '../cdk/keycodes/keycodes';
-import {
-  NbAdjustableConnectedPositionStrategy,
-  NbAdjustment,
-  NbPosition,
-  NbPositionBuilderService,
-} from '../cdk/overlay/overlay-position';
-import {
-  NbActiveDescendantKeyManager,
-  NbActiveDescendantKeyManagerFactoryService,
-  NbKeyManagerActiveItemMode,
-} from '../cdk/a11y/descendant-key-manager';
-import { NbScrollStrategies } from '../cdk/adapter/block-scroll-strategy-adapter';
+import { NbOverlayRef, NbScrollStrategy } from '@liquid-js/lyr-core/cdk';
+import { NbTrigger, NbTriggerStrategy, NbTriggerStrategyBuilderService } from '@liquid-js/lyr-core/cdk';
+import { NbOverlayService } from '@liquid-js/lyr-core/cdk';
+import { ɵisComposing as isComposing } from '@liquid-js/lyr-core/base';
+import { NbAdjustableConnectedPositionStrategy, NbAdjustment, NbPosition, NbPositionBuilderService } from '@liquid-js/lyr-core/cdk';
+import { ɵNbActiveDescendantKeyManager as NbActiveDescendantKeyManager, ɵNbActiveDescendantKeyManagerFactoryService as NbActiveDescendantKeyManagerFactoryService, ɵNbKeyManagerActiveItemMode as NbKeyManagerActiveItemMode } from '@liquid-js/lyr-core/cdk';
+import { NbScrollStrategies } from '@liquid-js/lyr-core/cdk';
 import { NbOptionComponent } from '../option/option.component';
+import { NbOptionGroupComponent } from '../option/option-group.component';
 import { NbAutocompleteComponent } from './autocomplete.component';
+import { NbAutocompleteRef } from './autocomplete-ref';
+import { NbFormFieldControl } from '@liquid-js/lyr-core/form-field';
 
 /**
- * The `NbAutocompleteDirective` provides a capability to expand input with
- * `NbAutocompleteComponent` overlay containing options to select and fill input with.
+ * Attaches an `nb-autocomplete` to an input: its options open below the input on focus, click or typing, and the
+ * chosen one fills the input.
+ *
+ * The input is a combobox. Up and Down open the options and move the active one, Enter selects it, Escape closes
+ * the options and keeps the text, and they close when the focus leaves them. A form control bound to the input gets
+ * the typed text as well as the value of a chosen option.
  *
  * @stacked-example(Showcase, autocomplete/autocomplete-showcase.component)
  *
  * ### Installation
+ *
+ * Import `NbAutocompleteDirective`, `NbAutocompleteComponent`, `NbOptionComponent` into your standalone component:
+ * ```ts
+ * @Component({
+ *   imports: [NbAutocompleteDirective, NbAutocompleteComponent, NbOptionComponent],
+ * })
+ * export class PageComponent { }
+ * ```
+ *
+ * With NgModules:
  *
  * Import `NbAutocompleteModule` to your feature module.
  * ```ts
@@ -61,142 +66,136 @@ import { NbAutocompleteComponent } from './autocomplete.component';
  * ```
  * ### Usage
  *
- * You can bind control with form controls or ngModel.
+ * The input binds to a form control or `ngModel`:
  *
  * @stacked-example(Autocomplete form binding, autocomplete/autocomplete-form.component)
  *
- * Options in the autocomplete may be grouped using `nb-option-group` component.
+ * Options are grouped with `nb-option-group`:
  *
  * @stacked-example(Grouping, autocomplete/autocomplete-group.component)
  *
- * Autocomplete may change selected option value via provided function.
+ * `handleDisplayFn` turns a value into the text shown in the input, e.g. for options with object values:
  *
  * @stacked-example(Custom display, autocomplete/autocomplete-custom-display.component)
  *
- * Also, autocomplete may make first option in option list active automatically.
+ * With `activeFirst` the first option is active as soon as the options open, so Enter selects it:
  *
  * @stacked-example(Active first, autocomplete/autocomplete-active-first.component)
  *
- * */
+ * The input is disabled with `disabled`, or through its form control:
+ * @stacked-example(Disabled, autocomplete/autocomplete-disabled.component)
+ */
 @Directive({
-    selector: 'input[nbAutocomplete]',
-    providers: [
-        {
-            provide: NG_VALUE_ACCESSOR,
-            useExisting: forwardRef(() => NbAutocompleteDirective),
-            multi: true,
-        },
-    ],
-    standalone: false
+  selector: 'input[nbAutocomplete]',
+  providers: [
+    {
+      provide: NG_VALUE_ACCESSOR,
+      useExisting: forwardRef(() => NbAutocompleteDirective),
+      multi: true,
+    },
+    { provide: NbAutocompleteRef, useExisting: forwardRef(() => NbAutocompleteDirective) },
+  ],
+  host: {
+    role: 'combobox',
+    'aria-autocomplete': 'list',
+    'aria-haspopup': 'listbox',
+    '[class.nb-autocomplete-position-top]': "isOpen() && !!autocomplete().options().length && autocomplete().overlayPosition() === 'top'",
+    '[class.nb-autocomplete-position-bottom]': "isOpen() && !!autocomplete().options().length && autocomplete().overlayPosition() === 'bottom'",
+    '[attr.aria-expanded]': 'isOpen()',
+    '[attr.aria-controls]': 'isOpen() ? autocomplete().id : null',
+    '[attr.aria-activedescendant]': 'isOpen() ? activeOption()?.id ?? null : null',
+    '(input)': 'handleInput()',
+    '(keydown.arrowDown)': 'handleKeydown()',
+    '(keydown.arrowUp)': 'handleKeydown()',
+    '(blur)': 'handleBlur()',
+  },
 })
-export class NbAutocompleteDirective<T> implements OnDestroy, AfterViewInit, ControlValueAccessor {
-  /**
-   * NbAutocompleteComponent instance passed via input.
-   * */
-  protected _autocomplete: NbAutocompleteComponent<T>;
+export class NbAutocompleteDirective<T> implements NbAutocompleteRef, OnDestroy, AfterViewInit, ControlValueAccessor {
+  protected readonly hostRef = inject(ElementRef);
+  protected readonly overlay = inject(NbOverlayService);
+  protected readonly triggerStrategyBuilder = inject(NbTriggerStrategyBuilderService);
+  protected readonly positionBuilder = inject(NbPositionBuilderService);
+  protected readonly activeDescendantKeyManagerFactory = inject(
+    NbActiveDescendantKeyManagerFactoryService,
+  ) as NbActiveDescendantKeyManagerFactoryService<NbOptionComponent<T>>;
+  protected readonly renderer = inject(Renderer2);
+  protected readonly injector = inject(Injector);
+  protected readonly destroyRef = inject(DestroyRef);
+
+  /** @docs-private */
+  protected triggerStrategy?: NbTriggerStrategy;
+
+  protected positionStrategy?: NbAdjustableConnectedPositionStrategy;
+
+  protected overlayRef?: NbOverlayRef;
+
+  protected keyManager?: NbActiveDescendantKeyManager<NbOptionComponent<T>>;
+
+  // The form gets the text typed in the input too.
+  protected _onChange: (value?: T | string) => void = () => {};
+
+  protected writtenValue?: T;
+  protected hasWrittenValue = false;
+
+  protected _onTouched: () => void = () => {};
+
+  protected readonly opened = signal(false);
 
   /**
-   * Trigger strategy used by overlay.
-   * @docs-private
-   * */
-  protected triggerStrategy: NbTriggerStrategy;
-
-  protected positionStrategy: NbAdjustableConnectedPositionStrategy;
-
-  protected overlayRef: NbOverlayRef;
-
-  protected keyManager: NbActiveDescendantKeyManager<NbOptionComponent<T>>;
-
-  protected destroy$: Subject<void> = new Subject<void>();
-
-  protected _onChange: (value: T) => void = () => {};
-
-  protected _onTouched = () => {};
+   * Whether the options are open.
+   */
+  readonly isOpen = this.opened.asReadonly();
 
   /**
-   * Determines is autocomplete overlay opened.
-   * */
-  get isOpen(): boolean {
-    return this.overlayRef && this.overlayRef.hasAttached();
+   * Whether the options are closed.
+   */
+  readonly isClosed = computed(() => !this.isOpen());
+
+  // The option the key manager made active, which the input announces as its active descendant.
+  protected readonly activeOption = signal<NbOptionComponent<T> | undefined>(undefined);
+
+  /**
+   * Whether the open options have an active option, which Enter selects.
+   */
+  get hasActiveOption(): boolean {
+    return !!(this.isOpen() && this.keyManager?.activeItem);
   }
 
   /**
-   * Determines is autocomplete overlay closed.
-   * */
-  get isClosed(): boolean {
-    return !this.isOpen;
-  }
+   * The `nb-autocomplete` with the options.
+   */
+  readonly autocomplete = input.required<NbAutocompleteComponent<T>>({ alias: 'nbAutocomplete' });
 
   /**
-   * Provides autocomplete component.
-   * */
-  @Input('nbAutocomplete')
-  get autocomplete(): NbAutocompleteComponent<T> {
-    return this._autocomplete;
-  }
-  set autocomplete(autocomplete: NbAutocompleteComponent<T>) {
-    this._autocomplete = autocomplete;
-  }
+   * The options' distance from the input, in pixels.
+   */
+  readonly overlayOffset = input<number>(8);
 
   /**
-   * Determines options overlay offset (in pixels).
-   **/
-  @Input() overlayOffset: number = 8;
+   * What scrolling the page does while the options are open: `block` (default) prevents it, `close` closes them,
+   * `reposition` moves them along, and `noop` leaves them where they are.
+   */
+  readonly scrollStrategy = input<NbScrollStrategies>('block');
 
   /**
-   * Determines options overlay scroll strategy.
-   **/
-  @Input() scrollStrategy: NbScrollStrategies = 'block';
+   * An element to position the options at instead of the input.
+   */
+  readonly customOverlayHost = input<ElementRef>();
 
-  @Input() customOverlayHost: ElementRef;
-
-  @HostBinding('class.nb-autocomplete-position-top')
-  get top(): boolean {
-    return this.isOpen && this.autocomplete.options.length && this.autocomplete.overlayPosition === NbPosition.TOP;
-  }
-
-  @HostBinding('class.nb-autocomplete-position-bottom')
-  get bottom(): boolean {
-    return this.isOpen && this.autocomplete.options.length && this.autocomplete.overlayPosition === NbPosition.BOTTOM;
-  }
-
-  @HostBinding('attr.role')
-  role: string = 'combobox';
-
-  @HostBinding('attr.aria-autocomplete')
-  ariaAutocomplete: string = 'list';
-
-  @HostBinding('attr.haspopup')
-  hasPopup: string = 'true';
-
-  @HostBinding('attr.aria-expanded')
-  get ariaExpanded(): string {
-    return this.isOpen && this.isOpen.toString();
-  }
-
-  @HostBinding('attr.aria-owns')
-  get ariaOwns() {
-    return this.isOpen ? this.autocomplete.id : null;
-  }
-
-  @HostBinding('attr.aria-activedescendant')
-  get ariaActiveDescendant() {
-    return this.isOpen && this.keyManager.activeItem ? this.keyManager.activeItem.id : null;
-  }
-
-  constructor(
-    protected hostRef: ElementRef,
-    protected overlay: NbOverlayService,
-    protected cd: ChangeDetectorRef,
-    protected triggerStrategyBuilder: NbTriggerStrategyBuilderService,
-    protected positionBuilder: NbPositionBuilderService,
-    protected activeDescendantKeyManagerFactory: NbActiveDescendantKeyManagerFactoryService<NbOptionComponent<T>>,
-    protected renderer: Renderer2,
-  ) {}
+  /**
+   * The element the options overlay is positioned at: `customOverlayHost` until a component such as `nb-tag-list`
+   * sets another, or else the input.
+   */
+  readonly overlayHost = linkedSignal(() => this.customOverlayHost());
 
   ngAfterViewInit() {
     this.triggerStrategy = this.createTriggerStrategy();
-    this.subscribeOnTriggers();
+    this.subscribeOnTriggers(this.triggerStrategy);
+    // A form control writes its initial value before the autocomplete panel has its `handleDisplayFn`,
+    // so the value is displayed again once the panel inputs are set.
+    if (this.hasWrittenValue) {
+      this.setHostInputValue(this.writtenValue ?? '');
+    }
   }
 
   ngOnDestroy() {
@@ -211,12 +210,8 @@ export class NbAutocompleteDirective<T> implements OnDestroy, AfterViewInit, Con
     if (this.overlayRef) {
       this.overlayRef.dispose();
     }
-
-    this.destroy$.next();
-    this.destroy$.complete();
   }
 
-  @HostListener('input')
   handleInput() {
     const currentValue = this.hostRef.nativeElement.value;
     this._onChange(currentValue);
@@ -224,13 +219,10 @@ export class NbAutocompleteDirective<T> implements OnDestroy, AfterViewInit, Con
     this.show();
   }
 
-  @HostListener('keydown.arrowDown')
-  @HostListener('keydown.arrowUp')
   handleKeydown() {
     this.show();
   }
 
-  @HostListener('blur')
   handleBlur() {
     this._onTouched();
   }
@@ -243,93 +235,98 @@ export class NbAutocompleteDirective<T> implements OnDestroy, AfterViewInit, Con
   }
 
   hide() {
-    if (this.isOpen) {
-      this.overlayRef.detach();
-      // Need to update class via @HostBinding
-      this.cd.markForCheck();
+    if (this.isOpen()) {
+      this.overlayRef?.detach();
+      this.opened.set(false);
     }
   }
 
-  writeValue(value: T): void {
+  writeValue(value: T) {
+    this.writtenValue = value;
+    this.hasWrittenValue = true;
     this.handleInputValueUpdate(value);
   }
 
-  registerOnChange(fn: (value: any) => {}): void {
+  registerOnChange(fn: (value?: T | string) => void) {
     this._onChange = fn;
   }
 
-  registerOnTouched(fn: any): void {
+  registerOnTouched(fn: () => void) {
     this._onTouched = fn;
   }
 
-  setDisabledState(disabled: boolean): void {
+  setDisabledState(disabled: boolean) {
     this.renderer.setProperty(this.hostRef.nativeElement, 'disabled', disabled);
   }
 
-  protected subscribeOnOptionClick() {
-    /**
-     * If the user changes provided options list in the runtime we have to handle this
-     * and resubscribe on options selection changes event.
-     * Otherwise, the user will not be able to select new options.
-     * */
-    this.autocomplete.options.changes
-      .pipe(
-        tap(() => this.setActiveItem()),
-        startWith(this.autocomplete.options),
-        switchMap((options: QueryList<NbOptionComponent<T>>) => {
-          return merge(...options.map((option) => option.click));
-        }),
-        takeUntil(this.destroy$),
-      )
-      .subscribe((clickedOption: NbOptionComponent<T>) => this.handleInputValueUpdate(clickedOption.value, true));
-  }
+  protected subscribeOnOptions() {
+    const options$ = toObservable(this.autocomplete().options, { injector: this.injector });
 
-  protected subscribeOnPositionChange() {
-    this.positionStrategy.positionChange.pipe(takeUntil(this.destroy$)).subscribe((position: NbPosition) => {
-      this.autocomplete.overlayPosition = position;
-      this.cd.detectChanges();
+    // Options can change at runtime, so listen to the clicks of the current ones.
+    options$
+      .pipe(
+        switchMap((options) => merge(...options.map((option) => option.click))),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe((clickedOption: NbOptionComponent<T>) => this.handleInputValueUpdate(clickedOption.value(), true));
+
+    options$.pipe(skip(1), takeUntilDestroyed(this.destroyRef)).subscribe((options) => {
+      this.setActiveItem();
+      if (!options.length) {
+        this.hide();
+      }
     });
   }
 
-  protected getActiveItem(): NbOptionComponent<T> {
-    return this.keyManager.activeItem;
+  protected subscribeOnPositionChange(positionStrategy: NbAdjustableConnectedPositionStrategy) {
+    positionStrategy.positionChange
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((position: NbPosition) => this.autocomplete().overlayPosition.set(position));
+  }
+
+  protected getActiveItem(): NbOptionComponent<T> | undefined {
+    return this.keyManager?.activeItem ?? undefined;
   }
 
   protected setupAutocomplete() {
-    this.autocomplete.setHost(this.customOverlayHost || this.hostRef);
+    // The field the input is, e.g. `nbInput`, whose size the options match; looked up once the autocomplete opens, as
+    // a field like `nbTagInput` needs this directive itself.
+    const control = this.injector.get(NbFormFieldControl, null, { self: true, optional: true });
+    this.autocomplete().setHost(
+      this.overlayHost() || this.hostRef,
+      control ? computed(() => control.controlState().size) : undefined,
+    );
   }
 
-  protected getDisplayValue(value: string) {
-    const displayFn = this.autocomplete.handleDisplayFn;
+  protected getDisplayValue(value: T | string) {
+    const displayFn = this.autocomplete().handleDisplayFn();
     return displayFn ? displayFn(value) : value;
   }
 
-  protected getContainer() {
-    return (
-      this.overlayRef &&
-      this.isOpen &&
-      <ComponentRef<any>>{
+  protected getContainer(): ComponentRef<unknown> | undefined {
+    return this.overlayRef && this.isOpen()
+      ? <ComponentRef<unknown>>{
         location: {
           nativeElement: this.overlayRef.overlayElement,
         },
       }
-    );
+      : undefined;
   }
 
-  protected handleInputValueUpdate(value: T, focusInput: boolean = false) {
+  protected handleInputValueUpdate(value?: T, focusInput: boolean = false) {
     this.setHostInputValue(value ?? '');
     this._onChange(value);
     if (focusInput) {
       this.hostRef.nativeElement.focus();
     }
-    this.autocomplete.emitSelected(value);
+    this.autocomplete().emitSelected(value);
     this.hide();
   }
 
-  protected subscribeOnTriggers() {
-    this.triggerStrategy.show$.pipe(filter(() => this.isClosed)).subscribe(() => this.show());
+  protected subscribeOnTriggers(triggerStrategy: NbTriggerStrategy) {
+    triggerStrategy.show$.pipe(filter(() => this.isClosed())).subscribe(() => this.show());
 
-    this.triggerStrategy.hide$.pipe(filter(() => this.isOpen)).subscribe(() => this.hide());
+    triggerStrategy.hide$.pipe(filter(() => this.isOpen())).subscribe(() => this.hide());
   }
 
   protected createTriggerStrategy(): NbTriggerStrategy {
@@ -340,142 +337,146 @@ export class NbAutocompleteDirective<T> implements OnDestroy, AfterViewInit, Con
       .build();
   }
 
-  protected createKeyManager(): void {
-    this.keyManager = this.activeDescendantKeyManagerFactory.create(this.autocomplete.options);
+  protected createKeyManager(): NbActiveDescendantKeyManager<NbOptionComponent<T>> {
+    const keyManager = this.activeDescendantKeyManagerFactory.create(this.autocomplete().options, this.injector);
+    this.keyManager = keyManager;
+    keyManager.change
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.activeOption.set(keyManager.activeItem ?? undefined));
+    return keyManager;
   }
 
-  protected setHostInputValue(value) {
+  protected setHostInputValue(value: T | string) {
     this.hostRef.nativeElement.value = this.getDisplayValue(value);
   }
 
   protected createPositionStrategy(): NbAdjustableConnectedPositionStrategy {
     return this.positionBuilder
-      .connectedTo(this.customOverlayHost || this.hostRef)
+      .connectedTo(this.overlayHost() || this.hostRef)
       .position(NbPosition.BOTTOM)
-      .offset(this.overlayOffset)
-      .adjustment(NbAdjustment.VERTICAL);
+      .offset(this.overlayOffset())
+      .adjustment(NbAdjustment.VERTICAL)
+      // As for nb-select: without room for the whole list, it gets the space there is and scrolls.
+      .withFlexibleDimensions(true)
+      .withViewportMargin(8 + this.overlayOffset());
   }
 
-  protected subscribeOnOverlayKeys(): void {
-    this.overlayRef
+  protected subscribeOnOverlayKeys(
+    overlayRef: NbOverlayRef,
+    keyManager: NbActiveDescendantKeyManager<NbOptionComponent<T>>,
+  ) {
+    overlayRef
       .keydownEvents()
-      .pipe(takeUntil(this.destroy$))
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((event: KeyboardEvent) => {
-        if (event.keyCode === ESCAPE && this.isOpen) {
+        if (event.key === 'Escape' && !isComposing(event) && this.isOpen()) {
+          // Only the options close, not a dialog or window the input is in.
           event.preventDefault();
+          event.stopPropagation();
           this.hostRef.nativeElement.focus();
           this.hide();
-        } else if (event.keyCode === ENTER) {
+        } else if (event.key === 'Enter' && !isComposing(event)) {
           event.preventDefault();
           const activeItem = this.getActiveItem();
           if (!activeItem) {
             return;
           }
-          this.handleInputValueUpdate(activeItem.value, true);
+          this.handleInputValueUpdate(activeItem.value(), true);
         } else {
-          this.keyManager.onKeydown(event);
-          this.scrollToOption(this.keyManager.activeItemIndex || 0);
+          keyManager.onKeydown(event);
+          this.scrollToOption(keyManager.activeItemIndex || 0);
         }
       });
   }
 
   protected setActiveItem() {
-    // If autocomplete has activeFirst input set to true,
-    // keyManager set first option active, otherwise - reset active option.
-    const mode = this.autocomplete.activeFirst
+    // With `activeFirst` the first option is active, otherwise none.
+    const mode = this.autocomplete().activeFirst()
       ? NbKeyManagerActiveItemMode.FIRST_ACTIVE
       : NbKeyManagerActiveItemMode.RESET_ACTIVE;
-    this.keyManager.setActiveItem(mode);
-    this.cd.detectChanges();
+    this.keyManager?.setActiveItem(mode);
+    this.activeOption.set(this.keyManager?.activeItem ?? undefined);
   }
 
   protected attachToOverlay() {
-    if (!this.overlayRef) {
+    let overlayRef = this.overlayRef;
+    if (!overlayRef) {
       this.setupAutocomplete();
-      this.initOverlay();
+      overlayRef = this.initOverlay();
     }
-    this.overlayRef.attach(this.autocomplete.portal);
+    overlayRef.attach(this.autocomplete().portal());
+    this.opened.set(true);
   }
 
-  protected createOverlay() {
+  protected createOverlay(positionStrategy: NbAdjustableConnectedPositionStrategy): NbOverlayRef {
     const scrollStrategy = this.createScrollStrategy();
-    this.overlayRef = this.overlay.create({
-      positionStrategy: this.positionStrategy,
+    const overlayRef = this.overlay.create({
+      positionStrategy,
       scrollStrategy,
-      panelClass: this.autocomplete.optionsPanelClass,
+      panelClass: this.autocomplete().optionsPanelClass(),
     });
+    this.overlayRef = overlayRef;
+    // The overlay can also detach itself, e.g. through its scroll strategy.
+    overlayRef.detachments().pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => this.opened.set(false));
+    return overlayRef;
   }
 
-  protected initOverlay() {
-    this.positionStrategy = this.createPositionStrategy();
+  protected initOverlay(): NbOverlayRef {
+    const positionStrategy = this.createPositionStrategy();
+    this.positionStrategy = positionStrategy;
 
-    this.createKeyManager();
-    this.subscribeOnPositionChange();
-    this.subscribeOnOptionClick();
-    this.checkOverlayVisibility();
-    this.createOverlay();
-    this.subscribeOnOverlayKeys();
-  }
-
-  protected checkOverlayVisibility() {
-    this.autocomplete.options.changes.pipe(takeUntil(this.destroy$)).subscribe(() => {
-      if (!this.autocomplete.options.length) {
-        this.hide();
-      }
-    });
+    const keyManager = this.createKeyManager();
+    this.subscribeOnPositionChange(positionStrategy);
+    this.subscribeOnOptions();
+    const overlayRef = this.createOverlay(positionStrategy);
+    this.subscribeOnOverlayKeys(overlayRef, keyManager);
+    return overlayRef;
   }
 
   protected createScrollStrategy(): NbScrollStrategy {
-    return this.overlay.scrollStrategies[this.scrollStrategy]();
+    return this.overlay.scrollStrategies[this.scrollStrategy()]();
   }
 
   protected shouldShow(): boolean {
-    return this.isClosed;
+    return this.isClosed();
   }
 
-  private scrollToOption(index: number): void {
-    const labelCount = this.countGroupLabelsBeforeOption(
-      index,
-      this._autocomplete.options,
-      this._autocomplete.optionGroups,
-    );
+  private scrollToOption(index: number) {
+    const autocomplete = this.autocomplete();
+    const list = autocomplete.list();
+    const listElement = list?.list();
+    const options = autocomplete.options();
+    const labelCount = this.countGroupLabelsBeforeOption(index, options, autocomplete.optionGroups());
 
     if (index === 0 && labelCount === 1) {
-      // If we are at the first option of the first option group, we scroll the list to the top
-      // to allow the user to read the top group's label.
-      this._autocomplete.list?.setScrollTop(0);
-    } else if (this._autocomplete.list?.list) {
-      const option = this._autocomplete.options.toArray()[index];
+      // At the first option of the first group the list scrolls to the top, so that the group's label shows too.
+      list?.setScrollTop(0);
+    } else if (list && listElement) {
+      const option = options[index];
       if (option) {
         const element = option.getHostElement();
         const newScrollPosition = this.getOptionScrollPosition(
           element.offsetTop,
           element.offsetHeight,
-          this._autocomplete.list.getScrollTop(),
-          this._autocomplete.list.list.nativeElement.offsetHeight,
+          list.getScrollTop(),
+          listElement.nativeElement.offsetHeight,
         );
 
-        this._autocomplete.list.setScrollTop(newScrollPosition);
+        list.setScrollTop(newScrollPosition);
       }
     }
   }
 
-  countGroupLabelsBeforeOption(optionIndex: number, options: QueryList<any>, optionGroups: QueryList<any>): number {
-    if (optionGroups.length) {
-      let optionsArray = options.toArray();
-      let groups = optionGroups.toArray();
-      let groupCounter = 0;
-
-      groups.forEach((group, index) => {
-        if (group.options.toArray().includes(optionsArray[optionIndex])) {
-          groupCounter = index + 1;
-        }
-      });
-
-      return groupCounter;
-    }
-
-    return 0;
+  /**
+   * The position of the option's group among the groups, counting from 1, or 0 for an option outside groups.
+   */
+  countGroupLabelsBeforeOption(
+    optionIndex: number,
+    options: readonly NbOptionComponent<T>[],
+    optionGroups: readonly NbOptionGroupComponent[],
+  ): number {
+    const group = options[optionIndex]?.group;
+    return group ? optionGroups.indexOf(group) + 1 : 0;
   }
 
   getOptionScrollPosition(

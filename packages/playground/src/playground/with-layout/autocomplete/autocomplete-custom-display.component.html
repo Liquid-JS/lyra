@@ -1,18 +1,20 @@
 <nb-card size="small">
   <nb-card-body>
 
-    <input
-      [formControl]="inputFormControl"
+    <input [formControl]="inputFormControl"
       nbInput
       type="text"
       placeholder="Enter value"
       [nbAutocomplete]="auto" />
 
-    <nb-autocomplete #auto [handleDisplayFn]="viewHandle">
+    <nb-autocomplete #auto
+      [handleDisplayFn]="viewHandle">
 
-      <nb-option *ngFor="let option of filteredOptions$ | async" [value]="option">
+      @for (option of filteredOptions(); track option) {
+      <nb-option [value]="option">
         {{ option }}
       </nb-option>
+      }
 
     </nb-autocomplete>
 

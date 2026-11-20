@@ -1,17 +1,29 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { FormControl } from '@angular/forms';
+import { Component } from '@angular/core';
+import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import {
+  NbCardComponent,
+  NbCardBodyComponent,
+  NbButtonComponent,
+  NbInputDirective,
+  NbAutocompleteDirective,
+  NbAutocompleteComponent,
+  NbOptionComponent,
+} from '@liquid-js/lyr-core';
 
 @Component({
-    templateUrl: './autocomplete-disabled.component.html',
-    styleUrls: ['./autocomplete-disabled.component.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  templateUrl: './autocomplete-disabled.component.html',
+  styleUrls: ['./autocomplete-disabled.component.scss'],
+  imports: [
+    NbCardComponent,
+    NbCardBodyComponent,
+    NbButtonComponent,
+    NbInputDirective,
+    NbAutocompleteDirective,
+    FormsModule,
+    ReactiveFormsModule,
+    NbAutocompleteComponent,
+    NbOptionComponent,
+  ],
 })
 export class AutocompleteDisabledComponent {
   options = ['Option 1', 'Option 2', 'Option 3'];

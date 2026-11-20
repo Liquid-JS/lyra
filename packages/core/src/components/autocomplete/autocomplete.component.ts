@@ -1,187 +1,131 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
   Component,
-  ContentChildren,
+  contentChildren,
   ElementRef,
-  EventEmitter,
-  HostBinding,
-  Input,
-  Output,
-  QueryList,
-  ViewChild,
-  AfterContentInit,
-  OnDestroy,
+  input,
+  linkedSignal,
+  output,
+  Signal,
+  signal,
+  viewChild,
 } from '@angular/core';
-import { NgClass } from '@angular/common';
-import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
 
-import { NbComponentSize } from '../component-size';
-import { NbPosition } from '../cdk/overlay/overlay-position';
+import { ɵconvertToBoolProperty as convertToBoolProperty, NbBooleanInput, ɵNbClassInput as NbClassInput } from '@liquid-js/lyr-core/base';
+import { injectNbDefaults, NbComponentSize } from '@liquid-js/lyr-core/base';
+import { NbPosition } from '@liquid-js/lyr-core/cdk';
 import { NbOptionComponent } from '../option/option.component';
 import { NbOptionListComponent } from '../option/option-list.component';
 import { NbOptionGroupComponent } from '../option/option-group.component';
-import { NbPortalDirective } from '../cdk/overlay/mapping';
+import { NbPortalDirective } from '@liquid-js/lyr-core/cdk';
 
 // Component class scoped counter for aria attributes.
-let lastAutocompleteId: number = 0;
+let lastAutocompleteId = 0;
 
 /**
- * The `NbAutocompleteComponent` overlay component.
- * Provides an `NbOptionList` overlay component.
- * */
+ * The options of an `input[nbAutocomplete]`, which the directive shows in an overlay below the input.
+ */
 @Component({
-    selector: 'nb-autocomplete',
-    templateUrl: './autocomplete.component.html',
-    styleUrls: ['./autocomplete.component.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  selector: 'nb-autocomplete',
+  templateUrl: './autocomplete.component.html',
+  styleUrls: ['./autocomplete.component.scss'],
+  imports: [NbPortalDirective, NbOptionListComponent],
+  host: {
+    '[class]': "'size-' + size()",
+  },
 })
-export class NbAutocompleteComponent<T> implements AfterContentInit, OnDestroy {
-  protected destroy$: Subject<void> = new Subject<void>();
-
+export class NbAutocompleteComponent<T> {
   /**
-   * HTML input reference to which autocomplete connected.
-   * */
-  hostRef: ElementRef;
-
-  /**
-   * Component scoped id for aria attributes.
-   * */
-  id: string = `nb-autocomplete-${lastAutocompleteId++}`;
-
-  /**
-   * @docs-private
-   * Current overlay position because of we have to toggle overlayPosition
-   * in [ngClass] direction.
+   * The element the options are positioned at, which `NbAutocompleteDirective` sets when they first open.
    */
-  _overlayPosition: NbPosition = '' as NbPosition;
-
-  get overlayPosition(): NbPosition {
-    return this._overlayPosition;
-  }
-
-  set overlayPosition(value: NbPosition) {
-    this._overlayPosition = value;
-    // Need run change detection after first set from NbAutocompleteDirective
-    this.cd.detectChanges();
-  }
+  hostRef?: ElementRef<HTMLElement>;
 
   /**
-   * Returns width of the input.
-   * */
+   * Id of the listbox, which the input's `aria-controls` points to while the options are open.
+   */
+  readonly id: string = `nb-autocomplete-${lastAutocompleteId++}`;
+
+  /**
+   * Current overlay position, which `NbAutocompleteDirective` sets and the options list renders with.
+   */
+  readonly overlayPosition = signal<NbPosition>('' as NbPosition);
+
+  /**
+   * The width of the element the options are positioned at, which the options take unless `optionsWidth` is set.
+   */
   get hostWidth(): number {
-    return this.hostRef.nativeElement.getBoundingClientRect().width;
+    return this.hostRef?.nativeElement.getBoundingClientRect().width ?? 0;
   }
 
   /**
-   * Function passed as input to process each string option value before render.
-   * */
-  @Input() handleDisplayFn: (value: any) => string;
-
-  /**
-   * Autocomplete size, available sizes:
-   * `tiny`, `small`, `medium` (default), `large`, `giant`
+   * Turns a value into the text shown in the input, e.g. an object's name. It's given the text typed in the input
+   * too.
    */
-  @Input() size: NbComponentSize = 'medium';
+  readonly handleDisplayFn = input<(value: T | string) => string>();
+
+  protected readonly nbDefaults = injectNbDefaults('input');
+
+  // The size of the field it's attached to, which `NbAutocompleteDirective` gives it.
+  protected readonly fieldSize = signal<Signal<NbComponentSize> | undefined>(undefined);
 
   /**
-   * Flag passed as input to always make first option active.
-   * */
-  @Input() activeFirst: boolean = false;
+   * The size of the options: `tiny`, `small`, `medium`, `large` or `giant`. Unset, they match the field the
+   * autocomplete is attached to, as a select's options match the select.
+   */
+  readonly sizeInput = input<NbComponentSize | undefined>(undefined, { alias: 'size' });
+  /** The size in use: the input's, the field's, the app's default for fields, or 'medium'. */
+  readonly size = linkedSignal<NbComponentSize>(
+    () => this.sizeInput() ?? this.fieldSize()?.() ?? this.nbDefaults().size ?? 'medium',
+  );
 
   /**
-   * Specifies class to be set on `nb-option`s container (`nb-option-list`)
-   * */
-  @Input() optionsListClass: NgClass['ngClass'];
+   * Makes the first option active whenever the options open or change, so Enter selects it at once.
+   */
+  readonly activeFirst = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
 
   /**
-   * Specifies class for the overlay panel with options
-   * */
-  @Input() optionsPanelClass: string | string[];
+   * Class of the `nb-option-list` holding the options.
+   */
+  readonly optionsListClass = input<NbClassInput>();
 
   /**
-   * Specifies width (in pixels) to be set on `nb-option`s container (`nb-option-list`)
-   * */
-  @Input()
-  get optionsWidth(): number {
-    return this._optionsWidth ?? this.hostWidth;
-  }
-  set optionsWidth(value: number) {
-    this._optionsWidth = value;
-  }
-  protected _optionsWidth: number | undefined;
+   * Class of the overlay panel around the options list.
+   */
+  readonly optionsPanelClass = input<string | string[]>();
 
   /**
-   * Will be emitted when selected value changes.
-   * */
-  @Output() selectedChange: EventEmitter<T> = new EventEmitter();
+   * Width of the options list, in pixels; the input's width by default.
+   */
+  readonly optionsWidth = input<number>();
 
   /**
-   * List of `NbOptionComponent`'s components passed as content.
-   * */
-  @ContentChildren(NbOptionComponent, { descendants: true }) options: QueryList<NbOptionComponent<T>>;
-
-  @ContentChildren(NbOptionGroupComponent, { descendants: true }) optionGroups: QueryList<NbOptionGroupComponent>;
+   * Emits the value of an option chosen with a click or Enter, and a value the form control writes.
+   */
+  readonly selectedChange = output<T | undefined>();
 
   /**
-   * NbOptionList with options content.
-   * */
-  @ViewChild(NbPortalDirective) portal: NbPortalDirective;
+   * The options in the content, inside groups or not.
+   */
+  readonly options = contentChildren<NbOptionComponent<T>>(NbOptionComponent, { descendants: true });
 
-  @ViewChild(NbOptionListComponent) list: NbOptionListComponent<T>;
-
-  constructor(protected cd: ChangeDetectorRef) {}
-
-  ngAfterContentInit() {
-    this.options.changes.pipe(takeUntil(this.destroy$)).subscribe(() => this.cd.detectChanges());
-  }
-
-  ngOnDestroy() {
-    this.destroy$.next();
-    this.destroy$.complete();
-  }
+  readonly optionGroups = contentChildren(NbOptionGroupComponent, { descendants: true });
 
   /**
-   * Autocomplete knows nothing about host html input element.
-   * So, attach method set input hostRef for styling.
-   * */
-  setHost(hostRef: ElementRef) {
+   * The portal with the options list, which the directive attaches to its overlay.
+   */
+  readonly portal = viewChild(NbPortalDirective);
+
+  readonly list = viewChild(NbOptionListComponent);
+
+  /**
+   * Called by `NbAutocompleteDirective` when the options first open, with the element they are positioned at, for
+   * their width, and the size of the field they match.
+   */
+  setHost(hostRef: ElementRef<HTMLElement>, fieldSize?: Signal<NbComponentSize>) {
     this.hostRef = hostRef;
+    this.fieldSize.set(fieldSize);
   }
 
-  /**
-   * Propagate selected value.
-   * */
-  emitSelected(selected: T) {
+  emitSelected(selected?: T) {
     this.selectedChange.emit(selected);
-  }
-
-  @HostBinding('class.size-tiny')
-  get tiny(): boolean {
-    return this.size === 'tiny';
-  }
-  @HostBinding('class.size-small')
-  get small(): boolean {
-    return this.size === 'small';
-  }
-  @HostBinding('class.size-medium')
-  get medium(): boolean {
-    return this.size === 'medium';
-  }
-  @HostBinding('class.size-large')
-  get large(): boolean {
-    return this.size === 'large';
-  }
-  @HostBinding('class.size-giant')
-  get giant(): boolean {
-    return this.size === 'giant';
   }
 }

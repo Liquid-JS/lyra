@@ -1,49 +1,43 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { ChangeDetectionStrategy, Component, ViewChild, OnInit } from '@angular/core';
-import { Observable, of } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Component, ElementRef, signal, viewChild } from '@angular/core';
+import {
+  NbCardComponent,
+  NbCardBodyComponent,
+  NbInputDirective,
+  NbAutocompleteDirective,
+  NbAutocompleteComponent,
+  NbOptionComponent,
+} from '@liquid-js/lyr-core';
 
 @Component({
-    selector: 'nb-autocomplete-showcase',
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    templateUrl: './autocomplete-showcase.component.html',
-    standalone: false
+  selector: 'nb-autocomplete-showcase',
+  templateUrl: './autocomplete-showcase.component.html',
+  imports: [
+    NbCardComponent,
+    NbCardBodyComponent,
+    NbInputDirective,
+    NbAutocompleteDirective,
+    NbAutocompleteComponent,
+    NbOptionComponent,
+  ],
 })
-export class AutocompleteShowcaseComponent implements OnInit {
+export class AutocompleteShowcaseComponent {
 
-  options: string[];
-  filteredOptions$: Observable<string[]>;
+  readonly options = ['Option 1', 'Option 2', 'Option 3'];
+  readonly filteredOptions = signal(this.options);
 
-  @ViewChild('autoInput') input;
-
-  ngOnInit() {
-    this.options = ['Option 1', 'Option 2', 'Option 3'];
-    this.filteredOptions$ = of(this.options);
-  }
+  readonly input = viewChild.required<ElementRef<HTMLInputElement>>('autoInput');
 
   private filter(value: string): string[] {
     const filterValue = value.toLowerCase();
-    return this.options.filter(optionValue => optionValue.toLowerCase().includes(filterValue));
-  }
-
-  getFilteredOptions(value: string): Observable<string[]> {
-    return of(value).pipe(
-      map(filterString => this.filter(filterString)),
-    );
+    return this.options.filter((optionValue) => optionValue.toLowerCase().includes(filterValue));
   }
 
   onChange() {
-    this.filteredOptions$ = this.getFilteredOptions(this.input.nativeElement.value);
+    this.filteredOptions.set(this.filter(this.input().nativeElement.value));
   }
 
-  onSelectionChange($event) {
-    this.filteredOptions$ = this.getFilteredOptions($event);
+  onSelectionChange(value?: string) {
+    this.filteredOptions.set(this.filter(value ?? ''));
   }
 
 }
-
