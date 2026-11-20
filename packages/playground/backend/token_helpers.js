@@ -1,10 +1,10 @@
-const moment = require('moment');
-const jwt = require('jwt-simple');
-const cfg = require('./config.js');
+import moment from 'moment';
+import jwt from 'jwt-simple';
+import { cfg } from './config.js';
 
-module.exports.permanentRefreshToken = 'eb4e15840117437cbfd7343f257c4aae';
+export const permanentRefreshToken = 'eb4e15840117437cbfd7343f257c4aae';
 
-module.exports.createAccessToken = function(user) {
+export function createAccessToken(user) {
   var payload = {
         sub: user.id,
         exp: moment().add(cfg.accessTokenExpiresIn, 'seconds').unix(),
@@ -17,7 +17,7 @@ module.exports.createAccessToken = function(user) {
       return token;
 }
 
-module.exports.createRefreshToken = function(user) {
+export function createRefreshToken(user) {
   var refreshPayload = {
     sub: user.id,
     exp: moment().add(cfg.refreshTokenExpiresIn, 'seconds').unix(),
@@ -29,5 +29,3 @@ module.exports.createRefreshToken = function(user) {
   var refreshToken = jwt.encode(refreshPayload, cfg.jwtSecret);
   return refreshToken;
 }
-
-module.exports

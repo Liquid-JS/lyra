@@ -1,0 +1,24 @@
+@for (component of components(); track component.link ?? component.path) {
+<div class="component-block">
+  @if (!component.component) {
+  <span>{{ component.path }}</span>
+  }
+  @if (component.link) {
+  <a [routerLink]="component.link"
+    routerLinkActive="active"
+    [routerLinkActiveOptions]="{ exact: true }"
+    #link="routerLinkActive"
+    [npgComponentLink]="component.link"
+    class="component-link">
+    {{ component.name }}
+    @if (link.isActive) {
+    - active
+    }
+  </a>
+  }
+  @if (component.children) {
+  <npg-components-list vertical
+    [components]="component.children" />
+  }
+</div>
+}

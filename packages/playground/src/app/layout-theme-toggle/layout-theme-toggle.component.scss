@@ -5,13 +5,13 @@
 .theme-radio-label {
   display: inline-flex;
   align-items: center;
-  margin-right: 0.5rem;
+  margin-inline-end: 0.5rem;
 
   &:last-child {
-    margin-right: 0;
+    margin-inline-end: 0;
   }
 }
 
 .theme-radio {
-  margin-right: 0.125rem;
+  margin-inline-end: 0.125rem;
 }

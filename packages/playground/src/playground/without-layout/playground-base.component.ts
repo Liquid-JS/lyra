@@ -1,22 +1,21 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
+import { Component, OnInit, ViewEncapsulation, inject } from '@angular/core';
+import { NbThemeService } from '@liquid-js/lyr-core';
 
-import { Component, OnInit, ViewEncapsulation } from '@angular/core';
-import { NbThemeService } from '@nebular/theme';
+import { loadPlaygroundTheme } from '../playground-theme';
+import { RouterOutlet } from '@angular/router';
 
 @Component({
-    template: ` <router-outlet></router-outlet> `,
-    styleUrls: ['../styles/styles.scss'],
-    encapsulation: ViewEncapsulation.None,
-    standalone: false
+  templateUrl: './playground-base.component.html',
+  encapsulation: ViewEncapsulation.None,
+  imports: [RouterOutlet],
 })
 export class PlaygroundBaseComponent implements OnInit {
-  constructor(private themeService: NbThemeService) {}
+  private readonly themeService = inject(NbThemeService);
+
+  readonly themeLoaded = loadPlaygroundTheme();
 
   ngOnInit() {
-    this.themeService.changeTheme('default');
+    // The theme the user chose, or the system's, which a page that set another (e.g. a theme test) leaves.
+    this.themeService.setThemePreference(this.themeService.themePreference());
   }
 }

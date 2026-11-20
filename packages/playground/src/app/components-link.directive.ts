@@ -1,37 +1,32 @@
-import { OnInit, ChangeDetectorRef, Directive, ElementRef, HostBinding, Input, OnDestroy } from '@angular/core';
+import { OnInit, Directive, ElementRef, OnDestroy, inject, input, signal } from '@angular/core';
 import { Subject } from 'rxjs';
 import { distinctUntilChanged, map, takeUntil } from 'rxjs/operators';
 import { ComponentsListService } from './components-list.service';
 
 @Directive({
-    selector: '[npgComponentLink]',
-    standalone: false
+  selector: '[npgComponentLink]',
+  host: { '[class.selected]': 'selected()' },
 })
 export class ComponentLinkDirective implements OnInit, OnDestroy {
+  private readonly componentsListService = inject(ComponentsListService);
+  private readonly elementRef = inject<ElementRef<Element>>(ElementRef);
+
   private destroy$ = new Subject<void>();
 
-  @Input() npgComponentLink: string = '';
+  readonly npgComponentLink = input<string>('');
 
-  @HostBinding('class.selected')
-  selected = false;
-
-  constructor(
-    private componentsListService: ComponentsListService,
-    private cd: ChangeDetectorRef,
-    private elementRef: ElementRef<Element>,
-  ) {}
+  readonly selected = signal(false);
 
   ngOnInit() {
     let isFirstEmission = true;
     this.componentsListService.selectedLink$
       .pipe(
-        map((selectedLink: string) => this.npgComponentLink === selectedLink),
+        map((selectedLink: string) => this.npgComponentLink() === selectedLink),
         distinctUntilChanged(),
         takeUntil(this.destroy$),
       )
       .subscribe((isSelected) => {
-        this.selected = isSelected;
-        this.cd.markForCheck();
+        this.selected.set(isSelected);
 
         if (isFirstEmission) {
           isFirstEmission = false;

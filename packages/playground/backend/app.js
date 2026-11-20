@@ -1,24 +1,18 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
+import express from 'express';
+import jwt from 'jwt-simple';
+import { createAuth } from './auth.js';
+import * as auth_helpers from './auth_helpers.js';
+import { users } from './users.js';
+import * as tokens from './token_helpers.js';
+import { wines } from './wines.js';
+import { cfg } from './config.js';
+import moment from 'moment';
 
-const express = require('express');
-const bodyParser = require('body-parser');
-const jwt = require('jwt-simple');
-const auth = require('./auth.js')();
-const auth_helpers = require('./auth_helpers.js');
-const users = require('./users.js');
-const tokens = require('./token_helpers.js');
-const wines = require('./wines.js');
-const cfg = require('./config.js');
 const app = express();
-const moment = require('moment');
+const auth = createAuth();
 
-
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
+app.use(express.json());
+app.use(express.urlencoded({ extended: true })); // support encoded bodies
 app.use(auth.initialize());
 
 app.use(function(req, res, next) {
@@ -36,7 +30,7 @@ app.get('/', function (req, res) {
 
 app.get('/api/user', auth.authenticate(), function (req, res) {
   res.json({
-    data: users[req.user.id]
+    data: users[req.user.id - 1]
   });
 });
 
@@ -195,7 +189,7 @@ app.post('/api/auth/refresh-token', function (req, res) {
 });
 
 app.listen(4400, function () {
-  console.log('ngx-admin sample API is running on 4400');
+  console.log('Lyra sample API is running on 4400');
 });
 
-module.exports = app;
+export { app };

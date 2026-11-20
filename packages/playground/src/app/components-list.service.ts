@@ -1,11 +1,9 @@
-import { Injectable } from '@angular/core';
+import { Service } from '@angular/core';
 import { BehaviorSubject, combineLatest, Observable } from 'rxjs';
 import { map, shareReplay, take } from 'rxjs/operators';
 import { ComponentLink, PLAYGROUND_COMPONENTS } from './playground-components';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class ComponentsListService {
   private readonly searchString$ = new BehaviorSubject<string>('');
   private readonly selectedLinkIndex$ = new BehaviorSubject<number>(0);
@@ -25,20 +23,20 @@ export class ComponentsListService {
     shareReplay(1),
   );
 
-  updateSearch(searchString: string): void {
+  updateSearch(searchString: string) {
     this.selectedLinkIndex$.next(0);
     this.searchString$.next(searchString);
   }
 
-  selectNextComponent(): void {
+  selectNextComponent() {
     this.moveSelection(1);
   }
 
-  selectPreviousComponent(): void {
+  selectPreviousComponent() {
     this.moveSelection(-1);
   }
 
-  private moveSelection(offset: 1 | -1): void {
+  private moveSelection(offset: 1 | -1) {
     combineLatest([this.selectedLinkIndex$, this.componentLinks$])
       .pipe(
         map(([selectedIndex, components]: [number, string[]]) => [selectedIndex, components.length]),

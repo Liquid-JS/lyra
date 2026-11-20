@@ -31,7 +31,7 @@ function b64DecodeUnicode(str) {
   }).join(''));
 }
 
-module.exports.urlBase64Decode = function (str) {
+export function urlBase64Decode (str) {
   var output = str.replace(/-/g, '+').replace(/_/g, '/');
   switch (output.length % 4) {
     case 0: { break; }

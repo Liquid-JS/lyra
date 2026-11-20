@@ -19,4 +19,4 @@ const wines = [
   },
 ];
 
-module.exports = wines;
+export { wines };
