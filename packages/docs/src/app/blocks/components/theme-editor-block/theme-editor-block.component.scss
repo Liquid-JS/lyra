@@ -1,0 +1,140 @@
+@use '../../../@theme/styles/themes' as *;
+@use '../../../../../../core/src/styles/globals' as *;
+
+:host {
+  display: block;
+}
+
+.themes {
+  margin-bottom: 1.5rem;
+
+  .subtitle:first-child {
+    margin-top: 0;
+  }
+}
+
+// Outside the cards, in line with their text.
+.subtitle {
+  margin: 1.5rem 0 0.75rem;
+  padding-inline: var(--ngd-edge-inset, 0);
+  font-size: 1rem;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
+  gap: 0.75rem;
+}
+
+.editor {
+  display: grid;
+  grid-template-columns: minmax(18rem, 22rem) 1fr;
+  gap: 1.5rem;
+  align-items: start;
+
+  @media (max-width: 991px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.controls-header,
+.preview-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.controls-header {
+  justify-content: space-between;
+}
+
+// A form, not an article: the card's own paddings, which its header, body and footer share (the page gives an
+// article's cards wider ones).
+:host ::ng-deep nb-card.controls {
+  > nb-card-header.controls-header,
+  > nb-card-body.controls-body,
+  > nb-card-footer.controls-footer {
+    padding: nb-theme(card-padding);
+  }
+}
+
+.header-buttons {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.status {
+  display: block;
+}
+
+// The preview stays in view while the controls scroll.
+.preview {
+  position: sticky;
+  top: 5rem;
+  min-width: 0;
+}
+
+.preview-bar {
+  margin-bottom: 1rem;
+  padding-inline: var(--ngd-edge-inset, 0);
+
+  nb-select {
+    flex: 1 1 10rem;
+  }
+}
+
+.full-screen {
+  margin-inline-start: auto;
+  white-space: nowrap;
+}
+
+.devices {
+  display: flex;
+  justify-content: center;
+
+  .laptop {
+    flex: 1;
+  }
+
+  // On its own, the phone takes its full size, or the width there is: a definite width, as the frame scales its
+  // screen to the width it gets, which would otherwise be the width it already has.
+  .phone {
+    width: 100%;
+    max-width: 26rem;
+  }
+
+  // The phone stands in front of the laptop's corner, like a product shot.
+  &.both {
+    position: relative;
+    padding-bottom: 3rem;
+
+    .laptop {
+      padding-inline-end: 6rem;
+    }
+
+    .phone {
+      position: absolute;
+      inset-inline-end: 0;
+      bottom: 0;
+      width: 11rem;
+    }
+  }
+}
+
+// The code's tabs scroll sideways where they're wider than the card, e.g. on a phone, so the card doesn't. The
+// scrolling bar clips at its edge, so it keeps room below the tabs for the half of the underline that hangs past
+// them, takes it back from the content, and leaves the divider to the content, where the underline straddles it as
+// it does the bar's own. Specific enough to beat the tabset's own reset of its paddings.
+:host nb-tabset ::ng-deep {
+  ul.tabset {
+    overflow-x: auto;
+    border-bottom: none;
+    padding-bottom: 2px;
+    margin-bottom: -2px;
+  }
+
+  nb-tab {
+    border-top: nb-theme(tabset-divider-width) nb-theme(tabset-divider-style) nb-theme(tabset-divider-color);
+  }
+}

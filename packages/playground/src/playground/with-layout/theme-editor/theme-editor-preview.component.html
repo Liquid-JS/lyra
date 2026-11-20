@@ -1,0 +1,70 @@
+<nb-card>
+  <nb-card-header>Account settings</nb-card-header>
+  <nb-card-body class="example-items-col">
+    <p class="paragraph">Review your details, then save them. Fields marked as required need a value.</p>
+
+    <div class="row">
+      @for (status of statuses; track status) {
+      <button nbButton
+        [status]="status">{{ status }}</button>
+      }
+    </div>
+    <div class="row">
+      @for (status of statuses; track status) {
+      <button nbButton
+        [status]="status"
+        appearance="outline">{{ status }}</button>
+      }
+    </div>
+
+    <div class="row">
+      <input nbInput
+        aria-label="Name"
+        placeholder="Name"
+        value="Jane Doe" />
+      <input nbInput
+        aria-label="Email"
+        placeholder="Email"
+        status="danger" />
+      <nb-select aria-label="Country"
+        selected="us">
+        <nb-option value="us">United States</nb-option>
+        <nb-option value="gb">United Kingdom</nb-option>
+      </nb-select>
+    </div>
+
+    <div class="row">
+      <nb-checkbox checked>Email me updates</nb-checkbox>
+      <nb-toggle checked>Two-step sign-in</nb-toggle>
+      <nb-radio-group name="plan"
+        value="team"
+        aria-label="Plan">
+        <nb-radio value="personal">Personal</nb-radio>
+        <nb-radio value="team">Team</nb-radio>
+      </nb-radio-group>
+    </div>
+
+    <div class="row">
+      @for (status of statuses; track status) {
+      <nb-tag [status]="status"
+        [text]="status" />
+      }
+    </div>
+
+    <nb-progress-bar status="primary"
+      [value]="64">64%</nb-progress-bar>
+
+    @for (status of alerts; track status) {
+    <nb-alert [status]="status">A {{ status }} message for your account.</nb-alert>
+    }
+
+    <nb-user name="Jane Doe"
+      title="Administrator" />
+  </nb-card-body>
+  <nb-card-footer class="row">
+    <button nbButton
+      status="primary">Save</button>
+    <button nbButton
+      appearance="ghost">Cancel</button>
+  </nb-card-footer>
+</nb-card>

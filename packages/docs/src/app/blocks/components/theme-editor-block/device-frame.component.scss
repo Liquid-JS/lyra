@@ -1,0 +1,62 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
+// A laptop: a dark bezel with a camera, on a thin base. The bezel is as thick on either device at any scale, so
+// the two match side by side; the corners and the camera or notch scale with the screen, so a small phone beside the
+// laptop is a small phone.
+.device {
+  --s: var(--scale, 1);
+
+  display: inline-block;
+  padding: 0.75rem 0.75rem 1rem;
+  border-radius: calc(1rem * var(--s)) calc(1rem * var(--s)) calc(0.375rem * var(--s)) calc(0.375rem * var(--s));
+  background: #1a1f33;
+  box-shadow: 0 1.5rem 3rem -1rem rgb(16 20 38 / 40%);
+  position: relative;
+
+  // The camera, in the middle of the bezel.
+  &::before {
+    content: '';
+    position: absolute;
+    top: calc((0.75rem - 0.375rem * var(--s)) / 2);
+    left: 50%;
+    width: calc(0.375rem * var(--s));
+    height: calc(0.375rem * var(--s));
+    border-radius: 50%;
+    background: #3a4160;
+    transform: translateX(-50%);
+  }
+
+  // A phone: rounder, with a notch.
+  &.phone {
+    padding: 0.75rem;
+    border-radius: calc(2.25rem * var(--s));
+
+    // The notch hangs from the bezel's inner edge over the screen.
+    &::before {
+      top: 0.75rem;
+      width: 30%;
+      height: calc(1.25rem * var(--s));
+      border-radius: 0 0 calc(0.75rem * var(--s)) calc(0.75rem * var(--s));
+      z-index: 1;
+    }
+
+    .screen {
+      border-radius: calc(1.5rem * var(--s));
+    }
+  }
+}
+
+.screen {
+  overflow: hidden;
+  border-radius: 0.25rem;
+  background: #fff;
+}
+
+iframe {
+  display: block;
+  border: 0;
+  transform-origin: 0 0;
+}
