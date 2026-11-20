@@ -1,18 +1,18 @@
-import { expect, test } from '@playwright/test';
-import { badgeTests } from './badge-shared';
-import { openExample } from './e2e-helper';
+import { expect, test } from '@playwright/test'
+import { badgeTests } from './badge-shared'
+import { openExample } from './e2e-helper'
 
 test.describe('nb-user', () => {
-  test.beforeEach(({ page }) => openExample(page, '/user/user-test.component'));
-  test.describe('badge', () => {
-    badgeTests({
-      selector: (i) => `.test-row:nth-child(${10 + i + 1}) nb-badge`,
-      badges: [{ text: '29' }],
-    });
-  });
-  test('should show a base64 picture', async ({ page }) => {
-    const image = page.locator('#base64-image img.user-image');
-    await expect(image).toHaveAttribute('src', 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGMwTvsPAAJoAZl4K0msAAAAAElFTkSuQmCC');
-    await expect.poll(() => image.evaluate((element: HTMLImageElement) => element.naturalWidth)).toBe(1);
-  });
-});
+    test.beforeEach(({ page }) => openExample(page, '/user/user-test.component'))
+    test.describe('badge', () => {
+        badgeTests({
+            selector: (i) => `.test-row:nth-child(${10 + i + 1}) nb-badge`,
+            badges: [{ text: '29' }]
+        })
+    })
+    test('should show a base64 picture', async ({ page }) => {
+        const image = page.locator('#base64-image img.user-image')
+        await expect(image).toHaveAttribute('src', 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGMwTvsPAAJoAZl4K0msAAAAAElFTkSuQmCC')
+        await expect.poll(() => image.evaluate((element: HTMLImageElement) => element.naturalWidth)).toBe(1)
+    })
+})

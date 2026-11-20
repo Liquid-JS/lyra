@@ -1,42 +1,42 @@
-@use '../../styles/theming' as *;
+@use "../../styles/theming" as *;
 
 :host {
-  display: block;
-  outline: none;
+    display: block;
+    outline: none;
 
-  &.filtered {
-    display: none;
-  }
-
-  .option-nested-row {
-    display: flex;
-    align-items: center;
-    cursor: pointer;
-
-    &.nb-option-collapsed {
-      display: none;
+    &.filtered {
+        display: none;
     }
-  }
 
-  .option-nested-title {
-    flex: 1;
-    min-width: 0;
-  }
+    .option-nested-row {
+        display: flex;
+        align-items: center;
+        cursor: pointer;
 
-  .option-nested-icon {
-    flex: none;
-    @include nb-component-animation(transform);
-    @include nb-ltr(margin-left, 0.5rem);
-    @include nb-rtl(margin-right, 0.5rem);
-    @include nb-rtl(transform, scaleX(-1));
-  }
+        &.nb-option-collapsed {
+            display: none;
+        }
+    }
 
-  &.expanded > .option-nested-row .option-nested-icon {
-    @include nb-ltr(transform, rotate(90deg));
-    @include nb-rtl(transform, rotate(-90deg) scaleX(-1));
-  }
+    .option-nested-title {
+        flex: 1;
+        min-width: 0;
+    }
 
-  &[disabled] > .option-nested-row {
-    pointer-events: none;
-  }
+    .option-nested-icon {
+        flex: none;
+        @include nb-component-animation(transform);
+        @include nb-ltr(margin-left, 0.5rem);
+        @include nb-rtl(margin-right, 0.5rem);
+        @include nb-rtl(transform, scaleX(-1));
+    }
+
+    &.expanded > .option-nested-row .option-nested-icon {
+        @include nb-ltr(transform, rotate(90deg));
+        @include nb-rtl(transform, rotate(-90deg) scaleX(-1));
+    }
+
+    &[disabled] > .option-nested-row {
+        pointer-events: none;
+    }
 }

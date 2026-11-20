@@ -1,86 +1,88 @@
-@use '../../styles/theming' as *;
+@use "../../styles/theming" as *;
 
 :host {
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  z-index: auto;
-  order: 0;
-
-  .scrollable {
-    overflow-y: auto;
-    overflow-x: hidden;
-    flex: 1;
-  }
-
-  .main-container {
-    // Its own compositing layer, so the fixed container doesn't jitter while the page scrolls. It also makes it the
-    // containing block of fixed descendants.
-    transform: translate3d(0, 0, 0);
     display: flex;
     flex-direction: column;
-  }
+    overflow: hidden;
+    z-index: auto;
+    order: 0;
 
-  .main-container-fixed {
-    position: fixed;
-  }
-
-  &.right {
-    @include nb-ltr(order, 4);
-    @include nb-rtl(order, 0);
-    margin-right: 0;
-    margin-left: auto;
-  }
-
-  &.end {
-    order: 4;
-    @include nb-ltr() {
-      margin-right: 0;
-      margin-left: auto;
+    .scrollable {
+        overflow-y: auto;
+        overflow-x: hidden;
+        flex: 1;
     }
-    @include nb-rtl() {
-      margin-left: 0;
-      margin-right: auto;
+
+    .main-container {
+        // Its own compositing layer, so the fixed container doesn't jitter while the page scrolls. It also makes it the
+        // containing block of fixed descendants.
+        transform: translate3d(0, 0, 0);
+        display: flex;
+        flex-direction: column;
     }
-  }
 
-  // With a header that isn't fixed, a fixed sidebar stays below where the header was and leaves a gap once the header
-  // scrolls away.
-  &.fixed {
-    position: fixed;
-    height: 100%;
-    z-index: 999;
-    top: 0;
-    bottom: 0;
-
-    // One edge each, so a sidebar's place doesn't hang on its auto margin.
-    left: 0;
+    .main-container-fixed {
+        position: fixed;
+    }
 
     &.right {
-      left: auto;
-      right: 0;
-    }
-  }
+        @include nb-ltr(order, 4);
+        @include nb-rtl(order, 0);
 
-  &.fixed.start {
-    @include nb-rtl() {
-      left: auto;
-      right: 0;
+        margin-right: 0;
+        margin-left: auto;
     }
-  }
-  &.fixed.end {
-    @include nb-ltr() {
-      left: auto;
-      right: 0;
+
+    &.end {
+        order: 4;
+        @include nb-ltr {
+            margin-right: 0;
+            margin-left: auto;
+        }
+        @include nb-rtl {
+            margin-left: 0;
+            margin-right: auto;
+        }
     }
-  }
 
-  ::ng-deep nb-sidebar-footer {
-    margin-top: auto;
-    display: block;
-  }
+    // With a header that isn't fixed, a fixed sidebar stays below where the header was and leaves a gap once the header
+    // scrolls away.
+    &.fixed {
+        position: fixed;
+        height: 100%;
+        z-index: 999;
+        top: 0;
+        bottom: 0;
 
-  ::ng-deep nb-sidebar-header {
-    display: block;
-  }
+        // One edge each, so a sidebar's place doesn't hang on its auto margin.
+        left: 0;
+
+        &.right {
+            left: auto;
+            right: 0;
+        }
+    }
+
+    &.fixed.start {
+        @include nb-rtl {
+            left: auto;
+            right: 0;
+        }
+    }
+
+    &.fixed.end {
+        @include nb-ltr {
+            left: auto;
+            right: 0;
+        }
+    }
+
+    ::ng-deep nb-sidebar-footer {
+        margin-top: auto;
+        display: block;
+    }
+
+    ::ng-deep nb-sidebar-header {
+        display: block;
+    }
 }

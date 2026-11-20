@@ -1,8 +1,8 @@
-import { NgModule } from '@angular/core';
-import { NbSkeletonDirective } from './skeleton.directive';
+import { NgModule } from '@angular/core'
+import { NbSkeletonDirective } from './skeleton.directive'
 
 @NgModule({
-  imports: [NbSkeletonDirective],
-  exports: [NbSkeletonDirective],
+    imports: [NbSkeletonDirective],
+    exports: [NbSkeletonDirective]
 })
 export class NbSkeletonModule {}

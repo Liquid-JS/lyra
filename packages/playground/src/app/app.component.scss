@@ -1,34 +1,33 @@
 .toolbar {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    color: black;
 
-  color: black;
-
-  &.tools-visible {
-    padding: 0.25rem;
-  }
+    &.tools-visible {
+        padding: 0.25rem;
+    }
 }
 
 .toolbar-toggle-fixed {
-  position: fixed;
-  inset-inline-start: 0.25rem;
-  top: 0.25rem;
+    position: fixed;
+    inset-inline-start: 0.25rem;
+    top: 0.25rem;
 }
 
 .tools-divider {
-  display: inline-block;
-  border-inline-end: 1px solid rgba(0, 0, 0, 0.25);
-  height: 1em;
-  margin: 0 0.5rem;
+    display: inline-block;
+    border-inline-end: 1px solid rgb(0, 0, 0, 0.25);
+    height: 1em;
+    margin: 0 0.5rem;
 }
 
 .hide-components-list {
-  margin-inline-start: 0.25rem;
+    margin-inline-start: 0.25rem;
 }
 
 .component-list-wrapper {
-  flex: 0 0 100vw;
-  min-height: 100vh;
-  padding: 0.5rem 1rem;
+    flex: 0 0 100vw;
+    min-height: 100vh;
+    padding: 0.5rem 1rem;
 }

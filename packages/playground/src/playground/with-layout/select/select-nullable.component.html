@@ -1,13 +1,13 @@
 <nb-card>
-  <nb-card-body class="example-items-rows">
-    <nb-select nullable
-      placeholder="Encoding"
-      [formControl]="encoding">
-      <nb-option [value]="null">Auto</nb-option>
-      <nb-option value="numeric">Numeric</nb-option>
-      <nb-option value="alphanumeric">Alphanumeric</nb-option>
-      <nb-option value="byte">Byte</nb-option>
-    </nb-select>
-    <span>Value: {{ encoding.value === null ? 'null' : encoding.value }}</span>
-  </nb-card-body>
+    <nb-card-body class="example-items-rows">
+        <nb-select nullable
+            placeholder="Encoding"
+            [formControl]="encoding">
+            <nb-option [value]="null">Auto</nb-option>
+            <nb-option value="numeric">Numeric</nb-option>
+            <nb-option value="alphanumeric">Alphanumeric</nb-option>
+            <nb-option value="byte">Byte</nb-option>
+        </nb-select>
+        <span>Value: {{ encoding.value === null ? 'null' : encoding.value }}</span>
+    </nb-card-body>
 </nb-card>

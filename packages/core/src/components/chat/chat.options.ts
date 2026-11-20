@@ -1,3 +1,3 @@
 export class NbChatOptions {
-  messageGoogleMapKey?: string;
+    messageGoogleMapKey?: string
 }

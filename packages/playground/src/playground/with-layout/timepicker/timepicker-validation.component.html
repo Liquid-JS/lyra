@@ -1,18 +1,18 @@
 <nb-card size="large">
-  <nb-card-body class="validation-example"
-    [formGroup]="form">
-    <label class="label"
-      for="timepicker-pickup">Pickup time (9:00 to 17:30)</label>
-    <input nbInput
-      id="timepicker-pickup"
-      formControlName="pickup"
-      [nbTimepicker]="picker"
-      nbValidation
-      #pickup="nbValidation" />
-    <nb-timepicker #picker
-      [twelveHoursFormat]="false"
-      [min]="opens"
-      [max]="closes" />
-    <nb-validation-errors [for]="pickup">We prepare orders during opening hours.</nb-validation-errors>
-  </nb-card-body>
+    <nb-card-body class="validation-example"
+        [formGroup]="form">
+        <label class="label"
+            for="timepicker-pickup">Pickup time (9:00 to 17:30)</label>
+        <input nbInput
+            id="timepicker-pickup"
+            formControlName="pickup"
+            [nbTimepicker]="picker"
+            nbValidation
+            #pickup="nbValidation" />
+        <nb-timepicker #picker
+            [twelveHoursFormat]="false"
+            [min]="opens"
+            [max]="closes" />
+        <nb-validation-errors [for]="pickup">We prepare orders during opening hours.</nb-validation-errors>
+    </nb-card-body>
 </nb-card>

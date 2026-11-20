@@ -1,379 +1,388 @@
-@use '../../@theme/styles/themes' as *;
-@use '../../../../../core/src/styles/globals' as *;
+@use "../../@theme/styles/themes" as *;
+@use "../../../../../core/src/styles/globals" as *;
 
-@include nb-install-component() {
-  display: flex;
-  // How far a card's text is from its sides, which a card's header keeps too, so a title lines up with what's below.
-  --ngd-content-inset: 1rem;
-  // How far text outside a card is from the page's sides: none beside cards set in from them, as wide screens set
-  // them; as far as a card's text and its border where cards span the screen.
-  --ngd-edge-inset: calc(var(--ngd-content-inset) + 1px);
+@include nb-install-component {
+    display: flex;
 
-  $note-fg-info: nb-theme(color-info-500);
-  $note-bg-info: #f0f6ff;
-  $note-fg-warning: nb-theme(color-warning-500);
-  $note-bg-warning: #fffae4;
-  $settings-width: nb-theme(settings-col-width);
-  $settings-margin: nb-theme(settings-col-margin);
-  $heading-light: nb-theme(color-fg-heading-light);
-  $code-bg: #f1f2f3;
-  // Inline code, readable on its grey (WCAG AA).
-  $code-fg: nb-theme(color-info-700);
-  $code-block-bg: nb-theme(code-block-bg);
-  $table-head-fg: nb-theme(color-fg-heading-light);
-  $table-border: 1px solid #f1f2f3;
-  $table-stripe-bg: #f5f6f7;
+    // How far a card's text is from its sides, which a card's header keeps too, so a title lines up with what's below.
+    --ngd-content-inset: 1rem;
 
-  .not-found {
-    color: $heading-light;
-    font-size: 1.25rem;
-  }
+    // How far text outside a card is from the page's sides: none beside cards set in from them, as wide screens set
+    // them; as far as a card's text and its border where cards span the screen.
+    --ngd-edge-inset: calc(var(--ngd-content-inset) + 1px);
 
-  .middle-column {
-    flex: 3;
-    min-width: 0;
+    $note-fg-info: nb-theme(color-info-500);
+    $note-bg-info: #f0f6ff;
+    $note-fg-warning: nb-theme(color-warning-500);
+    $note-bg-warning: #fffae4;
+    $settings-width: nb-theme(settings-col-width);
+    $settings-margin: nb-theme(settings-col-margin);
+    $heading-light: nb-theme(color-fg-heading-light);
+    $code-bg: #f1f2f3;
 
-    .page-header {
-      margin: 0;
-    }
+    // Inline code, readable on its grey (WCAG AA).
+    $code-fg: nb-theme(color-info-700);
+    $code-block-bg: nb-theme(code-block-bg);
+    $table-head-fg: nb-theme(color-fg-heading-light);
+    $table-border: 1px solid #f1f2f3;
+    $table-stripe-bg: #f5f6f7;
 
-    ::ng-deep nb-card {
-      nb-card-header {
-        padding-inline: var(--ngd-content-inset);
-      }
-
-      nb-card-body {
-        padding: 2rem var(--ngd-content-inset);
-
-        > *:last-child {
-          margin-bottom: 0 !important;
-
-          *:last-child {
-            margin-bottom: 0 !important;
-          }
-        }
-      }
-
-      h1,
-      h2,
-      h3,
-      h4,
-      h5,
-      h6 {
-        margin-bottom: 1.25rem;
-
-        &:first-child {
-          margin-top: 0;
-        }
-
-        &:not(:first-child) {
-          margin-top: 3rem;
-        }
-      }
-
-      // A card header's title sits in the header's padding, as on a page without the side column.
-      nb-card-header :is(h1, h2, h3, h4, h5, h6) {
-        margin-bottom: 0;
-      }
-
-      h1,
-      h2,
-      h3 {
-        font-family: nb-theme(text-heading-4-font-family);
-        font-size: nb-theme(text-heading-4-font-size);
-        font-weight: nb-theme(text-heading-4-font-weight);
-        line-height: nb-theme(text-heading-4-line-height);
-      }
-
-      h3 {
+    .not-found {
         color: $heading-light;
-      }
+        font-size: 1.25rem;
+    }
 
-      p {
-        font-size: 0.9375rem;
-        line-height: 1.5;
-      }
+    .middle-column {
+        flex: 3;
+        min-width: 0;
 
-      img {
-        max-width: 100%;
-      }
-
-      pre {
-        margin-bottom: 2rem;
-      }
-
-      code {
-        background: $code-bg;
-        color: $code-fg;
-        padding: 0.125rem 0.5rem;
-        border-radius: 0.25rem;
-      }
-
-      code.hljs {
-        color: #f8f8f2;
-        padding: 2rem 2.5rem;
-        border-radius: 8px;
-        background: $code-block-bg;
-        font-size: 0.875rem;
-      }
-
-      ::ng-deep {
-        .widget-block {
-          display: block;
-          margin-bottom: 2rem;
+        .page-header {
+            margin: 0;
         }
 
-        ngd-styles-table-block :is(.table-scroll, table) {
-          margin-bottom: 0;
-        }
-      }
-
-      // A table's box, which scrolls sideways where the table is wider than the card, e.g. on a phone, so the card
-      // doesn't; it takes the table's space below.
-      .table-scroll {
-        overflow-x: auto;
-        margin-bottom: 3rem;
-
-        > table {
-          margin-bottom: 0;
-        }
-      }
-
-      // A long name in a heading, e.g. a component's, breaks rather than run past a phone's card.
-      h1,
-      h2,
-      h3,
-      h4,
-      h5,
-      h6 {
-        overflow-wrap: break-word;
-      }
-
-      table {
-        font-size: 0.9375rem;
-        width: 100%;
-        margin-bottom: 3rem;
-        thead {
-          color: $table-head-fg;
-          border-bottom: $table-border;
-
-          td {
-            padding: 1rem 0.5rem;
-          }
-        }
-
-        tr {
-          border-bottom: $table-border;
-
-          &:last-child {
-            border: none;
-          }
-          p {
-            margin-bottom: 0;
-          }
-        }
-
-        td {
-          padding: 1rem 0.5rem;
-
-          &:first-child {
-            font-weight: 500;
-          }
-        }
-
-        &.striped {
-          tbody tr:nth-child(odd) {
-            background: $table-stripe-bg;
-          }
-
-          td {
-            padding: 1rem 0.5rem;
-          }
-        }
-      }
-
-      // The article's lists; a tab bar is a list too, with spacing of its own.
-      ul:not(nb-tabset ul) {
-        margin-bottom: 1.5rem;
-        ul {
-          padding-left: 2.5rem;
-          list-style-type: none;
-          & > li {
-            text-indent: -5px;
-            position: relative;
-            margin-bottom: 0;
-
-            &::before {
-              content: '-';
-              position: absolute;
-              left: -1.25rem;
+        ::ng-deep nb-card {
+            nb-card-header {
+                padding-inline: var(--ngd-content-inset);
             }
-          }
-        }
-        li {
-          font-size: 0.9375rem;
-          line-height: 1.5;
-          margin-bottom: 1.5rem;
-        }
-      }
 
-      .note {
-        padding: 1.25rem 3rem 1.5rem 1.25rem;
-        border-radius: 0.25rem;
-        margin-bottom: 3rem;
+            nb-card-body {
+                padding: 2rem var(--ngd-content-inset);
 
-        .note-title {
-          font-weight: 500;
-          text-transform: uppercase;
-          margin-bottom: 1.5rem;
+                > *:last-child {
+                    margin-bottom: 0 !important;
+
+                    *:last-child {
+                        margin-bottom: 0 !important;
+                    }
+                }
+            }
+
+            h1,
+            h2,
+            h3,
+            h4,
+            h5,
+            h6 {
+                margin-bottom: 1.25rem;
+
+                &:first-child {
+                    margin-top: 0;
+                }
+
+                &:not(:first-child) {
+                    margin-top: 3rem;
+                }
+            }
+
+            // A card header's title sits in the header's padding, as on a page without the side column.
+            nb-card-header :is(h1, h2, h3, h4, h5, h6) {
+                margin-bottom: 0;
+            }
+
+            h1,
+            h2,
+            h3 {
+                font-family: nb-theme(text-heading-4-font-family);
+                font-size: nb-theme(text-heading-4-font-size);
+                font-weight: nb-theme(text-heading-4-font-weight);
+                line-height: nb-theme(text-heading-4-line-height);
+            }
+
+            h3 {
+                color: $heading-light;
+            }
+
+            p {
+                font-size: 0.9375rem;
+                line-height: 1.5;
+            }
+
+            img {
+                max-width: 100%;
+            }
+
+            pre {
+                margin-bottom: 2rem;
+            }
+
+            code {
+                background: $code-bg;
+                color: $code-fg;
+                padding: 0.125rem 0.5rem;
+                border-radius: 0.25rem;
+            }
+
+            code.hljs {
+                color: #f8f8f2;
+                padding: 2rem 2.5rem;
+                border-radius: 8px;
+                background: $code-block-bg;
+                font-size: 0.875rem;
+            }
+
+            ::ng-deep {
+                .widget-block {
+                    display: block;
+                    margin-bottom: 2rem;
+                }
+
+                ngd-styles-table-block :is(.table-scroll, table) {
+                    margin-bottom: 0;
+                }
+            }
+
+            // A table's box, which scrolls sideways where the table is wider than the card, e.g. on a phone, so the card
+            // doesn't; it takes the table's space below.
+            .table-scroll {
+                overflow-x: auto;
+                margin-bottom: 3rem;
+
+                > table {
+                    margin-bottom: 0;
+                }
+            }
+
+            // A long name in a heading, e.g. a component's, breaks rather than run past a phone's card.
+            h1,
+            h2,
+            h3,
+            h4,
+            h5,
+            h6 {
+                overflow-wrap: break-word;
+            }
+
+            table {
+                font-size: 0.9375rem;
+                width: 100%;
+                margin-bottom: 3rem;
+
+                thead {
+                    color: $table-head-fg;
+                    border-bottom: $table-border;
+
+                    td {
+                        padding: 1rem 0.5rem;
+                    }
+                }
+
+                tr {
+                    border-bottom: $table-border;
+
+                    &:last-child {
+                        border: none;
+                    }
+
+                    p {
+                        margin-bottom: 0;
+                    }
+                }
+
+                td {
+                    padding: 1rem 0.5rem;
+
+                    &:first-child {
+                        font-weight: 500;
+                    }
+                }
+
+                &.striped {
+                    tbody tr:nth-child(odd) {
+                        background: $table-stripe-bg;
+                    }
+
+                    td {
+                        padding: 1rem 0.5rem;
+                    }
+                }
+            }
+
+            // The article's lists; a tab bar is a list too, with spacing of its own.
+            ul:not(nb-tabset ul) {
+                margin-bottom: 1.5rem;
+
+                ul {
+                    padding-left: 2.5rem;
+                    list-style-type: none;
+
+                    & > li {
+                        text-indent: -5px;
+                        position: relative;
+                        margin-bottom: 0;
+
+                        &:before {
+                            content: "-";
+                            position: absolute;
+                            left: -1.25rem;
+                        }
+                    }
+                }
+
+                li {
+                    font-size: 0.9375rem;
+                    line-height: 1.5;
+                    margin-bottom: 1.5rem;
+                }
+            }
+
+            .note {
+                padding: 1.25rem 3rem 1.5rem 1.25rem;
+                border-radius: 0.25rem;
+                margin-bottom: 3rem;
+
+                .note-title {
+                    font-weight: 500;
+                    text-transform: uppercase;
+                    margin-bottom: 1.5rem;
+                }
+
+                .note-body {
+                    font-size: 0.875rem;
+                    line-height: 1.5;
+                }
+
+                .backend-bundle-link {
+                    color: nb-theme(color-success-500);
+                }
+
+                &.note-info {
+                    color: $note-fg-info;
+                    background-color: $note-bg-info;
+                }
+
+                &.note-warning {
+                    color: $note-fg-warning;
+                    background-color: $note-bg-warning;
+                }
+            }
+
+            .color-swatch {
+                display: inline-block;
+                border: 1px solid black;
+                width: 0.875rem;
+                height: 0.875rem;
+                margin-left: 7px;
+                margin-bottom: -2px;
+                border-radius: 2px;
+            }
         }
-
-        .note-body {
-          font-size: 0.875rem;
-          line-height: 1.5;
-        }
-
-        .backend-bundle-link {
-          color: nb-theme(color-success-500);
-        }
-
-        &.note-info {
-          color: $note-fg-info;
-          background-color: $note-bg-info;
-        }
-
-        &.note-warning {
-          color: $note-fg-warning;
-          background-color: $note-bg-warning;
-        }
-      }
-
-      .color-swatch {
-        display: inline-block;
-        border: 1px solid black;
-        width: 0.875rem;
-        height: 0.875rem;
-        margin-left: 7px;
-        margin-bottom: -2px;
-        border-radius: 2px;
-      }
     }
-  }
-
-  .horizontal-nav {
-    margin-top: 1rem;
-
-    nb-card-body {
-      background-color: nb-theme(layout-background-color);
-      padding: 0;
-      overflow: visible;
-    }
-  }
-  .settings-column {
-    display: none;
-  }
-
-  @include media-breakpoint-up(md) {
-    --ngd-content-inset: 2rem;
-
-    .middle-column ::ng-deep nb-card {
-      nb-card-header {
-        padding-inline-end: 3rem;
-      }
-
-      nb-card-body {
-        padding-inline-end: 3rem;
-      }
-    }
-  }
-
-  @include media-breakpoint-up(lg) {
-    --ngd-edge-inset: 0;
 
     .horizontal-nav {
-      margin-top: 0;
-    }
-  }
+        margin-top: 1rem;
 
-  @include media-breakpoint-up(macpro) {
-    .horizontal-nav nb-card-body {
-      display: none;
+        nb-card-body {
+            background-color: nb-theme(layout-background-color);
+            padding: 0;
+            overflow: visible;
+        }
     }
 
     .settings-column {
-      display: block;
-      margin-left: $settings-margin;
-      width: $settings-width;
-
-      ngd-page-tabs {
-        margin-bottom: 1.5rem;
-      }
-
-      // The page's sections: the current one darker and bold, with an accent line before it.
-      .toc-title {
         display: none;
-        margin: 0 0 2.5rem;
-        padding-left: 1rem;
-        color: nb-theme(color-fg-heading-light);
-        font-size: 1.25rem;
-        font-weight: normal;
+    }
 
-        &:has(+ nb-toc li) {
-          display: block;
-        }
-      }
+    @include media-breakpoint-up(md) {
+        --ngd-content-inset: 2rem;
 
-      nb-toc {
-        padding-left: 1rem;
-        font-size: 0.9375rem;
-
-        ::ng-deep {
-          ul {
-            padding-left: 3.25rem;
-          }
-
-          li {
-            margin-bottom: 0.9375rem;
-          }
-
-          a {
-            position: relative;
-            color: nb-theme(color-fg-heading-light);
-
-            &.active {
-              color: #202020;
-              font-weight: 500;
-
-              &::after {
-                content: '';
-                position: absolute;
-                top: 50%;
-                left: -3.25rem;
-                width: 2rem;
-                height: 0.1875rem;
-                border-radius: 1.5px;
-                background: nb-theme(color-fg-highlight);
-                transform: translateY(-50%);
-              }
+        .middle-column ::ng-deep nb-card {
+            nb-card-header {
+                padding-inline-end: 3rem;
             }
-          }
+
+            nb-card-body {
+                padding-inline-end: 3rem;
+            }
         }
-      }
     }
 
-    .fixed-panel {
-      position: fixed;
-      top: 6rem;
-      width: inherit;
-      overflow-y: auto;
-      height: calc(100vh - 6rem);
-      padding: 1.5rem 1.5rem 0;
+    @include media-breakpoint-up(lg) {
+        --ngd-edge-inset: 0;
 
-      @include nb-scrollbars(
-        nb-theme(sidebar-scrollbar-color),
-        nb-theme(sidebar-scrollbar-background-color),
-        nb-theme(sidebar-scrollbar-width)
-      );
+        .horizontal-nav {
+            margin-top: 0;
+        }
     }
-  }
+
+    @include media-breakpoint-up(macpro) {
+        .horizontal-nav nb-card-body {
+            display: none;
+        }
+
+        .settings-column {
+            display: block;
+            margin-left: $settings-margin;
+            width: $settings-width;
+
+            ngd-page-tabs {
+                margin-bottom: 1.5rem;
+            }
+
+            // The page's sections: the current one darker and bold, with an accent line before it.
+            .toc-title {
+                display: none;
+                margin: 0 0 2.5rem;
+                padding-left: 1rem;
+                color: nb-theme(color-fg-heading-light);
+                font-size: 1.25rem;
+                font-weight: normal;
+
+                &:has(+ nb-toc li) {
+                    display: block;
+                }
+            }
+
+            nb-toc {
+                padding-left: 1rem;
+                font-size: 0.9375rem;
+
+                ::ng-deep {
+                    ul {
+                        padding-left: 3.25rem;
+                    }
+
+                    li {
+                        margin-bottom: 0.9375rem;
+                    }
+
+                    a {
+                        position: relative;
+                        color: nb-theme(color-fg-heading-light);
+
+                        &.active {
+                            color: #202020;
+                            font-weight: 500;
+
+                            &:after {
+                                content: "";
+                                position: absolute;
+                                top: 50%;
+                                left: -3.25rem;
+                                width: 2rem;
+                                height: 0.1875rem;
+                                border-radius: 1.5px;
+                                background: nb-theme(color-fg-highlight);
+                                transform: translateY(-50%);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        .fixed-panel {
+            position: fixed;
+            top: 6rem;
+            width: inherit;
+            overflow-y: auto;
+            height: calc(100vh - 6rem);
+            padding: 1.5rem 1.5rem 0;
+
+            @include nb-scrollbars(
+                nb-theme(sidebar-scrollbar-color),
+                nb-theme(sidebar-scrollbar-background-color),
+                nb-theme(sidebar-scrollbar-width)
+            );
+        }
+    }
 }

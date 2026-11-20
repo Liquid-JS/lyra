@@ -1,13 +1,13 @@
-import { NgModule } from '@angular/core';
+import { NgModule } from '@angular/core'
 
-import { NbButtonComponent } from './button.component';
+import { NbButtonComponent } from './button.component'
 
 const NB_BUTTON_COMPONENTS = [
-  NbButtonComponent,
-];
+    NbButtonComponent
+]
 
 @NgModule({
-  imports: [...NB_BUTTON_COMPONENTS],
-  exports: [...NB_BUTTON_COMPONENTS],
+    imports: [...NB_BUTTON_COMPONENTS],
+    exports: [...NB_BUTTON_COMPONENTS]
 })
 export class NbButtonModule { }

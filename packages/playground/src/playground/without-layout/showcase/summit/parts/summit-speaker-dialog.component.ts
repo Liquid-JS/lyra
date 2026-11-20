@@ -1,24 +1,24 @@
-import { Component, computed, inject, input } from '@angular/core';
+import { Component, computed, inject, input } from '@angular/core'
 import {
-  NbButtonComponent,
-  NbCardBodyComponent,
-  NbCardComponent,
-  NbCardFooterComponent,
-  NbCardHeaderComponent,
-  NbDialogRef,
-  NbIconComponent,
-  NbTagComponent,
-  NbTagListComponent,
-  NbUserComponent,
-} from '@liquid-js/lyr-core';
+    NbButtonComponent,
+    NbCardBodyComponent,
+    NbCardComponent,
+    NbCardFooterComponent,
+    NbCardHeaderComponent,
+    NbDialogRef,
+    NbIconComponent,
+    NbTagComponent,
+    NbTagListComponent,
+    NbUserComponent
+} from '@liquid-js/lyr-core'
 
-import { portrait } from '../../shared/showcase-images';
-import { sessionById, SUMMIT_TRACKS, SummitSpeaker } from '../summit-data';
+import { portrait } from '../../shared/showcase-images'
+import { sessionById, SUMMIT_TRACKS, SummitSpeaker } from '../summit-data'
 
 /** A speaker in a dialog: who they are, what they talk about, and when. */
 @Component({
-  selector: 'npg-summit-speaker-dialog',
-  template: `
+    selector: 'npg-summit-speaker-dialog',
+    template: `
     <nb-card class="dialog">
       <nb-card-header>
         <nb-user size="large" [name]="speaker().name" [title]="speaker().role + ', ' + speaker().company" [picture]="portrait(speaker().name)" />
@@ -48,7 +48,7 @@ import { sessionById, SUMMIT_TRACKS, SummitSpeaker } from '../summit-data';
       </nb-card-footer>
     </nb-card>
   `,
-  styles: `
+    styles: `
     .dialog {
       width: min(32rem, calc(100vw - 2rem));
       margin: 0;
@@ -85,25 +85,25 @@ import { sessionById, SUMMIT_TRACKS, SummitSpeaker } from '../summit-data';
       justify-content: flex-end;
     }
   `,
-  imports: [
-    NbButtonComponent,
-    NbCardBodyComponent,
-    NbCardComponent,
-    NbCardFooterComponent,
-    NbCardHeaderComponent,
-    NbIconComponent,
-    NbTagComponent,
-    NbTagListComponent,
-    NbUserComponent,
-  ],
+    imports: [
+        NbButtonComponent,
+        NbCardBodyComponent,
+        NbCardComponent,
+        NbCardFooterComponent,
+        NbCardHeaderComponent,
+        NbIconComponent,
+        NbTagComponent,
+        NbTagListComponent,
+        NbUserComponent
+    ]
 })
 export class SummitSpeakerDialogComponent {
-  protected readonly ref = inject(NbDialogRef<SummitSpeakerDialogComponent>);
-  readonly speaker = input.required<SummitSpeaker>();
-  readonly tracks = SUMMIT_TRACKS;
-  readonly portrait = portrait;
-  readonly session = computed(() => {
-    const id = this.speaker().session;
-    return id ? sessionById(id) : undefined;
-  });
+    protected readonly ref = inject(NbDialogRef<SummitSpeakerDialogComponent>)
+    readonly speaker = input.required<SummitSpeaker>()
+    readonly tracks = SUMMIT_TRACKS
+    readonly portrait = portrait
+    readonly session = computed(() => {
+        const id = this.speaker().session
+        return id ? sessionById(id) : undefined
+    })
 }

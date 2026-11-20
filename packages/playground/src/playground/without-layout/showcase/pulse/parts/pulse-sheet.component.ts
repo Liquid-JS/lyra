@@ -1,8 +1,8 @@
-import { Component, inject, input } from '@angular/core';
-import { Router } from '@angular/router';
-import { NbButtonComponent, NbDialogRef, NbIconComponent, NbTagComponent } from '@liquid-js/lyr-core';
+import { Component, inject, input } from '@angular/core'
+import { Router } from '@angular/router'
+import { NbButtonComponent, NbDialogRef, NbIconComponent, NbTagComponent } from '@liquid-js/lyr-core'
 
-import { PulsePlanItem } from '../pulse-data';
+import { PulsePlanItem } from '../pulse-data'
 
 /**
  * A planned item's details, in a sheet that slides up from the bottom of the screen, under the thumb: glass over the
@@ -10,8 +10,8 @@ import { PulsePlanItem } from '../pulse-data';
  * Escape or a tap outside, placed at the bottom by its own styles.
  */
 @Component({
-  selector: 'npg-pulse-sheet',
-  template: `
+    selector: 'npg-pulse-sheet',
+    template: `
     <div class="handle" aria-hidden="true"></div>
     <header class="head">
       <span class="tile" [class]="'tile status-' + item().status"><nb-icon [icon]="item().icon" /></span>
@@ -44,7 +44,7 @@ import { PulsePlanItem } from '../pulse-data';
       }
     </div>
   `,
-  styles: `
+    styles: `
     // The sheet itself is fixed to the bottom of the screen; the dialog's pane, centred by the service, has no size.
     :host {
       position: fixed;
@@ -177,18 +177,18 @@ import { PulsePlanItem } from '../pulse-data';
       gap: 0.75rem;
     }
   `,
-  imports: [NbButtonComponent, NbIconComponent, NbTagComponent],
+    imports: [NbButtonComponent, NbIconComponent, NbTagComponent]
 })
 export class PulseSheetComponent {
-  protected readonly ref = inject<NbDialogRef<PulseSheetComponent>>(NbDialogRef);
-  private readonly router = inject(Router);
+    protected readonly ref = inject<NbDialogRef<PulseSheetComponent>>(NbDialogRef)
+    private readonly router = inject(Router)
 
-  /** The planned item the sheet is about. */
-  readonly item = input.required<PulsePlanItem>();
+    /** The planned item the sheet is about. */
+    readonly item = input.required<PulsePlanItem>()
 
-  /** Starts the item as a workout: closes the sheet and goes to the session. */
-  start() {
-    this.ref.close();
-    void this.router.navigateByUrl(this.router.url.replace(/\/today(\?.*)?$/, '/workout$1'));
-  }
+    /** Starts the item as a workout: closes the sheet and goes to the session. */
+    start() {
+        this.ref.close()
+        void this.router.navigateByUrl(this.router.url.replace(/\/today(\?.*)?$/, '/workout$1'))
+    }
 }

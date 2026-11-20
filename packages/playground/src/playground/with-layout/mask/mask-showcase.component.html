@@ -1,51 +1,51 @@
 <nb-card>
-  <nb-card-body>
-    <div class="field">
-      <label class="label"
-        for="mask-phone">Phone</label>
-      <input nbInput
-        fullWidth
-        id="mask-phone"
-        type="tel"
-        nbMask="(###) ###-####"
-        [formControl]="phone" />
-      <p class="value">Value: <code>{{ phone.value }}</code></p>
-    </div>
+    <nb-card-body>
+        <div class="field">
+            <label class="label"
+                for="mask-phone">Phone</label>
+            <input nbInput
+                fullWidth
+                id="mask-phone"
+                type="tel"
+                nbMask="(###) ###-####"
+                [formControl]="phone" />
+            <p class="value">Value: <code>{{ phone.value }}</code></p>
+        </div>
 
-    <div class="field">
-      <label class="label"
-        for="mask-date">Date (MM/DD/YYYY)</label>
-      <input nbInput
-        fullWidth
-        id="mask-date"
-        nbMask="##/##/####"
-        nbMaskValue="masked"
-        [nbMaskOptions]="eager"
-        [formControl]="date" />
-      <p class="value">Value: <code>{{ date.value }}</code></p>
-    </div>
+        <div class="field">
+            <label class="label"
+                for="mask-date">Date (MM/DD/YYYY)</label>
+            <input nbInput
+                fullWidth
+                id="mask-date"
+                nbMask="##/##/####"
+                nbMaskValue="masked"
+                [nbMaskOptions]="eager"
+                [formControl]="date" />
+            <p class="value">Value: <code>{{ date.value }}</code></p>
+        </div>
 
-    <div class="field">
-      <label class="label"
-        for="mask-zip">ZIP code</label>
-      <input nbInput
-        fullWidth
-        id="mask-zip"
-        [nbMask]="['#####', '#####-####']"
-        [formControl]="zip" />
-      <p class="value">Value: <code>{{ zip.value }}</code></p>
-    </div>
+        <div class="field">
+            <label class="label"
+                for="mask-zip">ZIP code</label>
+            <input nbInput
+                fullWidth
+                id="mask-zip"
+                [nbMask]="['#####', '#####-####']"
+                [formControl]="zip" />
+            <p class="value">Value: <code>{{ zip.value }}</code></p>
+        </div>
 
-    <div class="field">
-      <label class="label"
-        for="mask-amount">Amount</label>
-      <input nbInput
-        fullWidth
-        id="mask-amount"
-        [nbMask]="null"
-        [nbMaskOptions]="money"
-        [formControl]="amount" />
-      <p class="value">Value: <code>{{ amount.value }}</code></p>
-    </div>
-  </nb-card-body>
+        <div class="field">
+            <label class="label"
+                for="mask-amount">Amount</label>
+            <input nbInput
+                fullWidth
+                id="mask-amount"
+                [nbMask]="null"
+                [nbMaskOptions]="money"
+                [formControl]="amount" />
+            <p class="value">Value: <code>{{ amount.value }}</code></p>
+        </div>
+    </nb-card-body>
 </nb-card>

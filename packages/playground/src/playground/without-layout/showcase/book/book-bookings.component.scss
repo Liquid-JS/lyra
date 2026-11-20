@@ -1,167 +1,167 @@
-@use '../../../styles/themes' as *;
+@use "../../../styles/themes" as *;
 
 :host {
-  display: block;
+    display: block;
 }
 
 .bookings {
-  max-width: 52rem;
-  margin: 0 auto;
-  padding: 2.5rem 1.5rem 4rem;
-  box-sizing: border-box;
+    max-width: 52rem;
+    margin: 0 auto;
+    padding: 2.5rem 1.5rem 4rem;
+    box-sizing: border-box;
 }
 
 .top {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
 
-  h1 {
-    margin: 0 0 0.25rem;
-    letter-spacing: -0.02em;
-  }
+    h1 {
+        margin: 0 0 0.25rem;
+        letter-spacing: -0.02em;
+    }
 
-  p {
-    margin: 0;
-  }
+    p {
+        margin: 0;
+    }
 }
 
 .hint {
-  color: nb-theme(text-hint-color);
+    color: nb-theme(text-hint-color);
 }
 
 nb-tabset {
-  display: block;
+    display: block;
 }
 
 .list {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  margin: 1.5rem 0 0;
-  padding: 0;
-  list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin: 1.5rem 0 0;
+    padding: 0;
+    list-style: none;
 }
 
 nb-card {
-  margin: 0;
+    margin: 0;
 }
 
 nb-card-body {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  grid-template-areas:
-    'date what tag'
-    'date what actions';
-  align-items: center;
-  gap: 0.5rem 1.25rem;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas:
+        "date what tag"
+        "date what actions";
+    align-items: center;
+    gap: 0.5rem 1.25rem;
 }
 
 // The day on a tinted tile, like a page of a calendar.
 .date {
-  grid-area: date;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  width: 4rem;
-  height: 4.5rem;
-  border-radius: 1rem;
-  background: nb-theme(color-primary-transparent-200);
-  color: nb-theme(text-primary-color);
-  line-height: 1;
+    grid-area: date;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 4rem;
+    height: 4.5rem;
+    border-radius: 1rem;
+    background: nb-theme(color-primary-transparent-200);
+    color: nb-theme(text-primary-color);
+    line-height: 1;
 
-  .day {
-    font-size: 1.625rem;
-    font-weight: 800;
-  }
+    .day {
+        font-size: 1.625rem;
+        font-weight: 800;
+    }
 
-  .month {
-    font-size: 0.75rem;
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-  }
+    .month {
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+    }
 }
 
 .past .date {
-  background: nb-theme(background-basic-color-3);
-  color: nb-theme(text-hint-color);
+    background: nb-theme(background-basic-color-3);
+    color: nb-theme(text-hint-color);
 }
 
 .what {
-  grid-area: what;
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  min-width: 0;
+    grid-area: what;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    min-width: 0;
 
-  h2 {
-    margin: 0;
-    font-size: 1.125rem;
-  }
+    h2 {
+        margin: 0;
+        font-size: 1.125rem;
+    }
 
-  p {
-    margin: 0;
-    font-size: 0.875rem;
-  }
+    p {
+        margin: 0;
+        font-size: 0.875rem;
+    }
 }
 
 nb-tag {
-  grid-area: tag;
-  justify-self: end;
+    grid-area: tag;
+    justify-self: end;
 }
 
 .actions {
-  grid-area: actions;
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.25rem;
+    grid-area: actions;
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.25rem;
 }
 
 .empty {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 3rem 1rem;
-  text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 3rem 1rem;
+    text-align: center;
 
-  nb-icon {
-    color: nb-theme(color-primary-default);
-    font-size: 3rem;
-  }
+    nb-icon {
+        color: nb-theme(color-primary-default);
+        font-size: 3rem;
+    }
 
-  h2 {
-    margin: 0;
-  }
+    h2 {
+        margin: 0;
+    }
 
-  p {
-    margin: 0 0 1rem;
-  }
+    p {
+        margin: 0 0 1rem;
+    }
 }
 
-@media (max-width: 575.98px) {
-  .bookings {
-    padding: 1.5rem 1rem 3rem;
-  }
+@media (width <= 575.98px) {
+    .bookings {
+        padding: 1.5rem 1rem 3rem;
+    }
 
-  nb-card-body {
-    grid-template-columns: auto minmax(0, 1fr);
-    grid-template-areas:
-      'date what'
-      'tag tag'
-      'actions actions';
-  }
+    nb-card-body {
+        grid-template-columns: auto minmax(0, 1fr);
+        grid-template-areas:
+            "date what"
+            "tag tag"
+            "actions actions";
+    }
 
-  nb-tag {
-    justify-self: start;
-  }
+    nb-tag {
+        justify-self: start;
+    }
 
-  .actions {
-    justify-content: flex-start;
-  }
+    .actions {
+        justify-content: flex-start;
+    }
 }

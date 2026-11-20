@@ -1,15 +1,15 @@
-import { Component } from '@angular/core';
+import { Component } from '@angular/core'
 import {
-  NbLayoutComponent,
-  NbLayoutHeaderComponent,
-  NbLayoutColumnComponent,
-  NbLayoutFooterComponent,
-} from '@liquid-js/lyr-core';
+    NbLayoutComponent,
+    NbLayoutHeaderComponent,
+    NbLayoutColumnComponent,
+    NbLayoutFooterComponent
+} from '@liquid-js/lyr-core'
 
 @Component({
-  selector: 'nb-layout-test',
-  styles: [
-    `
+    selector: 'nb-layout-test',
+    styles: [
+        `
       :host ::ng-deep nb-layout-column {
         background-color: #fb75ff;
       }
@@ -19,9 +19,9 @@ import {
       :host ::ng-deep nb-layout-column.left {
         background-color: #76ecff;
       }
-    `,
-  ],
-  templateUrl: './layout-test.component.html',
-  imports: [NbLayoutComponent, NbLayoutHeaderComponent, NbLayoutColumnComponent, NbLayoutFooterComponent],
+    `
+    ],
+    templateUrl: './layout-test.component.html',
+    imports: [NbLayoutComponent, NbLayoutHeaderComponent, NbLayoutColumnComponent, NbLayoutFooterComponent]
 })
 export class LayoutTestComponent {}

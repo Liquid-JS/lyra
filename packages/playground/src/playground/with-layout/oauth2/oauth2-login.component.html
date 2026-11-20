@@ -1,23 +1,23 @@
 <nb-layout>
-  <nb-layout-column>
-    <nb-card>
-      <nb-card-body>
-        <p>This example signs in with Google once <code>oauth2.routes.ts</code> has your app's own client ID; it has a
-          placeholder.</p>
-        <p>Current User Authenticated: {{ !!token() }}</p>
-        <p>Current User Token: {{ token() | json }}</p>
+    <nb-layout-column>
+        <nb-card>
+            <nb-card-body>
+                <p>This example signs in with Google once <code>oauth2.routes.ts</code> has your app's own client ID; it has a
+                    placeholder.</p>
+                <p>Current User Authenticated: {{ !!token() }}</p>
+                <p>Current User Token: {{ token() | json }}</p>
 
-        @if (!token()) {
-        <button nbButton
-          status="success"
-          (click)="login()">Sign In with Google</button>
-        }
-        @if (token()) {
-        <button nbButton
-          status="warning"
-          (click)="logout()">Sign Out</button>
-        }
-      </nb-card-body>
-    </nb-card>
-  </nb-layout-column>
+                @if (!token()) {
+                <button nbButton
+                    status="success"
+                    (click)="login()">Sign In with Google</button>
+                }
+                @if (token()) {
+                <button nbButton
+                    status="warning"
+                    (click)="logout()">Sign Out</button>
+                }
+            </nb-card-body>
+        </nb-card>
+    </nb-layout-column>
 </nb-layout>

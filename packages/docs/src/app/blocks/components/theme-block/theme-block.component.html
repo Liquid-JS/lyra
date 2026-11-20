@@ -1,62 +1,62 @@
 <nb-card>
-  <nb-card-body>
-    <h2>{{ themeName() }} Theme</h2>
-    @if (parentThemeName()) {
-    <p>inherited from {{ parentThemeName() }} theme</p>
-    }
+    <nb-card-body>
+        <h2>{{ themeName() }} Theme</h2>
+        @if (parentThemeName()) {
+        <p>inherited from {{ parentThemeName() }} theme</p>
+        }
 
-    <div class="search-wrapper">
-      <input nbInput
-        fullWidth
-        class="search-control"
-        placeholder="Search for..."
-        [formControl]="searchControl">
-    </div>
+        <div class="search-wrapper">
+            <input nbInput
+                fullWidth
+                class="search-control"
+                placeholder="Search for..."
+                [formControl]="searchControl">
+        </div>
 
-    <!-- Scrolls sideways itself where the table is wider than the card, e.g. on a phone. -->
-    <div class="table-scroll">
-      <table class="striped">
-        <thead>
-          <tr>
-            <td>Name</td>
-            <td>Value</td>
-            <td>Parent</td>
-          </tr>
-        </thead>
+        <!-- Scrolls sideways itself where the table is wider than the card, e.g. on a phone. -->
+        <div class="table-scroll">
+            <table class="striped">
+                <thead>
+                    <tr>
+                        <td>Name</td>
+                        <td>Value</td>
+                        <td>Parent</td>
+                    </tr>
+                </thead>
 
-        <tbody>
-          @for (prop of filtered(); track prop) {
-          <tr>
-            <td>
-              <a [routerLink]="[]"
-                fragment="{{ prop.name }}">{{ prop.name }}</a>
-            </td>
-            <td ngdColorSwatch>{{ prop.value }}</td>
-            <td>
-              @for (parent of prop.parents; track $index; let index = $index) {
-              <a [routerLink]="['/theme/built-in-themes', parent.theme + '-theme']"
-                fragment="{{ parent.prop }}"
-                [class.inheritance-property]="index > 0">
-                @if (index > 0) {
-                <nb-icon class="inheritance-icon"
-                  icon="arrow-back-outline" />
-                }
-                <span>{{ parent.prop }}</span>
-                @if (parent.theme !== themeName()) {
-                <span class="parent-theme-name">({{ parent.theme }})</span>
-                }
-              </a>
-              }
-            </td>
-          </tr>
-          }
-          @if (filtered().length === 0) {
-          <tr class="not-found">
-            <td colspan="3">Theme variable not found.</td>
-          </tr>
-          }
-        </tbody>
-      </table>
-    </div>
-  </nb-card-body>
+                <tbody>
+                    @for (prop of filtered(); track prop) {
+                    <tr>
+                        <td>
+                            <a [routerLink]="[]"
+                                fragment="{{ prop.name }}">{{ prop.name }}</a>
+                        </td>
+                        <td ngdColorSwatch>{{ prop.value }}</td>
+                        <td>
+                            @for (parent of prop.parents; track $index; let index = $index) {
+                            <a [routerLink]="['/theme/built-in-themes', parent.theme + '-theme']"
+                                fragment="{{ parent.prop }}"
+                                [class.inheritance-property]="index > 0">
+                                @if (index > 0) {
+                                <nb-icon class="inheritance-icon"
+                                    icon="arrow-back-outline" />
+                                }
+                                <span>{{ parent.prop }}</span>
+                                @if (parent.theme !== themeName()) {
+                                <span class="parent-theme-name">({{ parent.theme }})</span>
+                                }
+                            </a>
+                            }
+                        </td>
+                    </tr>
+                    }
+                    @if (filtered().length === 0) {
+                    <tr class="not-found">
+                        <td colspan="3">Theme variable not found.</td>
+                    </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </nb-card-body>
 </nb-card>

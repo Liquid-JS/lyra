@@ -1,14 +1,14 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation } from '@angular/core'
 import {
-  NbButtonComponent,
-  NbIconComponent,
-  NbOptionComponent,
-  NbSelectComponent,
-  NbSliderComponent,
-} from '@liquid-js/lyr-core';
+    NbButtonComponent,
+    NbIconComponent,
+    NbOptionComponent,
+    NbSelectComponent,
+    NbSliderComponent
+} from '@liquid-js/lyr-core'
 
-import { NbMediaController } from './media-controller';
-import { NbMediaPlayer } from './media-player';
+import { NbMediaController } from './media-controller'
+import { NbMediaPlayer } from './media-player'
 
 /**
  * Plays audio in a compact bar with Lyra's controls: play, the position, volume and speed.
@@ -39,15 +39,15 @@ import { NbMediaPlayer } from './media-player';
  * ```
  */
 @Component({
-  selector: 'nb-audio',
-  templateUrl: './audio.component.html',
-  styleUrl: './audio.component.scss',
-  encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  // Its own media logic, as the base class's providers aren't inherited.
-  providers: [NbMediaController],
-  imports: [NbButtonComponent, NbIconComponent, NbOptionComponent, NbSelectComponent, NbSliderComponent],
+    selector: 'nb-audio',
+    templateUrl: './audio.component.html',
+    styleUrl: './audio.component.scss',
+    encapsulation: ViewEncapsulation.None,
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    // Its own media logic, as the base class's providers aren't inherited.
+    providers: [NbMediaController],
+    imports: [NbButtonComponent, NbIconComponent, NbOptionComponent, NbSelectComponent, NbSliderComponent]
 })
 export class NbAudioComponent extends NbMediaPlayer {
-  protected readonly kind = 'audio';
+    protected readonly kind = 'audio'
 }

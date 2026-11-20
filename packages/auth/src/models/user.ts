@@ -1,13 +1,13 @@
 export class NbUser {
 
-  constructor(public id?: number,
-    public email?: string,
-    public password?: string,
-    public rememberMe?: boolean,
-    public terms?: boolean,
-    public confirmPassword?: string,
-    public fullName?: string) {
-  }
+    constructor(public id?: number,
+        public email?: string,
+        public password?: string,
+        public rememberMe?: boolean,
+        public terms?: boolean,
+        public confirmPassword?: string,
+        public fullName?: string) {
+    }
 }
 
 /**
@@ -16,10 +16,10 @@ export class NbUser {
  * form the password and its confirmation.
  */
 export interface NbAuthCredentials {
-  email?: string;
-  password?: string;
-  confirmPassword?: string;
-  fullName?: string;
-  rememberMe?: boolean;
-  terms?: boolean;
+    email?: string
+    password?: string
+    confirmPassword?: string
+    fullName?: string
+    rememberMe?: boolean
+    terms?: boolean
 }

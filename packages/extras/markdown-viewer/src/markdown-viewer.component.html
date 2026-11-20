@@ -1,250 +1,250 @@
 <div class="uf-contents"
-  [remarkNode]="tree()"></div>
+    [remarkNode]="tree()"></div>
 
 <ng-template #fallback
-  let-node>
-  @if (node.children) {
-  <remark-node [remarkNode]="node" />
-  }
+    let-node>
+    @if (node.children) {
+    <remark-node [remarkNode]="node" />
+    }
 </ng-template>
 
 <!-- Blocks -->
 
 <p *remarkTemplate="'paragraph'; let node; let parent = parent"
-  [attr.dir]="direction(parent)"
-  [remarkNode]="node"></p>
+    [attr.dir]="direction(parent)"
+    [remarkNode]="node"></p>
 
 <ng-template remarkTemplate="heading"
-  let-node
-  let-parent="parent">
-  @let dir = direction(parent);
-  @switch (node.depth) {
-  @case (1) {
-  <h1 [attr.dir]="dir"
-    [remarkNode]="node"></h1>
-  }
-  @case (2) {
-  <h2 [attr.dir]="dir"
-    [remarkNode]="node"></h2>
-  }
-  @case (3) {
-  <h3 [attr.dir]="dir"
-    [remarkNode]="node"></h3>
-  }
-  @case (4) {
-  <h4 [attr.dir]="dir"
-    [remarkNode]="node"></h4>
-  }
-  @case (5) {
-  <h5 [attr.dir]="dir"
-    [remarkNode]="node"></h5>
-  }
-  @default {
-  <h6 [attr.dir]="dir"
-    [remarkNode]="node"></h6>
-  }
-  }
+    let-node
+    let-parent="parent">
+    @let dir = direction(parent);
+    @switch (node.depth) {
+    @case (1) {
+    <h1 [attr.dir]="dir"
+        [remarkNode]="node"></h1>
+    }
+    @case (2) {
+    <h2 [attr.dir]="dir"
+        [remarkNode]="node"></h2>
+    }
+    @case (3) {
+    <h3 [attr.dir]="dir"
+        [remarkNode]="node"></h3>
+    }
+    @case (4) {
+    <h4 [attr.dir]="dir"
+        [remarkNode]="node"></h4>
+    }
+    @case (5) {
+    <h5 [attr.dir]="dir"
+        [remarkNode]="node"></h5>
+    }
+    @default {
+    <h6 [attr.dir]="dir"
+        [remarkNode]="node"></h6>
+    }
+    }
 </ng-template>
 
 <blockquote *remarkTemplate="'blockquote'; let node; let parent = parent"
-  [attr.dir]="direction(parent)"
-  [remarkNode]="node"></blockquote>
+    [attr.dir]="direction(parent)"
+    [remarkNode]="node"></blockquote>
 
 <ng-template remarkTemplate="list"
-  let-node
-  let-parent="parent">
-  @if (node.ordered) {
-  <ol [remarkNode]="node"
-    [attr.dir]="direction(parent)"
-    [attr.start]="node.start === 1 ? null : node.start"></ol>
-  } @else {
-  <ul [attr.dir]="direction(parent)"
-    [remarkNode]="node"></ul>
-  }
+    let-node
+    let-parent="parent">
+    @if (node.ordered) {
+    <ol [remarkNode]="node"
+        [attr.dir]="direction(parent)"
+        [attr.start]="node.start === 1 ? null : node.start"></ol>
+    } @else {
+    <ul [attr.dir]="direction(parent)"
+        [remarkNode]="node"></ul>
+    }
 </ng-template>
 
 <ng-template remarkTemplate="listItem"
-  let-node>
-  @if (node.checked === true || node.checked === false) {
-  <li class="task-list-item"
-    [class.checked]="node.checked">
-    <!-- The state for assistive technology; the box is drawn in the item's styles. -->
-    <input type="checkbox"
-      class="visually-hidden"
-      disabled
-      [checked]="node.checked" />
-    <remark-node [remarkNode]="node" />
-  </li>
-  } @else {
-  <li [remarkNode]="node"></li>
-  }
+    let-node>
+    @if (node.checked === true || node.checked === false) {
+    <li class="task-list-item"
+        [class.checked]="node.checked">
+        <!-- The state for assistive technology; the box is drawn in the item's styles. -->
+        <input type="checkbox"
+            class="visually-hidden"
+            disabled
+            [checked]="node.checked" />
+        <remark-node [remarkNode]="node" />
+    </li>
+    } @else {
+    <li [remarkNode]="node"></li>
+    }
 </ng-template>
 
 <ng-template remarkTemplate="code"
-  let-node>
-  @if (highlighting) {
-  <pre><code [nxtHighlight]="node.value" [language]="node.lang ?? undefined" [attr.data-language]="node.lang"></code></pre>
-  } @else {
-  <pre><code [attr.data-language]="node.lang">{{ node.value }}</code></pre>
-  }
+    let-node>
+    @if (highlighting) {
+    <pre><code [nxtHighlight]="node.value" [language]="node.lang ?? undefined" [attr.data-language]="node.lang"></code></pre>
+    } @else {
+    <pre><code [attr.data-language]="node.lang">{{ node.value }}</code></pre>
+    }
 </ng-template>
 
 <hr *remarkTemplate="'thematicBreak'" />
 
 <ng-template remarkTemplate="html"
-  let-node
-  let-parent="parent">
-  <!-- Tags in a line of text that aren't paired into an element are left out. -->
-  @if (blockParents.has(parent.type)) {
-  <div [attr.dir]="direction(parent)"
-    [innerHTML]="node.value"></div>
-  }
+    let-node
+    let-parent="parent">
+    <!-- Tags in a line of text that aren't paired into an element are left out. -->
+    @if (blockParents.has(parent.type)) {
+    <div [attr.dir]="direction(parent)"
+        [innerHTML]="node.value"></div>
+    }
 </ng-template>
 
 <table *remarkTemplate="'table'; let node; let parent = parent"
-  [attr.dir]="direction(parent)">
-  <thead>
-    @if (node.children[0]; as row) {
-    <tr>
-      @for (cell of row.children; track $index) {
-      <th [remarkNode]="cell"
-        [style.text-align]="node.align?.[$index]"></th>
-      }
-    </tr>
-    }
-  </thead>
-  <tbody>
-    @for (row of node.children.slice(1); track $index) {
-    <tr>
-      @for (cell of row.children; track $index) {
-      <td [remarkNode]="cell"
-        [style.text-align]="node.align?.[$index]"></td>
-      }
-    </tr>
-    }
-  </tbody>
+    [attr.dir]="direction(parent)">
+    <thead>
+        @if (node.children[0]; as row) {
+        <tr>
+            @for (cell of row.children; track $index) {
+            <th [remarkNode]="cell"
+                [style.text-align]="node.align?.[$index]"></th>
+            }
+        </tr>
+        }
+    </thead>
+    <tbody>
+        @for (row of node.children.slice(1); track $index) {
+        <tr>
+            @for (cell of row.children; track $index) {
+            <td [remarkNode]="cell"
+                [style.text-align]="node.align?.[$index]"></td>
+            }
+        </tr>
+        }
+    </tbody>
 </table>
 
 <section *remarkTemplate="'nbFootnotes'; let node; let parent = parent"
-  class="nb-markdown-footnotes"
-  [attr.aria-label]="texts().footnotes"
-  [attr.dir]="direction(parent)">
-  <hr />
-  <ol [remarkNode]="node"></ol>
+    class="nb-markdown-footnotes"
+    [attr.aria-label]="texts().footnotes"
+    [attr.dir]="direction(parent)">
+    <hr />
+    <ol [remarkNode]="node"></ol>
 </section>
 
 <!-- The way back from a footnote to its reference, after its text. -->
 <ng-template remarkTemplate="nbFootnoteBack"
-  let-node><a class="nb-markdown-footnote-back"
-    [href]="'#' + footnoteId(node.identifier, true)"
-    [attr.aria-label]="texts().backToText"
-    (click)="showFootnote($event, footnoteId(node.identifier, true))">↩&#xFE0E;</a></ng-template>
+    let-node><a class="nb-markdown-footnote-back"
+        [href]="'#' + footnoteId(node.identifier, true)"
+        [attr.aria-label]="texts().backToText"
+        (click)="showFootnote($event, footnoteId(node.identifier, true))">↩&#xFE0E;</a></ng-template>
 
 <li *remarkTemplate="'footnoteDefinition'; let node"
-  [id]="footnoteId(node.identifier)"
-  [remarkNode]="node"></li>
+    [id]="footnoteId(node.identifier)"
+    [remarkNode]="node"></li>
 
 <!-- Text -->
 
 <ng-container *remarkTemplate="'text'; let node">{{ node.value }}</ng-container>
 
 <em *remarkTemplate="'emphasis'; let node"
-  [remarkNode]="node"></em>
+    [remarkNode]="node"></em>
 
 <strong *remarkTemplate="'strong'; let node"
-  [remarkNode]="node"></strong>
+    [remarkNode]="node"></strong>
 
 <del *remarkTemplate="'delete'; let node"
-  [remarkNode]="node"></del>
+    [remarkNode]="node"></del>
 
 <code *remarkTemplate="'inlineCode'; let node">{{ node.value }}</code>
 
 <br *remarkTemplate="'break'" />
 
 <a *remarkTemplate="'link'; let node"
-  [href]="node.url"
-  [attr.title]="node.title"
-  [remarkNode]="node"></a>
+    [href]="node.url"
+    [attr.title]="node.title"
+    [remarkNode]="node"></a>
 
 <img *remarkTemplate="'image'; let node"
-  [src]="node.url"
-  [alt]="node.alt ?? ''"
-  [attr.title]="node.title" />
+    [src]="node.url"
+    [alt]="node.alt ?? ''"
+    [attr.title]="node.title" />
 
 <sup *remarkTemplate="'footnoteReference'; let node">
-  <a [id]="footnoteId(node.identifier, true)"
-    [href]="'#' + footnoteId(node.identifier)"
-    (click)="showFootnote($event, footnoteId(node.identifier))">{{ node.label }}</a>
+    <a [id]="footnoteId(node.identifier, true)"
+        [href]="'#' + footnoteId(node.identifier)"
+        (click)="showFootnote($event, footnoteId(node.identifier))">{{ node.label }}</a>
 </sup>
 
 <ng-template remarkTemplate="nbHtmlElement"
-  let-node>
-  @switch (htmlElements.has(node.tagName) ? node.tagName : '') {
-  @case ('abbr') {
-  <abbr [remarkNode]="node"></abbr>
-  }
-  @case ('b') {
-  <b [remarkNode]="node"></b>
-  }
-  @case ('br') {
-  <br />
-  }
-  @case ('cite') {
-  <cite [remarkNode]="node"></cite>
-  }
-  @case ('code') {
-  <code [remarkNode]="node"></code>
-  }
-  @case ('del') {
-  <del [remarkNode]="node"></del>
-  }
-  @case ('em') {
-  <em [remarkNode]="node"></em>
-  }
-  @case ('i') {
-  <i [remarkNode]="node"></i>
-  }
-  @case ('ins') {
-  <ins [remarkNode]="node"></ins>
-  }
-  @case ('kbd') {
-  <kbd [remarkNode]="node"></kbd>
-  }
-  @case ('mark') {
-  <mark [remarkNode]="node"></mark>
-  }
-  @case ('s') {
-  <s [remarkNode]="node"></s>
-  }
-  @case ('samp') {
-  <samp [remarkNode]="node"></samp>
-  }
-  @case ('small') {
-  <small [remarkNode]="node"></small>
-  }
-  @case ('span') {
-  <span [remarkNode]="node"></span>
-  }
-  @case ('strong') {
-  <strong [remarkNode]="node"></strong>
-  }
-  @case ('sub') {
-  <sub [remarkNode]="node"></sub>
-  }
-  @case ('sup') {
-  <sup [remarkNode]="node"></sup>
-  }
-  @case ('u') {
-  <u [remarkNode]="node"></u>
-  }
-  @case ('var') {
-  <var [remarkNode]="node"></var>
-  }
-  @case ('wbr') {
-  <wbr />
+    let-node>
+    @switch (htmlElements.has(node.tagName) ? node.tagName : '') {
+    @case ('abbr') {
+    <abbr [remarkNode]="node"></abbr>
+    }
+    @case ('b') {
+    <b [remarkNode]="node"></b>
+    }
+    @case ('br') {
+    <br />
+    }
+    @case ('cite') {
+    <cite [remarkNode]="node"></cite>
+    }
+    @case ('code') {
+    <code [remarkNode]="node"></code>
+    }
+    @case ('del') {
+    <del [remarkNode]="node"></del>
+    }
+    @case ('em') {
+    <em [remarkNode]="node"></em>
+    }
+    @case ('i') {
+    <i [remarkNode]="node"></i>
+    }
+    @case ('ins') {
+    <ins [remarkNode]="node"></ins>
+    }
+    @case ('kbd') {
+    <kbd [remarkNode]="node"></kbd>
+    }
+    @case ('mark') {
+    <mark [remarkNode]="node"></mark>
+    }
+    @case ('s') {
+    <s [remarkNode]="node"></s>
+    }
+    @case ('samp') {
+    <samp [remarkNode]="node"></samp>
+    }
+    @case ('small') {
+    <small [remarkNode]="node"></small>
+    }
+    @case ('span') {
+    <span [remarkNode]="node"></span>
+    }
+    @case ('strong') {
+    <strong [remarkNode]="node"></strong>
+    }
+    @case ('sub') {
+    <sub [remarkNode]="node"></sub>
+    }
+    @case ('sup') {
+    <sup [remarkNode]="node"></sup>
+    }
+    @case ('u') {
+    <u [remarkNode]="node"></u>
+    }
+    @case ('var') {
+    <var [remarkNode]="node"></var>
+    }
+    @case ('wbr') {
+    <wbr />
     }
     @default {
-  <remark-node [remarkNode]="node" />
-  }
-  }
+    <remark-node [remarkNode]="node" />
+    }
+    }
 </ng-template>

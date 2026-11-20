@@ -1,47 +1,47 @@
 <div class="charts">
-  <nb-card>
-    <nb-card-header>Traffic</nb-card-header>
-    <nb-card-body>
-      <nb-line-chart area
-        smooth
-        [labels]="months"
-        [series]="traffic()"
-        aria-label="Visits and sign-ups per month, both rising" />
-    </nb-card-body>
-    <nb-card-footer>
-      <button nbButton
-        size="small"
-        (click)="addMonth()">Next month</button>
-    </nb-card-footer>
-  </nb-card>
+    <nb-card>
+        <nb-card-header>Traffic</nb-card-header>
+        <nb-card-body>
+            <nb-line-chart area
+                smooth
+                [labels]="months"
+                [series]="traffic()"
+                aria-label="Visits and sign-ups per month, both rising" />
+        </nb-card-body>
+        <nb-card-footer>
+            <button nbButton
+                size="small"
+                (click)="addMonth()">Next month</button>
+        </nb-card-footer>
+    </nb-card>
 
-  <nb-card>
-    <nb-card-header>Orders</nb-card-header>
-    <nb-card-body>
-      <nb-bar-chart stacked
-        [labels]="months"
-        [series]="orders"
-        aria-label="Online and in-store orders per month" />
-    </nb-card-body>
-  </nb-card>
+    <nb-card>
+        <nb-card-header>Orders</nb-card-header>
+        <nb-card-body>
+            <nb-bar-chart stacked
+                [labels]="months"
+                [series]="orders"
+                aria-label="Online and in-store orders per month" />
+        </nb-card-body>
+    </nb-card>
 
-  <nb-card>
-    <nb-card-header>Invoices</nb-card-header>
-    <nb-card-body>
-      <nb-pie-chart doughnut
-        [slices]="invoices"
-        aria-label="42 invoices paid, 8 due, 3 overdue" />
-    </nb-card-body>
-  </nb-card>
+    <nb-card>
+        <nb-card-header>Invoices</nb-card-header>
+        <nb-card-body>
+            <nb-pie-chart doughnut
+                [slices]="invoices"
+                aria-label="42 invoices paid, 8 due, 3 overdue" />
+        </nb-card-body>
+    </nb-card>
 
-  <nb-card>
-    <nb-card-header>Response time</nb-card-header>
-    <nb-card-body>
-      <nb-chart type="bar"
-        [data]="{ labels: ['API', 'Web', 'Search'], datasets: [{ label: 'Median (ms)', data: [120, 340, 210] }] }"
-        [options]="{ indexAxis: 'y', plugins: { legend: { display: false } } }"
-        [palette]="['warning']"
-        aria-label="Median response time: API 120 ms, web 340 ms, search 210 ms" />
-    </nb-card-body>
-  </nb-card>
+    <nb-card>
+        <nb-card-header>Response time</nb-card-header>
+        <nb-card-body>
+            <nb-chart type="bar"
+                [data]="{ labels: ['API', 'Web', 'Search'], datasets: [{ label: 'Median (ms)', data: [120, 340, 210] }] }"
+                [options]="{ indexAxis: 'y', plugins: { legend: { display: false } } }"
+                [palette]="['warning']"
+                aria-label="Median response time: API 120 ms, web 340 ms, search 210 ms" />
+        </nb-card-body>
+    </nb-card>
 </div>

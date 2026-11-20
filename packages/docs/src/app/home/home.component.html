@@ -1,181 +1,181 @@
 <nb-layout>
-  <nb-layout-column>
-    <!-- The library first: what it is and what's in it. -->
-    <section class="hero">
-      <div class="content">
-        <ngd-header [showSearch]="false" />
-        <div class="hero-body">
-          <h1>Angular components, with a design to match</h1>
-          <p class="lead">
-            Lyra is an Angular UI library: components, forms, data tables, auth and more, built on a design system of
-            its own, with six themes, a theme variable for every detail, and an editor to make a theme yours.
-          </p>
-          <div class="actions">
-            <a class="action primary"
-              routerLink="/docs">Get started</a>
-            <a class="action"
-              routerLink="/examples">Browse examples</a>
-            <a class="action quiet"
-              href="https://github.com/Liquid-JS/lyra"
-              target="_blank"
-              rel="noopener">GitHub</a>
-          </div>
-          <dl class="numbers">
-            @for (number of numbers; track number.label) {
-            <div>
-              <dt>{{ number.value }}</dt>
-              <dd>{{ number.label }}</dd>
+    <nb-layout-column>
+        <!-- The library first: what it is and what's in it. -->
+        <section class="hero">
+            <div class="content">
+                <ngd-header [showSearch]="false" />
+                <div class="hero-body">
+                    <h1>Angular components, with a design to match</h1>
+                    <p class="lead">
+                        Lyra is an Angular UI library: components, forms, data tables, auth and more, built on a design system of
+                        its own, with six themes, a theme variable for every detail, and an editor to make a theme yours.
+                    </p>
+                    <div class="actions">
+                        <a class="action primary"
+                            routerLink="/docs">Get started</a>
+                        <a class="action"
+                            routerLink="/examples">Browse examples</a>
+                        <a class="action quiet"
+                            href="https://github.com/Liquid-JS/lyra"
+                            target="_blank"
+                            rel="noopener">GitHub</a>
+                    </div>
+                    <dl class="numbers">
+                        @for (number of numbers; track number.label) {
+                        <div>
+                            <dt>{{ number.value }}</dt>
+                            <dd>{{ number.label }}</dd>
+                        </div>
+                        }
+                    </dl>
+                </div>
             </div>
-            }
-          </dl>
-        </div>
-      </div>
-    </section>
+        </section>
 
-    <!-- Then the design: the example apps, each in a theme of its own. -->
-    <section class="showcase">
-      <div class="content">
-        <header class="intro">
-          <h2>One library, many looks</h2>
-          <p>
-            Each of these is the same Lyra components in a theme of its own. Open one, then change its colours, fonts
-            and shapes, and watch it follow.
-          </p>
-        </header>
-        <div class="collage">
-          @for (shot of shots; track shot.app.id; let i = $index) {
-          <a class="shot"
-            [class]="'shot-' + i"
-            [class.phone]="shot.phone"
-            [routerLink]="shot.link"
-            [queryParams]="{ theme: shot.theme }">
-            <span class="frame"><img [src]="shot.picture"
-                [alt]="shot.app.name"
-                loading="lazy" /></span>
-          </a>
-          }
-        </div>
-        <p class="more-links">
-          <a routerLink="/examples">Browse the example apps</a>
-          <a routerLink="/theme/theme-editor">Open the theme editor</a>
-        </p>
-      </div>
-    </section>
+        <!-- Then the design: the example apps, each in a theme of its own. -->
+        <section class="showcase">
+            <div class="content">
+                <header class="intro">
+                    <h2>One library, many looks</h2>
+                    <p>
+                        Each of these is the same Lyra components in a theme of its own. Open one, then change its colours, fonts
+                        and shapes, and watch it follow.
+                    </p>
+                </header>
+                <div class="collage">
+                    @for (shot of shots; track shot.app.id; let i = $index) {
+                    <a class="shot"
+                        [class]="'shot-' + i"
+                        [class.phone]="shot.phone"
+                        [routerLink]="shot.link"
+                        [queryParams]="{ theme: shot.theme }">
+                        <span class="frame"><img [src]="shot.picture"
+                                [alt]="shot.app.name"
+                                loading="lazy" /></span>
+                    </a>
+                    }
+                </div>
+                <p class="more-links">
+                    <a routerLink="/examples">Browse the example apps</a>
+                    <a routerLink="/theme/theme-editor">Open the theme editor</a>
+                </p>
+            </div>
+        </section>
 
-    <section class="pillars">
-      <div class="content">
-        @for (pillar of pillars; track pillar.title) {
-        <div class="pillar">
-          <span class="pillar-icon"><nb-icon [icon]="pillar.icon" /></span>
-          <h3>{{ pillar.title }}</h3>
-          <p>{{ pillar.text }}</p>
-        </div>
-        }
-      </div>
-    </section>
+        <section class="pillars">
+            <div class="content">
+                @for (pillar of pillars; track pillar.title) {
+                <div class="pillar">
+                    <span class="pillar-icon"><nb-icon [icon]="pillar.icon" /></span>
+                    <h3>{{ pillar.title }}</h3>
+                    <p>{{ pillar.text }}</p>
+                </div>
+                }
+            </div>
+        </section>
 
-    <section class="feature">
-      <div class="content">
-        <div class="feature-text">
-          <h2>Forms and data, ready for work</h2>
-          <ul>
-            @for (item of forms; track item) {
-            <li><nb-icon icon="checkmark-outline" />{{ item }}</li>
-            }
-          </ul>
-          <a routerLink="/components/all-components">See all the components</a>
-        </div>
-        <div class="feature-pictures">
-          <img src="assets/example-pictures/web-app/edit-customer.webp"
-            alt="A customer form with validation"
-            loading="lazy" />
-          <img src="assets/example-pictures/web-app/customers.webp"
-            alt="A table of customers"
-            loading="lazy" />
-        </div>
-      </div>
-    </section>
+        <section class="feature">
+            <div class="content">
+                <div class="feature-text">
+                    <h2>Forms and data, ready for work</h2>
+                    <ul>
+                        @for (item of forms; track item) {
+                        <li><nb-icon icon="checkmark-outline" />{{ item }}</li>
+                        }
+                    </ul>
+                    <a routerLink="/components/all-components">See all the components</a>
+                </div>
+                <div class="feature-pictures">
+                    <img src="assets/example-pictures/web-app/edit-customer.webp"
+                        alt="A customer form with validation"
+                        loading="lazy" />
+                    <img src="assets/example-pictures/web-app/customers.webp"
+                        alt="A table of customers"
+                        loading="lazy" />
+                </div>
+            </div>
+        </section>
 
-    <section class="feature reverse">
-      <div class="content">
-        <div class="feature-text">
-          <h2>Make it yours</h2>
-          <ul>
-            @for (item of theming; track item) {
-            <li><nb-icon icon="checkmark-outline" />{{ item }}</li>
-            }
-          </ul>
-          <a routerLink="/theme/theme-editor">Open the theme editor</a>
-        </div>
-        <div class="feature-pictures">
-          <img src="assets/home-pictures/theme-editor.webp"
-            alt="The theme editor, with a shop on a laptop and a phone"
-            loading="lazy" />
-          <img src="assets/home-pictures/states.webp"
-            alt="Every control in every state"
-            loading="lazy" />
-        </div>
-      </div>
-    </section>
+        <section class="feature reverse">
+            <div class="content">
+                <div class="feature-text">
+                    <h2>Make it yours</h2>
+                    <ul>
+                        @for (item of theming; track item) {
+                        <li><nb-icon icon="checkmark-outline" />{{ item }}</li>
+                        }
+                    </ul>
+                    <a routerLink="/theme/theme-editor">Open the theme editor</a>
+                </div>
+                <div class="feature-pictures">
+                    <img src="assets/home-pictures/theme-editor.webp"
+                        alt="The theme editor, with a shop on a laptop and a phone"
+                        loading="lazy" />
+                    <img src="assets/home-pictures/states.webp"
+                        alt="Every control in every state"
+                        loading="lazy" />
+                </div>
+            </div>
+        </section>
 
-    <!-- The showcases on real laptops, tablets and phones, each linking to its app. -->
-    <section class="devices">
-      <div class="content">
-        <header class="intro">
-          <h2>Nine apps, made with Lyra</h2>
-          <p>
-            A clinic's bookings, an intranet, courses, a portfolio, a fitness tracker, a developer platform, holiday
-            stays, a conference and a wallet: the same components, each in a look of its own, on every screen.
-          </p>
-        </header>
-      </div>
-      <div class="collage-band">
-        <div class="collage-rows">
-          @for (row of deviceRows; track $index) {
-          <div class="collage-row">
-            @for (tile of row; track tile.link) {
-            <a class="tile"
-              [style.aspect-ratio]="tile.ratio"
-              [routerLink]="tile.link"
-              [queryParams]="{ theme: tile.theme }">
-              <img [src]="tile.picture"
-                [alt]="tile.app.name + ': ' + tile.screen + ', on a ' + tile.device"
-                loading="lazy" />
-            </a>
-            }
-          </div>
-          }
-        </div>
-      </div>
-      <div class="content">
-        <p class="more-links">
-          <a routerLink="/examples">Browse the example apps</a>
-        </p>
-      </div>
-    </section>
+        <!-- The showcases on real laptops, tablets and phones, each linking to its app. -->
+        <section class="devices">
+            <div class="content">
+                <header class="intro">
+                    <h2>Nine apps, made with Lyra</h2>
+                    <p>
+                        A clinic's bookings, an intranet, courses, a portfolio, a fitness tracker, a developer platform, holiday
+                        stays, a conference and a wallet: the same components, each in a look of its own, on every screen.
+                    </p>
+                </header>
+            </div>
+            <div class="collage-band">
+                <div class="collage-rows">
+                    @for (row of deviceRows; track $index) {
+                    <div class="collage-row">
+                        @for (tile of row; track tile.link) {
+                        <a class="tile"
+                            [style.aspect-ratio]="tile.ratio"
+                            [routerLink]="tile.link"
+                            [queryParams]="{ theme: tile.theme }">
+                            <img [src]="tile.picture"
+                                [alt]="tile.app.name + ': ' + tile.screen + ', on a ' + tile.device"
+                                loading="lazy" />
+                        </a>
+                        }
+                    </div>
+                    }
+                </div>
+            </div>
+            <div class="content">
+                <p class="more-links">
+                    <a routerLink="/examples">Browse the example apps</a>
+                </p>
+            </div>
+        </section>
 
-    <section class="cards">
-      <div class="content">
-        @for (item of more; track item.title) {
-        <a class="card"
-          [routerLink]="item.link">
-          <span class="pillar-icon"><nb-icon [icon]="item.icon" /></span>
-          <h3>{{ item.title }}</h3>
-          <p>{{ item.text }}</p>
-        </a>
-        }
-      </div>
-    </section>
+        <section class="cards">
+            <div class="content">
+                @for (item of more; track item.title) {
+                <a class="card"
+                    [routerLink]="item.link">
+                    <span class="pillar-icon"><nb-icon [icon]="item.icon" /></span>
+                    <h3>{{ item.title }}</h3>
+                    <p>{{ item.text }}</p>
+                </a>
+                }
+            </div>
+        </section>
 
-    <section class="closing">
-      <div class="content">
-        <h2>Free and open source</h2>
-        <p>Lyra is free to use under the MIT licence.</p>
-        <a class="action primary"
-          routerLink="/docs">Get started</a>
-      </div>
-    </section>
+        <section class="closing">
+            <div class="content">
+                <h2>Free and open source</h2>
+                <p>Lyra is free to use under the MIT licence.</p>
+                <a class="action primary"
+                    routerLink="/docs">Get started</a>
+            </div>
+        </section>
 
-    <ngd-footer />
-  </nb-layout-column>
+        <ngd-footer />
+    </nb-layout-column>
 </nb-layout>

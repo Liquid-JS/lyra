@@ -1,39 +1,39 @@
 // What the mobile screens share: a column of cards with room around it.
-@use '../../../styles/themes' as *;
+@use "../../../styles/themes" as *;
 
 :host {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  max-width: 36rem;
-  margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    max-width: 36rem;
+    margin: 0 auto;
 }
 
 nb-card {
-  margin: 0;
+    margin: 0;
 }
 
 .row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
 
 // An icon on a tinted square, in a status's colour.
 .tile {
-  display: inline-flex;
-  flex: none;
-  align-items: center;
-  justify-content: center;
-  width: 2.5rem;
-  height: 2.5rem;
-  border-radius: calc(#{nb-theme(border-radius)} * 2);
-  font-size: 1.25rem;
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: calc(#{nb-theme(border-radius)} * 2);
+    font-size: 1.25rem;
 
-  @each $status in primary, success, info, warning, danger {
-    &.status-#{$status} {
-      background: nb-theme(color-#{$status}-transparent-200);
-      color: nb-theme(color-#{$status}-default);
+    @each $status in primary, success, info, warning, danger {
+        &.status-#{$status} {
+            background: nb-theme(color-#{$status}-transparent-200);
+            color: nb-theme(color-#{$status}-default);
+        }
     }
-  }
 }

@@ -1,76 +1,76 @@
-import { all, type NgdExampleApp } from '../example-app';
+import { all, type NgdExampleApp } from '../example-app'
 
 /** Places to stay: a search with filters, a listing with its gallery and amenities, booking dates and guests, and your trips. */
 export const STAY_APP: NgdExampleApp = {
-  id: 'stay',
-  name: 'Stay',
-  brand: 'Stay',
-  summary:
-    'Places to stay, warm and photographic: a search with filters, a listing with its gallery and a sticky booking card, paying for a trip, and your trips.',
-  showcase: true,
-  theme: {
     id: 'stay',
     name: 'Stay',
-    base: 'default',
-    colors: { primary: '#0e7490', success: '#2f855a', info: '#2b6cb0', warning: '#d97706', danger: '#dc4c3f' },
-    fontPrimary: '"Work Sans", system-ui, sans-serif',
-    fontSecondary: 'Lora, Georgia, serif',
-    fonts: ['Lora:ital,wght@0,400;0,500;0,600;1,400', 'Work Sans:wght@400;500;600'],
-    radius: 1,
-    defaults: { shape: 'semi-round', button: { shape: 'round' } },
-    variables: {
-      // Warm, sunlit greys, from linen to driftwood.
-      'color-basic-100': '#ffffff',
-      'color-basic-200': '#faf8f4',
-      'color-basic-300': '#f3efe8',
-      'color-basic-400': '#e8e2d8',
-      'color-basic-500': '#d6cdbf',
-      'color-basic-600': '#a79c8c',
-      'color-basic-700': '#6e6354',
-      'color-basic-800': '#3f372e',
-      'color-basic-900': '#2b251f',
-      'color-basic-1000': '#1d1813',
-      'color-basic-1100': '#120e0b',
-      'text-hint-color': 'var(--color-basic-700)',
-      'layout-background-color': 'var(--color-basic-200)',
-      'header-background-color': 'rgba(255, 255, 255, 0.92)',
-      'header-shadow': '0 1px 0 var(--color-basic-400)',
-      'card-border-color': 'var(--color-basic-400)',
-      'card-shadow': 'none',
-      'input-basic-background-color': 'var(--color-basic-100)',
-      'input-basic-border-color': 'var(--color-basic-500)',
-      // The teal's hover shade is too pale under a chosen option's white text; the deeper one reads.
-      'option-selected-hover-background-color': 'var(--color-primary-600)',
-      'option-selected-focus-background-color': 'var(--color-primary-600)',
-      // Serif headings, set a touch tighter than the body.
-      'text-heading-1-font-weight': '500',
-      'text-heading-2-font-weight': '500',
-      'text-heading-3-font-weight': '500',
-      'text-heading-4-font-weight': '500',
-      'text-heading-5-font-weight': '500',
-      'text-heading-6-font-weight': '500',
-      'text-heading-1-line-height': '1.1',
-      'text-heading-2-line-height': '1.15',
-      'text-heading-3-line-height': '1.2',
-      'text-button-font-weight': '600',
-      'button-filled-text-transform': 'none',
-      'button-outline-text-transform': 'none',
-      'button-ghost-text-transform': 'none',
-      'button-hero-text-transform': 'none',
+    brand: 'Stay',
+    summary:
+        'Places to stay, warm and photographic: a search with filters, a listing with its gallery and a sticky booking card, paying for a trip, and your trips.',
+    showcase: true,
+    theme: {
+        id: 'stay',
+        name: 'Stay',
+        base: 'default',
+        colors: { primary: '#0e7490', success: '#2f855a', info: '#2b6cb0', warning: '#d97706', danger: '#dc4c3f' },
+        fontPrimary: '"Work Sans", system-ui, sans-serif',
+        fontSecondary: 'Lora, Georgia, serif',
+        fonts: ['Lora:ital,wght@0,400;0,500;0,600;1,400', 'Work Sans:wght@400;500;600'],
+        radius: 1,
+        defaults: { shape: 'semi-round', button: { shape: 'round' } },
+        variables: {
+            // Warm, sunlit greys, from linen to driftwood.
+            'color-basic-100': '#ffffff',
+            'color-basic-200': '#faf8f4',
+            'color-basic-300': '#f3efe8',
+            'color-basic-400': '#e8e2d8',
+            'color-basic-500': '#d6cdbf',
+            'color-basic-600': '#a79c8c',
+            'color-basic-700': '#6e6354',
+            'color-basic-800': '#3f372e',
+            'color-basic-900': '#2b251f',
+            'color-basic-1000': '#1d1813',
+            'color-basic-1100': '#120e0b',
+            'text-hint-color': 'var(--color-basic-700)',
+            'layout-background-color': 'var(--color-basic-200)',
+            'header-background-color': 'rgba(255, 255, 255, 0.92)',
+            'header-shadow': '0 1px 0 var(--color-basic-400)',
+            'card-border-color': 'var(--color-basic-400)',
+            'card-shadow': 'none',
+            'input-basic-background-color': 'var(--color-basic-100)',
+            'input-basic-border-color': 'var(--color-basic-500)',
+            // The teal's hover shade is too pale under a chosen option's white text; the deeper one reads.
+            'option-selected-hover-background-color': 'var(--color-primary-600)',
+            'option-selected-focus-background-color': 'var(--color-primary-600)',
+            // Serif headings, set a touch tighter than the body.
+            'text-heading-1-font-weight': '500',
+            'text-heading-2-font-weight': '500',
+            'text-heading-3-font-weight': '500',
+            'text-heading-4-font-weight': '500',
+            'text-heading-5-font-weight': '500',
+            'text-heading-6-font-weight': '500',
+            'text-heading-1-line-height': '1.1',
+            'text-heading-2-line-height': '1.15',
+            'text-heading-3-line-height': '1.2',
+            'text-button-font-weight': '600',
+            'button-filled-text-transform': 'none',
+            'button-outline-text-transform': 'none',
+            'button-ghost-text-transform': 'none',
+            'button-hero-text-transform': 'none'
+        }
     },
-  },
-  devices: ['laptop', 'phone'],
-  screens: [
-    { id: 'showcase/stay/search', title: 'Search', files: all('showcase/stay/stay-search.component') },
-    { id: 'showcase/stay/listing', title: 'Listing', pageTitle: 'Creekside Cabin', files: all('showcase/stay/stay-listing.component') },
-    { id: 'showcase/stay/booking', title: 'Booking', pageTitle: 'Confirm and pay', files: all('showcase/stay/stay-booking.component') },
-    { id: 'showcase/stay/trips', title: 'Trips', files: all('showcase/stay/stay-trips.component') },
-  ],
-  files: [
-    'showcase/stay/stay.routes.ts',
-    ...all('showcase/stay/stay-shell.component'),
-    'showcase/stay/stay-data.ts',
-    'showcase/stay/parts/stay-rating.component.ts',
-    'showcase/stay/stay-trip.service.ts',
-  ],
-};
+    devices: ['laptop', 'phone'],
+    screens: [
+        { id: 'showcase/stay/search', title: 'Search', files: all('showcase/stay/stay-search.component') },
+        { id: 'showcase/stay/listing', title: 'Listing', pageTitle: 'Creekside Cabin', files: all('showcase/stay/stay-listing.component') },
+        { id: 'showcase/stay/booking', title: 'Booking', pageTitle: 'Confirm and pay', files: all('showcase/stay/stay-booking.component') },
+        { id: 'showcase/stay/trips', title: 'Trips', files: all('showcase/stay/stay-trips.component') }
+    ],
+    files: [
+        'showcase/stay/stay.routes.ts',
+        ...all('showcase/stay/stay-shell.component'),
+        'showcase/stay/stay-data.ts',
+        'showcase/stay/parts/stay-rating.component.ts',
+        'showcase/stay/stay-trip.service.ts'
+    ]
+}

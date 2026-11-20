@@ -4,7 +4,7 @@ const layoutStart = `<nb-layout>
   <!-- Insert header here -->
   </nb-layout-header>
 
-  <nb-layout-column>`;
+  <nb-layout-column>`
 
 const layoutEnd = `  </nb-layout-column>
 
@@ -12,32 +12,32 @@ const layoutEnd = `  </nb-layout-column>
   <!-- Insert footer here -->
   </nb-layout-footer>
 
-</nb-layout>`;
+</nb-layout>`
 
 export function wrapInlineTemplateInLayout(template: string): string {
-  return ` \`
+    return ` \`
 ${paddNotEmpty(layoutStart, 4)}
 ${padd(template, 4)}
 ${paddNotEmpty(layoutEnd, 4)}
-  \``;
+    \``
 }
 
 export function wrapHtmlFileTemplateInLayout(template: string): string {
-  return `${layoutStart}
+    return `${layoutStart}
 ${padd(template, 4)}
 ${layoutEnd}
-`;
+`
 }
 
 /** Indents each line of the text. */
 function padd(text: string, paddLen: number): string {
-  return text
-    .split('\n')
-    .map((line) => `${' '.repeat(paddLen)}${line}`)
-    .join('\n');
+    return text
+        .split('\n')
+        .map((line) => `${' '.repeat(paddLen)}${line}`)
+        .join('\n')
 }
 
 /** Like `padd`, leaving empty lines empty. */
 function paddNotEmpty(text: string, paddLen: number): string {
-  return padd(text, paddLen).replace(/^ +$/gm, '');
+    return padd(text, paddLen).replace(/^ +$/gm, '')
 }

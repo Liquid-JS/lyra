@@ -1,167 +1,174 @@
 // The button's look, one option at a time: the button's theme writes each under its class, and `nb-button()` writes
 // one combination for any element.
-@use '../../styles/core/look';
-@use '../../styles/core/mixins' as *;
-@use '../../styles/core/theming/get-value' as *;
-@use '../../styles/core/variants' as *;
+@use "../../styles/core/look";
+@use "../../styles/core/mixins" as *;
+@use "../../styles/core/theming/get-value" as *;
+@use "../../styles/core/variants" as *;
 
-$appearances: ('filled', 'outline', 'ghost', 'hero');
+$appearances: ("filled", "outline", "ghost", "hero");
 
 /// Lays the content out in a line, in the middle, without the browser's own look.
 @mixin core() {
-  appearance: none;
-  text-align: center;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  white-space: nowrap;
-  vertical-align: middle;
-  user-select: none;
+    appearance: none;
+    text-align: center;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+    vertical-align: middle;
+    user-select: none;
 
-  &:hover,
-  &:focus {
-    text-decoration: none;
-  }
+    &:hover,
+    &:focus {
+        text-decoration: none;
+    }
 }
 
 /// The font, the cursor and the focus outline, of every appearance.
 @mixin base($disabled) {
-  cursor: nb-theme(button-cursor);
-  font-family: nb-theme(button-text-font-family);
-  font-weight: nb-theme(button-text-font-weight);
+    cursor: nb-theme(button-cursor);
+    font-family: nb-theme(button-text-font-family);
+    font-weight: nb-theme(button-text-font-weight);
 
-  &:focus {
-    outline: none;
-  }
+    &:focus {
+        outline: none;
+    }
 
-  // The focus shows for the keyboard, as browsers show it, not after a click.
-  &:focus-visible {
-    // Sibling buttons are covering outline shadow.
-    // position: relative; declaration makes shadow appear on top of sibling buttons.
-    position: relative;
-    @include nb-outline(nb-theme(button-outline-width), nb-theme(button-outline-color));
-  }
+    // The focus shows for the keyboard, as browsers show it, not after a click.
+    &:focus-visible {
+        // Sibling buttons are covering outline shadow.
+        // position: relative; declaration makes shadow appear on top of sibling buttons.
+        position: relative;
+        @include nb-outline(nb-theme(button-outline-width), nb-theme(button-outline-color));
+    }
 
-  @include look.suffixed($disabled) {
-    cursor: nb-theme(button-disabled-cursor);
-  }
+    @include look.suffixed($disabled) {
+        cursor: nb-theme(button-disabled-cursor);
+    }
 }
 
 @mixin size($size) {
-  font-size: nb-theme(button-#{$size}-text-font-size);
-  line-height: nb-theme(button-#{$size}-text-line-height);
-  // As tall as the fields of its size, with its text in the middle: its padding is only at the sides.
-  min-height: nb-theme(control-#{$size}-height);
+    font-size: nb-theme(button-#{$size}-text-font-size);
+    line-height: nb-theme(button-#{$size}-text-line-height);
+
+    // As tall as the fields of its size, with its text in the middle: its padding is only at the sides.
+    min-height: nb-theme(control-#{$size}-height);
 }
 
 @mixin shape($shape) {
-  border-radius: nb-theme(button-#{$shape}-border-radius);
+    border-radius: nb-theme(button-#{$shape}-border-radius);
 }
 
 /// What an appearance sets whatever the status.
 @mixin appearance($appearance) {
-  @if $appearance == 'filled' {
-    border-style: nb-theme(button-filled-border-style);
-    border-width: nb-theme(button-filled-border-width);
-    text-transform: nb-theme(button-filled-text-transform);
-  } @else if $appearance == 'outline' {
-    border-style: nb-theme(button-outline-border-style);
-    border-width: nb-theme(button-outline-border-width);
-    text-transform: nb-theme(button-outline-text-transform);
+    @if $appearance == "filled" {
+        border-style: nb-theme(button-filled-border-style);
+        border-width: nb-theme(button-filled-border-width);
+        text-transform: nb-theme(button-filled-text-transform);
+    } @else if $appearance == "outline" {
+        border-style: nb-theme(button-outline-border-style);
+        border-width: nb-theme(button-outline-border-width);
+        text-transform: nb-theme(button-outline-text-transform);
 
-    &:focus-visible {
-      $inset-shadow: nb-theme(button-outline-focus-inset-shadow-length);
-      @include nb-outline(nb-theme(button-outline-width), nb-theme(button-outline-color), $inset-shadow);
-    }
-  } @else if $appearance == 'ghost' {
-    background-color: nb-theme(button-ghost-background-color);
-    border-color: nb-theme(button-ghost-border-color);
-    border-style: nb-theme(button-ghost-border-style);
-    border-width: nb-theme(button-ghost-border-width);
-    text-transform: nb-theme(button-ghost-text-transform);
+        &:focus-visible {
+            $inset-shadow: nb-theme(button-outline-focus-inset-shadow-length);
+            @include nb-outline(nb-theme(button-outline-width), nb-theme(button-outline-color), $inset-shadow);
+        }
+    } @else if $appearance == "ghost" {
+        background-color: nb-theme(button-ghost-background-color);
+        border-color: nb-theme(button-ghost-border-color);
+        border-style: nb-theme(button-ghost-border-style);
+        border-width: nb-theme(button-ghost-border-width);
+        text-transform: nb-theme(button-ghost-text-transform);
 
-    &:focus-visible {
-      $inset-shadow: nb-theme(button-ghost-focus-inset-shadow-length);
-      @include nb-outline(nb-theme(button-outline-width), nb-theme(button-outline-color), $inset-shadow);
+        &:focus-visible {
+            $inset-shadow: nb-theme(button-ghost-focus-inset-shadow-length);
+            @include nb-outline(nb-theme(button-outline-width), nb-theme(button-outline-color), $inset-shadow);
+        }
+    } @else if $appearance == "hero" {
+        text-shadow: nb-theme(button-hero-text-shadow);
+        text-transform: nb-theme(button-hero-text-transform);
     }
-  } @else if $appearance == 'hero' {
-    text-shadow: nb-theme(button-hero-text-shadow);
-    text-transform: nb-theme(button-hero-text-transform);
-  }
 }
 
 /// An appearance's padding at a size.
 @mixin padding($appearance, $size) {
-  padding: nb-theme(button-#{$appearance}-#{$size}-padding);
-  // The height is the size's, with the text in the middle.
-  padding-block: 0;
+    padding: nb-theme(button-#{$appearance}-#{$size}-padding);
+
+    // The height is the size's, with the text in the middle.
+    padding-block: 0;
 }
 
 /// An appearance's colours in a status, at rest, with focus, under the pointer, pressed and disabled.
 @mixin status($appearance, $status, $disabled) {
-  @if $appearance == 'hero' {
-    $left-color: nb-theme(button-hero-#{$status}-left-background-color);
-    $right-color: nb-theme(button-hero-#{$status}-right-background-color);
-    $bevel: nb-theme(button-hero-bevel-size) nb-theme(button-hero-#{$status}-bevel-color);
-    $glow: nb-theme(button-hero-glow-size) nb-theme(button-hero-#{$status}-glow-color);
-    $shadow: nb-theme(button-hero-shadow);
-    $hero-box-shadows: $bevel, $glow, $shadow;
+    @if $appearance == "hero" {
+        $left-color: nb-theme(button-hero-#{$status}-left-background-color);
+        $right-color: nb-theme(button-hero-#{$status}-right-background-color);
+        $bevel: nb-theme(button-hero-bevel-size) nb-theme(button-hero-#{$status}-bevel-color);
+        $glow: nb-theme(button-hero-glow-size) nb-theme(button-hero-#{$status}-glow-color);
+        $shadow: nb-theme(button-hero-shadow);
+        $hero-box-shadows: $bevel, $glow, $shadow;
 
-    background-image: linear-gradient(to right, $left-color, $right-color);
-    border: nb-theme(button-hero-border-width) nb-theme(button-hero-border-style) nb-theme(button-hero-border-color);
-    box-shadow: $hero-box-shadows;
-    color: nb-theme(button-hero-#{$status}-text-color);
+        background-image: linear-gradient(to right, $left-color, $right-color);
+        border: nb-theme(button-hero-border-width) nb-theme(button-hero-border-style) nb-theme(button-hero-border-color);
+        box-shadow: $hero-box-shadows;
+        color: nb-theme(button-hero-#{$status}-text-color);
 
-    &:focus-visible {
-      $left-focus-color: nb-theme(button-hero-#{$status}-focus-left-background-color);
-      $right-focus-color: nb-theme(button-hero-#{$status}-focus-right-background-color);
-      background-image: linear-gradient(to right, $left-focus-color, $right-focus-color);
-      box-shadow: $hero-box-shadows, 0 0 0 nb-theme(button-hero-outline-width) nb-theme(button-hero-outline-color);
-    }
+        &:focus-visible {
+            $left-focus-color: nb-theme(button-hero-#{$status}-focus-left-background-color);
+            $right-focus-color: nb-theme(button-hero-#{$status}-focus-right-background-color);
 
-    &:hover {
-      $left-hover-color: nb-theme(button-hero-#{$status}-hover-left-background-color);
-      $right-hover-color: nb-theme(button-hero-#{$status}-hover-right-background-color);
-      background-image: linear-gradient(to right, $left-hover-color, $right-hover-color);
-    }
-
-    &:active {
-      $left-active-color: nb-theme(button-hero-#{$status}-active-left-background-color);
-      $right-active-color: nb-theme(button-hero-#{$status}-active-right-background-color);
-      background-image: linear-gradient(to right, $left-active-color, $right-active-color);
-    }
-
-    @include look.suffixed($disabled) {
-      background-color: nb-theme(button-hero-#{$status}-disabled-background-color);
-      background-image: none;
-      color: nb-theme(button-hero-#{$status}-disabled-text-color);
-    }
-  } @else {
-    // A ghost button has its appearance's background at rest.
-    @if $appearance != 'ghost' {
-      background-color: nb-theme(button-#{$appearance}-#{$status}-background-color);
-      border-color: nb-theme(button-#{$appearance}-#{$status}-border-color);
-    }
-    color: nb-theme(button-#{$appearance}-#{$status}-text-color);
-
-    // The focus shows for the keyboard.
-    @each $state, $pseudo-class in (focus: focus-visible, hover: hover, active: active) {
-      &:#{$pseudo-class} {
-        background-color: nb-theme(button-#{$appearance}-#{$status}-#{$state}-background-color);
-        border-color: nb-theme(button-#{$appearance}-#{$status}-#{$state}-border-color);
-        // A filled button keeps its text colour.
-        @if $appearance != 'filled' {
-          color: nb-theme(button-#{$appearance}-#{$status}-#{$state}-text-color);
+            background-image: linear-gradient(to right, $left-focus-color, $right-focus-color);
+            box-shadow: $hero-box-shadows, 0 0 0 nb-theme(button-hero-outline-width) nb-theme(button-hero-outline-color);
         }
-      }
-    }
 
-    @include look.suffixed($disabled) {
-      background-color: nb-theme(button-#{$appearance}-#{$status}-disabled-background-color);
-      border-color: nb-theme(button-#{$appearance}-#{$status}-disabled-border-color);
-      color: nb-theme(button-#{$appearance}-#{$status}-disabled-text-color);
+        &:hover {
+            $left-hover-color: nb-theme(button-hero-#{$status}-hover-left-background-color);
+            $right-hover-color: nb-theme(button-hero-#{$status}-hover-right-background-color);
+
+            background-image: linear-gradient(to right, $left-hover-color, $right-hover-color);
+        }
+
+        &:active {
+            $left-active-color: nb-theme(button-hero-#{$status}-active-left-background-color);
+            $right-active-color: nb-theme(button-hero-#{$status}-active-right-background-color);
+
+            background-image: linear-gradient(to right, $left-active-color, $right-active-color);
+        }
+
+        @include look.suffixed($disabled) {
+            background-color: nb-theme(button-hero-#{$status}-disabled-background-color);
+            background-image: none;
+            color: nb-theme(button-hero-#{$status}-disabled-text-color);
+        }
+    } @else {
+        // A ghost button has its appearance's background at rest.
+        @if $appearance != "ghost" {
+            background-color: nb-theme(button-#{$appearance}-#{$status}-background-color);
+            border-color: nb-theme(button-#{$appearance}-#{$status}-border-color);
+        }
+
+        color: nb-theme(button-#{$appearance}-#{$status}-text-color);
+
+        // The focus shows for the keyboard.
+        @each $state, $pseudo-class in (focus: focus-visible, hover: hover, active: active) {
+            &:#{$pseudo-class} {
+                background-color: nb-theme(button-#{$appearance}-#{$status}-#{$state}-background-color);
+                border-color: nb-theme(button-#{$appearance}-#{$status}-#{$state}-border-color);
+
+                // A filled button keeps its text colour.
+                @if $appearance != "filled" {
+                    color: nb-theme(button-#{$appearance}-#{$status}-#{$state}-text-color);
+                }
+            }
+        }
+
+        @include look.suffixed($disabled) {
+            background-color: nb-theme(button-#{$appearance}-#{$status}-disabled-background-color);
+            border-color: nb-theme(button-#{$appearance}-#{$status}-disabled-border-color);
+            color: nb-theme(button-#{$appearance}-#{$status}-disabled-text-color);
+        }
     }
-  }
 }
 
 /// A Lyra button's look on any element, such as a third-party component's button: its appearance, status, size and
@@ -169,23 +176,23 @@ $appearances: ('filled', 'outline', 'ghost', 'hero');
 /// own, laid out in a line as a button's is; a Lyra button's icons, spinner and edges aren't included.
 /// `$disabled` is what marks the element disabled, appended to its selector.
 @mixin nb-button(
-  $appearance: filled,
-  $status: basic,
-  $size: medium,
-  $shape: rectangle,
-  $disabled: look.$disabled
+    $appearance: filled,
+    $status: basic,
+    $size: medium,
+    $shape: rectangle,
+    $disabled: look.$disabled
 ) {
-  @include look.check(nb-button, appearance, $appearance, $appearances);
-  @include look.check(nb-button, status, $status, nb-get-statuses());
-  @include look.check(nb-button, size, $size, nb-get-sizes());
-  @include look.check(nb-button, shape, $shape, nb-get-shapes());
+    @include look.check(nb-button, appearance, $appearance, $appearances);
+    @include look.check(nb-button, status, $status, nb-get-statuses());
+    @include look.check(nb-button, size, $size, nb-get-sizes());
+    @include look.check(nb-button, shape, $shape, nb-get-shapes());
 
-  @include core();
-  @include base($disabled);
-  @include nb-component-animation(background-color, border-color, box-shadow, color);
-  @include size($size);
-  @include shape($shape);
-  @include appearance($appearance);
-  @include padding($appearance, $size);
-  @include status($appearance, $status, $disabled);
+    @include core;
+    @include base($disabled);
+    @include nb-component-animation(background-color, border-color, box-shadow, color);
+    @include size($size);
+    @include shape($shape);
+    @include appearance($appearance);
+    @include padding($appearance, $size);
+    @include status($appearance, $status, $disabled);
 }

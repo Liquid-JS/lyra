@@ -1,17 +1,17 @@
-import { Component, signal } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
-import { NbLayoutColumnComponent, NbLayoutComponent } from '@liquid-js/lyr-core';
+import { Component, signal } from '@angular/core'
+import { RouterOutlet } from '@angular/router'
+import { NbLayoutColumnComponent, NbLayoutComponent } from '@liquid-js/lyr-core'
 
-import { blogImage } from '../shared/showcase-images';
-import { AuthPanel, AuthPanelComponent } from './parts/auth-panel.component';
+import { blogImage } from '../shared/showcase-images'
+import { AuthPanel, AuthPanelComponent } from './parts/auth-panel.component'
 
 /**
  * A bold frame for the sign-in pages: a photo filling the screen, the page's card frosted over it, and a word from a
  * customer on the photo.
  */
 @Component({
-  selector: 'npg-auth-studio-shell',
-  template: `
+    selector: 'npg-auth-studio-shell',
+    template: `
     <nb-layout>
       <nb-layout-column class="column">
         <div class="photo" [style.background-image]="'url(' + photo + ')'">
@@ -23,7 +23,7 @@ import { AuthPanel, AuthPanelComponent } from './parts/auth-panel.component';
       </nb-layout-column>
     </nb-layout>
   `,
-  styles: `
+    styles: `
     // The frame fills the screen, without the layout's padding at any width.
     nb-layout {
       --layout-padding: 0;
@@ -100,9 +100,9 @@ import { AuthPanel, AuthPanelComponent } from './parts/auth-panel.component';
       }
     }
   `,
-  imports: [AuthPanelComponent, NbLayoutComponent, NbLayoutColumnComponent, RouterOutlet],
+    imports: [AuthPanelComponent, NbLayoutComponent, NbLayoutColumnComponent, RouterOutlet]
 })
 export class AuthStudioShellComponent {
-  protected readonly panel = signal<AuthPanel>('tagline');
-  protected readonly photo = blogImage('team-laptops');
+    protected readonly panel = signal<AuthPanel>('tagline')
+    protected readonly photo = blogImage('team-laptops')
 }

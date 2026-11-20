@@ -1,23 +1,23 @@
 <nb-card size="small">
-  <nb-card-body>
+    <nb-card-body>
 
-    <input #autoInput
-      nbInput
-      type="text"
-      (input)="onChange()"
-      placeholder="Enter value"
-      [nbAutocomplete]="auto" />
+        <input #autoInput
+            nbInput
+            type="text"
+            (input)="onChange()"
+            placeholder="Enter value"
+            [nbAutocomplete]="auto" />
 
-    <nb-autocomplete #auto
-      (selectedChange)="onSelectionChange($event)">
+        <nb-autocomplete #auto
+            (selectedChange)="onSelectionChange($event)">
 
-      @for (option of filteredOptions(); track option) {
-      <nb-option [value]="option">
-        {{ option }}
-      </nb-option>
-      }
+            @for (option of filteredOptions(); track option) {
+            <nb-option [value]="option">
+                {{ option }}
+            </nb-option>
+            }
 
-    </nb-autocomplete>
+        </nb-autocomplete>
 
-  </nb-card-body>
+    </nb-card-body>
 </nb-card>

@@ -1,68 +1,68 @@
 <nb-layout>
-  <nb-layout-column>
-    <nb-checkbox data-control="checkbox"
-      name="checkbox"
-      [(ngModel)]="values.checkbox"
-      [disabled]="disabled()">Checkbox</nb-checkbox>
-    <nb-toggle data-control="toggle"
-      name="toggle"
-      [(ngModel)]="values.toggle"
-      [disabled]="disabled()">Toggle</nb-toggle>
-    <nb-radio-group data-control="radio"
-      name="radio"
-      [(ngModel)]="values.radio"
-      [disabled]="disabled()">
-      <nb-radio value="a">A</nb-radio>
-      <nb-radio value="b">B</nb-radio>
-    </nb-radio-group>
-    <nb-select data-control="select"
-      name="select"
-      [(ngModel)]="values.select"
-      [disabled]="disabled()">
-      <nb-option value="a">A</nb-option>
-      <nb-option value="b">B</nb-option>
-      <nb-option value="c">C</nb-option>
-    </nb-select>
-    <input nbInput
-      data-control="autocomplete"
-      [nbAutocomplete]="auto"
-      name="autocomplete"
-      [(ngModel)]="values.autocomplete"
-      [disabled]="disabled()" />
-    <nb-autocomplete #auto>
-      <nb-option value="a">a</nb-option>
-      <nb-option value="b">b</nb-option>
-    </nb-autocomplete>
-    <input nbInput
-      data-control="datepicker"
-      [nbDatepicker]="datepicker"
-      name="datepicker"
-      [(ngModel)]="values.datepicker"
-      [disabled]="disabled()" />
-    <nb-datepicker #datepicker></nb-datepicker>
-    <input nbInput
-      data-control="timepicker"
-      [nbTimepicker]="timepicker"
-      name="timepicker"
-      [(ngModel)]="values.timepicker"
-      [disabled]="disabled()" />
-    <nb-timepicker #timepicker></nb-timepicker>
-    <input nbInput
-      data-control="input"
-      name="input"
-      [(ngModel)]="values.input"
-      [disabled]="disabled()" />
-    <input nbInput
-      nbNumberInput
-      scale="100"
-      data-control="number"
-      name="number"
-      [(ngModel)]="values.number"
-      [disabled]="disabled()" />
-    <textarea nbInput
-      data-control="textarea"
-      name="textarea"
-      [(ngModel)]="values.textarea"
-      [disabled]="disabled()"></textarea>
-  </nb-layout-column>
+    <nb-layout-column>
+        <nb-checkbox data-control="checkbox"
+            name="checkbox"
+            [(ngModel)]="values.checkbox"
+            [disabled]="disabled()">Checkbox</nb-checkbox>
+        <nb-toggle data-control="toggle"
+            name="toggle"
+            [(ngModel)]="values.toggle"
+            [disabled]="disabled()">Toggle</nb-toggle>
+        <nb-radio-group data-control="radio"
+            name="radio"
+            [(ngModel)]="values.radio"
+            [disabled]="disabled()">
+            <nb-radio value="a">A</nb-radio>
+            <nb-radio value="b">B</nb-radio>
+        </nb-radio-group>
+        <nb-select data-control="select"
+            name="select"
+            [(ngModel)]="values.select"
+            [disabled]="disabled()">
+            <nb-option value="a">A</nb-option>
+            <nb-option value="b">B</nb-option>
+            <nb-option value="c">C</nb-option>
+        </nb-select>
+        <input nbInput
+            data-control="autocomplete"
+            [nbAutocomplete]="auto"
+            name="autocomplete"
+            [(ngModel)]="values.autocomplete"
+            [disabled]="disabled()" />
+        <nb-autocomplete #auto>
+            <nb-option value="a">a</nb-option>
+            <nb-option value="b">b</nb-option>
+        </nb-autocomplete>
+        <input nbInput
+            data-control="datepicker"
+            [nbDatepicker]="datepicker"
+            name="datepicker"
+            [(ngModel)]="values.datepicker"
+            [disabled]="disabled()" />
+        <nb-datepicker #datepicker></nb-datepicker>
+        <input nbInput
+            data-control="timepicker"
+            [nbTimepicker]="timepicker"
+            name="timepicker"
+            [(ngModel)]="values.timepicker"
+            [disabled]="disabled()" />
+        <nb-timepicker #timepicker></nb-timepicker>
+        <input nbInput
+            data-control="input"
+            name="input"
+            [(ngModel)]="values.input"
+            [disabled]="disabled()" />
+        <input nbInput
+            nbNumberInput
+            scale="100"
+            data-control="number"
+            name="number"
+            [(ngModel)]="values.number"
+            [disabled]="disabled()" />
+        <textarea nbInput
+            data-control="textarea"
+            name="textarea"
+            [(ngModel)]="values.textarea"
+            [disabled]="disabled()"></textarea>
+    </nb-layout-column>
 </nb-layout>

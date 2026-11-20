@@ -1,21 +1,21 @@
-import { Component, OnInit, ViewEncapsulation, inject } from '@angular/core';
-import { NbThemeService } from '@liquid-js/lyr-core';
+import { Component, OnInit, ViewEncapsulation, inject } from '@angular/core'
+import { NbThemeService } from '@liquid-js/lyr-core'
 
-import { loadPlaygroundTheme } from '../playground-theme';
-import { RouterOutlet } from '@angular/router';
+import { RouterOutlet } from '@angular/router'
+import { loadPlaygroundTheme } from '../playground-theme'
 
 @Component({
-  templateUrl: './playground-base.component.html',
-  encapsulation: ViewEncapsulation.None,
-  imports: [RouterOutlet],
+    templateUrl: './playground-base.component.html',
+    encapsulation: ViewEncapsulation.None,
+    imports: [RouterOutlet]
 })
 export class PlaygroundBaseComponent implements OnInit {
-  private readonly themeService = inject(NbThemeService);
+    private readonly themeService = inject(NbThemeService)
 
-  readonly themeLoaded = loadPlaygroundTheme();
+    readonly themeLoaded = loadPlaygroundTheme()
 
-  ngOnInit() {
+    ngOnInit() {
     // The theme the user chose, or the system's, which a page that set another (e.g. a theme test) leaves.
-    this.themeService.setThemePreference(this.themeService.themePreference());
-  }
+        this.themeService.setThemePreference(this.themeService.themePreference())
+    }
 }

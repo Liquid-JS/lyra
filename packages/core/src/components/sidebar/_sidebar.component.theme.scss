@@ -1,219 +1,225 @@
-@use '../../styles/theming' as *;
-@use '../../styles/global/breakpoints' as *;
+@use "../../styles/theming" as *;
+@use "../../styles/global/breakpoints" as *;
 
 @mixin nb-sidebar-theme() {
-  nb-sidebar {
-    background-color: nb-theme(sidebar-background-color);
-    box-shadow: nb-theme(sidebar-shadow);
-    color: nb-theme(sidebar-text-color);
-    font-family: nb-theme(sidebar-text-font-family);
-    font-size: nb-theme(sidebar-text-font-size);
-    font-weight: nb-theme(sidebar-text-font-weight);
-    line-height: nb-theme(sidebar-text-line-height);
-    width: nb-theme(sidebar-width);
-
-    .main-container {
-      height: nb-theme(sidebar-height);
-      width: nb-theme(sidebar-width);
-      // Clips its content, which keeps its width while the sidebar's changes, so nothing wraps or moves.
-      overflow: hidden;
-    }
-
-    // At the sidebar's full width, collapsed or expanded, and while it changes between them; a compacted sidebar's
-    // content is as narrow as it is.
-    &:not(.compacted) {
-      .scrollable,
-      nb-sidebar-header,
-      nb-sidebar-footer {
-        flex-shrink: 0;
+    nb-sidebar {
+        background-color: nb-theme(sidebar-background-color);
+        box-shadow: nb-theme(sidebar-shadow);
+        color: nb-theme(sidebar-text-color);
+        font-family: nb-theme(sidebar-text-font-family);
+        font-size: nb-theme(sidebar-text-font-size);
+        font-weight: nb-theme(sidebar-text-font-weight);
+        line-height: nb-theme(sidebar-text-line-height);
         width: nb-theme(sidebar-width);
-        box-sizing: border-box;
-      }
-    }
 
-    .scrollable {
-      padding: nb-theme(sidebar-padding);
-      position: relative;
+        .main-container {
+            height: nb-theme(sidebar-height);
+            width: nb-theme(sidebar-width);
 
-      @include media-breakpoint-down(sm) {
-        overflow-y: scroll;
-      }
-
-      @include nb-scrollbars(
-        nb-theme(sidebar-scrollbar-color),
-        nb-theme(sidebar-scrollbar-background-color),
-        nb-theme(sidebar-scrollbar-width)
-      );
-    }
-
-    // Collapsing, compacting and expanding change the width smoothly, once the sidebar has rendered; the content beside
-    // a fixed sidebar moves with it.
-    &.nb-transition {
-      &,
-      .main-container,
-      ~ .content {
-        transition-duration: nb-theme(sidebar-transition-duration);
-        transition-property: width, padding, margin;
-        transition-timing-function: ease-in-out;
-      }
-
-      @media (prefers-reduced-motion: reduce) {
-        &,
-        .main-container,
-        ~ .content {
-          transition: none;
-        }
-      }
-    }
-
-    &.collapsed {
-      width: 0;
-      padding: 0;
-      .main-container {
-        width: 0;
-        padding: 0;
-      }
-      .scrollable {
-        overflow: hidden;
-      }
-    }
-
-    &.compacted {
-      width: nb-theme(sidebar-width-compact);
-      .main-container {
-        width: nb-theme(sidebar-width-compact);
-      }
-
-      nb-menu {
-        width: nb-theme(sidebar-width-compact);
-
-        > .menu-items > .menu-item > a {
-          span,
-          nb-badge,
-          .expand-state {
-            display: none;
-          }
+            // Clips its content, which keeps its width while the sidebar's changes, so nothing wraps or moves.
+            overflow: hidden;
         }
 
-        .menu-items > .menu-item {
-          transition: border-color 1s ease;
+        // At the sidebar's full width, collapsed or expanded, and while it changes between them; a compacted sidebar's
+        // content is as narrow as it is.
+        &:not(.compacted) {
+            .scrollable,
+            nb-sidebar-header,
+            nb-sidebar-footer {
+                flex-shrink: 0;
+                width: nb-theme(sidebar-width);
+                box-sizing: border-box;
+            }
+        }
 
-          &.menu-group {
-            display: block;
-            color: transparent;
+        .scrollable {
+            padding: nb-theme(sidebar-padding);
+            position: relative;
+
+            @include media-breakpoint-down(sm) {
+                overflow-y: scroll;
+            }
+
+            @include nb-scrollbars(
+                nb-theme(sidebar-scrollbar-color),
+                nb-theme(sidebar-scrollbar-background-color),
+                nb-theme(sidebar-scrollbar-width)
+            );
+        }
+
+        // Collapsing, compacting and expanding change the width smoothly, once the sidebar has rendered; the content beside
+        // a fixed sidebar moves with it.
+        &.nb-transition {
+            &,
+            .main-container,
+            ~ .content {
+                transition-duration: nb-theme(sidebar-transition-duration);
+                transition-property: width, padding, margin;
+                transition-timing-function: ease-in-out;
+            }
+
+            @media (prefers-reduced-motion: reduce) {
+                &,
+                .main-container,
+                ~ .content {
+                    transition: none;
+                }
+            }
+        }
+
+        &.collapsed {
             width: 0;
             padding: 0;
-            overflow: hidden;
-          }
 
-          i {
-            margin-right: 0;
-          }
+            .main-container {
+                width: 0;
+                padding: 0;
+            }
 
-          a {
-            justify-content: center;
-          }
-
-          & > .expanded {
-            display: none;
-          }
+            .scrollable {
+                overflow: hidden;
+            }
         }
-      }
-      // we need to pull the content
-      &.left.fixed ~ .content {
-        margin-left: nb-theme(sidebar-width-compact);
-      }
 
-      &.fixed.right ~ .content {
-        margin-left: 0;
-        margin-right: nb-theme(sidebar-width-compact);
-      }
+        &.compacted {
+            width: nb-theme(sidebar-width-compact);
 
-      &.left.fixed ~ .content.center {
-        padding-left: nb-theme(sidebar-width-compact);
-      }
+            .main-container {
+                width: nb-theme(sidebar-width-compact);
+            }
 
-      &.fixed.right ~ .content.center {
-        padding-left: 0;
-        padding-right: nb-theme(sidebar-width-compact);
-      }
+            nb-menu {
+                width: nb-theme(sidebar-width-compact);
 
-      &.start.fixed ~ .content {
-        @include nb-ltr(margin-left, nb-theme(sidebar-width-compact));
-        @include nb-rtl(margin-right, nb-theme(sidebar-width-compact));
-      }
+                > .menu-items > .menu-item > a {
+                    span,
+                    nb-badge,
+                    .expand-state {
+                        display: none;
+                    }
+                }
 
-      &.fixed.end ~ .content {
-        @include nb-ltr(margin-right, nb-theme(sidebar-width-compact));
-        @include nb-rtl(margin-left, nb-theme(sidebar-width-compact));
-      }
+                .menu-items > .menu-item {
+                    transition: border-color 1s ease;
 
-      &.start.fixed ~ .content.center {
-        @include nb-ltr(padding-left, nb-theme(sidebar-width-compact));
-        @include nb-rtl(padding-right, nb-theme(sidebar-width-compact));
-      }
+                    &.menu-group {
+                        display: block;
+                        color: transparent;
+                        width: 0;
+                        padding: 0;
+                        overflow: hidden;
+                    }
 
-      &.fixed.end ~ .content.center {
-        @include nb-ltr(padding-right, nb-theme(sidebar-width-compact));
-        @include nb-rtl(padding-left, nb-theme(sidebar-width-compact));
-      }
+                    i {
+                        margin-right: 0;
+                    }
+
+                    a {
+                        justify-content: center;
+                    }
+
+                    & > .expanded {
+                        display: none;
+                    }
+                }
+            }
+
+            // we need to pull the content
+            &.left.fixed ~ .content {
+                margin-left: nb-theme(sidebar-width-compact);
+            }
+
+            &.fixed.right ~ .content {
+                margin-left: 0;
+                margin-right: nb-theme(sidebar-width-compact);
+            }
+
+            &.left.fixed ~ .content.center {
+                padding-left: nb-theme(sidebar-width-compact);
+            }
+
+            &.fixed.right ~ .content.center {
+                padding-left: 0;
+                padding-right: nb-theme(sidebar-width-compact);
+            }
+
+            &.start.fixed ~ .content {
+                @include nb-ltr(margin-left, nb-theme(sidebar-width-compact));
+                @include nb-rtl(margin-right, nb-theme(sidebar-width-compact));
+            }
+
+            &.fixed.end ~ .content {
+                @include nb-ltr(margin-right, nb-theme(sidebar-width-compact));
+                @include nb-rtl(margin-left, nb-theme(sidebar-width-compact));
+            }
+
+            &.start.fixed ~ .content.center {
+                @include nb-ltr(padding-left, nb-theme(sidebar-width-compact));
+                @include nb-rtl(padding-right, nb-theme(sidebar-width-compact));
+            }
+
+            &.fixed.end ~ .content.center {
+                @include nb-ltr(padding-right, nb-theme(sidebar-width-compact));
+                @include nb-rtl(padding-left, nb-theme(sidebar-width-compact));
+            }
+        }
+
+        &.fixed.left.collapsed + .content,
+        &.fixed.start.collapsed + .content {
+            margin-left: 0;
+        }
+
+        &.fixed.right.collapsed + .content,
+        &.fixed.end.collapsed + .content {
+            margin-right: 0;
+        }
+
+        &.expanded {
+            width: nb-theme(sidebar-width);
+
+            > .scrollable {
+                width: nb-theme(sidebar-width);
+            }
+        }
+
+        nb-sidebar-header {
+            padding: nb-theme(sidebar-padding);
+            height: nb-theme(sidebar-header-height);
+        }
+
+        nb-sidebar-footer {
+            padding: nb-theme(sidebar-padding);
+            height: nb-theme(sidebar-footer-height);
+        }
+
+        nb-menu {
+            margin: 0 calc(#{nb-theme(sidebar-padding)} * -1) calc(#{nb-theme(sidebar-padding)} * -1);
+        }
     }
 
-    &.fixed.left.collapsed + .content,
-    &.fixed.start.collapsed + .content {
-      margin-left: 0;
+    // The sidebar's menu in the sidebar's own colours, which are the menu's unless a theme sets them, as a dark sidebar
+    // does; menus elsewhere, such as context menus, keep the menu's. The colours the mapping derives from these follow
+    // them here too.
+    nb-sidebar nb-menu {
+        --menu-text-color: #{nb-theme(sidebar-menu-text-color)};
+        --menu-group-text-color: #{nb-theme(sidebar-menu-group-text-color)};
+        --menu-item-icon-color: #{nb-theme(sidebar-menu-item-icon-color)};
+        --menu-item-hover-background-color: #{nb-theme(sidebar-menu-item-hover-background-color)};
+        --menu-item-hover-text-color: #{nb-theme(sidebar-menu-item-hover-text-color)};
+        --menu-item-icon-hover-color: #{nb-theme(sidebar-menu-item-hover-text-color)};
+        --menu-item-focus-background-color: #{nb-theme(sidebar-menu-item-focus-background-color)};
+        --menu-submenu-item-focus-background-color: #{nb-theme(sidebar-menu-item-focus-background-color)};
+        --menu-item-active-background-color: #{nb-theme(sidebar-menu-item-active-background-color)};
+        --menu-item-active-text-color: #{nb-theme(sidebar-menu-item-active-text-color)};
+        --menu-item-active-indicator-color: #{nb-theme(sidebar-menu-item-highlight-color)};
+        --menu-item-icon-active-color: #{nb-theme(sidebar-menu-item-active-text-color)};
+        --menu-item-divider-color: #{nb-theme(sidebar-menu-item-divider-color)};
+        --menu-submenu-text-color: #{nb-theme(sidebar-menu-submenu-text-color)};
+        --menu-submenu-item-hover-text-color: #{nb-theme(sidebar-menu-item-hover-text-color)};
+        --menu-submenu-item-icon-hover-color: #{nb-theme(sidebar-menu-item-hover-text-color)};
+        --menu-submenu-item-active-text-color: #{nb-theme(sidebar-menu-item-active-text-color)};
+        --menu-submenu-item-icon-active-color: #{nb-theme(sidebar-menu-item-active-text-color)};
+        --menu-submenu-item-active-hover-text-color: #{nb-theme(sidebar-menu-item-hover-text-color)};
+        --menu-submenu-item-icon-active-hover-color: #{nb-theme(sidebar-menu-item-hover-text-color)};
     }
-
-    &.fixed.right.collapsed + .content,
-    &.fixed.end.collapsed + .content {
-      margin-right: 0;
-    }
-
-    &.expanded {
-      width: nb-theme(sidebar-width);
-      > .scrollable {
-        width: nb-theme(sidebar-width);
-      }
-    }
-
-    nb-sidebar-header {
-      padding: nb-theme(sidebar-padding);
-      height: nb-theme(sidebar-header-height);
-    }
-
-    nb-sidebar-footer {
-      padding: nb-theme(sidebar-padding);
-      height: nb-theme(sidebar-footer-height);
-    }
-
-    nb-menu {
-      margin: 0 calc(#{nb-theme(sidebar-padding)} * -1) calc(#{nb-theme(sidebar-padding)} * -1);
-    }
-  }
-
-  // The sidebar's menu in the sidebar's own colours, which are the menu's unless a theme sets them, as a dark sidebar
-  // does; menus elsewhere, such as context menus, keep the menu's. The colours the mapping derives from these follow
-  // them here too.
-  nb-sidebar nb-menu {
-    --menu-text-color: #{nb-theme(sidebar-menu-text-color)};
-    --menu-group-text-color: #{nb-theme(sidebar-menu-group-text-color)};
-    --menu-item-icon-color: #{nb-theme(sidebar-menu-item-icon-color)};
-    --menu-item-hover-background-color: #{nb-theme(sidebar-menu-item-hover-background-color)};
-    --menu-item-hover-text-color: #{nb-theme(sidebar-menu-item-hover-text-color)};
-    --menu-item-icon-hover-color: #{nb-theme(sidebar-menu-item-hover-text-color)};
-    --menu-item-focus-background-color: #{nb-theme(sidebar-menu-item-focus-background-color)};
-    --menu-submenu-item-focus-background-color: #{nb-theme(sidebar-menu-item-focus-background-color)};
-    --menu-item-active-background-color: #{nb-theme(sidebar-menu-item-active-background-color)};
-    --menu-item-active-text-color: #{nb-theme(sidebar-menu-item-active-text-color)};
-    --menu-item-active-indicator-color: #{nb-theme(sidebar-menu-item-highlight-color)};
-    --menu-item-icon-active-color: #{nb-theme(sidebar-menu-item-active-text-color)};
-    --menu-item-divider-color: #{nb-theme(sidebar-menu-item-divider-color)};
-    --menu-submenu-text-color: #{nb-theme(sidebar-menu-submenu-text-color)};
-    --menu-submenu-item-hover-text-color: #{nb-theme(sidebar-menu-item-hover-text-color)};
-    --menu-submenu-item-icon-hover-color: #{nb-theme(sidebar-menu-item-hover-text-color)};
-    --menu-submenu-item-active-text-color: #{nb-theme(sidebar-menu-item-active-text-color)};
-    --menu-submenu-item-icon-active-color: #{nb-theme(sidebar-menu-item-active-text-color)};
-    --menu-submenu-item-active-hover-text-color: #{nb-theme(sidebar-menu-item-hover-text-color)};
-    --menu-submenu-item-icon-active-hover-color: #{nb-theme(sidebar-menu-item-hover-text-color)};
-  }
 }

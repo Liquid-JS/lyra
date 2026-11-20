@@ -1,35 +1,35 @@
 <nb-card>
-  <nb-card-body class="example-items-col">
-    <label for="input-number-opacity">Opacity</label>
-    <div>
-      <nb-form-field>
-        <input nbInput
-          nbNumberInput
-          id="input-number-opacity"
-          [scale]="100"
-          min="0"
-          max="100"
-          [formControl]="opacity"
-          nbValidation
-          #opacityValidation="nbValidation" />
-        <span nbSuffix>%</span>
-      </nb-form-field>
-      <nb-validation-errors [for]="opacityValidation" />
-    </div>
-    <p class="caption">Value: {{ opacity.value }}</p>
+    <nb-card-body class="example-items-col">
+        <label for="input-number-opacity">Opacity</label>
+        <div>
+            <nb-form-field>
+                <input nbInput
+                    nbNumberInput
+                    id="input-number-opacity"
+                    [scale]="100"
+                    min="0"
+                    max="100"
+                    [formControl]="opacity"
+                    nbValidation
+                    #opacityValidation="nbValidation" />
+                <span nbSuffix>%</span>
+            </nb-form-field>
+            <nb-validation-errors [for]="opacityValidation" />
+        </div>
+        <p class="caption">Value: {{ opacity.value }}</p>
 
-    <label for="input-number-rotation">Rotation</label>
-    <nb-form-field>
-      <input nbInput
-        nbNumberInput
-        id="input-number-rotation"
-        [scale]="radiansToDegrees"
-        min="0"
-        max="360"
-        step="15"
-        [formControl]="rotation" />
-      <span nbSuffix>deg</span>
-    </nb-form-field>
-    <p class="caption">Value: {{ rotation.value }}</p>
-  </nb-card-body>
+        <label for="input-number-rotation">Rotation</label>
+        <nb-form-field>
+            <input nbInput
+                nbNumberInput
+                id="input-number-rotation"
+                [scale]="radiansToDegrees"
+                min="0"
+                max="360"
+                step="15"
+                [formControl]="rotation" />
+            <span nbSuffix>deg</span>
+        </nb-form-field>
+        <p class="caption">Value: {{ rotation.value }}</p>
+    </nb-card-body>
 </nb-card>

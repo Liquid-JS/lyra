@@ -1,10 +1,10 @@
 @for (item of items(); track item) {
 <a [class.selected]="item.selected"
-  [routerLink]="['../', item.tab]">
-  <div class="text-container">
-    <nb-icon [icon]="item.icon" />
-    <span class="title">{{ item.title }}</span>
-  </div>
-  <i class="line"></i>
+    [routerLink]="['../', item.tab]">
+    <div class="text-container">
+        <nb-icon [icon]="item.icon" />
+        <span class="title">{{ item.title }}</span>
+    </div>
+    <i class="line"></i>
 </a>
 }

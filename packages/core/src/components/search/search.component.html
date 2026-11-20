@@ -1,19 +1,19 @@
 <button type="button"
-  #searchButton
-  class="start-search"
-  (click)="emitActivate()"
-  nbButton
-  ghost
-  size="medium"
-  [attr.aria-label]="texts().open">
-  <nb-icon icon="search-outline"
-    pack="essentials" />
+    #searchButton
+    class="start-search"
+    (click)="emitActivate()"
+    nbButton
+    ghost
+    size="medium"
+    [attr.aria-label]="texts().open">
+    <nb-icon icon="search-outline"
+        pack="essentials" />
 </button>
 <nb-search-field *nbPortal
-  [show]="showSearchField()"
-  [type]="type()"
-  [placeholder]="placeholder() ?? texts().placeholder"
-  [hint]="hint() ?? texts().hint"
-  (search)="search($event)"
-  (searchInput)="emitInput($event)"
-  (close)="emitDeactivate()" />
+    [show]="showSearchField()"
+    [type]="type()"
+    [placeholder]="placeholder() ?? texts().placeholder"
+    [hint]="hint() ?? texts().hint"
+    (search)="search($event)"
+    (searchInput)="emitInput($event)"
+    (close)="emitDeactivate()" />

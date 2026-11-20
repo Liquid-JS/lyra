@@ -1,30 +1,30 @@
-import { Component, inject, input } from '@angular/core';
+import { Component, inject, input } from '@angular/core'
 import {
-  NbDialogRef,
-  NbCardComponent,
-  NbCardHeaderComponent,
-  NbCardBodyComponent,
-  NbCardFooterComponent,
-  NbButtonComponent,
-} from '@liquid-js/lyr-core';
-
-@Component({
-  selector: 'nb-esc-dialog',
-  templateUrl: './esc-dialog.component.html',
-  imports: [
+    NbDialogRef,
     NbCardComponent,
     NbCardHeaderComponent,
     NbCardBodyComponent,
     NbCardFooterComponent,
-    NbButtonComponent,
-  ],
+    NbButtonComponent
+} from '@liquid-js/lyr-core'
+
+@Component({
+    selector: 'nb-esc-dialog',
+    templateUrl: './esc-dialog.component.html',
+    imports: [
+        NbCardComponent,
+        NbCardHeaderComponent,
+        NbCardBodyComponent,
+        NbCardFooterComponent,
+        NbButtonComponent
+    ]
 })
 export class EscDialogComponent {
-  protected readonly ref = inject<NbDialogRef<EscDialogComponent>>(NbDialogRef);
+    protected readonly ref = inject<NbDialogRef<EscDialogComponent>>(NbDialogRef)
 
-  readonly title = input<string>();
+    readonly title = input<string>()
 
-  dismiss() {
-    this.ref.close();
-  }
+    dismiss() {
+        this.ref.close()
+    }
 }

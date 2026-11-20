@@ -1,81 +1,82 @@
-@use '../../styles/theming' as *;
+@use "../../styles/theming" as *;
 
 :host {
-  display: inline-block;
-  max-width: 100%;
-  // Lines up with fields and buttons of its size by its middle, as they do.
-  vertical-align: middle;
+    display: inline-block;
+    max-width: 100%;
 
-  .select-button {
-    @include nb-ltr(text-align, left) {
-      nb-icon {
-        right: 0.2em;
-      }
+    // Lines up with fields and buttons of its size by its middle, as they do.
+    vertical-align: middle;
+
+    .select-button {
+        @include nb-ltr(text-align, left) {
+            nb-icon {
+                right: 0.2em;
+            }
+        }
+        @include nb-rtl(text-align, right) {
+            nb-icon {
+                left: 0.2em;
+            }
+        }
     }
-    @include nb-rtl(text-align, right) {
-      nb-icon {
-        left: 0.2em;
-      }
-    }
-  }
 }
 
 :host(.full-width) {
-  width: 100%;
+    width: 100%;
 }
 
 :host(.nb-transition) {
-  .select-button {
-    @include nb-component-animation(background-color, border-color, border-radius, box-shadow, color);
-  }
+    .select-button {
+        @include nb-component-animation(background-color, border-color, border-radius, box-shadow, color);
+    }
 }
 
 // A block, so the select is as tall as its button, whatever the line height around it; a button keeps its content in
 // the middle.
 .select-button {
-  display: block;
-  position: relative;
-  width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  text-transform: none;
-  white-space: nowrap;
+    display: block;
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-transform: none;
+    white-space: nowrap;
 }
 
 // The toggle icon; the list has icons of its own (e.g. the back row of nested options).
 .select-button nb-icon {
-  font-size: 1.5em;
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  @include nb-ltr(right, 0.5rem);
-  @include nb-rtl(left, 0.5rem);
-  @include nb-component-animation(transform);
+    font-size: 1.5em;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    @include nb-ltr(right, 0.5rem);
+    @include nb-rtl(left, 0.5rem);
+    @include nb-component-animation(transform);
 }
 
 :host(.open) .select-button nb-icon {
-  transform: translateY(-50%) rotate(180deg);
+    transform: translateY(-50%) rotate(180deg);
 }
 
 // The label is at least a line tall (see the theme), so a row of tags is centered in it without making the select taller.
 .select-label-chips {
-  display: flex;
-  align-items: center;
+    display: flex;
+    align-items: center;
 }
 
 // Tags wrap onto more rows; the theme's negative margin lets a single row fit the select's line.
 .select-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.25rem;
-  white-space: normal;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    white-space: normal;
 }
 
 // The search sits above the options, its text lined up with theirs; the list scrolls under it.
 .select-search {
-  flex-shrink: 0;
+    flex-shrink: 0;
 }
 
 .select-no-matches:empty {
-  display: none;
+    display: none;
 }

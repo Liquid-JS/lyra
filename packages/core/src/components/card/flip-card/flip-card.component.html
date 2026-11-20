@@ -1,34 +1,34 @@
 <div class="flipcard-body">
-  <div class="front-container">
-    <ng-content select="nb-card-front" />
-    @if (showToggleButton()) {
-    <a class="flip-button"
-      role="button"
-      [attr.tabindex]="flipped() ? -1 : 0"
-      [attr.aria-label]="toggleButtonLabel() ?? texts().toggle"
-      (click)="toggle()"
-      (keydown.enter)="toggle()"
-      (keydown.space)="$event.preventDefault(); toggle()">
-      <nb-icon icon="chevron-left-outline"
-        pack="essentials"
-        aria-hidden="true" />
-    </a>
-    }
-  </div>
-  <div class="back-container">
-    <ng-content select="nb-card-back" />
-    @if (showToggleButton()) {
-    <a class="flip-button"
-      role="button"
-      [attr.tabindex]="flipped() ? 0 : -1"
-      [attr.aria-label]="toggleButtonLabel() ?? texts().toggle"
-      (click)="toggle()"
-      (keydown.enter)="toggle()"
-      (keydown.space)="$event.preventDefault(); toggle()">
-      <nb-icon icon="chevron-left-outline"
-        pack="essentials"
-        aria-hidden="true" />
-    </a>
-    }
-  </div>
+    <div class="front-container">
+        <ng-content select="nb-card-front" />
+        @if (showToggleButton()) {
+        <a class="flip-button"
+            role="button"
+            [attr.tabindex]="flipped() ? -1 : 0"
+            [attr.aria-label]="toggleButtonLabel() ?? texts().toggle"
+            (click)="toggle()"
+            (keydown.enter)="toggle()"
+            (keydown.space)="$event.preventDefault(); toggle()">
+            <nb-icon icon="chevron-left-outline"
+                pack="essentials"
+                aria-hidden="true" />
+        </a>
+        }
+    </div>
+    <div class="back-container">
+        <ng-content select="nb-card-back" />
+        @if (showToggleButton()) {
+        <a class="flip-button"
+            role="button"
+            [attr.tabindex]="flipped() ? 0 : -1"
+            [attr.aria-label]="toggleButtonLabel() ?? texts().toggle"
+            (click)="toggle()"
+            (keydown.enter)="toggle()"
+            (keydown.space)="$event.preventDefault(); toggle()">
+            <nb-icon icon="chevron-left-outline"
+                pack="essentials"
+                aria-hidden="true" />
+        </a>
+        }
+    </div>
 </div>

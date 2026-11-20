@@ -1,34 +1,32 @@
-import { Component, computed, inject, input } from '@angular/core';
+import { Component, computed, inject, input } from '@angular/core'
 
-import { NbStatusService } from '@liquid-js/lyr-core/base';
-import { NbComponentOrCustomStatus } from '@liquid-js/lyr-core/base';
-import { ɵconvertToBoolProperty as convertToBoolProperty, NbBooleanInput } from '@liquid-js/lyr-core/base';
+import { NbStatusService, NbComponentOrCustomStatus, ɵconvertToBoolProperty as convertToBoolProperty, NbBooleanInput } from '@liquid-js/lyr-core/base'
 
 export type NbBadgePhysicalPosition =
-  | 'top left'
-  | 'top right'
-  | 'bottom left'
-  | 'bottom right'
-  | 'center right'
-  | 'center left';
+    | 'top left'
+    | 'top right'
+    | 'bottom left'
+    | 'bottom right'
+    | 'center right'
+    | 'center left'
 export type NbBadgeLogicalPosition =
-  | 'top start'
-  | 'top end'
-  | 'bottom start'
-  | 'bottom end'
-  | 'center start'
-  | 'center end';
-export type NbBadgePosition = NbBadgePhysicalPosition | NbBadgeLogicalPosition;
+    | 'top start'
+    | 'top end'
+    | 'bottom start'
+    | 'bottom end'
+    | 'center start'
+    | 'center end'
+export type NbBadgePosition = NbBadgePhysicalPosition | NbBadgeLogicalPosition
 /**
  * Shows the badge in the flow of text, e.g. as a status dot before a label.
  */
-export type NbBadgeInlinePosition = 'inline';
+export type NbBadgeInlinePosition = 'inline'
 
 export interface NbBadge {
-  text?: string;
-  position?: NbBadgePosition;
-  status?: NbComponentOrCustomStatus;
-  dotMode?: boolean;
+    text?: string
+    position?: NbBadgePosition
+    status?: NbComponentOrCustomStatus
+    dotMode?: boolean
 }
 
 /**
@@ -71,6 +69,7 @@ export interface NbBadge {
  * ```
  *
  * For example, badge can be placed into nb-card header:
+ *
  * @stacked-example(Showcase, badge/badge-showcase.component)
  *
  * Badge located on the bottom right with warning status:
@@ -87,7 +86,6 @@ export interface NbBadge {
  * <nb-badge dotMode status="success" position="inline" /> Paid
  * ```
  * @stacked-example(Inline, badge/badge-inline.component)
- *
  * @styles
  *
  * badge-border-radius:
@@ -114,50 +112,50 @@ export interface NbBadge {
  * badge-control-text-color:
  */
 @Component({
-  selector: 'nb-badge',
-  styleUrls: ['./badge.component.scss'],
-  template: `{{ dotMode() ? '' : text() }}`,
-  host: {
-    '[class]': 'statusClass()',
-    '[class.dot-mode]': 'dotMode()',
-    '[class.position-top]': "position().includes('top')",
-    '[class.position-right]': "position().includes('right')",
-    '[class.position-bottom]': "position().includes('bottom')",
-    '[class.position-left]': "position().includes('left')",
-    '[class.position-start]': "position().includes('start')",
-    '[class.position-end]': "position().includes('end')",
-    '[class.position-center]': "position().includes('center')",
-    '[class.position-inline]': "position() === 'inline'",
-  },
+    selector: 'nb-badge',
+    styleUrls: ['./badge.component.scss'],
+    template: '{{ dotMode() ? \'\' : text() }}',
+    host: {
+        '[class]': 'statusClass()',
+        '[class.dot-mode]': 'dotMode()',
+        '[class.position-top]': "position().includes('top')",
+        '[class.position-right]': "position().includes('right')",
+        '[class.position-bottom]': "position().includes('bottom')",
+        '[class.position-left]': "position().includes('left')",
+        '[class.position-start]': "position().includes('start')",
+        '[class.position-end]': "position().includes('end')",
+        '[class.position-center]': "position().includes('center')",
+        '[class.position-inline]': "position() === 'inline'"
+    }
 })
 export class NbBadgeComponent {
-  protected readonly statusService = inject(NbStatusService);
+    protected readonly statusService = inject(NbStatusService)
 
-  /**
-   * Text to show; hidden in `dotMode`.
-   */
-  readonly text = input<string | undefined>('');
+    /**
+     * Text to show; hidden in `dotMode`.
+     */
+    readonly text = input<string | undefined>('')
 
-  /**
-   * Badge position, `top right` by default (also for an empty value): a physical corner or side such as
-   * `bottom left` or `center right`, a logical one such as `top end`, or `inline` to show it in the flow of text.
-   */
-  readonly position = input<
+    /**
+     * Badge position, `top right` by default (also for an empty value): a physical corner or side such as
+     * `bottom left` or `center right`, a logical one such as `top end`, or `inline` to show it in the flow of text.
+     */
+    readonly position = input<
     NbBadgePosition | NbBadgeInlinePosition,
     NbBadgePosition | NbBadgeInlinePosition | '' | null | undefined
-  >('top right', {
-    transform: (position) => position || 'top right',
-  });
+    >('top right', {
+        transform: (position) => position || 'top right'
+    })
 
-  /**
-   * Shows the badge as a dot, without text.
-   */
-  readonly dotMode = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
+    /**
+     * Shows the badge as a dot, without text.
+     */
+    readonly dotMode = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty })
 
-  /**
-   * Badge status: `basic` (default), `primary`, `info`, `success`, `warning`, `danger`, `control` or a custom one.
-   */
-  readonly status = input<NbComponentOrCustomStatus | undefined>('basic');
+    /**
+     * Badge status: `basic` (default), `primary`, `info`, `success`, `warning`, `danger`, `control` or a custom one.
+     */
+    readonly status = input<NbComponentOrCustomStatus | undefined>('basic')
 
-  protected readonly statusClass = computed(() => this.statusService.getStatusClass(this.status()));
+    protected readonly statusClass = computed(() => this.statusService.getStatusClass(this.status()))
 }

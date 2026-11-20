@@ -1,102 +1,102 @@
 <section class="session"
-  [class.paused]="!running()"
-  aria-label="Session">
-  <div class="session-head">
-    <nb-tag status="primary"
-      appearance="filled"
-      size="tiny"
-      text="Strength" />
-    <span class="hint">Lower body · week 3</span>
-  </div>
-  <p class="timer"
-    role="timer"
-    aria-live="off">{{ time() }}</p>
-  <p class="state hint">{{ running() ? 'Elapsed' : 'Paused' }}</p>
+    [class.paused]="!running()"
+    aria-label="Session">
+    <div class="session-head">
+        <nb-tag status="primary"
+            appearance="filled"
+            size="tiny"
+            text="Strength" />
+        <span class="hint">Lower body · week 3</span>
+    </div>
+    <p class="timer"
+        role="timer"
+        aria-live="off">{{ time() }}</p>
+    <p class="state hint">{{ running() ? 'Elapsed' : 'Paused' }}</p>
 
-  <div class="readouts">
-    <div class="readout">
-      <span class="beat"
-        aria-hidden="true"></span>
-      <span class="figure">{{ heartRate() }}<small>bpm</small></span>
-      <span class="hint">Heart rate</span>
+    <div class="readouts">
+        <div class="readout">
+            <span class="beat"
+                aria-hidden="true"></span>
+            <span class="figure">{{ heartRate() }}<small>bpm</small></span>
+            <span class="hint">Heart rate</span>
+        </div>
+        <div class="readout">
+            <span class="figure">{{ calories() }}<small>kcal</small></span>
+            <span class="hint">Burned</span>
+        </div>
+        <div class="readout">
+            <span class="figure">{{ doneCount() }}<small>/ {{ exercises().length }}</small></span>
+            <span class="hint">Exercises</span>
+        </div>
     </div>
-    <div class="readout">
-      <span class="figure">{{ calories() }}<small>kcal</small></span>
-      <span class="hint">Burned</span>
-    </div>
-    <div class="readout">
-      <span class="figure">{{ doneCount() }}<small>/ {{ exercises().length }}</small></span>
-      <span class="hint">Exercises</span>
-    </div>
-  </div>
 
-  <div class="controls">
-    <button nbButton
-      size="giant"
-      status="basic"
-      appearance="outline"
-      type="button"
-      [attr.aria-label]="running() ? 'Pause' : 'Resume'"
-      (click)="pause()">
-      <nb-icon [icon]="running() ? 'pause-circle-outline' : 'play-circle-outline'" />
-    </button>
-    <a nbButton
-      size="giant"
-      status="danger"
-      routerLink="../today"
-      aria-label="End the session">
-      <nb-icon icon="stop-circle-outline" />
-    </a>
-  </div>
+    <div class="controls">
+        <button nbButton
+            size="giant"
+            status="basic"
+            appearance="outline"
+            type="button"
+            [attr.aria-label]="running() ? 'Pause' : 'Resume'"
+            (click)="pause()">
+            <nb-icon [icon]="running() ? 'pause-circle-outline' : 'play-circle-outline'" />
+        </button>
+        <a nbButton
+            size="giant"
+            status="danger"
+            routerLink="../today"
+            aria-label="End the session">
+            <nb-icon icon="stop-circle-outline" />
+        </a>
+    </div>
 </section>
 
 @if (next(); as upcoming) {
 <nb-card class="next">
-  <nb-card-body class="row">
-    <span class="tile status-info"><nb-icon icon="arrow-forward-outline" /></span>
-    <span class="next-text">
-      <span class="hint">Next up</span>
-      <span class="next-title">{{ upcoming.title }}</span>
-    </span>
-    <span class="hint">{{ upcoming.detail }}</span>
-  </nb-card-body>
+    <nb-card-body class="row">
+        <span class="tile status-info"><nb-icon icon="arrow-forward-outline" /></span>
+        <span class="next-text">
+            <span class="hint">Next up</span>
+            <span class="next-title">{{ upcoming.title }}</span>
+        </span>
+        <span class="hint">{{ upcoming.detail }}</span>
+    </nb-card-body>
 </nb-card>
 }
 
 <nb-card>
-  <nb-card-header class="row">
-    Exercises
-    <span class="count">{{ doneCount() }} of {{ exercises().length }}</span>
-  </nb-card-header>
-  <nb-card-body class="exercises">
-    @for (exercise of exercises(); track exercise.title; let i = $index) {
-    <nb-checkbox status="primary"
-      [class.current]="i === current()"
-      [checked]="exercise.done"
-      (checkedChange)="toggle(i, $event)">
-      <span class="exercise">
-        <span class="exercise-title">{{ exercise.title }}</span>
-        <span class="hint">{{ exercise.detail }}</span>
-      </span>
-    </nb-checkbox>
-    }
-  </nb-card-body>
+    <nb-card-header class="row">
+        Exercises
+        <span class="count">{{ doneCount() }} of {{ exercises().length }}</span>
+    </nb-card-header>
+    <nb-card-body class="exercises">
+        @for (exercise of exercises(); track exercise.title; let i = $index) {
+        <nb-checkbox status="primary"
+            [class.current]="i === current()"
+            [checked]="exercise.done"
+            (checkedChange)="toggle(i, $event)">
+            <span class="exercise">
+                <span class="exercise-title">{{ exercise.title }}</span>
+                <span class="hint">{{ exercise.detail }}</span>
+            </span>
+        </nb-checkbox>
+        }
+    </nb-card-body>
 </nb-card>
 
 <nb-card>
-  <nb-card-header>How hard does it feel?</nb-card-header>
-  <nb-card-body class="effort">
-    <nb-slider status="primary"
-      [min]="1"
-      [max]="10"
-      [step]="1"
-      ticks
-      [labels]="false"
-      [(value)]="intensity"
-      aria-label="Perceived effort, 1 to 10" />
-    <div class="effort-ends hint">
-      <span>Easy</span>
-      <span>All out</span>
-    </div>
-  </nb-card-body>
+    <nb-card-header>How hard does it feel?</nb-card-header>
+    <nb-card-body class="effort">
+        <nb-slider status="primary"
+            [min]="1"
+            [max]="10"
+            [step]="1"
+            ticks
+            [labels]="false"
+            [(value)]="intensity"
+            aria-label="Perceived effort, 1 to 10" />
+        <div class="effort-ends hint">
+            <span>Easy</span>
+            <span>All out</span>
+        </div>
+    </nb-card-body>
 </nb-card>

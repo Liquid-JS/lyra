@@ -1,4 +1,4 @@
-import { NB_MARKDOWN_STYLE, nbRemarkNormalise } from './format-style';
+import { NB_MARKDOWN_STYLE, nbRemarkNormalise } from './format-style'
 
 /**
  * Formats markdown, CommonMark with GitHub's extensions, in one style, as `nb-markdown-editor`'s Format button does:
@@ -15,16 +15,16 @@ import { NB_MARKDOWN_STYLE, nbRemarkNormalise } from './format-style';
  * ```
  */
 export async function nbFormatMarkdown(markdown: string): Promise<string> {
-  const [{ remark }, { default: remarkGfm }, { default: remarkFrontmatter }] = await Promise.all([
-    import('remark'),
-    import('remark-gfm'),
-    import('remark-frontmatter'),
-  ]);
-  const file = await remark()
-    .use(remarkFrontmatter, ['yaml', 'toml'])
-    .use(remarkGfm)
-    .use(nbRemarkNormalise)
-    .data('settings', NB_MARKDOWN_STYLE)
-    .process(markdown);
-  return String(file);
+    const [{ remark }, { default: remarkGfm }, { default: remarkFrontmatter }] = await Promise.all([
+        import('remark'),
+        import('remark-gfm'),
+        import('remark-frontmatter')
+    ])
+    const file = await remark()
+        .use(remarkFrontmatter, ['yaml', 'toml'])
+        .use(remarkGfm)
+        .use(nbRemarkNormalise)
+        .data('settings', NB_MARKDOWN_STYLE)
+        .process(markdown)
+    return String(file)
 }

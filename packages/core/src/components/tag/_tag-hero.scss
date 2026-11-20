@@ -1,44 +1,48 @@
-@use '../../styles/theming' as *;
+@use "../../styles/theming" as *;
 
 // The hero button's gradients, for tags.
 @mixin nb-tag-hero() {
-  &.appearance-hero {
-    border-color: transparent;
-    text-shadow: nb-theme(tag-hero-text-shadow);
+    &.appearance-hero {
+        border-color: transparent;
+        text-shadow: nb-theme(tag-hero-text-shadow);
 
-    @each $status in nb-get-statuses() {
-      &.status-#{$status} {
-        background-image: linear-gradient(
-          to right,
-          nb-theme(tag-hero-#{$status}-left-background-color),
-          nb-theme(tag-hero-#{$status}-right-background-color)
-        );
-        color: nb-theme(tag-hero-#{$status}-text-color);
+        @each $status in nb-get-statuses() {
+            &.status-#{$status} {
+                background-image:
+                    linear-gradient(
+                        to right,
+                        nb-theme(tag-hero-#{$status}-left-background-color),
+                        nb-theme(tag-hero-#{$status}-right-background-color)
+                    );
+                color: nb-theme(tag-hero-#{$status}-text-color);
 
-        &.selected {
-          background-image: linear-gradient(
-            to right,
-            nb-theme(tag-hero-#{$status}-selected-left-background-color),
-            nb-theme(tag-hero-#{$status}-selected-right-background-color)
-          );
+                &.selected {
+                    background-image:
+                        linear-gradient(
+                            to right,
+                            nb-theme(tag-hero-#{$status}-selected-left-background-color),
+                            nb-theme(tag-hero-#{$status}-selected-right-background-color)
+                        );
+                }
+
+                &.active {
+                    background-image:
+                        linear-gradient(
+                            to right,
+                            nb-theme(tag-hero-#{$status}-active-left-background-color),
+                            nb-theme(tag-hero-#{$status}-active-right-background-color)
+                        );
+                }
+
+                &:hover {
+                    background-image:
+                        linear-gradient(
+                            to right,
+                            nb-theme(tag-hero-#{$status}-hover-left-background-color),
+                            nb-theme(tag-hero-#{$status}-hover-right-background-color)
+                        );
+                }
+            }
         }
-
-        &.active {
-          background-image: linear-gradient(
-            to right,
-            nb-theme(tag-hero-#{$status}-active-left-background-color),
-            nb-theme(tag-hero-#{$status}-active-right-background-color)
-          );
-        }
-
-        &:hover {
-          background-image: linear-gradient(
-            to right,
-            nb-theme(tag-hero-#{$status}-hover-left-background-color),
-            nb-theme(tag-hero-#{$status}-hover-right-background-color)
-          );
-        }
-      }
     }
-  }
 }

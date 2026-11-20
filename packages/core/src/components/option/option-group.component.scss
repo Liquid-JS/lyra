@@ -1,16 +1,16 @@
 :host {
-  display: block;
+    display: block;
 
-  &.filtered,
-  &.nb-option-collapsed {
-    display: none;
-  }
+    &.filtered,
+    &.nb-option-collapsed {
+        display: none;
+    }
 }
 
 .option-group-title {
-  display: block;
+    display: block;
 
-  &.nb-option-collapsed {
-    display: none;
-  }
+    &.nb-option-collapsed {
+        display: none;
+    }
 }

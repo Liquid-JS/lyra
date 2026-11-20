@@ -1,26 +1,26 @@
 .page {
-  display: flex;
-  gap: 2rem;
-  align-items: flex-start;
+    display: flex;
+    gap: 2rem;
+    align-items: flex-start;
 }
 
 // The article scrolls in the example, so the current section changes as it does.
 article {
-  flex: 1;
-  height: 16rem;
-  overflow-y: auto;
+    flex: 1;
+    height: 16rem;
+    overflow-y: auto;
 }
 
 h2,
 h3 {
-  margin-top: 1.5rem;
+    margin-top: 1.5rem;
 
-  &:first-child {
-    margin-top: 0;
-  }
+    &:first-child {
+        margin-top: 0;
+    }
 }
 
 nb-toc {
-  width: 12rem;
-  flex-shrink: 0;
+    width: 12rem;
+    flex-shrink: 0;
 }

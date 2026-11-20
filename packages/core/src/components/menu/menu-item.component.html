@@ -1,83 +1,14 @@
 @if (menuItem().group) {
 <span>
-  @if (menuItem().icon) {
-  <nb-icon class="menu-icon"
-    [config]="menuItem().icon" />
-  }
-  <span dir="auto">{{ menuItem().title }}</span>
+    @if (menuItem().icon) {
+    <nb-icon class="menu-icon"
+        [config]="menuItem().icon" />
+    }
+    <span dir="auto">{{ menuItem().title }}</span>
 </span>
 }
 @if (menuItem().link && !menuItem().url && !hasVisibleChildren() && !menuItem().group) {
 <a [routerLink]="menuItem().link"
-  tabindex="0"
-  [queryParams]="menuItem().queryParams"
-  [fragment]="menuItem().fragment"
-  [queryParamsHandling]="menuItem().queryParamsHandling"
-  [preserveFragment]="menuItem().preserveFragment"
-  [skipLocationChange]="menuItem().skipLocationChange"
-  [attr.target]="menuItem().target"
-  [attr.title]="menuItem().title"
-  [attr.role]="menuItem().ariaRole"
-  [class.active]="menuItem().selected"
-  [attr.aria-current]="menuItem().selected ? 'page' : null"
-  (mouseenter)="onHoverItem(menuItem())"
-  (click)="onItemClick(menuItem())">
-  @if (menuItem().icon) {
-  <nb-icon class="menu-icon"
-    [config]="menuItem().icon" />
-  }
-  <span class="menu-title"><span dir="auto">{{ menuItem().title }}</span></span>
-  @if (badge()) {
-  <ng-container [ngTemplateOutlet]="badgeTemplate" />
-  }
-</a>
-}
-@if (menuItem().url && !hasVisibleChildren() && !menuItem().link && !menuItem().group) {
-<a [attr.href]="menuItem().url"
-  tabindex="0"
-  [attr.target]="menuItem().target"
-  [attr.title]="menuItem().title"
-  [attr.role]="menuItem().ariaRole"
-  [class.active]="menuItem().selected"
-  [attr.aria-current]="menuItem().selected ? 'page' : null"
-  (mouseenter)="onHoverItem(menuItem())"
-  (click)="onItemClick(menuItem()); opensInPlace(menuItem()) && onSelectItem(menuItem())">
-  @if (menuItem().icon) {
-  <nb-icon class="menu-icon"
-    [config]="menuItem().icon" />
-  }
-  <span class="menu-title"><span dir="auto">{{ menuItem().title }}</span></span>
-  @if (badge()) {
-  <ng-container [ngTemplateOutlet]="badgeTemplate" />
-  }
-</a>
-}
-@if (!hasVisibleChildren() && !menuItem().link && !menuItem().url && !menuItem().group) {
-<!-- An action rather than a link: Enter and Space choose it, as they would a button. -->
-<a [attr.target]="menuItem().target"
-  tabindex="0"
-  [attr.title]="menuItem().title"
-  [attr.role]="menuItem().ariaRole || 'button'"
-  [class.active]="menuItem().selected"
-  (mouseenter)="onHoverItem(menuItem())"
-  (click)="$event.preventDefault(); onItemClick(menuItem())"
-  (keydown.enter)="$event.preventDefault(); onItemClick(menuItem())"
-  (keydown.space)="$event.preventDefault(); onItemClick(menuItem())">
-  @if (menuItem().icon) {
-  <nb-icon class="menu-icon"
-    [config]="menuItem().icon" />
-  }
-  <span class="menu-title"><span dir="auto">{{ menuItem().title }}</span></span>
-  @if (badge()) {
-  <ng-container [ngTemplateOutlet]="badgeTemplate" />
-  }
-</a>
-}
-@if (hasVisibleChildren() && (menuItem().link || menuItem().url)) {
-<!-- A parent with its own page: the title goes there, and the chevron opens and closes the submenu. -->
-<div class="menu-item-row">
-  @if (menuItem().link) {
-  <a [routerLink]="menuItem().link"
     tabindex="0"
     [queryParams]="menuItem().queryParams"
     [fragment]="menuItem().fragment"
@@ -90,11 +21,19 @@
     [class.active]="menuItem().selected"
     [attr.aria-current]="menuItem().selected ? 'page' : null"
     (mouseenter)="onHoverItem(menuItem())"
-    (click)="onItemClick(menuItem()); openSubMenu(menuItem())">
-    <ng-container [ngTemplateOutlet]="itemContent" />
-  </a>
-  } @else {
-  <a [attr.href]="menuItem().url"
+    (click)="onItemClick(menuItem())">
+    @if (menuItem().icon) {
+    <nb-icon class="menu-icon"
+        [config]="menuItem().icon" />
+    }
+    <span class="menu-title"><span dir="auto">{{ menuItem().title }}</span></span>
+    @if (badge()) {
+    <ng-container [ngTemplateOutlet]="badgeTemplate" />
+    }
+</a>
+}
+@if (menuItem().url && !hasVisibleChildren() && !menuItem().link && !menuItem().group) {
+<a [attr.href]="menuItem().url"
     tabindex="0"
     [attr.target]="menuItem().target"
     [attr.title]="menuItem().title"
@@ -102,87 +41,148 @@
     [class.active]="menuItem().selected"
     [attr.aria-current]="menuItem().selected ? 'page' : null"
     (mouseenter)="onHoverItem(menuItem())"
-    (click)="onItemClick(menuItem()); opensInPlace(menuItem()) && onSelectItem(menuItem()); openSubMenu(menuItem())">
-    <ng-container [ngTemplateOutlet]="itemContent" />
-  </a>
-  }
-  <button type="button"
-    class="menu-toggle"
+    (click)="onItemClick(menuItem()); opensInPlace(menuItem()) && onSelectItem(menuItem())">
+    @if (menuItem().icon) {
+    <nb-icon class="menu-icon"
+        [config]="menuItem().icon" />
+    }
+    <span class="menu-title"><span dir="auto">{{ menuItem().title }}</span></span>
+    @if (badge()) {
+    <ng-container [ngTemplateOutlet]="badgeTemplate" />
+    }
+</a>
+}
+@if (!hasVisibleChildren() && !menuItem().link && !menuItem().url && !menuItem().group) {
+<!-- An action rather than a link: Enter and Space choose it, as they would a button. -->
+<a [attr.target]="menuItem().target"
     tabindex="0"
-    [attr.aria-expanded]="menuItem().expanded ?? false"
-    [attr.aria-label]="texts().submenu(menuItem().title)"
-    (click)="onToggleSubMenu(menuItem())">
-    <nb-icon class="expand-state"
-      [class.expanded]="menuItem().expanded"
-      [class.dropdown]="dropdown()"
-      [icon]="getExpandStateIcon()"
-      pack="essentials" />
-  </button>
+    [attr.title]="menuItem().title"
+    [attr.role]="menuItem().ariaRole || 'button'"
+    [class.active]="menuItem().selected"
+    (mouseenter)="onHoverItem(menuItem())"
+    (click)="$event.preventDefault(); onItemClick(menuItem())"
+    (keydown.enter)="$event.preventDefault(); onItemClick(menuItem())"
+    (keydown.space)="$event.preventDefault(); onItemClick(menuItem())">
+    @if (menuItem().icon) {
+    <nb-icon class="menu-icon"
+        [config]="menuItem().icon" />
+    }
+    <span class="menu-title"><span dir="auto">{{ menuItem().title }}</span></span>
+    @if (badge()) {
+    <ng-container [ngTemplateOutlet]="badgeTemplate" />
+    }
+</a>
+}
+@if (hasVisibleChildren() && (menuItem().link || menuItem().url)) {
+<!-- A parent with its own page: the title goes there, and the chevron opens and closes the submenu. -->
+<div class="menu-item-row">
+    @if (menuItem().link) {
+    <a [routerLink]="menuItem().link"
+        tabindex="0"
+        [queryParams]="menuItem().queryParams"
+        [fragment]="menuItem().fragment"
+        [queryParamsHandling]="menuItem().queryParamsHandling"
+        [preserveFragment]="menuItem().preserveFragment"
+        [skipLocationChange]="menuItem().skipLocationChange"
+        [attr.target]="menuItem().target"
+        [attr.title]="menuItem().title"
+        [attr.role]="menuItem().ariaRole"
+        [class.active]="menuItem().selected"
+        [attr.aria-current]="menuItem().selected ? 'page' : null"
+        (mouseenter)="onHoverItem(menuItem())"
+        (click)="onItemClick(menuItem()); openSubMenu(menuItem())">
+        <ng-container [ngTemplateOutlet]="itemContent" />
+    </a>
+    } @else {
+    <a [attr.href]="menuItem().url"
+        tabindex="0"
+        [attr.target]="menuItem().target"
+        [attr.title]="menuItem().title"
+        [attr.role]="menuItem().ariaRole"
+        [class.active]="menuItem().selected"
+        [attr.aria-current]="menuItem().selected ? 'page' : null"
+        (mouseenter)="onHoverItem(menuItem())"
+        (click)="onItemClick(menuItem()); opensInPlace(menuItem()) && onSelectItem(menuItem()); openSubMenu(menuItem())">
+        <ng-container [ngTemplateOutlet]="itemContent" />
+    </a>
+    }
+    <button type="button"
+        class="menu-toggle"
+        tabindex="0"
+        [attr.aria-expanded]="menuItem().expanded ?? false"
+        [attr.aria-label]="texts().submenu(menuItem().title)"
+        (click)="onToggleSubMenu(menuItem())">
+        <nb-icon class="expand-state"
+            [class.expanded]="menuItem().expanded"
+            [class.dropdown]="dropdown()"
+            [icon]="getExpandStateIcon()"
+            pack="essentials" />
+    </button>
 </div>
 }
 @if (hasVisibleChildren() && !menuItem().link && !menuItem().url) {
 <!-- A parent without a page of its own only opens and closes its items: a button, not a link. -->
 <a (click)="onToggleSubMenu(menuItem())"
-  (keydown.enter)="$event.preventDefault(); onToggleSubMenu(menuItem())"
-  (keydown.space)="$event.preventDefault(); onToggleSubMenu(menuItem())"
-  tabindex="0"
-  [attr.title]="menuItem().title"
-  [attr.aria-expanded]="menuItem().expanded ?? false"
-  [attr.role]="menuItem().ariaRole || 'button'"
-  [class.active]="menuItem().selected"
-  (mouseenter)="onHoverItem(menuItem())">
-  @if (menuItem().icon) {
-  <nb-icon class="menu-icon"
-    [config]="menuItem().icon" />
-  }
-  <span class="menu-title"><span dir="auto">{{ menuItem().title }}</span></span>
-  @if (badge()) {
-  <ng-container [ngTemplateOutlet]="badgeTemplate" />
-  }
-  <nb-icon class="expand-state"
-    [class.expanded]="menuItem().expanded"
-    [class.dropdown]="dropdown()"
-    [icon]="getExpandStateIcon()"
-    pack="essentials" />
+    (keydown.enter)="$event.preventDefault(); onToggleSubMenu(menuItem())"
+    (keydown.space)="$event.preventDefault(); onToggleSubMenu(menuItem())"
+    tabindex="0"
+    [attr.title]="menuItem().title"
+    [attr.aria-expanded]="menuItem().expanded ?? false"
+    [attr.role]="menuItem().ariaRole || 'button'"
+    [class.active]="menuItem().selected"
+    (mouseenter)="onHoverItem(menuItem())">
+    @if (menuItem().icon) {
+    <nb-icon class="menu-icon"
+        [config]="menuItem().icon" />
+    }
+    <span class="menu-title"><span dir="auto">{{ menuItem().title }}</span></span>
+    @if (badge()) {
+    <ng-container [ngTemplateOutlet]="badgeTemplate" />
+    }
+    <nb-icon class="expand-state"
+        [class.expanded]="menuItem().expanded"
+        [class.dropdown]="dropdown()"
+        [icon]="getExpandStateIcon()"
+        pack="essentials" />
 </a>
 }
 @if (hasVisibleChildren()) {
 <ul [class.collapsed]="!(menuItem().children && menuItem().expanded)"
-  [class.expanded]="menuItem().expanded"
-  [attr.inert]="menuItem().expanded ? null : ''"
-  #submenu
-  class="menu-items">
-  @for (item of menuItem().children; track item) {
-  @if (!item.hidden) {
-  <li nbMenuItem
-    [menuItem]="item"
-    [badge]="item.badge"
-    [class.menu-group]="item.group"
-    (hoverItem)="onHoverItem($event)"
-    (toggleSubMenu)="onToggleSubMenu($event)"
-    (selectItem)="onSelectItem($event)"
-    (itemClick)="onItemClick($event)"
-    class="menu-item"></li>
-  }
-  }
+    [class.expanded]="menuItem().expanded"
+    [attr.inert]="menuItem().expanded ? null : ''"
+    #submenu
+    class="menu-items">
+    @for (item of menuItem().children; track item) {
+    @if (!item.hidden) {
+    <li nbMenuItem
+        [menuItem]="item"
+        [badge]="item.badge"
+        [class.menu-group]="item.group"
+        (hoverItem)="onHoverItem($event)"
+        (toggleSubMenu)="onToggleSubMenu($event)"
+        (selectItem)="onSelectItem($event)"
+        (itemClick)="onItemClick($event)"
+        class="menu-item"></li>
+    }
+    }
 </ul>
 }
 
 <ng-template #itemContent>
-  @if (menuItem().icon) {
-  <nb-icon class="menu-icon"
-    [config]="menuItem().icon" />
-  }
-  <span class="menu-title"><span dir="auto">{{ menuItem().title }}</span></span>
-  @if (badge()) {
-  <ng-container [ngTemplateOutlet]="badgeTemplate" />
-  }
+    @if (menuItem().icon) {
+    <nb-icon class="menu-icon"
+        [config]="menuItem().icon" />
+    }
+    <span class="menu-title"><span dir="auto">{{ menuItem().title }}</span></span>
+    @if (badge()) {
+    <ng-container [ngTemplateOutlet]="badgeTemplate" />
+    }
 </ng-template>
 
 <ng-template #badgeTemplate>
-  @if (badge(); as badge) {
-  <nb-badge [text]="badge.text"
-    [dotMode]="badge.dotMode"
-    [status]="badge.status" />
-  }
+    @if (badge(); as badge) {
+    <nb-badge [text]="badge.text"
+        [dotMode]="badge.dotMode"
+        [status]="badge.status" />
+    }
 </ng-template>

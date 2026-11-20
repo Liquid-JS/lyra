@@ -1,11 +1,11 @@
-import { Component, computed, effect, input } from '@angular/core';
+import { Component, computed, effect, input } from '@angular/core'
 
-import { NbValidationDirective } from './validation.directive';
+import { NbValidationDirective } from './validation.directive'
 
-let lastLabelId = 0;
+let lastLabelId = 0
 
 /** Elements a `<label for>` labels, and focuses when it's clicked. */
-const LABELABLE = 'input, select, textarea, button, meter, output, progress';
+const LABELABLE = 'input, select, textarea, button, meter, output, progress'
 
 /**
  * Labels a control with `nbValidation`, styled as Lyra's labels, and marks it when it's required:
@@ -26,49 +26,49 @@ const LABELABLE = 'input, select, textarea, button, meter, output, progress';
  * label-required-text-color:
  */
 @Component({
-  selector: 'label[nbLabel]',
-  template: `<ng-content />@if (target().required()) {<span class="label-required" aria-hidden="true">*</span>}`,
-  host: {
-    class: 'label',
-    '[id]': 'id',
-    '[attr.for]': 'fieldId()',
-    '(click)': 'onClick($event)',
-  },
+    selector: 'label[nbLabel]',
+    template: '<ng-content />@if (target().required()) {<span class="label-required" aria-hidden="true">*</span>}',
+    host: {
+        'class': 'label',
+        '[id]': 'id',
+        '[attr.for]': 'fieldId()',
+        '(click)': 'onClick($event)'
+    }
 })
 export class NbLabelComponent {
-  protected readonly id = `nb-label-${lastLabelId++}`;
+    protected readonly id = `nb-label-${lastLabelId++}`
 
-  /** The control it labels: its `nbValidation` directive. */
-  readonly target = input.required<NbValidationDirective>({ alias: 'for' });
+    /** The control it labels: its `nbValidation` directive. */
+    readonly target = input.required<NbValidationDirective>({ alias: 'for' })
 
-  /** Whether `for` labels the control: a native field. */
-  protected readonly labelable = computed(() => this.target().element.matches(LABELABLE));
+    /** Whether `for` labels the control: a native field. */
+    protected readonly labelable = computed(() => this.target().element.matches(LABELABLE))
 
-  protected readonly fieldId = computed(() => {
-    if (!this.labelable()) {
-      return null;
+    protected readonly fieldId = computed(() => {
+        if (!this.labelable()) {
+            return null
+        }
+        const element = this.target().element
+        element.id ||= `${this.id}-field`
+        return element.id
+    })
+
+    constructor() {
+        effect((onCleanup) => {
+            const target = this.target()
+            if (!this.labelable()) {
+                target.addLabel(this.id)
+                onCleanup(() => target.removeLabel(this.id))
+            }
+        })
     }
-    const element = this.target().element;
-    element.id ||= `${this.id}-field`;
-    return element.id;
-  });
 
-  constructor() {
-    effect((onCleanup) => {
-      const target = this.target();
-      if (!this.labelable()) {
-        target.addLabel(this.id);
-        onCleanup(() => target.removeLabel(this.id));
-      }
-    });
-  }
-
-  /** @internal */
-  onClick(event: MouseEvent) {
+    /** @internal */
+    onClick(event: MouseEvent) {
     // A native field gets focus from `for`; another control from its own field.
-    if (!this.labelable()) {
-      event.preventDefault();
-      this.target().focus();
+        if (!this.labelable()) {
+            event.preventDefault()
+            this.target().focus()
+        }
     }
-  }
 }

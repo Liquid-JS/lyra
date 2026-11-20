@@ -1,36 +1,36 @@
-@use '../../styles/theming' as *;
+@use "../../styles/theming" as *;
 
 @mixin nb-pagination-theme() {
-  nb-pagination {
-    gap: nb-theme(pagination-gap) calc(#{nb-theme(pagination-gap)} * 2);
-    color: nb-theme(pagination-text-color);
-    font-family: nb-theme(pagination-text-font-family);
-    font-size: nb-theme(pagination-text-font-size);
-    font-weight: nb-theme(pagination-text-font-weight);
-    line-height: nb-theme(pagination-text-line-height);
+    nb-pagination {
+        gap: nb-theme(pagination-gap) calc(#{nb-theme(pagination-gap)} * 2);
+        color: nb-theme(pagination-text-color);
+        font-family: nb-theme(pagination-text-font-family);
+        font-size: nb-theme(pagination-text-font-size);
+        font-weight: nb-theme(pagination-text-font-weight);
+        line-height: nb-theme(pagination-text-line-height);
 
-    .page-size,
-    .navigation,
-    .page {
-      gap: nb-theme(pagination-gap);
+        .page-size,
+        .navigation,
+        .page {
+            gap: nb-theme(pagination-gap);
+        }
+
+        .page input {
+            width: nb-theme(pagination-page-input-width);
+        }
+
+        // Narrower than a select in a form: it holds a short number. As specific as the select's own width, to win over it.
+        .page-size nb-select:not(.full-width) {
+            min-width: nb-theme(pagination-page-size-width);
+
+            .select-button {
+                min-width: 0;
+            }
+        }
+
+        &.loading .navigation {
+            cursor: progress;
+            opacity: nb-theme(pagination-loading-opacity);
+        }
     }
-
-    .page input {
-      width: nb-theme(pagination-page-input-width);
-    }
-
-    // Narrower than a select in a form: it holds a short number. As specific as the select's own width, to win over it.
-    .page-size nb-select:not(.full-width) {
-      min-width: nb-theme(pagination-page-size-width);
-
-      .select-button {
-        min-width: 0;
-      }
-    }
-
-    &.loading .navigation {
-      cursor: progress;
-      opacity: nb-theme(pagination-loading-opacity);
-    }
-  }
 }

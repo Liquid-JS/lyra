@@ -1,19 +1,19 @@
 @if (showWeekNumber()) {
 <nb-calendar-week-numbers [weeks]="weeks()"
-  [size]="size()"
-  [weekNumberSymbol]="weekNumberSymbol()" />
+    [size]="size()"
+    [weekNumberSymbol]="weekNumberSymbol()" />
 }
 <div class="days-container">
-  <nb-calendar-days-names [size]="size()"
-    [firstDayOfWeek]="firstDayOfWeek()" />
-  <nb-calendar-picker [data]="weeks()"
-    [visibleDate]="visibleDate()"
-    [selectedValue]="date()"
-    [cellComponent]="cellComponent()"
-    [min]="min()"
-    [max]="max()"
-    [filter]="filter()"
-    [size]="size()"
-    unit="day"
-    (select)="onSelect($event)" />
+    <nb-calendar-days-names [size]="size()"
+        [firstDayOfWeek]="firstDayOfWeek()" />
+    <nb-calendar-picker [data]="weeks()"
+        [visibleDate]="visibleDate()"
+        [selectedValue]="date()"
+        [cellComponent]="cellComponent()"
+        [min]="min()"
+        [max]="max()"
+        [filter]="filter()"
+        [size]="size()"
+        unit="day"
+        (select)="onSelect($event)" />
 </div>

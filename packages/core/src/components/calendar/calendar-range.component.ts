@@ -1,16 +1,15 @@
-import { Component, computed, inject, input, model, Type } from '@angular/core';
+import { Component, computed, inject, input, model, Type } from '@angular/core'
 
-import { NbCalendarCell, NbCalendarSize, NbCalendarViewMode, NbCalendarSizeValues, NbCalendarViewModeValues } from '@liquid-js/lyr-core/calendar-kit';
-import { NbDateService } from '@liquid-js/lyr-core/calendar-kit';
-import { NbCalendarRangeDayCellComponent } from './calendar-range-day-cell.component';
-import { NbCalendarRangeYearCellComponent } from './calendar-range-year-cell.component';
-import { NbCalendarRangeMonthCellComponent } from './calendar-range-month-cell.component';
-import { ɵconvertToBoolProperty as convertToBoolProperty, NbBooleanInput } from '@liquid-js/lyr-core/base';
-import { NbBaseCalendarComponent } from './base-calendar.component';
+import { NbCalendarCell, NbCalendarSize, NbCalendarViewMode, NbCalendarSizeValues, NbCalendarViewModeValues, NbDateService } from '@liquid-js/lyr-core/calendar-kit'
+import { ɵconvertToBoolProperty as convertToBoolProperty, NbBooleanInput } from '@liquid-js/lyr-core/base'
+import { NbCalendarRangeDayCellComponent } from './calendar-range-day-cell.component'
+import { NbCalendarRangeYearCellComponent } from './calendar-range-year-cell.component'
+import { NbCalendarRangeMonthCellComponent } from './calendar-range-month-cell.component'
+import { NbBaseCalendarComponent } from './base-calendar.component'
 
 export interface NbCalendarRange<D> {
-  start: D;
-  end?: D;
+    start: D
+    end?: D
 }
 
 /**
@@ -23,6 +22,7 @@ export interface NbCalendarRange<D> {
  * ```
  *
  * Basic usage example
+ *
  * @stacked-example(Range, calendar/calendar-range-showcase.component)
  *
  * ### Installation
@@ -51,7 +51,6 @@ export interface NbCalendarRange<D> {
  * ### Usage
  *
  * It has the calendar's inputs; see the [Calendar component docs](components/more/calendar).
- *
  * @styles
  *
  * calendar-width:
@@ -163,125 +162,125 @@ export interface NbCalendarRange<D> {
  * calendar-year-cell-large-height:
  * */
 @Component({
-  selector: 'nb-calendar-range',
-  templateUrl: './calendar-range.component.html',
-  imports: [NbBaseCalendarComponent],
+    selector: 'nb-calendar-range',
+    templateUrl: './calendar-range.component.html',
+    imports: [NbBaseCalendarComponent]
 })
 export class NbCalendarRangeComponent<D> {
-  protected readonly dateService = inject<NbDateService<D>>(NbDateService);
+    protected readonly dateService = inject<NbDateService<D>>(NbDateService)
 
-  /**
-   * Fills the first and last weeks with the days of the months around the one shown; without it those cells are
-   * empty.
-   */
-  readonly boundingMonth = input<boolean, NbBooleanInput>(true, { transform: convertToBoolProperty });
+    /**
+     * Fills the first and last weeks with the days of the months around the one shown; without it those cells are
+     * empty.
+     */
+    readonly boundingMonth = input<boolean, NbBooleanInput>(true, { transform: convertToBoolProperty })
 
-  /**
-   * The view the calendar opens on: `date` (default), `month` or `year`.
-   */
-  readonly startView = input<NbCalendarViewMode, NbCalendarViewModeValues>(NbCalendarViewMode.DATE, {
-    transform: (viewMode) => viewMode as NbCalendarViewMode,
-  });
+    /**
+     * The view the calendar opens on: `date` (default), `month` or `year`.
+     */
+    readonly startView = input<NbCalendarViewMode, NbCalendarViewModeValues>(NbCalendarViewMode.DATE, {
+        transform: (viewMode) => viewMode as NbCalendarViewMode
+    })
 
-  /**
-   * The earliest date that can be picked: earlier days are disabled, its own day whatever its time, and so are the
-   * months and years that end before it.
-   */
-  readonly min = input<D>();
+    /**
+     * The earliest date that can be picked: earlier days are disabled, its own day whatever its time, and so are the
+     * months and years that end before it.
+     */
+    readonly min = input<D>()
 
-  /**
-   * The latest date that can be picked: later days are disabled, its own day whatever its time, and so are the
-   * months and years that start after it.
-   */
-  readonly max = input<D>();
+    /**
+     * The latest date that can be picked: later days are disabled, its own day whatever its time, and so are the
+     * months and years that start after it.
+     */
+    readonly max = input<D>()
 
-  /**
-   * Disables the days for which it returns `false`. Months and years aren't filtered.
-   */
-  readonly filter = input<(date: D) => boolean>();
+    /**
+     * Disables the days for which it returns `false`. Months and years aren't filtered.
+     */
+    readonly filter = input<(date: D) => boolean>()
 
-  /**
-   * A component to render the days with, implementing `NbCalendarCell`; one that shows the range by default.
-   */
-  readonly dayCellComponentInput = input<Type<NbCalendarCell<D, NbCalendarRange<D>>>>(undefined, {
-    alias: 'dayCellComponent',
-  });
-  readonly dayCellComponent = computed<Type<NbCalendarCell<D, NbCalendarRange<D>>>>(
-    () => this.dayCellComponentInput() || NbCalendarRangeDayCellComponent,
-  );
+    /**
+     * A component to render the days with, implementing `NbCalendarCell`; one that shows the range by default.
+     */
+    readonly dayCellComponentInput = input<Type<NbCalendarCell<D, NbCalendarRange<D>>>>(undefined, {
+        alias: 'dayCellComponent'
+    })
+    readonly dayCellComponent = computed<Type<NbCalendarCell<D, NbCalendarRange<D>>>>(
+        () => this.dayCellComponentInput() || NbCalendarRangeDayCellComponent
+    )
 
-  /**
-   * A component to render the months with, implementing `NbCalendarCell`; one that shows the range by default.
-   */
-  readonly monthCellComponentInput = input<Type<NbCalendarCell<D, NbCalendarRange<D>>>>(undefined, {
-    alias: 'monthCellComponent',
-  });
-  readonly monthCellComponent = computed<Type<NbCalendarCell<D, NbCalendarRange<D>>>>(
-    () => this.monthCellComponentInput() || NbCalendarRangeMonthCellComponent<D>,
-  );
+    /**
+     * A component to render the months with, implementing `NbCalendarCell`; one that shows the range by default.
+     */
+    readonly monthCellComponentInput = input<Type<NbCalendarCell<D, NbCalendarRange<D>>>>(undefined, {
+        alias: 'monthCellComponent'
+    })
+    readonly monthCellComponent = computed<Type<NbCalendarCell<D, NbCalendarRange<D>>>>(
+        () => this.monthCellComponentInput() || NbCalendarRangeMonthCellComponent<D>
+    )
 
-  /**
-   * A component to render the years with, implementing `NbCalendarCell`; one that shows the range by default.
-   */
-  readonly yearCellComponentInput = input<Type<NbCalendarCell<D, NbCalendarRange<D>>>>(undefined, {
-    alias: 'yearCellComponent',
-  });
-  readonly yearCellComponent = computed<Type<NbCalendarCell<D, NbCalendarRange<D>>>>(
-    () => this.yearCellComponentInput() || NbCalendarRangeYearCellComponent<D>,
-  );
+    /**
+     * A component to render the years with, implementing `NbCalendarCell`; one that shows the range by default.
+     */
+    readonly yearCellComponentInput = input<Type<NbCalendarCell<D, NbCalendarRange<D>>>>(undefined, {
+        alias: 'yearCellComponent'
+    })
+    readonly yearCellComponent = computed<Type<NbCalendarCell<D, NbCalendarRange<D>>>>(
+        () => this.yearCellComponentInput() || NbCalendarRangeYearCellComponent<D>
+    )
 
-  /**
-   * Size of the calendar and its cells: `medium` (default) or `large`.
-   */
-  readonly size = input<NbCalendarSize, NbCalendarSizeValues>(NbCalendarSize.MEDIUM, {
-    transform: (size) => size as NbCalendarSize,
-  });
+    /**
+     * Size of the calendar and its cells: `medium` (default) or `large`.
+     */
+    readonly size = input<NbCalendarSize, NbCalendarSizeValues>(NbCalendarSize.MEDIUM, {
+        transform: (size) => size as NbCalendarSize
+    })
 
-  /**
-   * The date whose month the calendar shows; the range's start, or today, by default. It supports two-way binding,
-   * which follows the user's navigation.
-   */
-  readonly visibleDate = model<D>();
+    /**
+     * The date whose month the calendar shows; the range's start, or today, by default. It supports two-way binding,
+     * which follows the user's navigation.
+     */
+    readonly visibleDate = model<D>()
 
-  /**
-   * Shows the header with the view mode button and the previous and next buttons (default).
-   */
-  readonly showNavigation = input<boolean, NbBooleanInput>(true, { transform: convertToBoolProperty });
+    /**
+     * Shows the header with the view mode button and the previous and next buttons (default).
+     */
+    readonly showNavigation = input<boolean, NbBooleanInput>(true, { transform: convertToBoolProperty })
 
-  /**
-   * The selected range. `rangeChange` emits once with the start alone, and again with the end.
-   */
-  readonly range = model<NbCalendarRange<D>>();
+    /**
+     * The selected range. `rangeChange` emits once with the start alone, and again with the end.
+     */
+    readonly range = model<NbCalendarRange<D>>()
 
-  /**
-   * Shows a column with the week numbers before the days; off by default.
-   */
-  readonly showWeekNumber = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
+    /**
+     * Shows a column with the week numbers before the days; off by default.
+     */
+    readonly showWeekNumber = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty })
 
-  /**
-   * The header of the week numbers column; `#` by default.
-   */
-  readonly weekNumberSymbol = input<string>();
+    /**
+     * The header of the week numbers column; `#` by default.
+     */
+    readonly weekNumberSymbol = input<string>()
 
-  /**
-   * The first day of the week: 0 for Sunday, 1 for Monday and so on; the locale's by default.
-   */
-  readonly firstDayOfWeek = input<number>();
+    /**
+     * The first day of the week: 0 for Sunday, 1 for Monday and so on; the locale's by default.
+     */
+    readonly firstDayOfWeek = input<number>()
 
-  onChange(date: D) {
-    const { start, end } = this.range() ?? { start: null, end: null };
-    if (start && !end) {
-      this.selectEnd(start, date);
-    } else {
-      this.range.set({ start: date });
+    onChange(date: D) {
+        const { start, end } = this.range() ?? { start: null, end: null }
+        if (start && !end) {
+            this.selectEnd(start, date)
+        } else {
+            this.range.set({ start: date })
+        }
     }
-  }
 
-  private selectEnd(start: D, date: D) {
-    if (this.dateService.compareDates(date, start) > 0) {
-      this.range.set({ start, end: date });
-    } else {
-      this.range.set({ start: date, end: start });
+    private selectEnd(start: D, date: D) {
+        if (this.dateService.compareDates(date, start) > 0) {
+            this.range.set({ start, end: date })
+        } else {
+            this.range.set({ start: date, end: start })
+        }
     }
-  }
 }

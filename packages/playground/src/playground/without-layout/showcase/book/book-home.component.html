@@ -1,204 +1,204 @@
 <section class="hero">
-  <npg-showcase-glow class="glow one"
-    color="var(--color-primary-300)"
-    [opacity]="60" />
-  <npg-showcase-glow class="glow two"
-    color="var(--color-info-200)"
-    [opacity]="70" />
-  <npg-showcase-glow class="glow three"
-    color="var(--color-warning-200)"
-    [opacity]="55" />
-  <div class="section hero-grid">
-    <div class="hero-text">
-      <nb-tag status="primary"
-        appearance="outline"
-        size="small"
-        text="Now booking: morning yoga, from £18" />
-      <h1>Feel still again.</h1>
-      <p class="lead">{{ studio.tagline }} Pick a treatment, a day and a time, and we'll keep the room ready for you.</p>
-      <div class="buttons">
-        <a nbButton
-          status="primary"
-          size="large"
-          routerLink="../book">
-          Book an appointment
-          <nb-icon icon="arrow-forward-outline" />
-        </a>
-        <a nbButton
-          ghost
-          size="large"
-          routerLink="."
-          fragment="services"
-          (click)="scrollTo('services')">See services</a>
-      </div>
-      <ul class="facts">
-        <li><nb-icon icon="clock-outline" /> Open until 20:00 today</li>
-        <li><nb-icon icon="pin-outline" /> {{ studio.address[0] }}, Bristol</li>
-      </ul>
+    <npg-showcase-glow class="glow one"
+        color="var(--color-primary-300)"
+        [opacity]="60" />
+    <npg-showcase-glow class="glow two"
+        color="var(--color-info-200)"
+        [opacity]="70" />
+    <npg-showcase-glow class="glow three"
+        color="var(--color-warning-200)"
+        [opacity]="55" />
+    <div class="section hero-grid">
+        <div class="hero-text">
+            <nb-tag status="primary"
+                appearance="outline"
+                size="small"
+                text="Now booking: morning yoga, from £18" />
+            <h1>Feel still again.</h1>
+            <p class="lead">{{ studio.tagline }} Pick a treatment, a day and a time, and we'll keep the room ready for you.</p>
+            <div class="buttons">
+                <a nbButton
+                    status="primary"
+                    size="large"
+                    routerLink="../book">
+                    Book an appointment
+                    <nb-icon icon="arrow-forward-outline" />
+                </a>
+                <a nbButton
+                    ghost
+                    size="large"
+                    routerLink="."
+                    fragment="services"
+                    (click)="scrollTo('services')">See services</a>
+            </div>
+            <ul class="facts">
+                <li><nb-icon icon="clock-outline" /> Open until 20:00 today</li>
+                <li><nb-icon icon="pin-outline" /> {{ studio.address[0] }}, Bristol</li>
+            </ul>
+        </div>
+        <div class="hero-pictures">
+            <img class="big"
+                src="assets/showcase/book/treatment-room.webp"
+                alt="A treatment room: a massage table with a beige sheet beside a patterned basin"
+                width="1200"
+                height="800" />
+            <img class="small"
+                src="assets/showcase/book/flower-oil.webp"
+                alt="A glass jar of oil with dried flowers in it"
+                width="600"
+                height="600" />
+            <nb-card class="float">
+                <nb-card-body>
+                    <nb-icon class="check"
+                        icon="checkmark-circle-2" />
+                    <span>
+                        <strong>Next free slot</strong>
+                        <span class="hint">Today, 15:00 with Emma</span>
+                    </span>
+                </nb-card-body>
+            </nb-card>
+        </div>
     </div>
-    <div class="hero-pictures">
-      <img class="big"
-        src="assets/showcase/book/treatment-room.webp"
-        alt="A treatment room: a massage table with a beige sheet beside a patterned basin"
-        width="1200"
-        height="800" />
-      <img class="small"
-        src="assets/showcase/book/flower-oil.webp"
-        alt="A glass jar of oil with dried flowers in it"
-        width="600"
-        height="600" />
-      <nb-card class="float">
-        <nb-card-body>
-          <nb-icon class="check"
-            icon="checkmark-circle-2" />
-          <span>
-            <strong>Next free slot</strong>
-            <span class="hint">Today, 15:00 with Emma</span>
-          </span>
-        </nb-card-body>
-      </nb-card>
-    </div>
-  </div>
 </section>
 
 <section id="services"
-  class="section">
-  <header class="section-header">
-    <h2>Services</h2>
-    <p class="lead">Four things we do well. Every appointment starts with a few minutes to talk about what you need.</p>
-  </header>
-  <div class="services">
-    @for (service of services; track service.id) {
-    <nb-card class="service">
-      <nb-card-body>
-        <span class="tile"
-          [class]="'tile status-' + service.status">
-          <nb-icon [icon]="service.icon" />
-        </span>
-        <h3>{{ service.name }}</h3>
-        <p>{{ service.blurb }}</p>
-        <div class="meta">
-          <span class="hint"><nb-icon icon="clock-outline" /> {{ service.duration }} min</span>
-          <strong>£{{ service.price }}</strong>
-        </div>
-        <a nbButton
-          outline
-          status="primary"
-          size="small"
-          routerLink="../book"
-          [queryParams]="{ service: service.id }">Book</a>
-      </nb-card-body>
-    </nb-card>
-    }
-  </div>
+    class="section">
+    <header class="section-header">
+        <h2>Services</h2>
+        <p class="lead">Four things we do well. Every appointment starts with a few minutes to talk about what you need.</p>
+    </header>
+    <div class="services">
+        @for (service of services; track service.id) {
+        <nb-card class="service">
+            <nb-card-body>
+                <span class="tile"
+                    [class]="'tile status-' + service.status">
+                    <nb-icon [icon]="service.icon" />
+                </span>
+                <h3>{{ service.name }}</h3>
+                <p>{{ service.blurb }}</p>
+                <div class="meta">
+                    <span class="hint"><nb-icon icon="clock-outline" /> {{ service.duration }} min</span>
+                    <strong>£{{ service.price }}</strong>
+                </div>
+                <a nbButton
+                    outline
+                    status="primary"
+                    size="small"
+                    routerLink="../book"
+                    [queryParams]="{ service: service.id }">Book</a>
+            </nb-card-body>
+        </nb-card>
+        }
+    </div>
 </section>
 
 <section id="team"
-  class="band">
-  <div class="section">
-    <header class="section-header">
-      <h2>The team</h2>
-      <p class="lead">Small on purpose. You'll see the same faces every time, and they'll remember what worked.</p>
-    </header>
-    <div class="team">
-      @for (person of practitioners; track person.name) {
-      <nb-card>
-        <nb-card-body>
-          <nb-user size="large"
-            [name]="person.name"
-            [title]="person.title"
-            [picture]="portrait(person.name)" />
-          <div class="tags">
-            @for (id of person.services; track id) {
-            @if (serviceOf(id); as service) {
-            <nb-tag size="tiny"
-              appearance="outline"
-              [status]="service.status"
-              [text]="service.name" />
+    class="band">
+    <div class="section">
+        <header class="section-header">
+            <h2>The team</h2>
+            <p class="lead">Small on purpose. You'll see the same faces every time, and they'll remember what worked.</p>
+        </header>
+        <div class="team">
+            @for (person of practitioners; track person.name) {
+            <nb-card>
+                <nb-card-body>
+                    <nb-user size="large"
+                        [name]="person.name"
+                        [title]="person.title"
+                        [picture]="portrait(person.name)" />
+                    <div class="tags">
+                        @for (id of person.services; track id) {
+                        @if (serviceOf(id); as service) {
+                        <nb-tag size="tiny"
+                            appearance="outline"
+                            [status]="service.status"
+                            [text]="service.name" />
+                        }
+                        }
+                    </div>
+                </nb-card-body>
+            </nb-card>
             }
-            }
-          </div>
-        </nb-card-body>
-      </nb-card>
-      }
+        </div>
     </div>
-  </div>
 </section>
 
 <section class="section">
-  <header class="section-header">
-    <h2>What people say</h2>
-  </header>
-  <div class="reviews">
-    @for (review of reviews; track review.name) {
-    <nb-card>
-      <nb-card-body>
-        <div class="stars"
-          role="img"
-          [attr.aria-label]="review.rating + ' out of 5 stars'">
-          @for (star of stars; track star) {
-          <nb-icon [icon]="star <= review.rating ? 'star' : 'star-outline'" />
-          }
-        </div>
-        <p>{{ review.text }}</p>
-        <nb-user size="small"
-          [name]="review.name"
-          title="Customer"
-          [picture]="illustration(review.name, 'notionists')" />
-      </nb-card-body>
-    </nb-card>
-    }
-  </div>
+    <header class="section-header">
+        <h2>What people say</h2>
+    </header>
+    <div class="reviews">
+        @for (review of reviews; track review.name) {
+        <nb-card>
+            <nb-card-body>
+                <div class="stars"
+                    role="img"
+                    [attr.aria-label]="review.rating + ' out of 5 stars'">
+                    @for (star of stars; track star) {
+                    <nb-icon [icon]="star <= review.rating ? 'star' : 'star-outline'" />
+                    }
+                </div>
+                <p>{{ review.text }}</p>
+                <nb-user size="small"
+                    [name]="review.name"
+                    title="Customer"
+                    [picture]="illustration(review.name, 'notionists')" />
+            </nb-card-body>
+        </nb-card>
+        }
+    </div>
 </section>
 
 <section id="visit"
-  class="band">
-  <div class="section visit">
-    <div class="visit-text">
-      <h2>Visit us</h2>
-      <p class="lead">Ten minutes from the station, with bike racks by the door and a kettle that's always on.</p>
-      <dl class="hours">
-        @for (row of hours; track row.days) {
-        <div>
-          <dt>{{ row.days }}</dt>
-          <dd>{{ row.hours ?? 'Closed' }}</dd>
+    class="band">
+    <div class="section visit">
+        <div class="visit-text">
+            <h2>Visit us</h2>
+            <p class="lead">Ten minutes from the station, with bike racks by the door and a kettle that's always on.</p>
+            <dl class="hours">
+                @for (row of hours; track row.days) {
+                <div>
+                    <dt>{{ row.days }}</dt>
+                    <dd>{{ row.hours ?? 'Closed' }}</dd>
+                </div>
+                }
+            </dl>
+            <ul class="contact">
+                <li><nb-icon icon="pin-outline" /> {{ studio.address.join(', ') }}</li>
+                <li><nb-icon icon="phone-outline" /> {{ studio.phone }}</li>
+                <li><nb-icon icon="email-outline" /> {{ studio.email }}</li>
+            </ul>
+            <a nbButton
+                status="primary"
+                routerLink="../book">Book an appointment</a>
         </div>
-        }
-      </dl>
-      <ul class="contact">
-        <li><nb-icon icon="pin-outline" /> {{ studio.address.join(', ') }}</li>
-        <li><nb-icon icon="phone-outline" /> {{ studio.phone }}</li>
-        <li><nb-icon icon="email-outline" /> {{ studio.email }}</li>
-      </ul>
-      <a nbButton
-        status="primary"
-        routerLink="../book">Book an appointment</a>
+        <div class="visit-pictures">
+            <img src="assets/showcase/book/studio.webp"
+                alt="The studio: a room with three round windows and a potted plant"
+                width="900"
+                height="600" />
+            <img src="assets/showcase/book/yoga-class.webp"
+                alt="People stretching on yoga mats in the studio"
+                width="900"
+                height="600" />
+        </div>
     </div>
-    <div class="visit-pictures">
-      <img src="assets/showcase/book/studio.webp"
-        alt="The studio: a room with three round windows and a potted plant"
-        width="900"
-        height="600" />
-      <img src="assets/showcase/book/yoga-class.webp"
-        alt="People stretching on yoga mats in the studio"
-        width="900"
-        height="600" />
-    </div>
-  </div>
 </section>
 
 <footer class="footer">
-  <div class="section footer-row">
-    <span class="brand"><span class="logo"
-        aria-hidden="true"></span>{{ studio.name }}</span>
-    <nav aria-label="Footer">
-      <a href="#"
-        (click)="$event.preventDefault()">Gift vouchers</a>
-      <a href="#"
-        (click)="$event.preventDefault()">Cancellation policy</a>
-      <a href="#"
-        (click)="$event.preventDefault()">Privacy</a>
-    </nav>
-    <span class="hint">© {{ year }} Still Studio Ltd.</span>
-  </div>
+    <div class="section footer-row">
+        <span class="brand"><span class="logo"
+                aria-hidden="true"></span>{{ studio.name }}</span>
+        <nav aria-label="Footer">
+            <a href="#"
+                (click)="$event.preventDefault()">Gift vouchers</a>
+            <a href="#"
+                (click)="$event.preventDefault()">Cancellation policy</a>
+            <a href="#"
+                (click)="$event.preventDefault()">Privacy</a>
+        </nav>
+        <span class="hint">© {{ year }} Still Studio Ltd.</span>
+    </div>
 </footer>

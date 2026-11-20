@@ -3,8 +3,8 @@
  * on click, so its users would never blur them, which is what marks a control touched, and they'd show no focus.
  */
 export function focusOnClick(event: Event) {
-  const target = event.currentTarget as HTMLElement | null;
-  if (target && target !== target.ownerDocument.activeElement) {
-    target.focus({ preventScroll: true });
-  }
+    const target = event.currentTarget as HTMLElement | null
+    if (target && target !== target.ownerDocument.activeElement) {
+        target.focus({ preventScroll: true })
+    }
 }

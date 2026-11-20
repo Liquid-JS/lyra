@@ -1,8 +1,8 @@
 .item-body-container {
-  overflow: hidden;
+    overflow: hidden;
 
-  &.collapsed {
-    height: 0;
-    visibility: hidden;
-  }
+    &.collapsed {
+        height: 0;
+        visibility: hidden;
+    }
 }

@@ -1,57 +1,57 @@
 <nb-form-field>
-  <nb-icon nbPrefix
-    icon="search-outline" />
-  <input nbInput
-    fullWidth
-    type="search"
-    placeholder="Search customers"
-    aria-label="Search customers"
-    (input)="search.set($any($event.target).value)" />
+    <nb-icon nbPrefix
+        icon="search-outline" />
+    <input nbInput
+        fullWidth
+        type="search"
+        placeholder="Search customers"
+        aria-label="Search customers"
+        (input)="search.set($any($event.target).value)" />
 </nb-form-field>
 
 <nb-button-group fullWidth
-  aria-label="Status"
-  (valueChange)="pick($event)">
-  @for (item of filters; track item) {
-  <button nbButtonToggle
-    [value]="item"
-    [pressed]="filter() === item">{{ item }}</button>
-  }
+    aria-label="Status"
+    (valueChange)="pick($event)">
+    @for (item of filters; track item) {
+    <button nbButtonToggle
+        [value]="item"
+        [pressed]="filter() === item">{{ item }}</button>
+    }
 </nb-button-group>
 
 @for (customer of customers(); track customer.id) {
 <nb-card>
-  <nb-card-body class="customer">
-    <nb-user [name]="customer.name"
-      [picture]="avatar(customer.name)"
-      onlyPicture />
-    <span class="details">
-      <a nbCardLink
-        routerLink="../customer">{{ customer.name }}</a>
-      <span class="caption">{{ customer.company }}</span>
-      <nb-tag appearance="outline"
-        size="tiny"
-        [status]="status[customer.status]"
-        [text]="customer.status" />
-    </span>
-    <span class="actions">
-      <a nbButton
-        ghost
-        inline
-        [href]="'tel:' + dialable(customer.phone)"
-        [attr.aria-label]="'Call ' + customer.name">
-        <nb-icon icon="phone-outline" />
-      </a>
-      <a nbButton
-        edge="end"
-        ghost
-        inline
-        [href]="'sms:' + dialable(customer.phone)"
-        [attr.aria-label]="'Message ' + customer.name">
-        <nb-icon icon="message-circle-outline" />
-      </a>
-    </span>
-  </nb-card-body>
+    <nb-card-body class="customer">
+        <nb-user [name]="customer.name"
+            [picture]="avatar(customer.name)"
+            onlyPicture />
+        <span class="details">
+            <a nbCardLink
+                routerLink="../customer">{{ customer.name }}</a>
+            <span class="caption">{{ customer.company }}</span>
+            <nb-tag appearance="outline"
+                size="tiny"
+                [status]="status[customer.status]"
+                [text]="customer.status" />
+        </span>
+        <span class="actions">
+            <a nbButton
+                ghost
+                inline
+                [href]="'tel:' + dialable(customer.phone)"
+                [attr.aria-label]="'Call ' + customer.name">
+                <nb-icon icon="phone-outline" />
+            </a>
+            <a nbButton
+                edge="end"
+                ghost
+                inline
+                [href]="'sms:' + dialable(customer.phone)"
+                [attr.aria-label]="'Message ' + customer.name">
+                <nb-icon icon="message-circle-outline" />
+            </a>
+        </span>
+    </nb-card-body>
 </nb-card>
 } @empty {
 <p class="empty">No customers match.</p>

@@ -1,273 +1,273 @@
 @let place = listing();
 <a class="back"
-  routerLink="search"
-  [relativeTo]="shell">
-  <nb-icon icon="arrow-back-outline" />
-  All places
+    routerLink="search"
+    [relativeTo]="shell">
+    <nb-icon icon="arrow-back-outline" />
+    All places
 </a>
 
 <header class="heading">
-  <div>
-    <h1 class="h2">{{ place.name }}</h1>
-    <p class="meta">
-      <npg-stay-rating [rating]="place.rating"
-        [reviews]="place.reviews" />
-      <span class="item"><span class="sep"
-          aria-hidden="true">·</span>{{ place.place }}, {{ place.region }}</span>
-      @if (place.badge; as badge) {
-      <nb-tag [text]="badge.text"
-        [status]="badge.status"
-        size="tiny" />
-      }
-    </p>
-  </div>
-  <div class="heading-actions">
-    <button nbButton
-      ghost
-      size="small"
-      type="button"
-      (click)="share()">
-      <nb-icon icon="share-outline" />
-      Share
-    </button>
-    <button nbButton
-      ghost
-      size="small"
-      type="button"
-      [attr.aria-pressed]="trips.isSaved(place.id)"
-      (click)="trips.toggleSaved(place.id)">
-      <nb-icon [icon]="trips.isSaved(place.id) ? 'heart' : 'heart-outline'"
-        [status]="trips.isSaved(place.id) ? 'danger' : undefined" />
-      {{ trips.isSaved(place.id) ? 'Saved' : 'Save' }}
-    </button>
-  </div>
+    <div>
+        <h1 class="h2">{{ place.name }}</h1>
+        <p class="meta">
+            <npg-stay-rating [rating]="place.rating"
+                [reviews]="place.reviews" />
+            <span class="item"><span class="sep"
+                    aria-hidden="true">·</span>{{ place.place }}, {{ place.region }}</span>
+            @if (place.badge; as badge) {
+            <nb-tag [text]="badge.text"
+                [status]="badge.status"
+                size="tiny" />
+            }
+        </p>
+    </div>
+    <div class="heading-actions">
+        <button nbButton
+            ghost
+            size="small"
+            type="button"
+            (click)="share()">
+            <nb-icon icon="share-outline" />
+            Share
+        </button>
+        <button nbButton
+            ghost
+            size="small"
+            type="button"
+            [attr.aria-pressed]="trips.isSaved(place.id)"
+            (click)="trips.toggleSaved(place.id)">
+            <nb-icon [icon]="trips.isSaved(place.id) ? 'heart' : 'heart-outline'"
+                [status]="trips.isSaved(place.id) ? 'danger' : undefined" />
+            {{ trips.isSaved(place.id) ? 'Saved' : 'Save' }}
+        </button>
+    </div>
 </header>
 
 <div class="gallery">
-  <img class="large"
-    [src]="largePhoto()"
-    [alt]="place.name + ' from outside'"
-    width="1120"
-    height="770" />
-  @for (photo of gallery; track photo) {
-  <img [src]="photo"
-    [alt]="'Inside ' + place.name + ', photo ' + ($index + 2)"
-    width="640"
-    height="480"
-    loading="lazy" />
-  }
-  <button nbButton
-    size="small"
-    class="show-all"
-    type="button"
-    (click)="showPhotos(photosDialog)">
-    <nb-icon icon="grid-outline" />
-    Show all {{ photos().length }} photos
-  </button>
+    <img class="large"
+        [src]="largePhoto()"
+        [alt]="place.name + ' from outside'"
+        width="1120"
+        height="770" />
+    @for (photo of gallery; track photo) {
+    <img [src]="photo"
+        [alt]="'Inside ' + place.name + ', photo ' + ($index + 2)"
+        width="640"
+        height="480"
+        loading="lazy" />
+    }
+    <button nbButton
+        size="small"
+        class="show-all"
+        type="button"
+        (click)="showPhotos(photosDialog)">
+        <nb-icon icon="grid-outline" />
+        Show all {{ photos().length }} photos
+    </button>
 </div>
 
 <!-- Every photo of the place, larger. -->
 <ng-template #photosDialog
-  let-ref="dialogRef">
-  <nb-card class="photos-dialog">
-    <nb-card-header>
-      <span>{{ place.name }} · {{ photos().length }} photos</span>
-      <button nbButton
-        ghost
-        size="small"
-        type="button"
-        aria-label="Close"
-        (click)="ref.close()">
-        <nb-icon icon="close-outline" />
-      </button>
-    </nb-card-header>
-    <nb-card-body>
-      @for (photo of photos(); track photo) {
-      <img [src]="photo"
-        [alt]="place.name + ', photo ' + ($index + 1)"
-        width="1120"
-        height="770"
-        loading="lazy" />
-      }
-    </nb-card-body>
-  </nb-card>
+    let-ref="dialogRef">
+    <nb-card class="photos-dialog">
+        <nb-card-header>
+            <span>{{ place.name }} · {{ photos().length }} photos</span>
+            <button nbButton
+                ghost
+                size="small"
+                type="button"
+                aria-label="Close"
+                (click)="ref.close()">
+                <nb-icon icon="close-outline" />
+            </button>
+        </nb-card-header>
+        <nb-card-body>
+            @for (photo of photos(); track photo) {
+            <img [src]="photo"
+                [alt]="place.name + ', photo ' + ($index + 1)"
+                width="1120"
+                height="770"
+                loading="lazy" />
+            }
+        </nb-card-body>
+    </nb-card>
 </ng-template>
 
 <div class="columns">
-  <div class="about">
-    <div class="host">
-      <div>
-        <h2 class="h5">{{ place.type }} hosted by {{ place.host }}</h2>
-        <p class="facts">{{ place.guests }} guests · {{ place.bedrooms }} {{ place.bedrooms === 1 ? 'bedroom' :
-          'bedrooms' }} · {{ place.beds }} {{ place.beds === 1 ? 'bed' : 'beds' }} · {{ place.baths }} {{ place.baths
-          === 1 ? 'bath' : 'baths' }}</p>
-        <nb-tag text="Top host"
-          status="success"
-          appearance="filled"
-          size="tiny" />
-      </div>
-      <nb-user [name]="place.host"
-        [picture]="hostPhoto()"
-        onlyPicture
-        size="large" />
+    <div class="about">
+        <div class="host">
+            <div>
+                <h2 class="h5">{{ place.type }} hosted by {{ place.host }}</h2>
+                <p class="facts">{{ place.guests }} guests · {{ place.bedrooms }} {{ place.bedrooms === 1 ? 'bedroom' :
+                    'bedrooms' }} · {{ place.beds }} {{ place.beds === 1 ? 'bed' : 'beds' }} · {{ place.baths }} {{ place.baths
+                    === 1 ? 'bath' : 'baths' }}</p>
+                <nb-tag text="Top host"
+                    status="success"
+                    appearance="filled"
+                    size="tiny" />
+            </div>
+            <nb-user [name]="place.host"
+                [picture]="hostPhoto()"
+                onlyPicture
+                size="large" />
+        </div>
+
+        <ul class="highlights">
+            @for (highlight of highlights; track highlight.title) {
+            <li>
+                <nb-icon [icon]="highlight.icon" />
+                <div>
+                    <strong>{{ highlight.title }}</strong>
+                    <p>{{ highlight.text }}</p>
+                </div>
+            </li>
+            }
+        </ul>
+
+        <section class="description">
+            @for (paragraph of description(); track $index) {
+            @if ($index === 0 || expanded()) {
+            <p>{{ paragraph }}</p>
+            }
+            }
+            <button nbButton
+                ghost
+                size="small"
+                type="button"
+                [attr.aria-expanded]="expanded()"
+                (click)="expanded.set(!expanded())">
+                {{ expanded() ? 'Show less' : 'Read more' }}
+                <nb-icon [icon]="expanded() ? 'chevron-up-outline' : 'chevron-down-outline'" />
+            </button>
+        </section>
+
+        <section>
+            <h2 class="h5">What this place offers</h2>
+            <ul class="amenities">
+                @for (amenity of amenities; track amenity.name) {
+                <li>
+                    <nb-icon [icon]="amenity.icon" />
+                    {{ amenity.name }}
+                </li>
+                }
+            </ul>
+        </section>
+
+        <section>
+            <h2 class="h5">Things to know</h2>
+            <nb-accordion>
+                @for (rule of rules; track rule.title) {
+                <nb-accordion-item [expanded]="$first">
+                    <nb-accordion-item-header>{{ rule.title }}</nb-accordion-item-header>
+                    <nb-accordion-item-body>{{ rule.text }}</nb-accordion-item-body>
+                </nb-accordion-item>
+                }
+            </nb-accordion>
+        </section>
+
+        <section class="reviews">
+            <h2 class="h5">
+                <nb-icon icon="star" />
+                {{ place.rating | number: '1.1-1' }} · {{ place.reviews }} reviews
+            </h2>
+            <dl class="breakdown">
+                @for (item of breakdown; track item.label) {
+                <div>
+                    <dt>{{ item.label }}</dt>
+                    <dd>
+                        <nb-progress-bar [value]="item.value * 20"
+                            status="primary"
+                            size="tiny"
+                            [attr.aria-label]="item.label + ' ' + item.value + ' out of 5'" />
+                        <span>{{ item.value | number: '1.1-1' }}</span>
+                    </dd>
+                </div>
+                }
+            </dl>
+            <div class="review-grid">
+                @for (review of shownReviews(); track review.name + review.date) {
+                <article class="review">
+                    <nb-user [name]="review.name"
+                        [title]="review.date"
+                        [picture]="illustration(review.name)" />
+                    <npg-stay-rating [rating]="review.rating" />
+                    <p>{{ review.text }}</p>
+                </article>
+                }
+            </div>
+            @if (reviews.length > reviewsShown) {
+            <button nbButton
+                outline
+                type="button"
+                [attr.aria-expanded]="allReviews()"
+                (click)="allReviews.set(!allReviews())">{{ allReviews() ? 'Show fewer reviews' : 'Show more reviews' }}</button>
+            }
+        </section>
     </div>
 
-    <ul class="highlights">
-      @for (highlight of highlights; track highlight.title) {
-      <li>
-        <nb-icon [icon]="highlight.icon" />
-        <div>
-          <strong>{{ highlight.title }}</strong>
-          <p>{{ highlight.text }}</p>
-        </div>
-      </li>
-      }
-    </ul>
+    <aside class="book">
+        <nb-card>
+            <nb-card-body>
+                <p class="price"><strong>{{ place.price | currency: 'USD' : 'symbol' : '1.0-0' }}</strong> night</p>
 
-    <section class="description">
-      @for (paragraph of description(); track $index) {
-      @if ($index === 0 || expanded()) {
-      <p>{{ paragraph }}</p>
-      }
-      }
-      <button nbButton
-        ghost
-        size="small"
-        type="button"
-        [attr.aria-expanded]="expanded()"
-        (click)="expanded.set(!expanded())">
-        {{ expanded() ? 'Show less' : 'Read more' }}
-        <nb-icon [icon]="expanded() ? 'chevron-up-outline' : 'chevron-down-outline'" />
-      </button>
-    </section>
+                <label class="label"
+                    for="listing-dates">Dates</label>
+                <nb-form-field>
+                    <nb-icon nbPrefix
+                        icon="calendar-outline" />
+                    <input nbInput
+                        fullWidth
+                        id="listing-dates"
+                        placeholder="Add dates"
+                        [nbDatepicker]="when"
+                        name="dates"
+                        [ngModel]="trips.range()"
+                        (ngModelChange)="trips.range.set($event)" />
+                    <nb-rangepicker #when
+                        [min]="today" />
+                </nb-form-field>
 
-    <section>
-      <h2 class="h5">What this place offers</h2>
-      <ul class="amenities">
-        @for (amenity of amenities; track amenity.name) {
-        <li>
-          <nb-icon [icon]="amenity.icon" />
-          {{ amenity.name }}
-        </li>
-        }
-      </ul>
-    </section>
+                <label class="label"
+                    id="listing-guests">Guests</label>
+                <nb-select fullWidth
+                    aria-labelledby="listing-guests"
+                    [selected]="trips.guests()"
+                    (selectedChange)="trips.guests.set($event ?? 2)">
+                    @for (guests of guestOptions; track guests) {
+                    @if (guests <= place.guests)
+                        {
+                        <nb-option
+                        [value]="guests">{{ guests }} {{ guests === 1 ? 'guest' : 'guests' }}</nb-option>
+                        }
+                        }
+                </nb-select>
 
-    <section>
-      <h2 class="h5">Things to know</h2>
-      <nb-accordion>
-        @for (rule of rules; track rule.title) {
-        <nb-accordion-item [expanded]="$first">
-          <nb-accordion-item-header>{{ rule.title }}</nb-accordion-item-header>
-          <nb-accordion-item-body>{{ rule.text }}</nb-accordion-item-body>
-        </nb-accordion-item>
-        }
-      </nb-accordion>
-    </section>
+                <button nbButton
+                    fullWidth
+                    status="primary"
+                    size="large"
+                    type="button"
+                    [disabled]="!trips.nights()"
+                    (click)="reserve()">Reserve</button>
+                <p class="note">You won't be charged yet.</p>
 
-    <section class="reviews">
-      <h2 class="h5">
-        <nb-icon icon="star" />
-        {{ place.rating | number: '1.1-1' }} · {{ place.reviews }} reviews
-      </h2>
-      <dl class="breakdown">
-        @for (item of breakdown; track item.label) {
-        <div>
-          <dt>{{ item.label }}</dt>
-          <dd>
-            <nb-progress-bar [value]="item.value * 20"
-              status="primary"
-              size="tiny"
-              [attr.aria-label]="item.label + ' ' + item.value + ' out of 5'" />
-            <span>{{ item.value | number: '1.1-1' }}</span>
-          </dd>
-        </div>
-        }
-      </dl>
-      <div class="review-grid">
-        @for (review of shownReviews(); track review.name + review.date) {
-        <article class="review">
-          <nb-user [name]="review.name"
-            [title]="review.date"
-            [picture]="illustration(review.name)" />
-          <npg-stay-rating [rating]="review.rating" />
-          <p>{{ review.text }}</p>
-        </article>
-        }
-      </div>
-      @if (reviews.length > reviewsShown) {
-      <button nbButton
-        outline
-        type="button"
-        [attr.aria-expanded]="allReviews()"
-        (click)="allReviews.set(!allReviews())">{{ allReviews() ? 'Show fewer reviews' : 'Show more reviews' }}</button>
-      }
-    </section>
-  </div>
-
-  <aside class="book">
-    <nb-card>
-      <nb-card-body>
-        <p class="price"><strong>{{ place.price | currency: 'USD' : 'symbol' : '1.0-0' }}</strong> night</p>
-
-        <label class="label"
-          for="listing-dates">Dates</label>
-        <nb-form-field>
-          <nb-icon nbPrefix
-            icon="calendar-outline" />
-          <input nbInput
-            fullWidth
-            id="listing-dates"
-            placeholder="Add dates"
-            [nbDatepicker]="when"
-            name="dates"
-            [ngModel]="trips.range()"
-            (ngModelChange)="trips.range.set($event)" />
-          <nb-rangepicker #when
-            [min]="today" />
-        </nb-form-field>
-
-        <label class="label"
-          id="listing-guests">Guests</label>
-        <nb-select fullWidth
-          aria-labelledby="listing-guests"
-          [selected]="trips.guests()"
-          (selectedChange)="trips.guests.set($event ?? 2)">
-          @for (guests of guestOptions; track guests) {
-          @if (guests <= place.guests)
-            {
-            <nb-option
-            [value]="guests">{{ guests }} {{ guests === 1 ? 'guest' : 'guests' }}</nb-option>
-            }
-            }
-        </nb-select>
-
-        <button nbButton
-          fullWidth
-          status="primary"
-          size="large"
-          type="button"
-          [disabled]="!trips.nights()"
-          (click)="reserve()">Reserve</button>
-        <p class="note">You won't be charged yet.</p>
-
-        @let quote = trips.quote();
-        <dl class="quote">
-          <dt>{{ place.price | currency: 'USD' : 'symbol' : '1.0-0' }} × {{ quote.nights }} {{ quote.nights === 1 ?
-            'night' : 'nights' }}</dt>
-          <dd>{{ quote.stay | currency: 'USD' : 'symbol' : '1.0-0' }}</dd>
-          <dt>Cleaning fee</dt>
-          <dd>{{ quote.cleaning | currency: 'USD' : 'symbol' : '1.0-0' }}</dd>
-          <dt>Service fee</dt>
-          <dd>{{ quote.service | currency: 'USD' : 'symbol' : '1.0-0' }}</dd>
-          <dt class="total">Total</dt>
-          <dd class="total">{{ quote.total | currency: 'USD' : 'symbol' : '1.0-0' }}</dd>
-        </dl>
-      </nb-card-body>
-    </nb-card>
-    <p class="aside-note">
-      <nb-icon icon="shield-outline" />
-      Free cancellation up to 7 days before check-in.
-    </p>
-  </aside>
+                @let quote = trips.quote();
+                <dl class="quote">
+                    <dt>{{ place.price | currency: 'USD' : 'symbol' : '1.0-0' }} × {{ quote.nights }} {{ quote.nights === 1 ?
+                        'night' : 'nights' }}</dt>
+                    <dd>{{ quote.stay | currency: 'USD' : 'symbol' : '1.0-0' }}</dd>
+                    <dt>Cleaning fee</dt>
+                    <dd>{{ quote.cleaning | currency: 'USD' : 'symbol' : '1.0-0' }}</dd>
+                    <dt>Service fee</dt>
+                    <dd>{{ quote.service | currency: 'USD' : 'symbol' : '1.0-0' }}</dd>
+                    <dt class="total">Total</dt>
+                    <dd class="total">{{ quote.total | currency: 'USD' : 'symbol' : '1.0-0' }}</dd>
+                </dl>
+            </nb-card-body>
+        </nb-card>
+        <p class="aside-note">
+            <nb-icon icon="shield-outline" />
+            Free cancellation up to 7 days before check-in.
+        </p>
+    </aside>
 </div>

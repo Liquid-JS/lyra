@@ -1,82 +1,74 @@
-import { Component, computed, DestroyRef, inject, input, output } from '@angular/core';
-import { NbCalendarCell, NbCalendarSize, NbCalendarSizeValues } from '../../model';
-import { NbDateService } from '../../services/date.service';
+import { Component, computed, DestroyRef, inject, input, output } from '@angular/core'
+import { NbCalendarCell, NbCalendarSize, NbCalendarSizeValues } from '../../model'
+import { NbDateService } from '../../services/date.service'
 
 @Component({
-  selector: 'nb-calendar-month-cell',
-  templateUrl: './calendar-month-cell.component.html',
-  host: {
-    '[class.selected]': 'selected()',
-    '[class.today]': 'today()',
-    '[class.disabled]': 'disabled()',
-    '[class.size-large]': 'isLarge()',
-    class: 'month-cell',
-    '(click)': 'onClick()',
-  },
+    selector: 'nb-calendar-month-cell',
+    templateUrl: './calendar-month-cell.component.html',
+    host: {
+        '[class.selected]': 'selected()',
+        '[class.today]': 'today()',
+        '[class.disabled]': 'disabled()',
+        '[class.size-large]': 'isLarge()',
+        'class': 'month-cell',
+        '(click)': 'onClick()'
+    }
 })
 export class NbCalendarMonthCellComponent<D> implements NbCalendarCell<D, D> {
-  protected readonly destroyRef = inject(DestroyRef);
-  protected readonly dateService = inject<NbDateService<D>>(NbDateService);
+    protected readonly destroyRef = inject(DestroyRef)
+    protected readonly dateService = inject<NbDateService<D>>(NbDateService)
 
-  readonly date = input.required<D>();
+    readonly date = input.required<D>()
 
-  readonly selectedValue = input<D>();
+    readonly selectedValue = input<D>()
 
-  readonly min = input<D>();
+    readonly min = input<D>()
 
-  readonly max = input<D>();
+    readonly max = input<D>()
 
-  readonly size = input<NbCalendarSize, NbCalendarSizeValues>(NbCalendarSize.MEDIUM, {
-    transform: (size) => size as NbCalendarSize,
-  });
+    readonly size = input<NbCalendarSize, NbCalendarSizeValues>(NbCalendarSize.MEDIUM, {
+        transform: (size) => size as NbCalendarSize
+    })
 
-  readonly select = output<D>();
+    readonly select = output<D>()
 
-  readonly selected = computed((): boolean => {
-    return this.dateService.isSameMonthSafe(this.date(), this.selectedValue());
-  });
+    readonly selected = computed((): boolean => this.dateService.isSameMonthSafe(this.date(), this.selectedValue()))
 
-  readonly today = computed((): boolean => {
-    return this.dateService.isSameMonthSafe(this.date(), this.dateService.today());
-  });
+    readonly today = computed((): boolean => this.dateService.isSameMonthSafe(this.date(), this.dateService.today()))
 
-  readonly disabled = computed((): boolean => {
-    return this.smallerThanMin() || this.greaterThanMax();
-  });
+    readonly disabled = computed((): boolean => this.smallerThanMin() || this.greaterThanMax())
 
-  readonly isLarge = computed((): boolean => {
-    return this.size() === NbCalendarSize.LARGE;
-  });
+    readonly isLarge = computed((): boolean => this.size() === NbCalendarSize.LARGE)
 
-  get month(): string {
-    return this.dateService.getMonthName(this.date());
-  }
-
-  onClick() {
-    if (this.disabled()) {
-      return;
+    get month(): string {
+        return this.dateService.getMonthName(this.date())
     }
 
-    // Emitted once the click is handled, as the calendar's cells always did.
-    const date = this.date();
-    queueMicrotask(() => !this.destroyRef.destroyed && this.select.emit(date));
-  }
+    onClick() {
+        if (this.disabled()) {
+            return
+        }
 
-  protected smallerThanMin(): boolean {
-    const min = this.min();
-    return !!this.date() && !!min && this.dateService.compareDates(this.monthEnd(), min) < 0;
-  }
+        // Emitted once the click is handled, as the calendar's cells always did.
+        const date = this.date()
+        queueMicrotask(() => !this.destroyRef.destroyed && this.select.emit(date))
+    }
 
-  protected greaterThanMax(): boolean {
-    const max = this.max();
-    return !!this.date() && !!max && this.dateService.compareDates(this.monthStart(), max) > 0;
-  }
+    protected smallerThanMin(): boolean {
+        const min = this.min()
+        return !!this.date() && !!min && this.dateService.compareDates(this.monthEnd(), min) < 0
+    }
 
-  protected monthStart(): D {
-    return this.dateService.getMonthStart(this.date());
-  }
+    protected greaterThanMax(): boolean {
+        const max = this.max()
+        return !!this.date() && !!max && this.dateService.compareDates(this.monthStart(), max) > 0
+    }
 
-  protected monthEnd(): D {
-    return this.dateService.getMonthEnd(this.date());
-  }
+    protected monthStart(): D {
+        return this.dateService.getMonthStart(this.date())
+    }
+
+    protected monthEnd(): D {
+        return this.dateService.getMonthEnd(this.date())
+    }
 }

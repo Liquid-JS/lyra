@@ -1,48 +1,48 @@
 <nb-card>
-  <nb-card-body class="fields">
-    <div>
-      <label nbLabel
-        [for]="volumeField">Volume</label>
-      <nb-slider [min]="0"
-        [max]="100"
-        [step]="10"
-        ticks
-        [formControl]="volume"
-        nbValidation
-        #volumeField="nbValidation" />
-    </div>
+    <nb-card-body class="fields">
+        <div>
+            <label nbLabel
+                [for]="volumeField">Volume</label>
+            <nb-slider [min]="0"
+                [max]="100"
+                [step]="10"
+                ticks
+                [formControl]="volume"
+                nbValidation
+                #volumeField="nbValidation" />
+        </div>
 
-    <div>
-      <label nbLabel
-        [for]="priceField">Price</label>
-      <nb-slider range
-        [min]="0"
-        [max]="500"
-        [step]="10"
-        [formatValue]="formatPrice"
-        status="success"
-        [formControl]="price"
-        nbValidation
-        #priceField="nbValidation" />
-      <p class="value caption">{{ formatPrice(price.value?.start ?? 0) }} to {{ formatPrice(price.value?.end ?? 0) }}</p>
-    </div>
+        <div>
+            <label nbLabel
+                [for]="priceField">Price</label>
+            <nb-slider range
+                [min]="0"
+                [max]="500"
+                [step]="10"
+                [formatValue]="formatPrice"
+                status="success"
+                [formControl]="price"
+                nbValidation
+                #priceField="nbValidation" />
+            <p class="value caption">{{ formatPrice(price.value?.start ?? 0) }} to {{ formatPrice(price.value?.end ?? 0) }}</p>
+        </div>
 
-    <div class="row">
-      <nb-slider vertical
-        aria-label="Bass"
-        [min]="-6"
-        [max]="6"
-        [step]="1"
-        [center]="0"
-        ticks
-        [formControl]="bass" />
-      <nb-slider vertical
-        aria-label="Treble"
-        [min]="-6"
-        [max]="6"
-        [step]="1"
-        [center]="0"
-        [formControl]="treble" />
-    </div>
-  </nb-card-body>
+        <div class="row">
+            <nb-slider vertical
+                aria-label="Bass"
+                [min]="-6"
+                [max]="6"
+                [step]="1"
+                [center]="0"
+                ticks
+                [formControl]="bass" />
+            <nb-slider vertical
+                aria-label="Treble"
+                [min]="-6"
+                [max]="6"
+                [step]="1"
+                [center]="0"
+                [formControl]="treble" />
+        </div>
+    </nb-card-body>
 </nb-card>

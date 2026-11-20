@@ -1,136 +1,137 @@
-@use '../../../styles/themes' as *;
+@use "../../../styles/themes" as *;
 
 :host {
-  display: block;
-  max-width: 72rem;
-  margin: 0 auto;
-  padding: 3rem 1.5rem 4rem;
+    display: block;
+    max-width: 72rem;
+    margin: 0 auto;
+    padding: 3rem 1.5rem 4rem;
 
-  @media (max-width: 767.98px) {
-    padding: 2rem 1rem 3rem;
-  }
+    @media (width <= 767.98px) {
+        padding: 2rem 1rem 3rem;
+    }
 }
 
 .intro {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  max-width: 40rem;
-  margin-bottom: 2.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    max-width: 40rem;
+    margin-bottom: 2.5rem;
 
-  h1,
-  p {
-    margin: 0;
-  }
+    h1,
+    p {
+        margin: 0;
+    }
 }
 
 .lead {
-  color: nb-theme(text-hint-color);
-  font-size: 1.125rem;
+    color: nb-theme(text-hint-color);
+    font-size: 1.125rem;
 }
 
 .posts {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1.5rem;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.5rem;
 
-  @media (max-width: 991.98px) {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
+    @media (width <= 991.98px) {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
 
-  @media (max-width: 575.98px) {
-    grid-template-columns: minmax(0, 1fr);
-  }
+    @media (width <= 575.98px) {
+        grid-template-columns: minmax(0, 1fr);
+    }
 }
 
 nb-card {
-  margin: 0;
+    margin: 0;
 }
 
 // The latest post spans two columns.
 .lead-post {
-  grid-column: span 2;
+    grid-column: span 2;
 
-  h2 {
-    font-size: 1.75rem;
-  }
+    h2 {
+        font-size: 1.75rem;
+    }
 
-  @media (max-width: 575.98px) {
-    grid-column: auto;
-  }
+    @media (width <= 575.98px) {
+        grid-column: auto;
+    }
 }
 
 // A cover in the post's colour, in place of an image.
 .cover {
-  display: flex;
-  flex: none;
-  align-items: center;
-  justify-content: center;
-  height: 10rem;
-  font-size: 3rem;
+    display: flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    height: 10rem;
+    font-size: 3rem;
 
-  @each $status in primary, success, info, warning, danger {
-    &.status-#{$status} {
-      background-image: linear-gradient(
-        135deg,
-        nb-theme(color-#{$status}-transparent-200),
-        nb-theme(color-#{$status}-transparent-400)
-      );
-      color: nb-theme(text-#{$status}-color);
+    @each $status in primary, success, info, warning, danger {
+        &.status-#{$status} {
+            background-image:
+                linear-gradient(
+                    135deg,
+                    nb-theme(color-#{$status}-transparent-200),
+                    nb-theme(color-#{$status}-transparent-400)
+                );
+            color: nb-theme(text-#{$status}-color);
+        }
     }
-  }
 
-  nb-icon {
-    width: 3rem;
-    height: 3rem;
-  }
+    nb-icon {
+        width: 3rem;
+        height: 3rem;
+    }
 }
 
 .lead-post .cover {
-  height: 14rem;
+    height: 14rem;
 }
 
 // A post without a cover: its title and excerpt larger, on the card's accent.
 .text-post {
-  nb-card-body {
-    justify-content: center;
-    padding-block: 2rem;
-  }
+    nb-card-body {
+        justify-content: center;
+        padding-block: 2rem;
+    }
 
-  h2 {
-    font-size: 1.5rem;
-  }
+    h2 {
+        font-size: 1.5rem;
+    }
 
-  p {
-    font-size: 1.0625rem;
-  }
+    p {
+        font-size: 1.0625rem;
+    }
 }
 
 nb-card-body:not(.cover) {
-  display: flex;
-  flex: 1 0 auto;
-  flex-direction: column;
-  gap: 0.5rem;
+    display: flex;
+    flex: 1 0 auto;
+    flex-direction: column;
+    gap: 0.5rem;
 
-  p {
-    margin: 0;
-    color: nb-theme(text-hint-color);
-  }
+    p {
+        margin: 0;
+        color: nb-theme(text-hint-color);
+    }
 }
 
 .meta {
-  color: nb-theme(text-primary-color);
-  font-size: 0.8125rem;
-  font-weight: 600;
+    color: nb-theme(text-primary-color);
+    font-size: 0.8125rem;
+    font-weight: 600;
 }
 
 h2 {
-  margin: 0;
-  font-size: 1.25rem;
-  line-height: 1.3;
+    margin: 0;
+    font-size: 1.25rem;
+    line-height: 1.3;
 
-  a {
-    color: inherit;
-    text-decoration: none;
-  }
+    a {
+        color: inherit;
+        text-decoration: none;
+    }
 }

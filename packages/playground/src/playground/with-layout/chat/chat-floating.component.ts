@@ -1,22 +1,22 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal } from '@angular/core'
 import {
-  NbButtonComponent,
-  NbChatComponent,
-  NbChatFormComponent,
-  NbChatMessageComponent,
-  NbIconComponent,
-} from '@liquid-js/lyr-core';
+    NbButtonComponent,
+    NbChatComponent,
+    NbChatFormComponent,
+    NbChatMessageComponent,
+    NbIconComponent
+} from '@liquid-js/lyr-core'
 
 interface Message {
-  text: string;
-  date: Date;
-  reply: boolean;
-  sender: string;
+    text: string
+    date: Date
+    reply: boolean
+    sender: string
 }
 
 @Component({
-  selector: 'nb-chat-floating',
-  template: `
+    selector: 'nb-chat-floating',
+    template: `
     <p>Questions about your order? Our support team is online from 9 am to 5 pm.</p>
 
     @if (open()) {
@@ -46,8 +46,8 @@ interface Message {
       <nb-icon [icon]="open() ? 'close-outline' : 'message-circle-outline'" />
     </button>
   `,
-  styles: [
-    `
+    styles: [
+        `
       :host {
         display: block;
         min-height: 36rem;
@@ -65,17 +65,17 @@ interface Message {
         inset-inline-end: 1.5rem;
         bottom: 1.5rem;
       }
-    `,
-  ],
-  imports: [NbButtonComponent, NbChatComponent, NbChatFormComponent, NbChatMessageComponent, NbIconComponent],
+    `
+    ],
+    imports: [NbButtonComponent, NbChatComponent, NbChatFormComponent, NbChatMessageComponent, NbIconComponent]
 })
 export class ChatFloatingComponent {
-  readonly open = signal(true);
-  readonly messages = signal<Message[]>([
-    { text: 'Hi! How can we help?', date: new Date(), reply: false, sender: 'Jane Doe' },
-  ]);
+    readonly open = signal(true)
+    readonly messages = signal<Message[]>([
+        { text: 'Hi! How can we help?', date: new Date(), reply: false, sender: 'Jane Doe' }
+    ])
 
-  send(text: string) {
-    this.messages.update((messages) => [...messages, { text, date: new Date(), reply: true, sender: 'You' }]);
-  }
+    send(text: string) {
+        this.messages.update((messages) => [...messages, { text, date: new Date(), reply: true, sender: 'You' }])
+    }
 }

@@ -1,37 +1,37 @@
-import { Component } from '@angular/core';
+import { Component } from '@angular/core'
 import {
-  NbCardComponent,
-  NbCardBodyComponent,
-  NbFormFieldComponent,
-  NbInputDirective,
-  NbButtonComponent,
-  NbSuffixDirective,
-  NbIconComponent,
-} from '@liquid-js/lyr-core';
-
-@Component({
-  templateUrl: './form-field-password.component.html',
-  imports: [
     NbCardComponent,
     NbCardBodyComponent,
     NbFormFieldComponent,
     NbInputDirective,
     NbButtonComponent,
     NbSuffixDirective,
-    NbIconComponent,
-  ],
+    NbIconComponent
+} from '@liquid-js/lyr-core'
+
+@Component({
+    templateUrl: './form-field-password.component.html',
+    imports: [
+        NbCardComponent,
+        NbCardBodyComponent,
+        NbFormFieldComponent,
+        NbInputDirective,
+        NbButtonComponent,
+        NbSuffixDirective,
+        NbIconComponent
+    ]
 })
 export class FormFieldPasswordComponent {
-  showPassword = true;
+    showPassword = true
 
-  getInputType() {
-    if (this.showPassword) {
-      return 'text';
+    getInputType() {
+        if (this.showPassword) {
+            return 'text'
+        }
+        return 'password'
     }
-    return 'password';
-  }
 
-  toggleShowPassword() {
-    this.showPassword = !this.showPassword;
-  }
+    toggleShowPassword() {
+        this.showPassword = !this.showPassword
+    }
 }

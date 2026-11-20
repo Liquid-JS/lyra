@@ -1,28 +1,28 @@
-import { Component, inject } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { NbAccessChecker, NbIsGrantedDirective } from '@liquid-js/lyr-security';
+import { Component, inject } from '@angular/core'
+import { toSignal } from '@angular/core/rxjs-interop'
+import { NbAccessChecker, NbIsGrantedDirective } from '@liquid-js/lyr-security'
 import {
-  NbLayoutComponent,
-  NbLayoutColumnComponent,
-  NbCardComponent,
-  NbCardHeaderComponent,
-  NbCardBodyComponent,
-} from '@liquid-js/lyr-core';
-
-@Component({
-  selector: 'nb-actions-test',
-  templateUrl: './acl-test.component.html',
-  imports: [
     NbLayoutComponent,
     NbLayoutColumnComponent,
     NbCardComponent,
     NbCardHeaderComponent,
-    NbCardBodyComponent,
-    NbIsGrantedDirective,
-  ],
+    NbCardBodyComponent
+} from '@liquid-js/lyr-core'
+
+@Component({
+    selector: 'nb-actions-test',
+    templateUrl: './acl-test.component.html',
+    imports: [
+        NbLayoutComponent,
+        NbLayoutColumnComponent,
+        NbCardComponent,
+        NbCardHeaderComponent,
+        NbCardBodyComponent,
+        NbIsGrantedDirective
+    ]
 })
 export class AclTestComponent {
-  private readonly accessChecker = inject(NbAccessChecker);
+    private readonly accessChecker = inject(NbAccessChecker)
 
-  readonly canCreateComments = toSignal(this.accessChecker.isGranted('create', 'comments'));
+    readonly canCreateComments = toSignal(this.accessChecker.isGranted('create', 'comments'))
 }

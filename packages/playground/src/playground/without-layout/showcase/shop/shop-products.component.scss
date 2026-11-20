@@ -1,106 +1,106 @@
-@use '../../../styles/themes' as *;
+@use "../../../styles/themes" as *;
 
 :host {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
 }
 
 .hero {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1.5rem;
-  padding: 2rem;
-  border-radius: nb-theme(card-border-radius);
-  background: linear-gradient(120deg, nb-theme(color-primary-500), nb-theme(color-info-500));
-  color: nb-theme(text-control-color);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding: 2rem;
+    border-radius: nb-theme(card-border-radius);
+    background: linear-gradient(120deg, nb-theme(color-primary-500), nb-theme(color-info-500));
+    color: nb-theme(text-control-color);
 
-  h1 {
-    margin: 0.25rem 0 0.5rem;
-    color: inherit;
-  }
+    h1 {
+        margin: 0.25rem 0 0.5rem;
+        color: inherit;
+    }
 
-  // In the banner's colour, over the theme's for text, which is dark in a light theme.
-  p {
-    margin: 0;
-    color: inherit;
-  }
+    // In the banner's colour, over the theme's for text, which is dark in a light theme.
+    p {
+        margin: 0;
+        color: inherit;
+    }
 
-  .eyebrow {
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    opacity: 0.8;
-  }
+    .eyebrow {
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        opacity: 0.8;
+    }
 }
 
 .hero-icon {
-  flex: none;
-  width: 5rem;
-  height: 5rem;
-  font-size: 5rem;
-  opacity: 0.85;
+    flex: none;
+    width: 5rem;
+    height: 5rem;
+    font-size: 5rem;
+    opacity: 0.85;
 
-  @media (max-width: 575.98px) {
-    display: none;
-  }
+    @media (width <= 575.98px) {
+        display: none;
+    }
 }
 
 .toolbar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
 }
 
 .products {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
-  gap: 1.25rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+    gap: 1.25rem;
 }
 
 nb-card {
-  margin: 0;
+    margin: 0;
 }
 
 // A product's badge, over the card's corner and past its edge, so a rounded corner doesn't cut it off.
 .products nb-card {
-  position: relative;
+    position: relative;
 
-  > nb-badge {
-    top: -0.5rem;
-    inset-inline-end: -0.5rem;
-  }
+    > nb-badge {
+        top: -0.5rem;
+        inset-inline-end: -0.5rem;
+    }
 }
 
 .picture {
-  position: relative;
-  height: 13rem;
+    position: relative;
+    height: 13rem;
 
-  npg-shop-picture {
-    width: 100%;
-    height: 100%;
-  }
+    npg-shop-picture {
+        width: 100%;
+        height: 100%;
+    }
 }
 
 nb-card-body {
-  display: flex;
-  flex-direction: column;
-  gap: 0.375rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
 }
 
 .name {
-  color: nb-theme(text-basic-color);
-  text-decoration: none;
+    color: nb-theme(text-basic-color);
+    text-decoration: none;
 }
 
 nb-card-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
 
 nb-pagination {
-  align-self: center;
+    align-self: center;
 }

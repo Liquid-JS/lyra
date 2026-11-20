@@ -1,41 +1,41 @@
-import { Component, inject } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { Component, inject } from '@angular/core'
+import { FormsModule } from '@angular/forms'
 import {
-  NbButtonComponent,
-  NbCardBodyComponent,
-  NbCardComponent,
-  NbCardFooterComponent,
-  NbCardHeaderComponent,
-  NbDialogRef,
-  NbInputDirective,
-  NbOptionComponent,
-  NbRadioComponent,
-  NbRadioGroupComponent,
-  NbSelectComponent,
-} from '@liquid-js/lyr-core';
+    NbButtonComponent,
+    NbCardBodyComponent,
+    NbCardComponent,
+    NbCardFooterComponent,
+    NbCardHeaderComponent,
+    NbDialogRef,
+    NbInputDirective,
+    NbOptionComponent,
+    NbRadioComponent,
+    NbRadioGroupComponent,
+    NbSelectComponent
+} from '@liquid-js/lyr-core'
 
-import { TicketPriority } from '../hub-data';
+import { TicketPriority } from '../hub-data'
 
 /** What a new ticket needs: the dialog gives it back to the board. */
 export interface NewTicket {
-  title: string;
-  category: string;
-  priority: TicketPriority;
+    title: string
+    category: string
+    priority: TicketPriority
 }
 
 // What the dialog closes with, when it isn't cancelled.
-const CATEGORIES = ['Hardware', 'Software', 'Access', 'Network', 'Office'];
-const PRIORITIES: { value: TicketPriority; title: string; text: string }[] = [
-  { value: 'low', title: 'Low', text: 'Whenever there is time' },
-  { value: 'medium', title: 'Medium', text: 'This week' },
-  { value: 'high', title: 'High', text: 'Today' },
-  { value: 'urgent', title: 'Urgent', text: 'I cannot work' },
-];
+const CATEGORIES = ['Hardware', 'Software', 'Access', 'Network', 'Office']
+const PRIORITIES: Array<{ value: TicketPriority, title: string, text: string }> = [
+    { value: 'low', title: 'Low', text: 'Whenever there is time' },
+    { value: 'medium', title: 'Medium', text: 'This week' },
+    { value: 'high', title: 'High', text: 'Today' },
+    { value: 'urgent', title: 'Urgent', text: 'I cannot work' }
+]
 
 /** The dialog that opens a ticket: what's wrong, which kind of thing it is, and how urgent. */
 @Component({
-  selector: 'npg-hub-new-ticket',
-  template: `
+    selector: 'npg-hub-new-ticket',
+    template: `
     <nb-card class="dialog">
       <nb-card-header>New ticket</nb-card-header>
       <nb-card-body>
@@ -83,7 +83,7 @@ const PRIORITIES: { value: TicketPriority; title: string; text: string }[] = [
       </nb-card-footer>
     </nb-card>
   `,
-  styles: `
+    styles: `
     .dialog {
       width: min(32rem, calc(100vw - 2rem));
       margin: 0;
@@ -109,29 +109,29 @@ const PRIORITIES: { value: TicketPriority; title: string; text: string }[] = [
       gap: 0.5rem;
     }
   `,
-  imports: [
-    FormsModule,
-    NbButtonComponent,
-    NbCardBodyComponent,
-    NbCardComponent,
-    NbCardFooterComponent,
-    NbCardHeaderComponent,
-    NbInputDirective,
-    NbOptionComponent,
-    NbRadioComponent,
-    NbRadioGroupComponent,
-    NbSelectComponent,
-  ],
+    imports: [
+        FormsModule,
+        NbButtonComponent,
+        NbCardBodyComponent,
+        NbCardComponent,
+        NbCardFooterComponent,
+        NbCardHeaderComponent,
+        NbInputDirective,
+        NbOptionComponent,
+        NbRadioComponent,
+        NbRadioGroupComponent,
+        NbSelectComponent
+    ]
 })
 export class HubNewTicketComponent {
-  protected readonly ref = inject<NbDialogRef<HubNewTicketComponent, NewTicket>>(NbDialogRef);
-  readonly categories = CATEGORIES;
-  readonly priorities = PRIORITIES;
-  title = '';
-  category = 'Software';
-  priority: TicketPriority = 'medium';
+    protected readonly ref = inject<NbDialogRef<HubNewTicketComponent, NewTicket>>(NbDialogRef)
+    readonly categories = CATEGORIES
+    readonly priorities = PRIORITIES
+    title = ''
+    category = 'Software'
+    priority: TicketPriority = 'medium'
 
-  send() {
-    this.ref.close({ title: this.title.trim(), category: this.category, priority: this.priority });
-  }
+    send() {
+        this.ref.close({ title: this.title.trim(), category: this.category, priority: this.priority })
+    }
 }

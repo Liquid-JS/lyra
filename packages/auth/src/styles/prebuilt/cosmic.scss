@@ -1,12 +1,12 @@
 // Auth's component styles, next to @liquid-js/lyr-core's cosmic.css, which has the theme's variables.
-@use '@liquid-js/lyr-core/styles/themes/cosmic';
-@use '@liquid-js/lyr-core/styles/theming-variables' as *;
-@use '@liquid-js/lyr-core/styles/theming' as *;
-@use '../globals' as *;
+@use "@liquid-js/lyr-core/styles/themes/cosmic";
+@use "@liquid-js/lyr-core/styles/theming-variables" as *;
+@use "@liquid-js/lyr-core/styles/theming" as *;
+@use "../globals" as *;
 
 $nb-enabled-themes: (cosmic);
 $nb-global-styles-on-install: false;
 
-@include nb-install() {
-  @include nb-auth-global();
+@include nb-install {
+    @include nb-auth-global;
 }

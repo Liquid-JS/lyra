@@ -1,6 +1,5 @@
-import { Signal, Service } from '@angular/core';
-import { NbComponentOrCustomStatus } from '@liquid-js/lyr-core/base';
-import { NbComponentSize } from '@liquid-js/lyr-core/base';
+import { Signal, Service } from '@angular/core'
+import { NbComponentOrCustomStatus, NbComponentSize } from '@liquid-js/lyr-core/base'
 
 /**
  * Provided by a control that an `nb-form-field` can hold, such as `nbInput` or `nb-select`, with the state the field
@@ -8,10 +7,10 @@ import { NbComponentSize } from '@liquid-js/lyr-core/base';
  */
 @Service({ autoProvided: false })
 export abstract class NbFormFieldControl {
-  /**
-   * The control's state, which the form field renders its size and addons with.
-   */
-  abstract readonly controlState: Signal<NbFormControlState>;
+    /**
+     * The control's state, which the form field renders its size and addons with.
+     */
+    abstract readonly controlState: Signal<NbFormControlState>
 }
 
 /**
@@ -20,14 +19,14 @@ export abstract class NbFormFieldControl {
  */
 @Service({ autoProvided: false })
 export class NbFormFieldControlConfig {
-  supportsPrefix = true;
-  supportsSuffix = true;
+    supportsPrefix = true
+    supportsSuffix = true
 }
 
 export interface NbFormControlState {
-  status: NbComponentOrCustomStatus;
-  size: NbComponentSize;
-  fullWidth: boolean;
-  focused: boolean;
-  disabled: boolean;
+    status: NbComponentOrCustomStatus
+    size: NbComponentSize
+    fullWidth: boolean
+    focused: boolean
+    disabled: boolean
 }

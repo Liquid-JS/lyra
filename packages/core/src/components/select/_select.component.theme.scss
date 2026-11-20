@@ -1,112 +1,115 @@
-@use '../../styles/theming' as *;
-@use '../form-field/form-field.component.theme' as form-field-theme;
-@use 'select-outline';
-@use 'select-filled';
-@use 'select-hero';
+@use "../../styles/theming" as *;
+@use "../form-field/form-field.component.theme" as form-field-theme;
+@use "select-outline";
+@use "select-filled";
+@use "select-hero";
 
 @mixin nb-select-theme() {
-  // The search of a searchable select, above its options.
-  nb-option-list .select-search {
-    border-bottom: nb-theme(option-list-border-width) nb-theme(option-list-border-style) nb-theme(option-list-border-color);
-  }
-
-  @each $size in nb-get-sizes() {
-    nb-option-list.size-#{$size} .select-no-matches {
-      padding: nb-theme(option-#{$size}-padding);
-      padding-inline: nb-theme(option-#{$size}-padding-inline);
-      color: nb-theme(select-outline-basic-placeholder-text-color);
-      font-size: nb-theme(option-#{$size}-text-font-size);
-      line-height: nb-theme(option-#{$size}-text-line-height);
-    }
-  }
-
-  nb-select .select-button {
-    cursor: nb-theme(select-cursor);
-    font-family: nb-theme(select-text-font-family);
-
-    &.placeholder {
-      font-family: nb-theme(select-placeholder-text-font-family);
-    }
-    &:focus {
-      outline: none;
-    }
-    &[disabled] {
-      cursor: nb-theme(select-disabled-cursor);
-    }
-  }
-
-  // The chips are filled basic tags, the colour of the field under the pointer and of a filled select at rest. So a
-  // select showing chips keeps its background under the pointer, as a tag list with an input does, and a filled one's
-  // chips take their active colours, a step apart from the field.
-  @each $status in nb-get-statuses() {
-    nb-select:is(.appearance-outline, .appearance-ghost).status-#{$status} .select-button:has(.select-chips) {
-      &:hover:not(:focus) {
-        background-color: nb-theme(select-outline-#{$status}-background-color);
-      }
-
-      &:focus:hover {
-        background-color: nb-theme(select-outline-#{$status}-focus-background-color);
-      }
-    }
-  }
-
-  nb-select.appearance-filled .select-chips nb-tag.appearance-filled.status-basic {
-    background-color: nb-theme(tag-filled-basic-active-background-color);
-    border-color: nb-theme(tag-filled-basic-active-border-color);
-  }
-
-  @each $size in nb-get-sizes() {
-    // How much taller a tag is than the line, so a row of them fits without making the select taller.
-    nb-select.size-#{$size} {
-      .select-label-chips {
-        min-height: nb-theme(select-#{$size}-text-line-height);
-      }
-
-      .select-chips {
-        margin-block: nb-theme(select-#{$size}-chips-margin);
-      }
+    // The search of a searchable select, above its options.
+    nb-option-list .select-search {
+        border-bottom: nb-theme(option-list-border-width) nb-theme(option-list-border-style) nb-theme(option-list-border-color);
     }
 
-    nb-select.size-#{$size} {
-      .select-button {
-        font-size: nb-theme(select-#{$size}-text-font-size);
-        font-weight: nb-theme(select-#{$size}-text-font-weight);
-        line-height: nb-theme(select-#{$size}-text-line-height);
-        // As tall as the fields and buttons of its size, with its text in the middle.
-        min-height: nb-theme(control-#{$size}-height);
+    @each $size in nb-get-sizes() {
+        nb-option-list.size-#{$size} .select-no-matches {
+            padding: nb-theme(option-#{$size}-padding);
+            padding-inline: nb-theme(option-#{$size}-padding-inline);
+            color: nb-theme(select-outline-basic-placeholder-text-color);
+            font-size: nb-theme(option-#{$size}-text-font-size);
+            line-height: nb-theme(option-#{$size}-text-line-height);
+        }
+    }
+
+    nb-select .select-button {
+        cursor: nb-theme(select-cursor);
+        font-family: nb-theme(select-text-font-family);
 
         &.placeholder {
-          font-size: nb-theme(select-#{$size}-placeholder-text-font-size);
-          font-weight: nb-theme(select-#{$size}-placeholder-text-font-weight);
+            font-family: nb-theme(select-placeholder-text-font-family);
         }
 
-        &.empty::before {
-          content: ' ';
-          display: block;
-          height: nb-theme(select-#{$size}-text-line-height);
+        &:focus {
+            outline: none;
         }
-      }
 
-      // Its usual width when it sizes itself; a full-width one is as wide as what holds it, however narrow.
-      &:not(.full-width) {
-        max-width: nb-theme(select-#{$size}-max-width);
-
-        .select-button {
-          min-width: nb-theme(select-#{$size}-width);
+        &[disabled] {
+            cursor: nb-theme(select-disabled-cursor);
         }
-      }
     }
-  }
 
-  @each $shape in nb-get-shapes() {
-    nb-select.shape-#{$shape} .select-button {
-      border-radius: nb-theme(select-#{$shape}-border-radius);
+    // The chips are filled basic tags, the colour of the field under the pointer and of a filled select at rest. So a
+    // select showing chips keeps its background under the pointer, as a tag list with an input does, and a filled one's
+    // chips take their active colours, a step apart from the field.
+    @each $status in nb-get-statuses() {
+        nb-select:is(.appearance-outline, .appearance-ghost).status-#{$status} .select-button:has(.select-chips) {
+            &:hover:not(:focus) {
+                background-color: nb-theme(select-outline-#{$status}-background-color);
+            }
+
+            &:focus:hover {
+                background-color: nb-theme(select-outline-#{$status}-focus-background-color);
+            }
+        }
     }
-  }
 
-  @include select-outline.select-outline();
-  @include select-filled.select-filled();
-  @include select-hero.select-hero();
+    nb-select.appearance-filled .select-chips nb-tag.appearance-filled.status-basic {
+        background-color: nb-theme(tag-filled-basic-active-background-color);
+        border-color: nb-theme(tag-filled-basic-active-border-color);
+    }
 
-  @include form-field-theme.nb-form-field-root-component('nb-select');
+    @each $size in nb-get-sizes() {
+        // How much taller a tag is than the line, so a row of them fits without making the select taller.
+        nb-select.size-#{$size} {
+            .select-label-chips {
+                min-height: nb-theme(select-#{$size}-text-line-height);
+            }
+
+            .select-chips {
+                margin-block: nb-theme(select-#{$size}-chips-margin);
+            }
+        }
+
+        nb-select.size-#{$size} {
+            .select-button {
+                font-size: nb-theme(select-#{$size}-text-font-size);
+                font-weight: nb-theme(select-#{$size}-text-font-weight);
+                line-height: nb-theme(select-#{$size}-text-line-height);
+
+                // As tall as the fields and buttons of its size, with its text in the middle.
+                min-height: nb-theme(control-#{$size}-height);
+
+                &.placeholder {
+                    font-size: nb-theme(select-#{$size}-placeholder-text-font-size);
+                    font-weight: nb-theme(select-#{$size}-placeholder-text-font-weight);
+                }
+
+                &.empty:before {
+                    content: " ";
+                    display: block;
+                    height: nb-theme(select-#{$size}-text-line-height);
+                }
+            }
+
+            // Its usual width when it sizes itself; a full-width one is as wide as what holds it, however narrow.
+            &:not(.full-width) {
+                max-width: nb-theme(select-#{$size}-max-width);
+
+                .select-button {
+                    min-width: nb-theme(select-#{$size}-width);
+                }
+            }
+        }
+    }
+
+    @each $shape in nb-get-shapes() {
+        nb-select.shape-#{$shape} .select-button {
+            border-radius: nb-theme(select-#{$shape}-border-radius);
+        }
+    }
+
+    @include select-outline.select-outline;
+    @include select-filled.select-filled;
+    @include select-hero.select-hero;
+
+    @include form-field-theme.nb-form-field-root-component("nb-select");
 }

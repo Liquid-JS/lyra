@@ -1,12 +1,13 @@
 // The variables of the built-in themes, which specs don't load otherwise.
-@use '@liquid-js/lyr-core/styles/all' as *;
+@use "@liquid-js/lyr-core/styles/all" as *;
 
 $nb-enabled-themes: (default, dark, cosmic, corporate, material-light, material-dark);
 
-@include nb-install() {
-  @include nb-theme-base();
-  .probe {
-    background-color: nb-theme(card-background-color);
-    color: nb-theme(link-text-focus-color);
-  }
+@include nb-install {
+    @include nb-theme-base;
+
+    .probe {
+        background-color: nb-theme(card-background-color);
+        color: nb-theme(link-text-focus-color);
+    }
 }

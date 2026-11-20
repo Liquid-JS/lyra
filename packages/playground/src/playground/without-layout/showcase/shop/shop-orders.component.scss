@@ -1,100 +1,100 @@
-@use '../../../styles/themes' as *;
+@use "../../../styles/themes" as *;
 
 :host {
-  display: block;
+    display: block;
 }
 
 .heading {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
 
-  h1 {
-    margin: 0;
-  }
+    h1 {
+        margin: 0;
+    }
 }
 
 .orders {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
 }
 
 nb-card {
-  margin: 0;
+    margin: 0;
 }
 
 .order-header,
 .order-footer {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
 }
 
 .order-title {
-  display: flex;
-  flex-direction: column;
+    display: flex;
+    flex-direction: column;
 }
 
 // A status as a soft pill in its colour.
 .status {
-  padding: 0.25rem 0.75rem;
-  border-radius: 1rem;
-  font-size: 0.8125rem;
-  font-weight: 600;
+    padding: 0.25rem 0.75rem;
+    border-radius: 1rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
 
-  // Outlined in the status's colour, its text on the card, where it's readable.
-  @each $status in (success, info, warning) {
-    &.status-#{$status} {
-      border: 1px solid currentColor;
-      color: nb-theme(text-#{$status}-color);
+    // Outlined in the status's colour, its text on the card, where it's readable.
+    @each $status in (success, info, warning) {
+        &.status-#{$status} {
+            border: 1px solid currentcolor;
+            color: nb-theme(text-#{$status}-color);
+        }
     }
-  }
 }
 
 .items {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
-  gap: 1rem;
-  margin: 0;
-  padding: 0;
-  list-style: none;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+    gap: 1rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
 
-  li {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-  }
+    li {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
 }
 
 .thumb {
-  flex: none;
-  width: 3.5rem;
-  height: 3.5rem;
-  border-radius: nb-theme(border-radius);
+    flex: none;
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: nb-theme(border-radius);
 }
 
 .item {
-  display: flex;
-  flex-direction: column;
+    display: flex;
+    flex-direction: column;
 }
 
 .name {
-  color: nb-theme(text-basic-color);
-  text-decoration: none;
+    color: nb-theme(text-basic-color);
+    text-decoration: none;
 
-  &:hover {
-    text-decoration: underline;
-  }
+    &:hover {
+        text-decoration: underline;
+    }
 }
 
 .buttons {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
 }

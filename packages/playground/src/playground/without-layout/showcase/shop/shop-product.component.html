@@ -1,120 +1,120 @@
 @let item = product();
 <nb-breadcrumbs aria-label="Breadcrumb">
-  <nb-breadcrumb><a routerLink="../../products">Shop</a></nb-breadcrumb>
-  <nb-breadcrumb>{{ item.category }}</nb-breadcrumb>
-  <nb-breadcrumb>{{ item.name }}</nb-breadcrumb>
+    <nb-breadcrumb><a routerLink="../../products">Shop</a></nb-breadcrumb>
+    <nb-breadcrumb>{{ item.category }}</nb-breadcrumb>
+    <nb-breadcrumb>{{ item.name }}</nb-breadcrumb>
 </nb-breadcrumbs>
 
 <div class="product">
-  <div class="picture">
-    <npg-shop-picture [product]="item"
-      [eager]="true" />
-    @if (item.badge; as badge) {
-    <nb-badge [text]="badge.text"
-      [status]="badge.status"
-      position="top start" />
-    }
-  </div>
-
-  <div class="about">
-    <h1 class="h3">{{ item.name }}</h1>
-    <npg-shop-rating [rating]="item.rating"
-      [reviews]="item.reviews" />
-    <p class="price h4">{{ item.price | currency: 'USD' : 'symbol' : '1.0-0' }}</p>
-    <p class="description">{{ item.description }}</p>
-
-    <div class="option">
-      <span class="label"
-        id="product-colour">Colour: {{ colour() }}</span>
-      <nb-radio-group class="colours"
-        name="colour"
-        aria-labelledby="product-colour"
-        [(ngModel)]="colour">
-        @for (option of item.colours; track option.name) {
-        <nb-radio [value]="option.name">
-          <span class="swatch"
-            [style.background-color]="option.value"></span>
-          {{ option.name }}
-        </nb-radio>
+    <div class="picture">
+        <npg-shop-picture [product]="item"
+            [eager]="true" />
+        @if (item.badge; as badge) {
+        <nb-badge [text]="badge.text"
+            [status]="badge.status"
+            position="top start" />
         }
-      </nb-radio-group>
     </div>
 
-    <div class="buy">
-      <npg-shop-quantity [label]="item.name"
-        [(quantity)]="quantity" />
-      <button nbButton
-        status="primary"
-        size="large"
-        type="button"
-        class="add"
-        (click)="add()">
-        <nb-icon [icon]="added() ? 'checkmark-outline' : 'shopping-cart-outline'" />
-        {{ added() ? 'Added to cart' : 'Add to cart' }}
-      </button>
+    <div class="about">
+        <h1 class="h3">{{ item.name }}</h1>
+        <npg-shop-rating [rating]="item.rating"
+            [reviews]="item.reviews" />
+        <p class="price h4">{{ item.price | currency: 'USD' : 'symbol' : '1.0-0' }}</p>
+        <p class="description">{{ item.description }}</p>
+
+        <div class="option">
+            <span class="label"
+                id="product-colour">Colour: {{ colour() }}</span>
+            <nb-radio-group class="colours"
+                name="colour"
+                aria-labelledby="product-colour"
+                [(ngModel)]="colour">
+                @for (option of item.colours; track option.name) {
+                <nb-radio [value]="option.name">
+                    <span class="swatch"
+                        [style.background-color]="option.value"></span>
+                    {{ option.name }}
+                </nb-radio>
+                }
+            </nb-radio-group>
+        </div>
+
+        <div class="buy">
+            <npg-shop-quantity [label]="item.name"
+                [(quantity)]="quantity" />
+            <button nbButton
+                status="primary"
+                size="large"
+                type="button"
+                class="add"
+                (click)="add()">
+                <nb-icon [icon]="added() ? 'checkmark-outline' : 'shopping-cart-outline'" />
+                {{ added() ? 'Added to cart' : 'Add to cart' }}
+            </button>
+        </div>
+        @if (added()) {
+        <p class="added"
+            role="status">
+            {{ item.name }} is in your cart. <a routerLink="../../cart">View cart</a>
+        </p>
+        }
+
+        <ul class="perks">
+            <li><nb-icon icon="paper-plane-outline" /> Free delivery over $50</li>
+            <li><nb-icon icon="refresh-outline" /> Free returns within 30 days</li>
+            <li><nb-icon icon="shield-outline" /> Secure checkout</li>
+        </ul>
+
+        <nb-accordion>
+            <nb-accordion-item expanded>
+                <nb-accordion-item-header>Details</nb-accordion-item-header>
+                <nb-accordion-item-body>
+                    <ul class="details">
+                        @for (detail of item.details; track detail) {
+                        <li>{{ detail }}</li>
+                        }
+                    </ul>
+                </nb-accordion-item-body>
+            </nb-accordion-item>
+            <nb-accordion-item>
+                <nb-accordion-item-header>Reviews ({{ item.reviews }})</nb-accordion-item-header>
+                <nb-accordion-item-body>
+                    @for (review of reviews; track review.name) {
+                    <div class="review">
+                        <nb-user size="small"
+                            [name]="review.name"
+                            [title]="review.date" />
+                        <npg-shop-rating [rating]="review.rating" />
+                        <p>{{ review.text }}</p>
+                    </div>
+                    }
+                </nb-accordion-item-body>
+            </nb-accordion-item>
+            <nb-accordion-item>
+                <nb-accordion-item-header>Delivery and returns</nb-accordion-item-header>
+                <nb-accordion-item-body>
+                    Orders before 2 pm ship the same day. Not quite right? Send it back within 30 days for a full refund.
+                </nb-accordion-item-body>
+            </nb-accordion-item>
+        </nb-accordion>
     </div>
-    @if (added()) {
-    <p class="added"
-      role="status">
-      {{ item.name }} is in your cart. <a routerLink="../../cart">View cart</a>
-    </p>
-    }
-
-    <ul class="perks">
-      <li><nb-icon icon="paper-plane-outline" /> Free delivery over $50</li>
-      <li><nb-icon icon="refresh-outline" /> Free returns within 30 days</li>
-      <li><nb-icon icon="shield-outline" /> Secure checkout</li>
-    </ul>
-
-    <nb-accordion>
-      <nb-accordion-item expanded>
-        <nb-accordion-item-header>Details</nb-accordion-item-header>
-        <nb-accordion-item-body>
-          <ul class="details">
-            @for (detail of item.details; track detail) {
-            <li>{{ detail }}</li>
-            }
-          </ul>
-        </nb-accordion-item-body>
-      </nb-accordion-item>
-      <nb-accordion-item>
-        <nb-accordion-item-header>Reviews ({{ item.reviews }})</nb-accordion-item-header>
-        <nb-accordion-item-body>
-          @for (review of reviews; track review.name) {
-          <div class="review">
-            <nb-user size="small"
-              [name]="review.name"
-              [title]="review.date" />
-            <npg-shop-rating [rating]="review.rating" />
-            <p>{{ review.text }}</p>
-          </div>
-          }
-        </nb-accordion-item-body>
-      </nb-accordion-item>
-      <nb-accordion-item>
-        <nb-accordion-item-header>Delivery and returns</nb-accordion-item-header>
-        <nb-accordion-item-body>
-          Orders before 2 pm ship the same day. Not quite right? Send it back within 30 days for a full refund.
-        </nb-accordion-item-body>
-      </nb-accordion-item>
-    </nb-accordion>
-  </div>
 </div>
 
 <h2 class="h5 related-title">You might also like</h2>
 <div class="related">
-  @for (other of related(); track other.id) {
-  <nb-card>
-    <div nbCardMedia
-      class="related-picture">
-      <npg-shop-picture [product]="other" />
-    </div>
-    <nb-card-body>
-      <a nbCardLink
-        class="subtitle name"
-        [routerLink]="['../../products', other.id]">{{ other.name }}</a>
-      <span class="price">{{ other.price | currency: 'USD' : 'symbol' : '1.0-0' }}</span>
-    </nb-card-body>
-  </nb-card>
-  }
+    @for (other of related(); track other.id) {
+    <nb-card>
+        <div nbCardMedia
+            class="related-picture">
+            <npg-shop-picture [product]="other" />
+        </div>
+        <nb-card-body>
+            <a nbCardLink
+                class="subtitle name"
+                [routerLink]="['../../products', other.id]">{{ other.name }}</a>
+            <span class="price">{{ other.price | currency: 'USD' : 'symbol' : '1.0-0' }}</span>
+        </nb-card-body>
+    </nb-card>
+    }
 </div>

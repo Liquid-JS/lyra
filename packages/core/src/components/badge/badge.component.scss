@@ -1,48 +1,48 @@
-@use '../../styles/theming' as *;
+@use "../../styles/theming" as *;
 
 :host {
-  position: absolute;
-  text-align: center;
-  white-space: nowrap;
-  vertical-align: baseline;
+    position: absolute;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: baseline;
 }
 
 :host(.position-top) {
-  top: 0;
+    top: 0;
 }
 
 :host(.position-right) {
-  right: 0;
+    right: 0;
 }
 
 :host(.position-bottom) {
-  bottom: 0;
+    bottom: 0;
 }
 
 :host(.position-left) {
-  left: 0;
+    left: 0;
 }
 
 :host(.position-center) {
-  top: 50%;
-  transform: translateY(-50%);
+    top: 50%;
+    transform: translateY(-50%);
 }
 
 :host(.position-start) {
-  @include nb-ltr(left, 0);
-  @include nb-rtl(right, 0);
+    @include nb-ltr(left, 0);
+    @include nb-rtl(right, 0);
 }
 
 :host(.position-end) {
-  @include nb-ltr(right, 0);
-  @include nb-rtl(left, 0);
+    @include nb-ltr(right, 0);
+    @include nb-rtl(left, 0);
 }
 
 :host(.position-inline) {
-  position: static;
-  display: inline-block;
+    position: static;
+    display: inline-block;
 }
 
 :host(.position-inline.dot-mode) {
-  vertical-align: middle;
+    vertical-align: middle;
 }

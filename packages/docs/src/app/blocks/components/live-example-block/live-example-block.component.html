@@ -1,40 +1,40 @@
 <section class="header">
-  <strong class="title">{{ content().name }}</strong>
-  <div class="actions">
+    <strong class="title">{{ content().name }}</strong>
+    <div class="actions">
 
-    <div class="action-selector">
-      <select #themeSelect
-        class="action-item"
-        [(ngModel)]="currentTheme"
-        (change)="switchTheme(themeSelect.value)">
-        @for (theme of themes; track theme) {
-        <option [value]="theme.value">{{theme.label}}</option>
+        <div class="action-selector">
+            <select #themeSelect
+                class="action-item"
+                [(ngModel)]="currentTheme"
+                (change)="switchTheme(themeSelect.value)">
+                @for (theme of themes; track theme) {
+                <option [value]="theme.value">{{theme.label}}</option>
+                }
+            </select>
+            <nb-icon icon="color-palette-outline" />
+        </div>
+        <a class="btn action-item action-button"
+            target="_blank"
+            [href]="url">
+            <nb-icon icon="external-link-outline" />
+        </a>
+        @if (hasViewSwitch()) {
+        <button type="button"
+            class="btn action-item action-button"
+            (click)="switchToInlineVew()">
+            <nb-icon icon="code-outline" />
+        </button>
         }
-      </select>
-      <nb-icon icon="color-palette-outline" />
     </div>
-    <a class="btn action-item action-button"
-      target="_blank"
-      [href]="url">
-      <nb-icon icon="external-link-outline" />
-    </a>
-    @if (hasViewSwitch()) {
-    <button type="button"
-      class="btn action-item action-button"
-      (click)="switchToInlineVew()">
-      <nb-icon icon="code-outline" />
-    </button>
-    }
-  </div>
 </section>
 <div class="iframe-container">
-  @if (content().id && inView()) {
-  <iframe #iframe
-    [style.height.px]="iframeHeight"
-    [class.loading]="loading"></iframe>
-  }
+    @if (content().id && inView()) {
+    <iframe #iframe
+        [style.height.px]="iframeHeight"
+        [class.loading]="loading"></iframe>
+    }
 </div>
 @if (loading) {
 <nb-icon class="icon-loading"
-  icon="more-vertical-outline" />
+    icon="more-vertical-outline" />
 }

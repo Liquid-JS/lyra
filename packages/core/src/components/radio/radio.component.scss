@@ -1,29 +1,29 @@
-@use '../../styles/theming' as *;
+@use "../../styles/theming" as *;
 
 :host {
-  display: block;
-  position: relative;
-
-  label {
-    display: inline-flex;
-    margin: 0;
-    min-height: inherit;
-    align-items: center;
-  }
-
-  // The circle in the label's flow, before the text, so it keeps to padding on the radio or its label.
-  .outer-circle {
+    display: block;
     position: relative;
-    flex: none;
-    border-radius: 50%;
-  }
 
-  // The dot in the middle of the circle, whatever its border.
-  .inner-circle {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    border-radius: 50%;
-    transform: translate(-50%, -50%) scale(0.6);
-  }
+    label {
+        display: inline-flex;
+        margin: 0;
+        min-height: inherit;
+        align-items: center;
+    }
+
+    // The circle in the label's flow, before the text, so it keeps to padding on the radio or its label.
+    .outer-circle {
+        position: relative;
+        flex: none;
+        border-radius: 50%;
+    }
+
+    // The dot in the middle of the circle, whatever its border.
+    .inner-circle {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        border-radius: 50%;
+        transform: translate(-50%, -50%) scale(0.6);
+    }
 }

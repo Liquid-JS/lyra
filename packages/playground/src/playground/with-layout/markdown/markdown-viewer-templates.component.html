@@ -1,23 +1,23 @@
 <nb-card>
-  <nb-card-body>
-    <nb-markdown-viewer [markdown]="markdown">
-      <!-- Links in the app use the router, others open in a new tab. -->
-      <ng-template remarkTemplate="link"
-        let-node>
-        @if (isExternal(node.url)) {
-        <a [href]="node.url"
-          target="_blank"
-          rel="noopener"
-          [remarkNode]="node"></a>
-        } @else {
-        <a [routerLink]="node.url"
-          [remarkNode]="node"></a>
-        }
-      </ng-template>
-      <nb-alert *remarkTemplate="'blockquote'; let node"
-        status="info">
-        <remark-node [remarkNode]="node" />
-      </nb-alert>
-    </nb-markdown-viewer>
-  </nb-card-body>
+    <nb-card-body>
+        <nb-markdown-viewer [markdown]="markdown">
+            <!-- Links in the app use the router, others open in a new tab. -->
+            <ng-template remarkTemplate="link"
+                let-node>
+                @if (isExternal(node.url)) {
+                <a [href]="node.url"
+                    target="_blank"
+                    rel="noopener"
+                    [remarkNode]="node"></a>
+                } @else {
+                <a [routerLink]="node.url"
+                    [remarkNode]="node"></a>
+                }
+            </ng-template>
+            <nb-alert *remarkTemplate="'blockquote'; let node"
+                status="info">
+                <remark-node [remarkNode]="node" />
+            </nb-alert>
+        </nb-markdown-viewer>
+    </nb-card-body>
 </nb-card>

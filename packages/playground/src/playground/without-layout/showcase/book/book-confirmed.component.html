@@ -1,58 +1,58 @@
 <div class="confirmed">
-  <div class="mark">
-    <nb-icon icon="checkmark-circle-2" />
-  </div>
-  <h1>You're booked</h1>
-  <p class="lead">We've emailed the details, and we'll text a reminder the day before. See you soon.</p>
+    <div class="mark">
+        <nb-icon icon="checkmark-circle-2" />
+    </div>
+    <h1>You're booked</h1>
+    <p class="lead">We've emailed the details, and we'll text a reminder the day before. See you soon.</p>
 
-  <nb-card class="details">
-    <nb-card-body>
-      <div class="summary">
-        <dl>
-          <div>
-            <dt>Service</dt>
-            <dd>{{ service?.name }}, {{ service?.duration }} min</dd>
-          </div>
-          <div>
-            <dt>With</dt>
-            <dd>{{ booking.practitioner === anyone ? 'Anyone available' : booking.practitioner }}</dd>
-          </div>
-          <div>
-            <dt>When</dt>
-            <dd>{{ booking.date | date: 'EEEE d MMMM' }} at {{ booking.time }}</dd>
-          </div>
-          <div>
-            <dt>Where</dt>
-            <dd>{{ studio.address.join(', ') }}</dd>
-          </div>
-          <div>
-            <dt>Reference</dt>
-            <dd><code>{{ booking.reference }}</code></dd>
-          </div>
-        </dl>
-        <div class="code">
-          <nb-qr-code [data]="code"
-            label="Your booking reference, to show at the desk" />
-          <span class="hint">Show this at the desk</span>
-        </div>
-      </div>
-      <div class="actions">
-        <button nbButton
-          outline
-          status="primary"
-          type="button">
-          <nb-icon icon="calendar-outline" />
-          Add to calendar
-        </button>
-        <a nbButton
-          ghost
-          routerLink="../bookings">Manage booking</a>
-      </div>
-    </nb-card-body>
-  </nb-card>
+    <nb-card class="details">
+        <nb-card-body>
+            <div class="summary">
+                <dl>
+                    <div>
+                        <dt>Service</dt>
+                        <dd>{{ service?.name }}, {{ service?.duration }} min</dd>
+                    </div>
+                    <div>
+                        <dt>With</dt>
+                        <dd>{{ booking.practitioner === anyone ? 'Anyone available' : booking.practitioner }}</dd>
+                    </div>
+                    <div>
+                        <dt>When</dt>
+                        <dd>{{ booking.date | date: 'EEEE d MMMM' }} at {{ booking.time }}</dd>
+                    </div>
+                    <div>
+                        <dt>Where</dt>
+                        <dd>{{ studio.address.join(', ') }}</dd>
+                    </div>
+                    <div>
+                        <dt>Reference</dt>
+                        <dd><code>{{ booking.reference }}</code></dd>
+                    </div>
+                </dl>
+                <div class="code">
+                    <nb-qr-code [data]="code"
+                        label="Your booking reference, to show at the desk" />
+                    <span class="hint">Show this at the desk</span>
+                </div>
+            </div>
+            <div class="actions">
+                <button nbButton
+                    outline
+                    status="primary"
+                    type="button">
+                    <nb-icon icon="calendar-outline" />
+                    Add to calendar
+                </button>
+                <a nbButton
+                    ghost
+                    routerLink="../bookings">Manage booking</a>
+            </div>
+        </nb-card-body>
+    </nb-card>
 
-  <p class="hint policy">
-    <nb-icon icon="info-outline" />
-    Need to change it? Move or cancel up to 24 hours before from your bookings; after that, the session is charged.
-  </p>
+    <p class="hint policy">
+        <nb-icon icon="info-outline" />
+        Need to change it? Move or cancel up to 24 hours before from your bookings; after that, the session is charged.
+    </p>
 </div>

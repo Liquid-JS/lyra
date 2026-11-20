@@ -1,8 +1,8 @@
-import remarkFrontmatter from 'remark-frontmatter';
-import remarkGfm from 'remark-gfm';
-import type { Preset } from 'unified';
+import remarkFrontmatter from 'remark-frontmatter'
+import remarkGfm from 'remark-gfm'
+import type { Preset } from 'unified'
 
-import { NB_MARKDOWN_STYLE, nbRemarkNormalise } from '../packages/extras/markdown-editor/src/format-style.ts';
+import { NB_MARKDOWN_STYLE, nbRemarkNormalise } from '../packages/extras/markdown-editor/src/format-style.ts'
 
 /**
  * The markdown formatter's settings, as the markdown editor's Format button has them: `yarn format:md` formats with
@@ -10,6 +10,6 @@ import { NB_MARKDOWN_STYLE, nbRemarkNormalise } from '../packages/extras/markdow
  * `.remarkrc.mjs`.
  */
 export const remarkConfig: Preset = {
-  settings: NB_MARKDOWN_STYLE,
-  plugins: [[remarkFrontmatter, ['yaml', 'toml']], remarkGfm, nbRemarkNormalise],
-};
+    settings: NB_MARKDOWN_STYLE,
+    plugins: [[remarkFrontmatter, ['yaml', 'toml']], remarkGfm, nbRemarkNormalise]
+}

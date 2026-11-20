@@ -1,67 +1,67 @@
 <div class="middle-column docSearch-content"
-  #content>
-  @if (tabs(); as tabs) {
-  <nb-card class="horizontal-nav">
-    <nb-card-header>
-      <h1 class="page-header h4">
-        {{ currentItem()?.name }}
-        <span class="visually-hidden">{{ currentTabName() }}</span>
-      </h1>
-    </nb-card-header>
-    <nb-card-body>
-      <ngd-page-tabs [tabs]="tabs"
-        horizontal />
-    </nb-card-body>
-  </nb-card>
-  }
+    #content>
+    @if (tabs(); as tabs) {
+    <nb-card class="horizontal-nav">
+        <nb-card-header>
+            <h1 class="page-header h4">
+                {{ currentItem()?.name }}
+                <span class="visually-hidden">{{ currentTabName() }}</span>
+            </h1>
+        </nb-card-header>
+        <nb-card-body>
+            <ngd-page-tabs [tabs]="tabs"
+                horizontal />
+        </nb-card-body>
+    </nb-card>
+    }
 
-  @for (block of currentItem()?.children; track block) {
-  @switch (block.block) {
-  @case ('markdown') {
-  <ngd-md-block [sections$]="block.sections" />
-  }
-  @case ('component') {
-  <ngd-component-block [source]="block.source" />
-  }
-  @case ('tabbed') {
-  <ngd-tabbed-block [source]="block.children"
-    [tabs]="tabs()" />
-  }
-  @case ('theme') {
-  <ngd-theme-block [block]="block" />
-  }
-  @case ('components-overview') {
-  <ngd-components-overview-block />
-  }
-  @case ('icons') {
-  <ngd-icons-block />
-  }
-  @case ('theme-editor') {
-  <ngd-theme-editor-block />
-  }
-  @case ('example-gallery') {
-  <ngd-example-gallery-block />
-  }
-  }
-  }
+    @for (block of currentItem()?.children; track block) {
+    @switch (block.block) {
+    @case ('markdown') {
+    <ngd-md-block [sections$]="block.sections" />
+    }
+    @case ('component') {
+    <ngd-component-block [source]="block.source" />
+    }
+    @case ('tabbed') {
+    <ngd-tabbed-block [source]="block.children"
+        [tabs]="tabs()" />
+    }
+    @case ('theme') {
+    <ngd-theme-block [block]="block" />
+    }
+    @case ('components-overview') {
+    <ngd-components-overview-block />
+    }
+    @case ('icons') {
+    <ngd-icons-block />
+    }
+    @case ('theme-editor') {
+    <ngd-theme-editor-block />
+    }
+    @case ('example-gallery') {
+    <ngd-example-gallery-block />
+    }
+    }
+    }
 
-  @if (!currentItem()) {
-  <p class="not-found">Page does not exist.</p>
-  }
+    @if (!currentItem()) {
+    <p class="not-found">Page does not exist.</p>
+    }
 
-  <ngd-pager-block [currentItemSlag]="currentItem()?.slag" />
+    <ngd-pager-block [currentItemSlag]="currentItem()?.slag" />
 </div>
 
 @let item = currentItem();
 @if (item && showSettings()) {
 <div class="settings-column">
-  <div class="fixed-panel">
-    <ngd-page-tabs [tabs]="tabs()" />
-    <h4 class="toc-title">{{ tocTitle() }}</h4>
-    <nb-toc [aria-label]="tocTitle()"
-      [selector]="tocSelector()"
-      [nested]="false"
-      [container]="content" />
-  </div>
+    <div class="fixed-panel">
+        <ngd-page-tabs [tabs]="tabs()" />
+        <h4 class="toc-title">{{ tocTitle() }}</h4>
+        <nb-toc [aria-label]="tocTitle()"
+            [selector]="tocSelector()"
+            [nested]="false"
+            [container]="content" />
+    </div>
 </div>
 }

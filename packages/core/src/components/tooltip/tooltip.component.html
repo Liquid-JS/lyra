@@ -1,14 +1,14 @@
 <span class="arrow"></span>
 <div class="content">
-  @if (context()?.icon; as icon) {
-  <nb-icon [config]="icon" />
-  }
-  @if (template(); as template) {
-  <span>
-    <ng-container [ngTemplateOutlet]="template"
-      [ngTemplateOutletContext]="{ $implicit: context()?.templateContext }" />
-  </span>
-  } @else if (text()) {
-  <span dir="auto">{{ text() }}</span>
-  }
+    @if (context()?.icon; as icon) {
+    <nb-icon [config]="icon" />
+    }
+    @if (template(); as template) {
+    <span>
+        <ng-container [ngTemplateOutlet]="template"
+            [ngTemplateOutletContext]="{ $implicit: context()?.templateContext }" />
+    </span>
+    } @else if (text()) {
+    <span dir="auto">{{ text() }}</span>
+    }
 </div>

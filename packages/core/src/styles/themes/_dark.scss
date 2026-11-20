@@ -1,49 +1,49 @@
-@use '../core/theming/register';
-@use '../theming-variables';
-@use 'default';
+@use "../core/theming/register";
+@use "../theming-variables";
+@use "default";
 
 $theme: (
-  background-basic-color-1: color-basic-800,
-  background-basic-color-2: color-basic-900,
-  background-basic-color-3: color-basic-1000,
-  background-basic-color-4: color-basic-1100,
-  border-basic-color-1: color-basic-800,
-  border-basic-color-2: color-basic-900,
-  border-basic-color-3: color-basic-1000,
-  border-basic-color-4: color-basic-1100,
-  border-basic-color-5: color-basic-1100,
-  background-alternative-color-1: color-basic-100,
-  background-alternative-color-2: color-basic-200,
-  background-alternative-color-3: color-basic-300,
-  background-alternative-color-4: color-basic-400,
-  border-alternative-color-1: color-basic-100,
-  border-alternative-color-2: color-basic-200,
-  border-alternative-color-3: color-basic-300,
-  border-alternative-color-4: color-basic-400,
-  border-alternative-color-5: color-basic-500,
-  text-basic-color: color-basic-100,
-  text-alternate-color: color-basic-900,
-  text-disabled-color: color-basic-transparent-600,
-  // Focused text gets lighter on a dark background, as it gets darker on a light one.
-  text-primary-focus-color: color-primary-300,
-  text-success-focus-color: color-success-300,
-  text-info-focus-color: color-info-300,
-  text-warning-focus-color: color-warning-300,
-  text-danger-focus-color: color-danger-300,
-  // An outline tag's basic text is on its tint, where the hint falls just short.
-  tag-outline-basic-text-color: color-basic-500,
-  // An off toggle's switcher would be the colour of the surface it's on.
-  toggle-basic-switcher-background-color: text-hint-color,
-  toggle-primary-switcher-background-color: text-hint-color,
-  toggle-success-switcher-background-color: text-hint-color,
-  toggle-info-switcher-background-color: text-hint-color,
-  toggle-warning-switcher-background-color: text-hint-color,
-  toggle-danger-switcher-background-color: text-hint-color,
-  // The group's unpressed buttons are on the light basic fill, where the light hint wouldn't read.
-  button-group-filled-button-basic-text-color: color-basic-700,
-  shadow: 0 0.5rem 1rem 0 #1a1f33,
-  skeleton-highlight-color: rgba(255, 255, 255, 0.09),
-  outline-color: color-basic-700,
+    background-basic-color-1: color-basic-800,
+    background-basic-color-2: color-basic-900,
+    background-basic-color-3: color-basic-1000,
+    background-basic-color-4: color-basic-1100,
+    border-basic-color-1: color-basic-800,
+    border-basic-color-2: color-basic-900,
+    border-basic-color-3: color-basic-1000,
+    border-basic-color-4: color-basic-1100,
+    border-basic-color-5: color-basic-1100,
+    background-alternative-color-1: color-basic-100,
+    background-alternative-color-2: color-basic-200,
+    background-alternative-color-3: color-basic-300,
+    background-alternative-color-4: color-basic-400,
+    border-alternative-color-1: color-basic-100,
+    border-alternative-color-2: color-basic-200,
+    border-alternative-color-3: color-basic-300,
+    border-alternative-color-4: color-basic-400,
+    border-alternative-color-5: color-basic-500,
+    text-basic-color: color-basic-100,
+    text-alternate-color: color-basic-900,
+    text-disabled-color: color-basic-transparent-600,
+    // Focused text gets lighter on a dark background, as it gets darker on a light one.
+    text-primary-focus-color: color-primary-300,
+    text-success-focus-color: color-success-300,
+    text-info-focus-color: color-info-300,
+    text-warning-focus-color: color-warning-300,
+    text-danger-focus-color: color-danger-300,
+    // An outline tag's basic text is on its tint, where the hint falls just short.
+    tag-outline-basic-text-color: color-basic-500,
+    // An off toggle's switcher would be the colour of the surface it's on.
+    toggle-basic-switcher-background-color: text-hint-color,
+    toggle-primary-switcher-background-color: text-hint-color,
+    toggle-success-switcher-background-color: text-hint-color,
+    toggle-info-switcher-background-color: text-hint-color,
+    toggle-warning-switcher-background-color: text-hint-color,
+    toggle-danger-switcher-background-color: text-hint-color,
+    // The group's unpressed buttons are on the light basic fill, where the light hint wouldn't read.
+    button-group-filled-button-basic-text-color: color-basic-700,
+    shadow: 0 0.5rem 1rem 0 #1a1f33,
+    skeleton-highlight-color: rgb(255, 255, 255, 0.09),
+    outline-color: color-basic-700,
 );
 
 // register the theme

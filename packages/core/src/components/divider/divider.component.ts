@@ -1,6 +1,6 @@
-import { Component, input } from '@angular/core';
+import { Component, input } from '@angular/core'
 
-import { ɵconvertToBoolProperty as convertToBoolProperty, NbBooleanInput } from '@liquid-js/lyr-core/base';
+import { ɵconvertToBoolProperty as convertToBoolProperty, NbBooleanInput } from '@liquid-js/lyr-core/base'
 
 /**
  * A line that separates content: sections of a page or a card, or items in a row.
@@ -25,7 +25,6 @@ import { ɵconvertToBoolProperty as convertToBoolProperty, NbBooleanInput } from
  * ```
  *
  * It's a `separator` for assistive technologies, which skip its content. A plain `<hr>` gets the same line.
- *
  * @styles
  *
  * divider-margin:
@@ -38,15 +37,15 @@ import { ɵconvertToBoolProperty as convertToBoolProperty, NbBooleanInput } from
  * divider-content-text-line-height:
  */
 @Component({
-  selector: 'nb-divider',
-  template: `<span class="divider-content"><ng-content /></span>`,
-  host: {
-    role: 'separator',
-    '[attr.aria-orientation]': 'vertical() ? "vertical" : null',
-    '[class.vertical]': 'vertical()',
-  },
+    selector: 'nb-divider',
+    template: '<span class="divider-content"><ng-content /></span>',
+    host: {
+        'role': 'separator',
+        '[attr.aria-orientation]': 'vertical() ? "vertical" : null',
+        '[class.vertical]': 'vertical()'
+    }
 })
 export class NbDividerComponent {
-  /** Whether the line is vertical, between items in a row. */
-  readonly vertical = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
+    /** Whether the line is vertical, between items in a row. */
+    readonly vertical = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty })
 }

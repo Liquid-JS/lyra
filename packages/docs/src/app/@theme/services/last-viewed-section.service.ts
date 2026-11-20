@@ -1,6 +1,6 @@
-import { Service } from '@angular/core';
-import { Observable, ReplaySubject } from 'rxjs';
-import { NgdMdSection } from './text.service';
+import { Service } from '@angular/core'
+import { Observable, ReplaySubject } from 'rxjs'
+import { NgdMdSection } from './text.service'
 
 /**
  * We store the last viewed section here to prevent flickering when switching between articles.
@@ -10,13 +10,13 @@ import { NgdMdSection } from './text.service';
  * */
 @Service()
 export class NgdLastViewedSectionService {
-  private _sections = new ReplaySubject<NgdMdSection[]>(1);
+    private _sections = new ReplaySubject<NgdMdSection[]>(1)
 
-  setSection(section: NgdMdSection[]) {
-    this._sections.next(section);
-  }
+    setSection(section: NgdMdSection[]) {
+        this._sections.next(section)
+    }
 
-  getSections(): Observable<NgdMdSection[]> {
-    return this._sections.asObservable();
-  }
+    getSections(): Observable<NgdMdSection[]> {
+        return this._sections.asObservable()
+    }
 }

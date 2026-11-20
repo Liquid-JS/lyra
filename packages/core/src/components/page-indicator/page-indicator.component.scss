@@ -1,28 +1,28 @@
 :host {
-  display: inline-flex;
-  align-items: center;
+    display: inline-flex;
+    align-items: center;
 }
 
 // A button big enough to hit, with the dot drawn in its middle.
 .page-dot {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 1.5rem;
-  height: 1.5rem;
-  border: none;
-  background: none;
-  cursor: pointer;
-  outline: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.5rem;
+    height: 1.5rem;
+    border: none;
+    background: none;
+    cursor: pointer;
+    outline: none;
 
-  &::before {
-    content: '';
-    border-radius: 999px;
-  }
+    &:before {
+        content: "";
+        border-radius: 999px;
+    }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .page-dot::before {
-    transition: none !important;
-  }
+    .page-dot:before {
+        transition: none !important;
+    }
 }

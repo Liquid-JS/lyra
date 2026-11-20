@@ -1,12 +1,7 @@
-import { Component, computed, effect, inject, input, linkedSignal, output, untracked } from '@angular/core';
+import { Component, computed, effect, inject, input, linkedSignal, output, untracked } from '@angular/core'
 
-import { injectNbDefaults } from '@liquid-js/lyr-core/base';
-import { NbStatusService } from '@liquid-js/lyr-core/base';
-import { ɵconvertToBoolProperty as convertToBoolProperty, NbBooleanInput } from '@liquid-js/lyr-core/base';
-import { ɵfocusOnClick as focusOnClick } from '@liquid-js/lyr-core/base';
-import { NbComponentOrCustomStatus } from '@liquid-js/lyr-core/base';
-import { NbComponentSize } from '@liquid-js/lyr-core/base';
-import { NB_RADIO_GROUP } from './radio-group-token';
+import { injectNbDefaults, NbStatusService, ɵconvertToBoolProperty as convertToBoolProperty, NbBooleanInput, ɵfocusOnClick as focusOnClick, NbComponentOrCustomStatus, NbComponentSize } from '@liquid-js/lyr-core/base'
+import { NB_RADIO_GROUP } from './radio-group-token'
 
 /**
  * A radio button, styled like the design system's; a native `<input type="radio">` underneath.
@@ -50,9 +45,7 @@ import { NB_RADIO_GROUP } from './radio-group-token';
  * ```
  *
  * `disabled` disables single radios in a group:
- *
  * @stacked-example(Disabled, radio/radio-disabled.component)
- *
  * @styles
  *
  * radio-tiny-width:
@@ -279,85 +272,85 @@ import { NB_RADIO_GROUP } from './radio-group-token';
  * radio-control-disabled-checked-inner-circle-color:
  * */
 @Component({
-  selector: 'nb-radio',
-  templateUrl: './radio.component.html',
-  styleUrls: ['./radio.component.scss'],
-  host: {
-    '[class]': 'hostClasses()',
-  },
+    selector: 'nb-radio',
+    templateUrl: './radio.component.html',
+    styleUrls: ['./radio.component.scss'],
+    host: {
+        '[class]': 'hostClasses()'
+    }
 })
 export class NbRadioComponent<T = unknown> {
-  // The app's defaults for this type, which the inputs below start from.
-  protected readonly nbDefaults = injectNbDefaults('radio');
+    // The app's defaults for this type, which the inputs below start from.
+    protected readonly nbDefaults = injectNbDefaults('radio')
 
-  protected readonly focusOnClick = focusOnClick;
-  protected readonly statusService = inject(NbStatusService);
-  protected readonly group = inject(NB_RADIO_GROUP, { optional: true });
+    protected readonly focusOnClick = focusOnClick
+    protected readonly statusService = inject(NbStatusService)
+    protected readonly group = inject(NB_RADIO_GROUP, { optional: true })
 
-  /** The native input's name; inside `nb-radio-group`, the group's name is used. */
-  readonly name = input<string>();
+    /** The native input's name; inside `nb-radio-group`, the group's name is used. */
+    readonly name = input<string>()
 
-  /**
-   * Whether the radio is checked. Inside `nb-radio-group`, the group's value decides; a checked radio sets the
-   * group's value when the group has none.
-   */
-  readonly checked = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
+    /**
+     * Whether the radio is checked. Inside `nb-radio-group`, the group's value decides; a checked radio sets the
+     * group's value when the group has none.
+     */
+    readonly checked = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty })
 
-  /** The value the group takes when the radio is checked. */
-  readonly value = input<T>();
+    /** The value the group takes when the radio is checked. */
+    readonly value = input<T>()
 
-  /** Disables the radio. Inside `nb-radio-group`, the group's `disabled` takes precedence once it's set. */
-  readonly disabled = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
+    /** Disables the radio. Inside `nb-radio-group`, the group's `disabled` takes precedence once it's set. */
+    readonly disabled = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty })
 
-  /** `basic` (default), `primary`, `success`, `warning`, `danger`, `info` or `control`; in a group, the group's. */
-  readonly status = input<NbComponentOrCustomStatus>('basic');
+    /** `basic` (default), `primary`, `success`, `warning`, `danger`, `info` or `control`; in a group, the group's. */
+    readonly status = input<NbComponentOrCustomStatus>('basic')
 
-  /** `tiny`, `small`, `medium` (default), `large` or `giant`; in a group, the group's. */
-  readonly sizeInput = input<NbComponentSize | undefined>(undefined, { alias: 'size' });
-  /** The size in use: the input's, the app's default, or 'medium'. */
-  readonly size = linkedSignal<NbComponentSize>(() => this.sizeInput() ?? this.nbDefaults().size ?? 'medium');
+    /** `tiny`, `small`, `medium` (default), `large` or `giant`; in a group, the group's. */
+    readonly sizeInput = input<NbComponentSize | undefined>(undefined, { alias: 'size' })
+    /** The size in use: the input's, the app's default, or 'medium'. */
+    readonly size = linkedSignal<NbComponentSize>(() => this.sizeInput() ?? this.nbDefaults().size ?? 'medium')
 
-  /**
-   * Emits whether the radio is checked as that changes, as a checkbox's `checkedChange` does: when the user checks it,
-   * and when checking another radio of its group unchecks it. For the value, listen to the group's `valueChange`.
-   */
-  readonly checkedChange = output<boolean>();
+    /**
+     * Emits whether the radio is checked as that changes, as a checkbox's `checkedChange` does: when the user checks it,
+     * and when checking another radio of its group unchecks it. For the value, listen to the group's `valueChange`.
+     */
+    readonly checkedChange = output<boolean>()
 
-  protected readonly checkedState = linkedSignal(() => this.checked());
+    protected readonly checkedState = linkedSignal(() => this.checked())
 
-  // The state the radio renders with: its own, or its group's.
-  readonly isChecked = computed(() => (this.group ? this.group.selectedValue() === this.value() : this.checkedState()));
-  readonly resolvedName = computed(() => (this.group ? this.group.resolvedName() : this.name()));
-  readonly isDisabled = computed(() => this.group?.isDisabled() ?? this.disabled());
-  readonly resolvedStatus = computed(() => (this.group ? this.group.resolvedStatus() : this.status()));
-  readonly resolvedSize = computed(() => (this.group ? this.group.size() : this.size()));
+    // The state the radio renders with: its own, or its group's.
+    readonly isChecked = computed(() => (this.group ? this.group.selectedValue() === this.value() : this.checkedState()))
+    readonly resolvedName = computed(() => (this.group ? this.group.resolvedName() : this.name()))
+    readonly isDisabled = computed(() => this.group?.isDisabled() ?? this.disabled())
+    readonly resolvedStatus = computed(() => (this.group ? this.group.resolvedStatus() : this.status()))
+    readonly resolvedSize = computed(() => (this.group ? this.group.size() : this.size()))
 
-  protected readonly hostClasses = computed(() => [
-    this.statusService.getStatusClass(this.resolvedStatus()),
-    `size-${this.resolvedSize()}`,
-  ]);
+    protected readonly hostClasses = computed(() => [
+        this.statusService.getStatusClass(this.resolvedStatus()),
+        `size-${this.resolvedSize()}`
+    ])
 
-  constructor() {
+    constructor() {
     // Changes other than the `checked` input's, so `[(checked)]` follows the group too.
-    let last: boolean | undefined;
-    effect(() => {
-      const checked = this.isChecked();
-      untracked(() => {
-        if (last !== undefined && checked !== last && checked !== this.checked()) {
-          this.checkedChange.emit(checked);
-        }
-        last = checked;
-      });
-    });
-  }
+        let last: boolean | undefined
+        effect(() => {
+            const checked = this.isChecked()
+            untracked(() => {
+                if (last !== undefined && checked !== last && checked !== this.checked()) {
+                    this.checkedChange.emit(checked)
+                }
+                last = checked
+            })
+        })
+    }
 
-  onChange(event: Event) {
-    event.stopPropagation();
-    this.checkedState.set(true);
-    this.group?.select(this.value());
-  }
+    onChange(event: Event) {
+        event.stopPropagation()
+        this.checkedState.set(true)
+        this.group?.select(this.value())
+    }
 
-  onClick(event: Event) {
-    event.stopPropagation();
-  }
+    onClick(event: Event) {
+        event.stopPropagation()
+    }
 }

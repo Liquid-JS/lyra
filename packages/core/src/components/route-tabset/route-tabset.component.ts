@@ -1,24 +1,24 @@
-import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
-import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { ChangeDetectionStrategy, Component, input, output } from '@angular/core'
+import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router'
 
-import { ɵconvertToBoolProperty as convertToBoolProperty, NbBooleanInput } from '@liquid-js/lyr-core/base';
-import { NbIconConfig, NbIconComponent } from '@liquid-js/lyr-core/icon';
-import { NbMergeConfigsPipe } from './merge-configs.pipe';
+import { ɵconvertToBoolProperty as convertToBoolProperty, NbBooleanInput } from '@liquid-js/lyr-core/base'
+import { NbIconConfig, NbIconComponent } from '@liquid-js/lyr-core/icon'
+import { NbMergeConfigsPipe } from './merge-configs.pipe'
 
 export interface NbRouteTab {
-  route?: RouterLink['routerLink'];
-  title?: string;
-  icon?: string | NbIconConfig;
-  disabled?: boolean;
-  responsive?: boolean;
-  queryParams?: RouterLink['queryParams'];
-  queryParamsHandling?: RouterLink['queryParamsHandling'];
-  fragment?: RouterLink['fragment'];
-  preserveFragment?: RouterLink['preserveFragment'];
-  skipLocationChange?: RouterLink['skipLocationChange'];
-  replaceUrl?: RouterLink['replaceUrl'];
-  state?: RouterLink['state'];
-  activeLinkOptions?: RouterLinkActive['routerLinkActiveOptions'];
+    route?: RouterLink['routerLink']
+    title?: string
+    icon?: string | NbIconConfig
+    disabled?: boolean
+    responsive?: boolean
+    queryParams?: RouterLink['queryParams']
+    queryParamsHandling?: RouterLink['queryParamsHandling']
+    fragment?: RouterLink['fragment']
+    preserveFragment?: RouterLink['preserveFragment']
+    skipLocationChange?: RouterLink['skipLocationChange']
+    replaceUrl?: RouterLink['replaceUrl']
+    state?: RouterLink['state']
+    activeLinkOptions?: RouterLinkActive['routerLinkActiveOptions']
 }
 
 /**
@@ -70,7 +70,6 @@ export interface NbRouteTab {
  * ```
  *
  * @stacked-example(Route Tabset, tabset/route-tabset-showcase.component)
- *
  * @styles
  *
  * route-tabset-background-color:
@@ -109,35 +108,35 @@ export interface NbRouteTab {
  * route-tabset-scrollbar-width:
  */
 @Component({
-  selector: 'nb-route-tabset',
-  styleUrls: ['./route-tabset.component.scss'],
-  templateUrl: './route-tabset.component.html',
-  // Tabs are plain objects that apps can change in place.
-  changeDetection: ChangeDetectionStrategy.Eager,
-  imports: [
-    NbIconComponent,
-    RouterLinkActive,
-    RouterLink,
-    RouterOutlet,
-    NbMergeConfigsPipe,
-  ],
-  host: {
-    '[class.full-width]': 'fullWidth()',
-  },
+    selector: 'nb-route-tabset',
+    styleUrls: ['./route-tabset.component.scss'],
+    templateUrl: './route-tabset.component.html',
+    // Tabs are plain objects that apps can change in place.
+    changeDetection: ChangeDetectionStrategy.Eager,
+    imports: [
+        NbIconComponent,
+        RouterLinkActive,
+        RouterLink,
+        RouterOutlet,
+        NbMergeConfigsPipe
+    ],
+    host: {
+        '[class.full-width]': 'fullWidth()'
+    }
 })
 export class NbRouteTabsetComponent {
-  readonly tabs = input<NbRouteTab[]>([]);
+    readonly tabs = input<NbRouteTab[]>([])
 
-  /** The `routerLinkActiveOptions` of the tabs' links; `{ exact: true }` by default. */
-  readonly activeLinkOptions = input<RouterLinkActive['routerLinkActiveOptions']>({ exact: true });
+    /** The `routerLinkActiveOptions` of the tabs' links; `{ exact: true }` by default. */
+    readonly activeLinkOptions = input<RouterLinkActive['routerLinkActiveOptions']>({ exact: true })
 
-  /** The tabs share the tabset's width. */
-  readonly fullWidth = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
+    /** The tabs share the tabset's width. */
+    readonly fullWidth = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty })
 
-  /** Emits the tab whose link was clicked. */
-  readonly tabChange = output<NbRouteTab>();
+    /** Emits the tab whose link was clicked. */
+    readonly tabChange = output<NbRouteTab>()
 
-  selectTab(tab: NbRouteTab) {
-    this.tabChange.emit(tab);
-  }
+    selectTab(tab: NbRouteTab) {
+        this.tabChange.emit(tab)
+    }
 }

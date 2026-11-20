@@ -1,143 +1,143 @@
 <section class="head">
-  <p class="eyebrow">Contact</p>
-  <h1>Tell me about the project.</h1>
-  <p class="lead">A few lines are enough to start: what it is, where, and roughly when. I reply to everything within two
-    working days.</p>
+    <p class="eyebrow">Contact</p>
+    <h1>Tell me about the project.</h1>
+    <p class="lead">A few lines are enough to start: what it is, where, and roughly when. I reply to everything within two
+        working days.</p>
 </section>
 
 <div class="columns">
-  @if (sent()) {
-  <div class="sent"
-    role="status">
-    <nb-icon icon="checkmark-circle-2-outline"
-      status="success" />
-    <h2>Thank you.</h2>
-    <p>Your message is on its way to the studio. Expect a reply within two working days.</p>
-    <button nbButton
-      outline
-      type="button"
-      (click)="another()">Send another</button>
-  </div>
-  } @else {
-  <form [formGroup]="form"
-    (ngSubmit)="send()">
-    <div class="row">
-      <div class="field">
-        <label nbLabel
-          [for]="name">Your name</label>
-        <input nbInput
-          fullWidth
-          formControlName="name"
-          autocomplete="name"
-          placeholder="Jane Doe"
-          nbValidation
-          #name="nbValidation" />
-        <nb-validation-errors [for]="name" />
-      </div>
-      <div class="field">
-        <label nbLabel
-          [for]="email">Email</label>
-        <input nbInput
-          fullWidth
-          type="email"
-          formControlName="email"
-          autocomplete="email"
-          placeholder="you@example.com"
-          nbValidation
-          #email="nbValidation" />
-        <nb-validation-errors [for]="email" />
-      </div>
+    @if (sent()) {
+    <div class="sent"
+        role="status">
+        <nb-icon icon="checkmark-circle-2-outline"
+            status="success" />
+        <h2>Thank you.</h2>
+        <p>Your message is on its way to the studio. Expect a reply within two working days.</p>
+        <button nbButton
+            outline
+            type="button"
+            (click)="another()">Send another</button>
     </div>
-    <div class="row">
-      <div class="field">
-        <label nbLabel
-          [for]="type">What is it?</label>
-        <nb-select fullWidth
-          placeholder="Choose one"
-          formControlName="type"
-          nbValidation
-          #type="nbValidation">
-          @for (option of projectTypes; track option) {
-          <nb-option [value]="option">{{ option }}</nb-option>
-          }
-        </nb-select>
-        <nb-validation-errors [for]="type" />
-      </div>
-      <div class="field">
-        <label nbLabel
-          [for]="budget">Budget</label>
-        <nb-select fullWidth
-          placeholder="If you have one in mind"
-          formControlName="budget"
-          nbValidation
-          #budget="nbValidation">
-          @for (option of budgets; track option) {
-          <nb-option [value]="option">{{ option }}</nb-option>
-          }
-        </nb-select>
-        <nb-validation-errors [for]="budget">Optional; it helps me suggest the right scope.</nb-validation-errors>
-      </div>
-    </div>
-    <div class="field">
-      <label nbLabel
-        [for]="message">The project</label>
-      <textarea nbInput
-        fullWidth
-        rows="6"
-        formControlName="message"
-        placeholder="Where it is, what it’s for, and when you’d need the pictures"
-        nbValidation
-        #message="nbValidation"></textarea>
-      <nb-validation-errors [for]="message">A few sentences, at least.</nb-validation-errors>
-    </div>
-    <div class="field">
-      <nb-checkbox formControlName="consent"
-        nbValidation
-        #consent="nbValidation">I’m happy for Emma to keep these details to reply</nb-checkbox>
-      <nb-validation-errors [for]="consent" />
-    </div>
-    <button nbButton
-      status="primary"
-      type="submit">
-      Send the message
-      <nb-icon icon="arrow-forward-outline" />
-    </button>
-  </form>
-  }
+    } @else {
+    <form [formGroup]="form"
+        (ngSubmit)="send()">
+        <div class="row">
+            <div class="field">
+                <label nbLabel
+                    [for]="name">Your name</label>
+                <input nbInput
+                    fullWidth
+                    formControlName="name"
+                    autocomplete="name"
+                    placeholder="Jane Doe"
+                    nbValidation
+                    #name="nbValidation" />
+                <nb-validation-errors [for]="name" />
+            </div>
+            <div class="field">
+                <label nbLabel
+                    [for]="email">Email</label>
+                <input nbInput
+                    fullWidth
+                    type="email"
+                    formControlName="email"
+                    autocomplete="email"
+                    placeholder="you@example.com"
+                    nbValidation
+                    #email="nbValidation" />
+                <nb-validation-errors [for]="email" />
+            </div>
+        </div>
+        <div class="row">
+            <div class="field">
+                <label nbLabel
+                    [for]="type">What is it?</label>
+                <nb-select fullWidth
+                    placeholder="Choose one"
+                    formControlName="type"
+                    nbValidation
+                    #type="nbValidation">
+                    @for (option of projectTypes; track option) {
+                    <nb-option [value]="option">{{ option }}</nb-option>
+                    }
+                </nb-select>
+                <nb-validation-errors [for]="type" />
+            </div>
+            <div class="field">
+                <label nbLabel
+                    [for]="budget">Budget</label>
+                <nb-select fullWidth
+                    placeholder="If you have one in mind"
+                    formControlName="budget"
+                    nbValidation
+                    #budget="nbValidation">
+                    @for (option of budgets; track option) {
+                    <nb-option [value]="option">{{ option }}</nb-option>
+                    }
+                </nb-select>
+                <nb-validation-errors [for]="budget">Optional; it helps me suggest the right scope.</nb-validation-errors>
+            </div>
+        </div>
+        <div class="field">
+            <label nbLabel
+                [for]="message">The project</label>
+            <textarea nbInput
+                fullWidth
+                rows="6"
+                formControlName="message"
+                placeholder="Where it is, what it’s for, and when you’d need the pictures"
+                nbValidation
+                #message="nbValidation"></textarea>
+            <nb-validation-errors [for]="message">A few sentences, at least.</nb-validation-errors>
+        </div>
+        <div class="field">
+            <nb-checkbox formControlName="consent"
+                nbValidation
+                #consent="nbValidation">I’m happy for Emma to keep these details to reply</nb-checkbox>
+            <nb-validation-errors [for]="consent" />
+        </div>
+        <button nbButton
+            status="primary"
+            type="submit">
+            Send the message
+            <nb-icon icon="arrow-forward-outline" />
+        </button>
+    </form>
+    }
 
-  <aside class="studio">
-    <section>
-      <h2 class="label">Studio</h2>
-      <p>
-        @for (line of photographer.address; track line) {
-        {{ line }}<br />
-        }
-      </p>
-    </section>
-    <section>
-      <h2 class="label">Hours</h2>
-      <p>
-        @for (line of photographer.hours; track line) {
-        {{ line }}<br />
-        }
-      </p>
-    </section>
-    <section>
-      <h2 class="label">Directly</h2>
-      <p>
-        <a href="#"
-          (click)="$event.preventDefault()">{{ photographer.email }}</a><br />
-        <span dir="ltr">{{ photographer.phone }}</span>
-      </p>
-    </section>
-    <section>
-      <h2 class="label">Elsewhere</h2>
-      <ul>
-        @for (social of photographer.socials; track social.name) {
-        <li><a href="#"
-            (click)="$event.preventDefault()">{{ social.name }}</a> <span class="handle">{{ social.handle }}</span></li>
-        }
-      </ul>
-    </section>
-  </aside>
+    <aside class="studio">
+        <section>
+            <h2 class="label">Studio</h2>
+            <p>
+                @for (line of photographer.address; track line) {
+                {{ line }}<br />
+                }
+            </p>
+        </section>
+        <section>
+            <h2 class="label">Hours</h2>
+            <p>
+                @for (line of photographer.hours; track line) {
+                {{ line }}<br />
+                }
+            </p>
+        </section>
+        <section>
+            <h2 class="label">Directly</h2>
+            <p>
+                <a href="#"
+                    (click)="$event.preventDefault()">{{ photographer.email }}</a><br />
+                <span dir="ltr">{{ photographer.phone }}</span>
+            </p>
+        </section>
+        <section>
+            <h2 class="label">Elsewhere</h2>
+            <ul>
+                @for (social of photographer.socials; track social.name) {
+                <li><a href="#"
+                        (click)="$event.preventDefault()">{{ social.name }}</a> <span class="handle">{{ social.handle }}</span></li>
+                }
+            </ul>
+        </section>
+    </aside>
 </div>

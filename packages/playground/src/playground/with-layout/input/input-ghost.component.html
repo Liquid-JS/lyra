@@ -1,24 +1,24 @@
 <nb-card>
-  <nb-card-body class="example-items-rows">
-    <input nbInput
-      ghost
-      fieldSize="large"
-      aria-label="Title"
-      [formControl]="title" />
-    <nb-select ghost
-      size="large"
-      aria-labelledby="input-ghost-status"
-      [formControl]="status">
-      <nb-option value="draft">Draft</nb-option>
-      <nb-option value="review">In review</nb-option>
-      <nb-option value="published">Published</nb-option>
-    </nb-select>
-    <span id="input-ghost-status"
-      class="visually-hidden">Status</span>
-    <input nbInput
-      ghost
-      fieldSize="large"
-      disabled
-      value="Disabled" />
-  </nb-card-body>
+    <nb-card-body class="example-items-rows">
+        <input nbInput
+            ghost
+            fieldSize="large"
+            aria-label="Title"
+            [formControl]="title" />
+        <nb-select ghost
+            size="large"
+            aria-labelledby="input-ghost-status"
+            [formControl]="status">
+            <nb-option value="draft">Draft</nb-option>
+            <nb-option value="review">In review</nb-option>
+            <nb-option value="published">Published</nb-option>
+        </nb-select>
+        <span id="input-ghost-status"
+            class="visually-hidden">Status</span>
+        <input nbInput
+            ghost
+            fieldSize="large"
+            disabled
+            value="Disabled" />
+    </nb-card-body>
 </nb-card>

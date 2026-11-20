@@ -1,10 +1,10 @@
 // The default theme's page indicator styles, which specs don't load otherwise.
-@use '@liquid-js/lyr-core/styles/all' as *;
-@use 'page-indicator.component.theme' as page-indicator;
+@use "@liquid-js/lyr-core/styles/all" as *;
+@use "page-indicator.component.theme" as page-indicator;
 
 $nb-enabled-themes: (default);
 
-@include nb-install() {
-  @include nb-theme-base();
-  @include page-indicator.nb-page-indicator-theme();
+@include nb-install {
+    @include nb-theme-base;
+    @include page-indicator.nb-page-indicator-theme;
 }

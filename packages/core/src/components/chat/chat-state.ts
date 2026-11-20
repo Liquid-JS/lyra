@@ -1,4 +1,4 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, signal } from '@angular/core'
 
 /**
  * A chat's state its messages read: whether the chat has rendered its first messages, so only messages added after
@@ -6,5 +6,5 @@ import { Injectable, signal } from '@angular/core';
  */
 @Injectable()
 export class NbChatState {
-  readonly settled = signal(false);
+    readonly settled = signal(false)
 }

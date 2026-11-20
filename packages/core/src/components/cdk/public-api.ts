@@ -1,23 +1,23 @@
-export * from './overlay/overlay.module';
-export * from './overlay/overlay-service';
-export * from './overlay/overlay-position';
-export * from './overlay/overlay-container';
-export * from './overlay/overlay-host.directive';
-export * from './overlay/overlay-trigger';
-export * from './overlay/overlay-escape';
-export * from './overlay/mapping';
-export * from './overlay/overlay-backdrop';
-export * from './overlay/position-helper';
-export * from './overlay/dynamic/dynamic-overlay';
-export * from './overlay/dynamic/dynamic-overlay-handler';
-export * from './a11y/a11y.module';
-export * from './a11y/focus-trap';
-export * from './a11y/focus-key-manager';
-export * from './adapter/adapter.module';
-export * from './adapter/block-scroll-strategy-adapter';
-export * from './adapter/overlay-container-adapter';
-export * from './adapter/scroll-dispatcher-adapter';
-export * from './adapter/viewport-ruler-adapter';
+export * from './overlay/overlay.module'
+export * from './overlay/overlay-service'
+export * from './overlay/overlay-position'
+export * from './overlay/overlay-container'
+export * from './overlay/overlay-host.directive'
+export * from './overlay/overlay-trigger'
+export * from './overlay/overlay-escape'
+export * from './overlay/mapping'
+export * from './overlay/overlay-backdrop'
+export * from './overlay/position-helper'
+export * from './overlay/dynamic/dynamic-overlay'
+export * from './overlay/dynamic/dynamic-overlay-handler'
+export * from './a11y/a11y.module'
+export * from './a11y/focus-trap'
+export * from './a11y/focus-key-manager'
+export * from './adapter/adapter.module'
+export * from './adapter/block-scroll-strategy-adapter'
+export * from './adapter/overlay-container-adapter'
+export * from './adapter/scroll-dispatcher-adapter'
+export * from './adapter/viewport-ruler-adapter'
 
 // Used by other entry points of the package, not part of its API.
-export { NbActiveDescendantKeyManager as ɵNbActiveDescendantKeyManager, NbActiveDescendantKeyManagerFactoryService as ɵNbActiveDescendantKeyManagerFactoryService, type NbHighlightableOption as ɵNbHighlightableOption, NbKeyManagerActiveItemMode as ɵNbKeyManagerActiveItemMode } from './a11y/descendant-key-manager';
+export { NbActiveDescendantKeyManager as ɵNbActiveDescendantKeyManager, NbActiveDescendantKeyManagerFactoryService as ɵNbActiveDescendantKeyManagerFactoryService, type NbHighlightableOption as ɵNbHighlightableOption, NbKeyManagerActiveItemMode as ɵNbKeyManagerActiveItemMode } from './a11y/descendant-key-manager'

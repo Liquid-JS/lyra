@@ -1,35 +1,35 @@
-import { Component, ElementRef, viewChild, signal } from '@angular/core';
-import { TestBed, ComponentFixture, ComponentFixtureAutoDetect } from '@angular/core/testing';
-import { NbListModule, NbListComponent } from '@liquid-js/lyr-core';
-import type { MockInstance } from 'vitest';
+import { Component, ElementRef, viewChild, signal } from '@angular/core'
+import { TestBed, ComponentFixture, ComponentFixtureAutoDetect } from '@angular/core/testing'
+import { NbListModule, NbListComponent } from '@liquid-js/lyr-core'
+import type { MockInstance } from 'vitest'
 
 function waitForSpyCall(spy: MockInstance, checkInterval: number = 40, timeout: number = 1000): Promise<any> {
-  const initialCallsCount = spy.mock.calls.length;
+    const initialCallsCount = spy.mock.calls.length
 
-  return new Promise<void>((resolve, reject) => {
-    const timeoutId = setTimeout(() => {
-      clearInterval(intervalId);
-      reject();
-    }, timeout);
+    return new Promise<void>((resolve, reject) => {
+        const timeoutId = setTimeout(() => {
+            clearInterval(intervalId)
+            reject()
+        }, timeout)
 
-    const intervalId = setInterval(() => {
-      if (spy.mock.calls.length > initialCallsCount) {
-        clearTimeout(timeoutId);
-        clearInterval(intervalId);
-        resolve();
-      }
-    }, checkInterval);
-  });
+        const intervalId = setInterval(() => {
+            if (spy.mock.calls.length > initialCallsCount) {
+                clearTimeout(timeoutId)
+                clearInterval(intervalId)
+                resolve()
+            }
+        }, checkInterval)
+    })
 }
 
-const ITEMS_PER_PAGE: number = 10;
-const ITEM_HEIGHT: number = 100;
-const LIST_HEIGHT: number = 500;
-const PAGE_HEIGHT: number = ITEMS_PER_PAGE * ITEM_HEIGHT;
-let initialItemsCount = 100;
+const ITEMS_PER_PAGE: number = 10
+const ITEM_HEIGHT: number = 100
+const LIST_HEIGHT: number = 500
+const PAGE_HEIGHT: number = ITEMS_PER_PAGE * ITEM_HEIGHT
+let initialItemsCount = 100
 
 @Component({
-  template: `
+    template: `
     <nb-list
       nbListPageTracker
       [pageSize]="pageSize()"
@@ -42,7 +42,7 @@ let initialItemsCount = 100;
       }
     </nb-list>
   `,
-  styles: [
+    styles: [
         `
       .list {
         background: lightslategray;
@@ -55,176 +55,176 @@ let initialItemsCount = 100;
         border: ${ITEM_HEIGHT * 0.01}px solid black;
         height: ${ITEM_HEIGHT * 0.98}px;
       }
-    `,
-  ],
-  imports: [NbListModule],
+    `
+    ],
+    imports: [NbListModule]
 })
 class PagerTestComponent {
-  readonly listElementRef = viewChild.required(NbListComponent, { read: ElementRef });
+    readonly listElementRef = viewChild.required(NbListComponent, { read: ElementRef })
 
-  get listElement(): Element {
-    return this.listElementRef().nativeElement;
-  }
+    get listElement(): Element {
+        return this.listElementRef().nativeElement
+    }
 
-  readonly items = signal(new Array(initialItemsCount));
-  readonly pageSize = signal(ITEMS_PER_PAGE);
-  readonly startPage = signal(1);
+    readonly items = signal(new Array(initialItemsCount))
+    readonly pageSize = signal(ITEMS_PER_PAGE)
+    readonly startPage = signal(1)
 
-  pageChanged(_page?: number) {}
+    pageChanged(_page?: number) {}
 }
 
-let fixture: ComponentFixture<PagerTestComponent>;
-let testComponent: PagerTestComponent;
-let pageChangedSpy: MockInstance;
+let fixture: ComponentFixture<PagerTestComponent>
+let testComponent: PagerTestComponent
+let pageChangedSpy: MockInstance
 
 describe('Directive: NbListPageTrackerDirective', () => {
-  beforeEach(() => {
-    fixture = TestBed.configureTestingModule({
-      imports: [NbListModule, PagerTestComponent],
-      providers: [{ provide: ComponentFixtureAutoDetect, useValue: true }],
-    }).createComponent(PagerTestComponent);
+    beforeEach(() => {
+        fixture = TestBed.configureTestingModule({
+            imports: [NbListModule, PagerTestComponent],
+            providers: [{ provide: ComponentFixtureAutoDetect, useValue: true }]
+        }).createComponent(PagerTestComponent)
 
-    testComponent = fixture.componentInstance;
-    fixture.detectChanges();
+        testComponent = fixture.componentInstance
+        fixture.detectChanges()
 
-    pageChangedSpy = vi.spyOn(testComponent, 'pageChanged').mockImplementation(() => undefined);
-  });
+        pageChangedSpy = vi.spyOn(testComponent, 'pageChanged').mockImplementation(() => undefined)
+    })
 
-  afterEach(async () => {
-    fixture.destroy();
-    await fixture.whenStable();
-    fixture.nativeElement.remove();
-  });
+    afterEach(async () => {
+        fixture.destroy()
+        await fixture.whenStable()
+        fixture.nativeElement.remove()
+    })
 
-  describe('initial page', () => {
-    it('should emit initial page change when list was prefilled', async () => {
-      try {
-        await waitForSpyCall(pageChangedSpy);
-      } catch {
-        expect.fail('Page change should be emmited');
-      }
+    describe('initial page', () => {
+        it('should emit initial page change when list was prefilled', async () => {
+            try {
+                await waitForSpyCall(pageChangedSpy)
+            } catch {
+                expect.fail('Page change should be emmited')
+            }
 
-      expect(pageChangedSpy).toHaveBeenCalledTimes(1);
-      expect(pageChangedSpy).toHaveBeenCalledWith(1);
-    });
+            expect(pageChangedSpy).toHaveBeenCalledTimes(1)
+            expect(pageChangedSpy).toHaveBeenCalledWith(1)
+        })
 
-    describe('empty list', () => {
-      let initialItemsCountBefore: number;
-      beforeAll(() => {
-        initialItemsCountBefore = initialItemsCount;
-        initialItemsCount = 0;
-      });
-      afterAll(() => (initialItemsCount = initialItemsCountBefore));
+        describe('empty list', () => {
+            let initialItemsCountBefore: number
+            beforeAll(() => {
+                initialItemsCountBefore = initialItemsCount
+                initialItemsCount = 0
+            })
+            afterAll(() => (initialItemsCount = initialItemsCountBefore))
 
-      it('should not emit initial page change when list is empty', async () => {
-        try {
-          await waitForSpyCall(pageChangedSpy);
-          expect.fail('Page change should not be emmited');
-        } catch {}
+            it('should not emit initial page change when list is empty', async () => {
+                try {
+                    await waitForSpyCall(pageChangedSpy)
+                    expect.fail('Page change should not be emmited')
+                } catch {}
 
-        expect(pageChangedSpy).not.toHaveBeenCalled();
-      });
+                expect(pageChangedSpy).not.toHaveBeenCalled()
+            })
 
-      it(`should emit initial page change when items added to empty list`, async () => {
-        testComponent.items.set(new Array(initialItemsCountBefore));
-        fixture.detectChanges();
-        try {
-          await waitForSpyCall(pageChangedSpy);
-        } catch {
-          expect.fail('Page change should be emmited');
-        }
+            it('should emit initial page change when items added to empty list', async () => {
+                testComponent.items.set(new Array(initialItemsCountBefore))
+                fixture.detectChanges()
+                try {
+                    await waitForSpyCall(pageChangedSpy)
+                } catch {
+                    expect.fail('Page change should be emmited')
+                }
 
-        expect(pageChangedSpy).toHaveBeenCalledTimes(1);
-        expect(pageChangedSpy).toHaveBeenCalledWith(1);
-      });
-    });
-  });
+                expect(pageChangedSpy).toHaveBeenCalledTimes(1)
+                expect(pageChangedSpy).toHaveBeenCalledWith(1)
+            })
+        })
+    })
 
-  describe('start page', () => {
-    let initialItemsCountBefore: number;
-    beforeAll(() => {
-      initialItemsCountBefore = initialItemsCount;
-      initialItemsCount = 0;
-    });
-    afterAll(() => (initialItemsCount = initialItemsCountBefore));
+    describe('start page', () => {
+        let initialItemsCountBefore: number
+        beforeAll(() => {
+            initialItemsCountBefore = initialItemsCount
+            initialItemsCount = 0
+        })
+        afterAll(() => (initialItemsCount = initialItemsCountBefore))
 
-    it('should take into account start page when calculating current page', async () => {
-      const startPage = 5;
-      const { listElement } = testComponent;
+        it('should take into account start page when calculating current page', async () => {
+            const startPage = 5
+            const { listElement } = testComponent
 
-      testComponent.items.set(new Array(initialItemsCountBefore));
-      testComponent.startPage.set(startPage);
-      fixture.detectChanges();
-      try {
-        await waitForSpyCall(pageChangedSpy);
-      } catch {
-        expect.fail('pageChanged should be called after adding new items to empty list');
-      }
-      expect(pageChangedSpy).toHaveBeenCalledTimes(1);
-      expect(pageChangedSpy).toHaveBeenCalledWith(startPage);
+            testComponent.items.set(new Array(initialItemsCountBefore))
+            testComponent.startPage.set(startPage)
+            fixture.detectChanges()
+            try {
+                await waitForSpyCall(pageChangedSpy)
+            } catch {
+                expect.fail('pageChanged should be called after adding new items to empty list')
+            }
+            expect(pageChangedSpy).toHaveBeenCalledTimes(1)
+            expect(pageChangedSpy).toHaveBeenCalledWith(startPage)
 
-      const numberOfPagesToScroll = [1, 5];
-      let timesPageShouldBeChanged = 1;
-      for (const nPagesToScroll of numberOfPagesToScroll) {
-        listElement.scrollTop = PAGE_HEIGHT * nPagesToScroll;
-        try {
-          await waitForSpyCall(pageChangedSpy);
-          timesPageShouldBeChanged++;
-        } catch {
-          expect.fail(`pageChanged should be called after scrolling ${startPage + nPagesToScroll} pages down`);
-        }
+            const numberOfPagesToScroll = [1, 5]
+            let timesPageShouldBeChanged = 1
+            for (const nPagesToScroll of numberOfPagesToScroll) {
+                listElement.scrollTop = PAGE_HEIGHT * nPagesToScroll
+                try {
+                    await waitForSpyCall(pageChangedSpy)
+                    timesPageShouldBeChanged++
+                } catch {
+                    expect.fail(`pageChanged should be called after scrolling ${startPage + nPagesToScroll} pages down`)
+                }
 
-        expect(pageChangedSpy).toHaveBeenCalledTimes(timesPageShouldBeChanged);
-        expect(pageChangedSpy).toHaveBeenCalledWith(startPage + nPagesToScroll);
-      }
-    });
-  });
+                expect(pageChangedSpy).toHaveBeenCalledTimes(timesPageShouldBeChanged)
+                expect(pageChangedSpy).toHaveBeenCalledWith(startPage + nPagesToScroll)
+            }
+        })
+    })
 
-  describe(`page change`, () => {
-    beforeEach(async () => {
-      try {
-        await waitForSpyCall(pageChangedSpy);
-      } catch {
-        throw new Error('No initial page call');
-      }
-      // 'pageChanged' will be called once after list initialization, since list has items.
-      // Reset to start counting from zero calls.
-      pageChangedSpy.mockClear();
-    });
+    describe('page change', () => {
+        beforeEach(async () => {
+            try {
+                await waitForSpyCall(pageChangedSpy)
+            } catch {
+                throw new Error('No initial page call')
+            }
+            // 'pageChanged' will be called once after list initialization, since list has items.
+            // Reset to start counting from zero calls.
+            pageChangedSpy.mockClear()
+        })
 
-    it('should not emit page change when scrolling within current page', async () => {
-      const { listElement } = testComponent;
-      const positionBeforePageTwo = PAGE_HEIGHT - LIST_HEIGHT;
-      listElement.scrollTop = positionBeforePageTwo;
-      try {
-        await waitForSpyCall(pageChangedSpy);
-      } catch {
-        /* Expecting to throw because 'pageChanged' shouldn't be called since page wasn't changed. */
-      }
+        it('should not emit page change when scrolling within current page', async () => {
+            const { listElement } = testComponent
+            const positionBeforePageTwo = PAGE_HEIGHT - LIST_HEIGHT
+            listElement.scrollTop = positionBeforePageTwo
+            try {
+                await waitForSpyCall(pageChangedSpy)
+            } catch {
+                /* Expecting to throw because 'pageChanged' shouldn't be called since page wasn't changed. */
+            }
 
-      expect(pageChangedSpy).not.toHaveBeenCalled();
-    });
+            expect(pageChangedSpy).not.toHaveBeenCalled()
+        })
 
-    it('should emit page change when scrolling to another pages', async () => {
-      const { listElement } = testComponent;
+        it('should emit page change when scrolling to another pages', async () => {
+            const { listElement } = testComponent
 
-      const startPage = 1;
-      let timesPageShouldBeChanged = 0;
-      const lastPage = initialItemsCount / ITEMS_PER_PAGE - 1;
-      const numbersOfPagesToScroll = [1, 2, lastPage, 0];
+            const startPage = 1
+            let timesPageShouldBeChanged = 0
+            const lastPage = initialItemsCount / ITEMS_PER_PAGE - 1
+            const numbersOfPagesToScroll = [1, 2, lastPage, 0]
 
-      for (const pagesToScroll of numbersOfPagesToScroll) {
-        listElement.scrollTop = PAGE_HEIGHT * pagesToScroll;
-        try {
-          await waitForSpyCall(pageChangedSpy);
-          timesPageShouldBeChanged++;
-        } catch {
-          expect.fail(`pageChanged should be called after scrolling to ${startPage + pagesToScroll} page`);
-        }
+            for (const pagesToScroll of numbersOfPagesToScroll) {
+                listElement.scrollTop = PAGE_HEIGHT * pagesToScroll
+                try {
+                    await waitForSpyCall(pageChangedSpy)
+                    timesPageShouldBeChanged++
+                } catch {
+                    expect.fail(`pageChanged should be called after scrolling to ${startPage + pagesToScroll} page`)
+                }
 
-        expect(pageChangedSpy).toHaveBeenCalledTimes(timesPageShouldBeChanged);
-        expect(pageChangedSpy).toHaveBeenCalledWith(startPage + pagesToScroll);
-      }
-    });
-  });
-});
+                expect(pageChangedSpy).toHaveBeenCalledTimes(timesPageShouldBeChanged)
+                expect(pageChangedSpy).toHaveBeenCalledWith(startPage + pagesToScroll)
+            }
+        })
+    })
+})

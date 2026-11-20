@@ -1,39 +1,39 @@
 <nb-card>
-  <nb-card-body>
-    <form>
-      <div class="field">
-        <label class="label"
-          for="validation-td-name">Name</label>
-        <input nbInput
-          fullWidth
-          id="validation-td-name"
-          name="name"
-          [(ngModel)]="name"
-          required
-          nbValidation
-          #nameValidation="nbValidation" />
-        <nb-validation-errors [for]="nameValidation" />
-      </div>
+    <nb-card-body>
+        <form>
+            <div class="field">
+                <label class="label"
+                    for="validation-td-name">Name</label>
+                <input nbInput
+                    fullWidth
+                    id="validation-td-name"
+                    name="name"
+                    [(ngModel)]="name"
+                    required
+                    nbValidation
+                    #nameValidation="nbValidation" />
+                <nb-validation-errors [for]="nameValidation" />
+            </div>
 
-      <div class="field">
-        <label class="label"
-          for="validation-td-email">Email</label>
-        <input nbInput
-          fullWidth
-          id="validation-td-email"
-          name="email"
-          type="email"
-          [(ngModel)]="email"
-          required
-          email
-          nbValidation
-          #emailValidation="nbValidation" />
-        <nb-validation-errors [for]="emailValidation" />
-      </div>
+            <div class="field">
+                <label class="label"
+                    for="validation-td-email">Email</label>
+                <input nbInput
+                    fullWidth
+                    id="validation-td-email"
+                    name="email"
+                    type="email"
+                    [(ngModel)]="email"
+                    required
+                    email
+                    nbValidation
+                    #emailValidation="nbValidation" />
+                <nb-validation-errors [for]="emailValidation" />
+            </div>
 
-      <button nbButton
-        status="primary"
-        type="submit">Save</button>
-    </form>
-  </nb-card-body>
+            <button nbButton
+                status="primary"
+                type="submit">Save</button>
+        </form>
+    </nb-card-body>
 </nb-card>

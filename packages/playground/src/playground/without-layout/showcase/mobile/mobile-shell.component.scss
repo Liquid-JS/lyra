@@ -1,54 +1,54 @@
-@use '../../../styles/themes' as *;
+@use "../../../styles/themes" as *;
 
 $tabs-height: 4rem;
 
 .title {
-  flex: 1;
-  margin: 0;
-  font-size: 1.125rem;
+    flex: 1;
+    margin: 0;
+    font-size: 1.125rem;
 }
 
 .screen {
-  // Room for the tabs.
-  padding-bottom: calc(#{$tabs-height} + 1rem) !important;
+    // Room for the tabs.
+    padding-bottom: calc(#{$tabs-height} + 1rem) !important;
 }
 
 // The tabs along the bottom, in the header's colours.
 .tabs {
-  position: fixed;
-  inset-inline: 0;
-  bottom: 0;
-  z-index: 1040;
-  display: flex;
-  height: $tabs-height;
-  border-top: 1px solid nb-theme(divider-color);
-  background: nb-theme(header-background-color);
-  padding-bottom: env(safe-area-inset-bottom);
-
-  a {
-    flex: 1;
+    position: fixed;
+    inset-inline: 0;
+    bottom: 0;
+    z-index: 1040;
     display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 0.25rem;
-    color: nb-theme(text-hint-color);
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-decoration: none;
+    height: $tabs-height;
+    border-top: 1px solid nb-theme(divider-color);
+    background: nb-theme(header-background-color);
+    padding-bottom: env(safe-area-inset-bottom);
 
-    nb-icon {
-      font-size: 1.5rem;
-    }
+    a {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.25rem;
+        color: nb-theme(text-hint-color);
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-decoration: none;
 
-    &.active {
-      color: nb-theme(text-primary-color);
-      box-shadow: inset 0 2px 0 nb-theme(color-primary-default);
-    }
+        nb-icon {
+            font-size: 1.5rem;
+        }
 
-    &:focus-visible {
-      outline: none;
-      box-shadow: inset 0 0 0 nb-theme(outline-width) nb-theme(outline-color);
+        &.active {
+            color: nb-theme(text-primary-color);
+            box-shadow: inset 0 2px 0 nb-theme(color-primary-default);
+        }
+
+        &:focus-visible {
+            outline: none;
+            box-shadow: inset 0 0 0 nb-theme(outline-width) nb-theme(outline-color);
+        }
     }
-  }
 }

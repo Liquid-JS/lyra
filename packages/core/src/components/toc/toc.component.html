@@ -1,23 +1,23 @@
 <ng-container [ngTemplateOutlet]="list"
-  [ngTemplateOutletContext]="{ $implicit: entries() }" />
+    [ngTemplateOutletContext]="{ $implicit: entries() }" />
 
 <ng-template #list
-  let-entries>
-  <ul>
-    @for (entry of entries; track entry.id) {
-    <li>
-      <!-- Reachable with Tab in Safari, which skips links by default. -->
-      <a routerLink="."
-        tabindex="0"
-        [fragment]="entry.id"
-        [class.active]="active() === entry.id"
-        [attr.aria-current]="active() === entry.id ? 'location' : null"
-        (click)="onLinkClick($event, entry)">@for (part of entry.parts; track $index) {@if (!$first) {<wbr>}{{ part }}}</a>
-      @if (entry.children.length) {
-      <ng-container [ngTemplateOutlet]="list"
-        [ngTemplateOutletContext]="{ $implicit: entry.children }" />
-      }
-    </li>
-    }
-  </ul>
+    let-entries>
+    <ul>
+        @for (entry of entries; track entry.id) {
+        <li>
+            <!-- Reachable with Tab in Safari, which skips links by default. -->
+            <a routerLink="."
+                tabindex="0"
+                [fragment]="entry.id"
+                [class.active]="active() === entry.id"
+                [attr.aria-current]="active() === entry.id ? 'location' : null"
+                (click)="onLinkClick($event, entry)">@for (part of entry.parts; track $index) {@if (!$first) {<wbr>}{{ part }}}</a>
+            @if (entry.children.length) {
+            <ng-container [ngTemplateOutlet]="list"
+                [ngTemplateOutletContext]="{ $implicit: entry.children }" />
+            }
+        </li>
+        }
+    </ul>
 </ng-template>

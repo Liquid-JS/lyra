@@ -1,27 +1,20 @@
 import {
-  Component,
-  computed,
-  ElementRef,
-  forwardRef,
-  inject,
-  input,
-  linkedSignal,
-  output,
-} from '@angular/core';
-import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
+    Component,
+    computed,
+    ElementRef,
+    forwardRef,
+    inject,
+    input,
+    linkedSignal,
+    output
+} from '@angular/core'
+import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms'
 
-import { injectNbDefaults } from '@liquid-js/lyr-core/base';
-import { NbStatusService } from '@liquid-js/lyr-core/base';
-import { NbLayoutDirectionService } from '@liquid-js/lyr-core/base';
-import { NbComponentOrCustomStatus } from '@liquid-js/lyr-core/base';
-import { NbComponentSize } from '@liquid-js/lyr-core/base';
-import { ɵconvertToBoolProperty as convertToBoolProperty, NbBooleanInput } from '@liquid-js/lyr-core/base';
-import { ɵfocusOnClick as focusOnClick } from '@liquid-js/lyr-core/base';
-import { NbValidationDirective } from '@liquid-js/lyr-core/validation';
-import { NbIconComponent } from '@liquid-js/lyr-core/icon';
-import { ɵenableTransitionsAfterRender as enableTransitionsAfterRender } from '@liquid-js/lyr-core/base';
+import { injectNbDefaults, NbStatusService, NbLayoutDirectionService, NbComponentOrCustomStatus, NbComponentSize, ɵconvertToBoolProperty as convertToBoolProperty, NbBooleanInput, ɵfocusOnClick as focusOnClick, ɵenableTransitionsAfterRender as enableTransitionsAfterRender } from '@liquid-js/lyr-core/base'
+import { NbValidationDirective } from '@liquid-js/lyr-core/validation'
+import { NbIconComponent } from '@liquid-js/lyr-core/icon'
 
-let lastToggleId = 0;
+let lastToggleId = 0
 
 /**
  * A switch between on and off, with a label; a native checkbox with the `switch` role underneath.
@@ -53,19 +46,15 @@ let lastToggleId = 0;
  * ### Usage
  *
  * `status` colours it: `basic` (default), `primary`, `success`, `warning`, `danger`, `info` or `control`.
- *
  * @stacked-example(Toggle status, toggle/toggle-status.component)
  *
  * `disabled` disables it:
- *
  * @stacked-example(Disabled Toggles, toggle/toggle-disabled.component)
  *
  * `size` sizes it: `tiny`, `small`, `medium` (default), `large` or `giant`.
- *
  * @stacked-example(Toggle sizes, toggle/toggle-sizes.component)
  *
  * The content is its label, placed with `labelPosition`: `left`, `right`, `start` or `end` (default).
- *
  * @stacked-example(Toggles With Labels, toggle/toggle-label-position.component.ts)
  *
  * Bind `checked` and `checkedChange` without forms:
@@ -75,9 +64,7 @@ let lastToggleId = 0;
  * ```
  *
  * Or use reactive forms or `ngModel`:
- *
  * @stacked-example(Toggle form binding, toggle/toggle-form.component)
- *
  * @styles
  *
  * toggle-tiny-height:
@@ -299,114 +286,114 @@ let lastToggleId = 0;
  * toggle-control-disabled-text-color:
  */
 @Component({
-  selector: 'nb-toggle',
-  templateUrl: './toggle.component.html',
-  styleUrls: [`./toggle.component.scss`],
-  providers: [{
-    provide: NG_VALUE_ACCESSOR,
-    useExisting: forwardRef(() => NbToggleComponent),
-    multi: true,
-  }],
-  imports: [NbIconComponent],
-  host: {
-    '[class]': 'hostClasses()',
-  },
+    selector: 'nb-toggle',
+    templateUrl: './toggle.component.html',
+    styleUrls: ['./toggle.component.scss'],
+    providers: [{
+        provide: NG_VALUE_ACCESSOR,
+        useExisting: forwardRef(() => NbToggleComponent),
+        multi: true
+    }],
+    imports: [NbIconComponent],
+    host: {
+        '[class]': 'hostClasses()'
+    }
 })
 export class NbToggleComponent implements ControlValueAccessor {
-  // The app's defaults for this type, which the inputs below start from.
-  protected readonly nbDefaults = injectNbDefaults('toggle');
+    // The app's defaults for this type, which the inputs below start from.
+    protected readonly nbDefaults = injectNbDefaults('toggle')
 
-  protected readonly focusOnClick = focusOnClick;
-  private readonly layoutDirection = inject(NbLayoutDirectionService);
-  private readonly hostElement = inject<ElementRef<HTMLElement>>(ElementRef);
-  protected readonly statusService = inject(NbStatusService);
+    protected readonly focusOnClick = focusOnClick
+    private readonly layoutDirection = inject(NbLayoutDirectionService)
+    private readonly hostElement = inject<ElementRef<HTMLElement>>(ElementRef)
+    protected readonly statusService = inject(NbStatusService)
 
-  onChange: (value: boolean) => void = () => {};
-  onTouched: () => void = () => {};
+    onChange: (value: boolean) => void = () => {}
+    onTouched: () => void = () => {}
 
-  /** Whether the toggle is on; a user or a form changes it from there, see `isChecked`. */
-  readonly checked = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
+    /** Whether the toggle is on; a user or a form changes it from there, see `isChecked`. */
+    readonly checked = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty })
 
-  /** Disables the toggle; a form changes it from there, see `isDisabled`. */
-  readonly disabled = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
+    /** Disables the toggle; a form changes it from there, see `isDisabled`. */
+    readonly disabled = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty })
 
-  protected readonly validation = inject(NbValidationDirective, { self: true, optional: true });
+    protected readonly validation = inject(NbValidationDirective, { self: true, optional: true })
 
-  // The label's text, which names the toggle after an `nbLabel` of its `nbValidation`, as a select's value follows it.
-  protected readonly textId = `nb-toggle-text-${lastToggleId++}`;
-  protected readonly labelledBy = computed(() => {
-    const labels = this.validation?.labelledBy();
-    return labels ? `${labels} ${this.textId}` : null;
-  });
+    // The label's text, which names the toggle after an `nbLabel` of its `nbValidation`, as a select's value follows it.
+    protected readonly textId = `nb-toggle-text-${lastToggleId++}`
+    protected readonly labelledBy = computed(() => {
+        const labels = this.validation?.labelledBy()
+        return labels ? `${labels} ${this.textId}` : null
+    })
 
-  /**
-   * `basic` (default), `primary`, `success`, `warning`, `danger`, `info` or `control`. With `nbValidation`, the
-   * validation status takes over while the control shows errors or success.
-   */
-  readonly status = input<NbComponentOrCustomStatus>('basic');
+    /**
+     * `basic` (default), `primary`, `success`, `warning`, `danger`, `info` or `control`. With `nbValidation`, the
+     * validation status takes over while the control shows errors or success.
+     */
+    readonly status = input<NbComponentOrCustomStatus>('basic')
 
-  // With `nbValidation`, the status it gives while the control shows errors or success.
-  protected readonly resolvedStatus = computed(() => this.validation?.status() ?? this.status());
+    // With `nbValidation`, the status it gives while the control shows errors or success.
+    protected readonly resolvedStatus = computed(() => this.validation?.status() ?? this.status())
 
-  /** `tiny`, `small`, `medium` (default), `large` or `giant`. */
-  readonly sizeInput = input<NbComponentSize | undefined>(undefined, { alias: 'size' });
-  /** The size in use: the input's, the app's default, or 'medium'. */
-  readonly size = linkedSignal<NbComponentSize>(() => this.sizeInput() ?? this.nbDefaults().size ?? 'medium');
+    /** `tiny`, `small`, `medium` (default), `large` or `giant`. */
+    readonly sizeInput = input<NbComponentSize | undefined>(undefined, { alias: 'size' })
+    /** The size in use: the input's, the app's default, or 'medium'. */
+    readonly size = linkedSignal<NbComponentSize>(() => this.sizeInput() ?? this.nbDefaults().size ?? 'medium')
 
-  /** Where the label goes: `left`, `right`, `start` or `end` (default). */
-  readonly labelPosition = input<'left' | 'right' | 'start' | 'end'>('end');
+    /** Where the label goes: `left`, `right`, `start` or `end` (default). */
+    readonly labelPosition = input<'left' | 'right' | 'start' | 'end'>('end')
 
-  /** Emits when the user switches the toggle; not for `checked` or a form's writes. */
-  readonly checkedChange = output<boolean>();
+    /** Emits when the user switches the toggle; not for `checked` or a form's writes. */
+    readonly checkedChange = output<boolean>()
 
-  /** Whether the toggle is checked: the `checked` input, until a user or a form changes it. */
-  readonly isChecked = linkedSignal(() => this.checked());
+    /** Whether the toggle is checked: the `checked` input, until a user or a form changes it. */
+    readonly isChecked = linkedSignal(() => this.checked())
 
-  /** Whether the toggle is disabled: the `disabled` input, until a form changes it. */
-  readonly isDisabled = linkedSignal(() => this.disabled());
+    /** Whether the toggle is disabled: the `disabled` input, until a form changes it. */
+    readonly isDisabled = linkedSignal(() => this.disabled())
 
-  protected readonly hostClasses = computed(() => [
-    this.statusService.getStatusClass(this.resolvedStatus()),
-    `size-${this.size()}`,
-    `toggle-label-${this.labelPosition()}`,
-  ]);
+    protected readonly hostClasses = computed(() => [
+        this.statusService.getStatusClass(this.resolvedStatus()),
+        `size-${this.size()}`,
+        `toggle-label-${this.labelPosition()}`
+    ])
 
-  // The side the knob is on: the end side when checked, so `right` in LTR and `left` in RTL.
-  readonly checkState = computed(() => {
-    const atEnd = this.isChecked();
-    return atEnd === this.layoutDirection.isLtr() ? 'right' : 'left';
-  });
+    // The side the knob is on: the end side when checked, so `right` in LTR and `left` in RTL.
+    readonly checkState = computed(() => {
+        const atEnd = this.isChecked()
+        return atEnd === this.layoutDirection.isLtr() ? 'right' : 'left'
+    })
 
-  constructor() {
+    constructor() {
     // The focusable element is inside: the button or the native input gets aria-invalid and aria-describedby.
-    this.validation?.delegateAria();
-    enableTransitionsAfterRender(this.hostElement.nativeElement);
-  }
+        this.validation?.delegateAria()
+        enableTransitionsAfterRender(this.hostElement.nativeElement)
+    }
 
-  registerOnChange(fn: (value: boolean) => void) {
-    this.onChange = fn;
-  }
+    registerOnChange(fn: (value: boolean) => void) {
+        this.onChange = fn
+    }
 
-  registerOnTouched(fn: () => void) {
-    this.onTouched = fn;
-  }
+    registerOnTouched(fn: () => void) {
+        this.onTouched = fn
+    }
 
-  writeValue(value: boolean | null) {
-    this.isChecked.set(!!value);
-  }
+    writeValue(value: boolean | null) {
+        this.isChecked.set(!!value)
+    }
 
-  setDisabledState(val: boolean) {
-    this.isDisabled.set(convertToBoolProperty(val));
-  }
+    setDisabledState(val: boolean) {
+        this.isDisabled.set(convertToBoolProperty(val))
+    }
 
-  updateValue(event: Event) {
-    const nativeInput = event.target as HTMLInputElement;
-    this.isChecked.set(nativeInput.checked);
-    this.checkedChange.emit(nativeInput.checked);
-    this.onChange(nativeInput.checked);
-  }
+    updateValue(event: Event) {
+        const nativeInput = event.target as HTMLInputElement
+        this.isChecked.set(nativeInput.checked)
+        this.checkedChange.emit(nativeInput.checked)
+        this.onChange(nativeInput.checked)
+    }
 
-  onInputClick(event: Event) {
-    event.stopPropagation();
-  }
+    onInputClick(event: Event) {
+        event.stopPropagation()
+    }
 }

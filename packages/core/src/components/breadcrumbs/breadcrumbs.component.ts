@@ -1,20 +1,20 @@
-import { NgTemplateOutlet } from '@angular/common';
+import { NgTemplateOutlet } from '@angular/common'
 import {
-  Component,
-  computed,
-  contentChild,
-  contentChildren,
-  DestroyRef,
-  Directive,
-  ElementRef,
-  inject,
-  input,
-  TemplateRef,
-} from '@angular/core';
-import { injectNbTexts, NbLocalize } from '@liquid-js/lyr-core/base';
+    Component,
+    computed,
+    contentChild,
+    contentChildren,
+    DestroyRef,
+    Directive,
+    ElementRef,
+    inject,
+    input,
+    TemplateRef
+} from '@angular/core'
+import { injectNbTexts, NbLocalize } from '@liquid-js/lyr-core/base'
 
 /** @internal */
-declare const $localize: NbLocalize;
+declare const $localize: NbLocalize
 
 /**
  * Replaces the `/` between breadcrumbs, e.g. with an icon.
@@ -24,18 +24,18 @@ declare const $localize: NbLocalize;
  * ```
  */
 @Directive({
-  selector: 'ng-template[nbBreadcrumbSeparator]',
+    selector: 'ng-template[nbBreadcrumbSeparator]'
 })
 export class NbBreadcrumbSeparatorDirective {
-  readonly template = inject(TemplateRef);
+    readonly template = inject(TemplateRef)
 }
 
 /**
  * A breadcrumb in `nb-breadcrumbs`: a link to a page, or the current page as text.
  */
 @Component({
-  selector: 'nb-breadcrumb',
-  template: `
+    selector: 'nb-breadcrumb',
+    template: `
     @if (!first()) {
       <span class="separator" aria-hidden="true">
         @if (breadcrumbs.separatorTemplate(); as separator) {
@@ -47,31 +47,31 @@ export class NbBreadcrumbSeparatorDirective {
     }
     <ng-content />
   `,
-  imports: [NgTemplateOutlet],
-  host: {
-    role: 'listitem',
-    '[class.current]': 'current()',
-    '[attr.aria-current]': "current() ? 'page' : null",
-  },
+    imports: [NgTemplateOutlet],
+    host: {
+        'role': 'listitem',
+        '[class.current]': 'current()',
+        '[attr.aria-current]': "current() ? 'page' : null"
+    }
 })
 export class NbBreadcrumbComponent {
-  protected readonly breadcrumbs = inject(NbBreadcrumbsComponent);
+    protected readonly breadcrumbs = inject(NbBreadcrumbsComponent)
 
-  protected readonly current = computed(() => this.breadcrumbs.last() === this);
-  protected readonly first = computed(() => this.breadcrumbs.breadcrumbs().at(0) === this);
+    protected readonly current = computed(() => this.breadcrumbs.last() === this)
+    protected readonly first = computed(() => this.breadcrumbs.breadcrumbs().at(0) === this)
 
-  constructor() {
+    constructor() {
     // Safari skips links with Tab by default; its link gets a `tabindex`, as menu items have, unless it has one.
-    const element = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
-    const focusable = () =>
-      element.querySelectorAll(':scope > a[href]:not([tabindex])').forEach((link) => link.setAttribute('tabindex', '0'));
-    focusable();
-    if (typeof MutationObserver !== 'undefined') {
-      const observer = new MutationObserver(focusable);
-      observer.observe(element, { childList: true, attributes: true, attributeFilter: ['href'], subtree: true });
-      inject(DestroyRef).onDestroy(() => observer.disconnect());
+        const element = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement
+        const focusable = () =>
+            element.querySelectorAll(':scope > a[href]:not([tabindex])').forEach((link) => link.setAttribute('tabindex', '0'))
+        focusable()
+        if (typeof MutationObserver !== 'undefined') {
+            const observer = new MutationObserver(focusable)
+            observer.observe(element, { childList: true, attributes: true, attributeFilter: ['href'], subtree: true })
+            inject(DestroyRef).onDestroy(() => observer.disconnect())
+        }
     }
-  }
 }
 
 /**
@@ -95,7 +95,6 @@ export class NbBreadcrumbComponent {
  * The separator is a `/`; an `ng-template` with `nbBreadcrumbSeparator` replaces it, e.g. with an icon. Mirror
  * an arrow for right-to-left text yourself, as icons aren't mirrored:
  * @stacked-example(Custom separator, breadcrumbs/breadcrumbs-separator.component)
- *
  * @styles
  *
  * breadcrumbs-gap:
@@ -114,35 +113,35 @@ export class NbBreadcrumbComponent {
  * breadcrumbs-separator-text-color:
  */
 @Component({
-  selector: 'nb-breadcrumbs',
-  template: `
+    selector: 'nb-breadcrumbs',
+    template: `
     <ol>
       <ng-content />
     </ol>
   `,
-  styleUrls: ['./breadcrumbs.component.scss'],
-  host: {
-    role: 'navigation',
-    '[attr.aria-label]': 'ariaLabel() ?? texts().label',
-  },
+    styleUrls: ['./breadcrumbs.component.scss'],
+    host: {
+        'role': 'navigation',
+        '[attr.aria-label]': 'ariaLabel() ?? texts().label'
+    }
 })
 export class NbBreadcrumbsComponent {
-  protected readonly texts = injectNbTexts('breadcrumbs', () => ({
-    label: $localize`:@@nb.breadcrumbs.label:Breadcrumb`,
-  }));
+    protected readonly texts = injectNbTexts('breadcrumbs', () => ({
+        label: $localize`:@@nb.breadcrumbs.label:Breadcrumb`
+    }))
 
-  /**
-   * Names the navigation landmark; "Breadcrumb" by default.
-   */
-  readonly ariaLabel = input<string | undefined>(undefined, { alias: 'aria-label' });
+    /**
+     * Names the navigation landmark; "Breadcrumb" by default.
+     */
+    readonly ariaLabel = input<string | undefined>(undefined, { alias: 'aria-label' })
 
-  /** @internal */
-  readonly breadcrumbs = contentChildren(NbBreadcrumbComponent);
-  protected readonly separator = contentChild(NbBreadcrumbSeparatorDirective);
+    /** @internal */
+    readonly breadcrumbs = contentChildren(NbBreadcrumbComponent)
+    protected readonly separator = contentChild(NbBreadcrumbSeparatorDirective)
 
-  /** @internal */
-  readonly separatorTemplate = computed(() => this.separator()?.template);
+    /** @internal */
+    readonly separatorTemplate = computed(() => this.separator()?.template)
 
-  /** @internal */
-  readonly last = computed(() => this.breadcrumbs().at(-1));
+    /** @internal */
+    readonly last = computed(() => this.breadcrumbs().at(-1))
 }

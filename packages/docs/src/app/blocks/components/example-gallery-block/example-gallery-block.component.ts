@@ -1,12 +1,12 @@
-import { Component } from '@angular/core';
+import { Component } from '@angular/core'
 
-import { NgdExampleAppCardComponent } from './example-app-card.component';
-import { EXAMPLE_APPS } from './example-apps';
+import { NgdExampleAppCardComponent } from './example-app-card.component'
+import { EXAMPLE_APPS } from './example-apps'
 
 /** The example apps, each in the theme it looks best in, a picture of each screen linking to it. */
 @Component({
-  selector: 'ngd-example-gallery-block',
-  template: `
+    selector: 'ngd-example-gallery-block',
+    template: `
     <p class="intro">
       Whole screens built with Lyra's components, each in a theme that suits it. Open one to use it, see its code, or
       change its theme and component defaults and watch the screen follow.
@@ -27,7 +27,7 @@ import { EXAMPLE_APPS } from './example-apps';
       }
     </div>
   `,
-  styles: `
+    styles: `
     :host {
       display: block;
     }
@@ -50,10 +50,10 @@ import { EXAMPLE_APPS } from './example-apps';
       gap: 1.5rem;
     }
   `,
-  imports: [NgdExampleAppCardComponent],
+    imports: [NgdExampleAppCardComponent]
 })
 export class NgdExampleGalleryBlockComponent {
-  protected readonly apps = EXAMPLE_APPS.filter(({ showcase }) => !showcase);
-  /** The apps in themes of their own. */
-  protected readonly showcase = EXAMPLE_APPS.filter(({ showcase }) => showcase);
+    protected readonly apps = EXAMPLE_APPS.filter(({ showcase }) => !showcase)
+    /** The apps in themes of their own. */
+    protected readonly showcase = EXAMPLE_APPS.filter(({ showcase }) => showcase)
 }

@@ -1,16 +1,17 @@
+<!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -- The select's list moves focus and opens groups by keyboard. -->
 <div class="option-nested-row"
-  [class.multiple]="multiple()"
-  (click)="toggle($event)"
-  #row>
-  <span class="option-nested-title"
-    [id]="titleId"><span dir="auto">{{ title() }}</span></span>
-  <nb-icon class="option-nested-icon"
-    icon="chevron-right-outline"
-    pack="essentials"
-    aria-hidden="true" />
+    [class.multiple]="multiple()"
+    (click)="toggle($event)"
+    #row>
+    <span class="option-nested-title"
+        [id]="titleId"><span dir="auto">{{ title() }}</span></span>
+    <nb-icon class="option-nested-icon"
+        icon="chevron-right-outline"
+        pack="essentials"
+        aria-hidden="true" />
 </div>
 <div class="option-nested-options"
-  role="group"
-  [id]="groupId">
-  <ng-content select="nb-option, nb-option-nested, nb-option-group, ng-container" />
+    role="group"
+    [id]="groupId">
+    <ng-content select="nb-option, nb-option-nested, nb-option-group, ng-container" />
 </div>

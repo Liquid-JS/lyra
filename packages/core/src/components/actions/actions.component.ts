@@ -1,71 +1,69 @@
-import { Component, input } from '@angular/core';
+import { Component, input } from '@angular/core'
 
-import { ɵconvertToBoolProperty as convertToBoolProperty, NbBooleanInput } from '@liquid-js/lyr-core/base';
-import { NbComponentSize } from '@liquid-js/lyr-core/base';
-import { NbComponentOrCustomStatus } from '@liquid-js/lyr-core/base';
-import { NbBadgePosition, NbBadgeComponent } from '@liquid-js/lyr-core/badge';
-import { NbIconConfig, NbIconComponent } from '@liquid-js/lyr-core/icon';
-import { RouterLink } from '@angular/router';
-import { NgTemplateOutlet } from '@angular/common';
+import { ɵconvertToBoolProperty as convertToBoolProperty, NbBooleanInput, NbComponentSize, NbComponentOrCustomStatus } from '@liquid-js/lyr-core/base'
+import { NbBadgePosition, NbBadgeComponent } from '@liquid-js/lyr-core/badge'
+import { NbIconConfig, NbIconComponent } from '@liquid-js/lyr-core/icon'
+import { RouterLink } from '@angular/router'
+import { NgTemplateOutlet } from '@angular/common'
 
 /**
  * An action in `nb-actions`: a link with an icon, or any content given instead of an icon.
  */
 @Component({
-  selector: 'nb-action',
-  styleUrls: ['./action.component.scss'],
-  templateUrl: './actions.component.html',
-  imports: [RouterLink, NbIconComponent, NgTemplateOutlet, NbBadgeComponent],
-  host: {
-    '[class.disabled]': 'disabled()',
-  },
+    selector: 'nb-action',
+    styleUrls: ['./action.component.scss'],
+    templateUrl: './actions.component.html',
+    imports: [RouterLink, NbIconComponent, NgTemplateOutlet, NbBadgeComponent],
+    host: {
+        '[class.disabled]': 'disabled()'
+    }
 })
 export class NbActionComponent {
-  /**
-   * Router link of the icon; wins over `href`.
-   */
-  readonly link = input<string>();
+    /**
+     * Router link of the icon; wins over `href`.
+     */
+    readonly link = input<string>()
 
-  /**
-   * Plain `href` of the icon. Without `link` or `href` the icon is a link that goes nowhere.
-   */
-  readonly href = input<string>();
+    /**
+     * Plain `href` of the icon. Without `link` or `href` the icon is a link that goes nowhere.
+     */
+    readonly href = input<string>()
 
-  /**
-   * Title (tooltip) of the icon link.
-   */
-  readonly title = input<string>('');
+    /**
+     * Title (tooltip) of the icon link.
+     */
+    readonly title = input<string>('')
 
-  /**
-   * Icon name or config. Without it the action shows its content instead.
-   */
-  readonly icon = input<string | NbIconConfig>();
+    /**
+     * Icon name or config. Without it the action shows its content instead.
+     */
+    readonly icon = input<string | NbIconConfig>()
 
-  /**
-   * Disables the item: dimmed, skipped by Tab and `aria-disabled`.
-   */
-  readonly disabled = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
+    /**
+     * Disables the item: dimmed, skipped by Tab and `aria-disabled`.
+     */
+    readonly disabled = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty })
 
-  /**
-   * Shows the badge as a dot, without text.
-   */
-  readonly badgeDot = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
+    /**
+     * Shows the badge as a dot, without text.
+     */
+    readonly badgeDot = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty })
 
-  /**
-   * Text of the badge, which shows when this or `badgeDot` is set.
-   */
-  readonly badgeText = input<string>();
+    /**
+     * Text of the badge, which shows when this or `badgeDot` is set.
+     */
+    readonly badgeText = input<string>()
 
-  /**
-   * Badge status: `basic` (default), `primary`, `info`, `success`, `warning`, `danger`, `control` or a custom one.
-   */
-  readonly badgeStatus = input<NbComponentOrCustomStatus>('basic');
+    /**
+     * Badge status: `basic` (default), `primary`, `info`, `success`, `warning`, `danger`, `control` or a custom one.
+     */
+    readonly badgeStatus = input<NbComponentOrCustomStatus>('basic')
 
-  /**
-   * Badge position, `top right` by default: a physical corner such as `bottom left`, or a logical one such as
-   * `top end`.
-   */
-  readonly badgePosition = input<NbBadgePosition>();
+    /**
+     * Badge position, `top right` by default: a physical corner such as `bottom left`, or a logical one such as
+     * `top end`.
+     */
+    readonly badgePosition = input<NbBadgePosition>()
 }
 
 /**
@@ -110,7 +108,6 @@ export class NbActionComponent {
  * @stacked-example(Multiple Sizes, action/action-sizes.component)
  *
  * It is also possible to specify a `badge` value:
- *
  * @stacked-example(Action Badge, action/action-badge.component)
  *
  * and we can set it to full a width of a parent component
@@ -118,7 +115,6 @@ export class NbActionComponent {
  *
  * Action dot mode
  * @stacked-example(Action badge in dot mode, action/action-dot-mode.component)
- *
  * @styles
  *
  * actions-background-color:
@@ -154,22 +150,22 @@ export class NbActionComponent {
  * actions-giant-text-font-size:
  */
 @Component({
-  selector: 'nb-actions',
-  styleUrls: ['./actions.component.scss'],
-  template: ` <ng-content select="nb-action" /> `,
-  host: {
-    '[class]': '`size-${size()}`',
-    '[class.full-width]': 'fullWidth()',
-  },
+    selector: 'nb-actions',
+    styleUrls: ['./actions.component.scss'],
+    template: ' <ng-content select="nb-action" /> ',
+    host: {
+        '[class]': '"size-" + size()',
+        '[class.full-width]': 'fullWidth()'
+    }
 })
 export class NbActionsComponent {
-  /**
-   * Size of the icons: `tiny`, `small` (default), `medium`, `large` or `giant`.
-   */
-  readonly size = input<NbComponentSize>('small');
+    /**
+     * Size of the icons: `tiny`, `small` (default), `medium`, `large` or `giant`.
+     */
+    readonly size = input<NbComponentSize>('small')
 
-  /**
-   * Fills the width of the container, the actions sharing it equally.
-   */
-  readonly fullWidth = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
+    /**
+     * Fills the width of the container, the actions sharing it equally.
+     */
+    readonly fullWidth = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty })
 }

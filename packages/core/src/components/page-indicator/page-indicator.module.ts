@@ -1,8 +1,8 @@
-import { NgModule } from '@angular/core';
-import { NbPageIndicatorComponent } from './page-indicator.component';
+import { NgModule } from '@angular/core'
+import { NbPageIndicatorComponent } from './page-indicator.component'
 
 @NgModule({
-  imports: [NbPageIndicatorComponent],
-  exports: [NbPageIndicatorComponent],
+    imports: [NbPageIndicatorComponent],
+    exports: [NbPageIndicatorComponent]
 })
 export class NbPageIndicatorModule {}

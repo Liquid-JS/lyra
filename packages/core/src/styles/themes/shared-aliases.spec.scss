@@ -1,18 +1,18 @@
 // The default theme, and one over it that sets a component variable apart from it.
-@use '@liquid-js/lyr-core/styles/all' as *;
-@use '../../components/button/button.component.theme' as button;
+@use "@liquid-js/lyr-core/styles/all" as *;
+@use "../../components/button/button.component.theme" as button;
 
 $nb-themes: nb-register-theme(
-  (
-    button-filled-primary-background-color: color-success-default,
-  ),
-  shared-changed,
-  default
+    (
+        button-filled-primary-background-color: color-success-default,
+    ),
+    shared-changed,
+    default
 );
 
 $nb-enabled-themes: (default, shared-changed);
 
-@include nb-install() {
-  @include nb-theme-base();
-  @include button.nb-buttons-theme();
+@include nb-install {
+    @include nb-theme-base;
+    @include button.nb-buttons-theme;
 }

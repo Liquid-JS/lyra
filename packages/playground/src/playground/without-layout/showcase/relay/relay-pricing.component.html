@@ -1,109 +1,109 @@
 <section class="section intro">
-  <p class="kicker">Pricing</p>
-  <h1>Pay for events, not for seats</h1>
-  <p class="lead">Every plan has the same delivery engine. Pick the volume and the retention you need, and move up when
-    you grow.</p>
-  <div class="billing">
-    <span [class.active]="!yearly()">Monthly</span>
-    <nb-toggle aria-label="Bill yearly"
-      [checked]="yearly()"
-      (checkedChange)="yearly.set($event)" />
-    <span [class.active]="yearly()">Yearly</span>
-    <nb-tag status="success"
-      appearance="outline"
-      size="tiny"
-      text="2 months free" />
-  </div>
+    <p class="kicker">Pricing</p>
+    <h1>Pay for events, not for seats</h1>
+    <p class="lead">Every plan has the same delivery engine. Pick the volume and the retention you need, and move up when
+        you grow.</p>
+    <div class="billing">
+        <span [class.active]="!yearly()">Monthly</span>
+        <nb-toggle aria-label="Bill yearly"
+            [checked]="yearly()"
+            (checkedChange)="yearly.set($event)" />
+        <span [class.active]="yearly()">Yearly</span>
+        <nb-tag status="success"
+            appearance="outline"
+            size="tiny"
+            text="2 months free" />
+    </div>
 </section>
 
 <section class="section tiers">
-  @for (tier of tiers; track tier.name) {
-  <nb-card [accent]="tier.highlighted ? 'primary' : ''"
-    [class.highlighted]="tier.highlighted">
-    <nb-card-body>
-      <div class="tier-name">
-        <h2>{{ tier.name }}</h2>
-        @if (tier.highlighted) {
-        <nb-tag status="primary"
-          appearance="filled"
-          size="tiny"
-          text="Most popular" />
-        }
-      </div>
-      <p class="description">{{ tier.description }}</p>
-      <p class="price">
-        <span class="amount mono">${{ yearly() ? tier.yearly : tier.monthly }}</span>
-        <span class="period">/ month{{ yearly() && tier.monthly ? ', billed yearly' : '' }}</span>
-      </p>
-      <p class="events">{{ tier.events }}</p>
-      <a nbButton
-        fullWidth
-        routerLink="../overview"
-        [status]="tier.highlighted ? 'primary' : 'basic'"
-        [appearance]="tier.highlighted ? 'filled' : 'outline'">{{ tier.action }}</a>
-      <ul class="includes">
-        @for (feature of tier.features; track feature) {
-        <li>
-          <nb-icon icon="checkmark-outline" />
-          {{ feature }}
-        </li>
-        }
-      </ul>
-    </nb-card-body>
-  </nb-card>
-  }
+    @for (tier of tiers; track tier.name) {
+    <nb-card [accent]="tier.highlighted ? 'primary' : ''"
+        [class.highlighted]="tier.highlighted">
+        <nb-card-body>
+            <div class="tier-name">
+                <h2>{{ tier.name }}</h2>
+                @if (tier.highlighted) {
+                <nb-tag status="primary"
+                    appearance="filled"
+                    size="tiny"
+                    text="Most popular" />
+                }
+            </div>
+            <p class="description">{{ tier.description }}</p>
+            <p class="price">
+                <span class="amount mono">${{ yearly() ? tier.yearly : tier.monthly }}</span>
+                <span class="period">/ month{{ yearly() && tier.monthly ? ', billed yearly' : '' }}</span>
+            </p>
+            <p class="events">{{ tier.events }}</p>
+            <a nbButton
+                fullWidth
+                routerLink="../overview"
+                [status]="tier.highlighted ? 'primary' : 'basic'"
+                [appearance]="tier.highlighted ? 'filled' : 'outline'">{{ tier.action }}</a>
+            <ul class="includes">
+                @for (feature of tier.features; track feature) {
+                <li>
+                    <nb-icon icon="checkmark-outline" />
+                    {{ feature }}
+                </li>
+                }
+            </ul>
+        </nb-card-body>
+    </nb-card>
+    }
 </section>
 
 <section class="section">
-  <nb-card class="comparison">
-    <nb-card-header>Compare the plans</nb-card-header>
-    <div class="table">
-      <table nbTable
-        [dataSource]="comparison">
-        <ng-container nbColumnDef="feature">
-          <th nbHeaderCell
-            *nbHeaderCellDef>Feature</th>
-          <td nbCell
-            *nbCellDef="let row; of: comparison">{{ row.feature }}</td>
-        </ng-container>
-        @for (tier of tiers; track tier.name) {
-        <ng-container [nbColumnDef]="tier.key">
-          <th nbHeaderCell
-            *nbHeaderCellDef>{{ tier.name }}</th>
-          <td nbCell
-            *nbCellDef="let row; of: comparison">
-            @let value = row[tier.key];
-            @if (text(value); as text) {
-            <span class="mono">{{ text }}</span>
-            } @else if (value) {
-            <nb-icon class="yes"
-              icon="checkmark-circle-2-outline"
-              aria-label="Included" />
-            } @else {
-            <nb-icon class="no"
-              icon="minus-outline"
-              aria-label="Not included" />
-            }
-          </td>
-        </ng-container>
-        }
-        <tr nbHeaderRow
-          *nbHeaderRowDef="columns"></tr>
-        <tr nbRow
-          *nbRowDef="let row; columns: columns"></tr>
-      </table>
-    </div>
-  </nb-card>
+    <nb-card class="comparison">
+        <nb-card-header>Compare the plans</nb-card-header>
+        <div class="table">
+            <table nbTable
+                [dataSource]="comparison">
+                <ng-container nbColumnDef="feature">
+                    <th nbHeaderCell
+                        *nbHeaderCellDef>Feature</th>
+                    <td nbCell
+                        *nbCellDef="let row; of: comparison">{{ row.feature }}</td>
+                </ng-container>
+                @for (tier of tiers; track tier.name) {
+                <ng-container [nbColumnDef]="tier.key">
+                    <th nbHeaderCell
+                        *nbHeaderCellDef>{{ tier.name }}</th>
+                    <td nbCell
+                        *nbCellDef="let row; of: comparison">
+                        @let value = row[tier.key];
+                        @if (text(value); as text) {
+                        <span class="mono">{{ text }}</span>
+                        } @else if (value) {
+                        <nb-icon class="yes"
+                            icon="checkmark-circle-2-outline"
+                            aria-label="Included" />
+                        } @else {
+                        <nb-icon class="no"
+                            icon="minus-outline"
+                            aria-label="Not included" />
+                        }
+                    </td>
+                </ng-container>
+                }
+                <tr nbHeaderRow
+                    *nbHeaderRowDef="columns"></tr>
+                <tr nbRow
+                    *nbRowDef="let row; columns: columns"></tr>
+            </table>
+        </div>
+    </nb-card>
 </section>
 
 <section class="section faq">
-  <h2>Questions</h2>
-  <nb-accordion>
-    @for (item of faq; track item.question) {
-    <nb-accordion-item>
-      <nb-accordion-item-header>{{ item.question }}</nb-accordion-item-header>
-      <nb-accordion-item-body>{{ item.answer }}</nb-accordion-item-body>
-    </nb-accordion-item>
-    }
-  </nb-accordion>
+    <h2>Questions</h2>
+    <nb-accordion>
+        @for (item of faq; track item.question) {
+        <nb-accordion-item>
+            <nb-accordion-item-header>{{ item.question }}</nb-accordion-item-header>
+            <nb-accordion-item-body>{{ item.answer }}</nb-accordion-item-body>
+        </nb-accordion-item>
+        }
+    </nb-accordion>
 </section>

@@ -1,69 +1,70 @@
-@use '../../styles/theming' as *;
+@use "../../styles/theming" as *;
 
 :host {
-  display: block;
+    display: block;
 
-  &.full-width .tabset {
-    justify-content: space-around;
-  }
-
-  ::ng-deep nb-tab {
-    flex: 1;
-    display: none;
-    &.content-active {
-      display: block;
+    &.full-width .tabset {
+        justify-content: space-around;
     }
-  }
 
-  .tabset {
-    display: flex;
-    flex-direction: row;
-    list-style-type: none;
-    margin: 0;
-    padding: 0;
+    ::ng-deep nb-tab {
+        flex: 1;
+        display: none;
 
-    // Tabs shrink, their labels wrapping, rather than run past a narrow tabset.
-    .tab {
-      flex: 0 1 auto;
-      min-width: 0;
-      margin-bottom: -1px;
-      text-align: center;
-      position: relative;
+        &.content-active {
+            display: block;
+        }
+    }
 
-      &.active a::before {
-        display: block;
-      }
-
-      a {
+    .tabset {
         display: flex;
-        position: relative;
-        text-decoration: none;
+        flex-direction: row;
+        list-style-type: none;
+        margin: 0;
+        padding: 0;
 
-        &::before {
-          position: absolute;
-          content: '';
-          width: 100%;
-          border-radius: 3px;
-          bottom: -2px;
-          left: 0;
-        }
+        // Tabs shrink, their labels wrapping, rather than run past a narrow tabset.
+        .tab {
+            flex: 0 1 auto;
+            min-width: 0;
+            margin-bottom: -1px;
+            text-align: center;
+            position: relative;
 
-        nb-icon {
-          vertical-align: middle;
-        }
+            &.active a:before {
+                display: block;
+            }
 
-        nb-icon + span {
-          @include nb-ltr(margin-left, 0.5rem);
-          @include nb-rtl(margin-right, 0.5rem);
-        }
+            a {
+                display: flex;
+                position: relative;
+                text-decoration: none;
 
-        // Beside the title without making the tab taller than its neighbours, so their underlines line up.
-        .tab-count {
-          align-self: center;
-          margin-block: -0.25rem;
-          margin-inline-start: 0.5rem;
+                &:before {
+                    position: absolute;
+                    content: "";
+                    width: 100%;
+                    border-radius: 3px;
+                    bottom: -2px;
+                    left: 0;
+                }
+
+                nb-icon {
+                    vertical-align: middle;
+                }
+
+                nb-icon + span {
+                    @include nb-ltr(margin-left, 0.5rem);
+                    @include nb-rtl(margin-right, 0.5rem);
+                }
+
+                // Beside the title without making the tab taller than its neighbours, so their underlines line up.
+                .tab-count {
+                    align-self: center;
+                    margin-block: -0.25rem;
+                    margin-inline-start: 0.5rem;
+                }
+            }
         }
-      }
     }
-  }
 }

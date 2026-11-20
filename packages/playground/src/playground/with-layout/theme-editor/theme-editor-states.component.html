@@ -1,112 +1,112 @@
 <nb-card>
-  <nb-card-header>States</nb-card-header>
-  <nb-card-body>
-    @for (appearance of appearances; track appearance) {
-    <h2 class="section">Button, {{ appearance }}</h2>
-    <div class="sheet"
-      [style.--columns]="pressable.length">
-      <span></span>
-      @for (state of pressable; track state.label) {
-      <span class="state">{{ state.label }}</span>
-      }
-      @for (status of statuses; track status) {
-      <span class="status">{{ status }}</span>
-      @for (state of pressable; track state.label) {
-      <div [class]="state.className">
-        <button nbButton
-          type="button"
-          size="small"
-          [appearance]="appearance"
-          [status]="status"
-          [disabled]="!!state.disabled">Button</button>
-      </div>
-      }
-      }
-    </div>
-    }
+    <nb-card-header>States</nb-card-header>
+    <nb-card-body>
+        @for (appearance of appearances; track appearance) {
+        <h2 class="section">Button, {{ appearance }}</h2>
+        <div class="sheet"
+            [style.--columns]="pressable.length">
+            <span></span>
+            @for (state of pressable; track state.label) {
+            <span class="state">{{ state.label }}</span>
+            }
+            @for (status of statuses; track status) {
+            <span class="status">{{ status }}</span>
+            @for (state of pressable; track state.label) {
+            <div [class]="state.className">
+                <button nbButton
+                    type="button"
+                    size="small"
+                    [appearance]="appearance"
+                    [status]="status"
+                    [disabled]="!!state.disabled">Button</button>
+            </div>
+            }
+            }
+        </div>
+        }
 
-    <h2 class="section">Input</h2>
-    <div class="sheet"
-      [style.--columns]="field.length">
-      <span></span>
-      @for (state of field; track state.label) {
-      <span class="state">{{ state.label }}</span>
-      }
-      @for (status of statuses; track status) {
-      <span class="status">{{ status }}</span>
-      @for (state of field; track state.label) {
-      <div [class]="state.className">
-        <input nbInput
-          fullWidth
-          fieldSize="small"
-          placeholder="Text"
-          [attr.aria-label]="status + ' input, ' + state.label"
-          [status]="status"
-          [disabled]="!!state.disabled" />
-      </div>
-      }
-      }
-    </div>
+        <h2 class="section">Input</h2>
+        <div class="sheet"
+            [style.--columns]="field.length">
+            <span></span>
+            @for (state of field; track state.label) {
+            <span class="state">{{ state.label }}</span>
+            }
+            @for (status of statuses; track status) {
+            <span class="status">{{ status }}</span>
+            @for (state of field; track state.label) {
+            <div [class]="state.className">
+                <input nbInput
+                    fullWidth
+                    fieldSize="small"
+                    placeholder="Text"
+                    [attr.aria-label]="status + ' input, ' + state.label"
+                    [status]="status"
+                    [disabled]="!!state.disabled" />
+            </div>
+            }
+            }
+        </div>
 
-    <h2 class="section">Select</h2>
-    <div class="sheet"
-      [style.--columns]="field.length">
-      <span></span>
-      @for (state of field; track state.label) {
-      <span class="state">{{ state.label }}</span>
-      }
-      @for (status of statuses; track status) {
-      <span class="status">{{ status }}</span>
-      @for (state of field; track state.label) {
-      <div [class]="state.className">
-        <nb-select fullWidth
-          size="small"
-          placeholder="Pick one"
-          [attr.aria-label]="status + ' select, ' + state.label"
-          [status]="status"
-          [disabled]="!!state.disabled">
-          <nb-option value="one">One</nb-option>
-          <nb-option value="two">Two</nb-option>
-        </nb-select>
-      </div>
-      }
-      }
-    </div>
+        <h2 class="section">Select</h2>
+        <div class="sheet"
+            [style.--columns]="field.length">
+            <span></span>
+            @for (state of field; track state.label) {
+            <span class="state">{{ state.label }}</span>
+            }
+            @for (status of statuses; track status) {
+            <span class="status">{{ status }}</span>
+            @for (state of field; track state.label) {
+            <div [class]="state.className">
+                <nb-select fullWidth
+                    size="small"
+                    placeholder="Pick one"
+                    [attr.aria-label]="status + ' select, ' + state.label"
+                    [status]="status"
+                    [disabled]="!!state.disabled">
+                    <nb-option value="one">One</nb-option>
+                    <nb-option value="two">Two</nb-option>
+                </nb-select>
+            </div>
+            }
+            }
+        </div>
 
-    <h2 class="section">Checkbox, radio and toggle</h2>
-    <div class="sheet"
-      [style.--columns]="pressable.length">
-      <span></span>
-      @for (state of pressable; track state.label) {
-      <span class="state">{{ state.label }}</span>
-      }
-      @for (status of statuses; track status; let row = $index) {
-      <span class="status">{{ status }}</span>
-      @for (state of pressable; track state.label; let column = $index) {
-      <div class="choices"
-        [class]="state.className">
-        <nb-checkbox [status]="status"
-          [disabled]="!!state.disabled"
-          [attr.aria-label]="status + ' checkbox, ' + state.label" />
-        <nb-checkbox checked
-          [status]="status"
-          [disabled]="!!state.disabled"
-          [attr.aria-label]="status + ' checked checkbox, ' + state.label" />
-        <nb-radio-group value="on"
-          [name]="'radio-' + row + '-' + column"
-          [status]="status"
-          [disabled]="!!state.disabled"
-          [attr.aria-label]="status + ' radios, ' + state.label">
-          <nb-radio value="off" />
-          <nb-radio value="on" />
-        </nb-radio-group>
-        <nb-toggle checked
-          [status]="status"
-          [disabled]="!!state.disabled"
-          [attr.aria-label]="status + ' toggle, ' + state.label" />
-      </div>
-      }
-      }
-    </div>
-  </nb-card-body>
+        <h2 class="section">Checkbox, radio and toggle</h2>
+        <div class="sheet"
+            [style.--columns]="pressable.length">
+            <span></span>
+            @for (state of pressable; track state.label) {
+            <span class="state">{{ state.label }}</span>
+            }
+            @for (status of statuses; track status; let row = $index) {
+            <span class="status">{{ status }}</span>
+            @for (state of pressable; track state.label; let column = $index) {
+            <div class="choices"
+                [class]="state.className">
+                <nb-checkbox [status]="status"
+                    [disabled]="!!state.disabled"
+                    [attr.aria-label]="status + ' checkbox, ' + state.label" />
+                <nb-checkbox checked
+                    [status]="status"
+                    [disabled]="!!state.disabled"
+                    [attr.aria-label]="status + ' checked checkbox, ' + state.label" />
+                <nb-radio-group value="on"
+                    [name]="'radio-' + row + '-' + column"
+                    [status]="status"
+                    [disabled]="!!state.disabled"
+                    [attr.aria-label]="status + ' radios, ' + state.label">
+                    <nb-radio value="off" />
+                    <nb-radio value="on" />
+                </nb-radio-group>
+                <nb-toggle checked
+                    [status]="status"
+                    [disabled]="!!state.disabled"
+                    [attr.aria-label]="status + ' toggle, ' + state.label" />
+            </div>
+            }
+            }
+        </div>
+    </nb-card-body>
 </nb-card>

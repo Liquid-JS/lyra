@@ -7,88 +7,88 @@
 // The docs once loaded Bootstrap's stylesheet, and the docs pages and embedded examples were laid out
 // against its reboot. Only the spacing and visibility rules are kept; fonts, colors and links come from the theme.
 @mixin nbd-reboot() {
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6 {
-    margin-top: 0;
-    margin-bottom: 0.5rem;
-  }
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        margin-top: 0;
+        margin-bottom: 0.5rem;
+    }
 
-  // From Bootstrap's type styles: the heading classes carry the heading margin too. Examples such as the calendar
-  // showcase use `<h1 class="h5">` inside card headers and rely on the class winning over element selectors.
-  .h1,
-  .h2,
-  .h3,
-  .h4,
-  .h5,
-  .h6 {
-    margin-bottom: 0.5rem;
-  }
+    // From Bootstrap's type styles: the heading classes carry the heading margin too. Examples such as the calendar
+    // showcase use `<h1 class="h5">` inside card headers and rely on the class winning over element selectors.
+    .h1,
+    .h2,
+    .h3,
+    .h4,
+    .h5,
+    .h6 {
+        margin-bottom: 0.5rem;
+    }
 
-  p,
-  ol,
-  ul,
-  dl,
-  address,
-  blockquote,
-  figure {
-    margin-top: 0;
-    margin-bottom: 1rem;
-  }
+    p,
+    ol,
+    ul,
+    dl,
+    address,
+    blockquote,
+    figure {
+        margin-top: 0;
+        margin-bottom: 1rem;
+    }
 
-  blockquote,
-  figure {
-    margin-inline: 0;
-  }
+    blockquote,
+    figure {
+        margin-inline: 0;
+    }
 
-  ol ol,
-  ul ul,
-  ol ul,
-  ul ol {
-    margin-bottom: 0;
-  }
+    ol ol,
+    ul ul,
+    ol ul,
+    ul ol {
+        margin-bottom: 0;
+    }
 
-  dd {
-    margin-bottom: 0.5rem;
-    margin-left: 0;
-  }
+    dd {
+        margin-bottom: 0.5rem;
+        margin-left: 0;
+    }
 
-  pre {
-    margin-top: 0;
-    margin-bottom: 1rem;
-    overflow: auto;
-  }
+    pre {
+        margin-top: 0;
+        margin-bottom: 1rem;
+        overflow: auto;
+    }
 
-  label {
-    display: inline-block;
-    margin-bottom: 0.5rem;
-  }
+    label {
+        display: inline-block;
+        margin-bottom: 0.5rem;
+    }
 
-  fieldset {
-    min-width: 0;
-    padding: 0;
-    margin: 0;
-    border: 0;
-  }
+    fieldset {
+        min-width: 0;
+        padding: 0;
+        margin: 0;
+        border: 0;
+    }
 
-  legend {
-    display: block;
-    width: 100%;
-    max-width: 100%;
-    padding: 0;
-    margin-bottom: 0.5rem;
-    font-size: 1.5rem;
-    line-height: inherit;
-    color: inherit;
-    white-space: normal;
-  }
+    legend {
+        display: block;
+        width: 100%;
+        max-width: 100%;
+        padding: 0;
+        margin-bottom: 0.5rem;
+        font-size: 1.5rem;
+        line-height: inherit;
+        color: inherit;
+        white-space: normal;
+    }
 
-  // Components that set their own `display`, such as the example blocks that switch between the live and code
-  // views, rely on `[hidden]` winning over it.
-  [hidden] {
-    display: none !important;
-  }
+    // Components that set their own `display`, such as the example blocks that switch between the live and code
+    // views, rely on `[hidden]` winning over it.
+    [hidden] {
+        display: none !important;
+    }
 }

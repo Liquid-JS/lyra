@@ -1,10 +1,10 @@
-import { Component, input, model } from '@angular/core';
-import { NbButtonComponent, NbIconComponent } from '@liquid-js/lyr-core';
+import { Component, input, model } from '@angular/core'
+import { NbButtonComponent, NbIconComponent } from '@liquid-js/lyr-core'
 
 /** A quantity with buttons to take one off or add one; `min` is the fewest it goes down to. */
 @Component({
-  selector: 'npg-shop-quantity',
-  template: `
+    selector: 'npg-shop-quantity',
+    template: `
     <button
       nbButton
       ghost
@@ -26,7 +26,7 @@ import { NbButtonComponent, NbIconComponent } from '@liquid-js/lyr-core';
       <nb-icon icon="plus-outline" />
     </button>
   `,
-  styles: `
+    styles: `
     :host {
       display: inline-flex;
       align-items: center;
@@ -40,11 +40,11 @@ import { NbButtonComponent, NbIconComponent } from '@liquid-js/lyr-core';
       font-weight: 600;
     }
   `,
-  imports: [NbButtonComponent, NbIconComponent],
+    imports: [NbButtonComponent, NbIconComponent]
 })
 export class ShopQuantityComponent {
-  readonly quantity = model(1);
-  readonly min = input(1);
-  /** What's counted, for screen readers, e.g. the product's name. */
-  readonly label = input('');
+    readonly quantity = model(1)
+    readonly min = input(1)
+    /** What's counted, for screen readers, e.g. the product's name. */
+    readonly label = input('')
 }

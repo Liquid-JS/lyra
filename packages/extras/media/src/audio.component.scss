@@ -1,87 +1,88 @@
 nb-audio {
-  display: block;
-  // The controls drop what doesn't fit, by the player's width.
-  container-type: inline-size;
+    display: block;
 
-  > .frame {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 0.75rem;
-    border-radius: var(--border-radius);
-    background: var(--background-basic-color-2);
-    color: var(--text-basic-color);
-    font-family: var(--font-family-primary);
+    // The controls drop what doesn't fit, by the player's width.
+    container-type: inline-size;
 
-    // The keyboard's focus, with the theme's ring, as Lyra's controls show it.
-    &:focus-visible {
-      outline: none;
-      box-shadow: 0 0 0 var(--outline-width) var(--outline-color);
+    > .frame {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 0.75rem;
+        border-radius: var(--border-radius);
+        background: var(--background-basic-color-2);
+        color: var(--text-basic-color);
+        font-family: var(--font-family-primary);
+
+        // The keyboard's focus, with the theme's ring, as Lyra's controls show it.
+        &:focus-visible {
+            outline: none;
+            box-shadow: 0 0 0 var(--outline-width) var(--outline-color);
+        }
+
+        // Without controls, it plays unseen, as an audio element without them.
+        &.bare {
+            display: none;
+        }
     }
 
-    // Without controls, it plays unseen, as an audio element without them.
-    &.bare {
-      display: none;
+    .media {
+        display: none;
     }
-  }
 
-  .media {
-    display: none;
-  }
+    .play {
+        flex-shrink: 0;
+    }
 
-  .play {
-    flex-shrink: 0;
-  }
+    .position {
+        flex: 1;
+        min-width: 4rem;
+    }
 
-  .position {
-    flex: 1;
-    min-width: 4rem;
-  }
+    .volume {
+        flex: 0 1 5rem;
+        min-width: 3rem;
+    }
 
-  .volume {
-    flex: 0 1 5rem;
-    min-width: 3rem;
-  }
+    .time,
+    .live,
+    .message {
+        font-size: var(--text-paragraph-2-font-size);
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+        color: var(--text-hint-color);
+    }
 
-  .time,
-  .live,
-  .message {
-    font-size: var(--text-paragraph-2-font-size);
-    font-variant-numeric: tabular-nums;
-    white-space: nowrap;
-    color: var(--text-hint-color);
-  }
+    .live,
+    .message {
+        flex: 1;
+    }
 
-  .live,
-  .message {
-    flex: 1;
-  }
+    .live {
+        font-weight: 600;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+    }
 
-  .live {
-    font-weight: 600;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-  }
+    .message {
+        color: var(--text-danger-color);
+        white-space: normal;
+    }
 
-  .message {
-    color: var(--text-danger-color);
-    white-space: normal;
-  }
-
-  // As wide as its rates, not as a form's fields.
-  .speed {
-    --select-small-width: 4.5rem;
-  }
-
-  [nbButton] {
-    flex-shrink: 0;
-  }
-
-  // Narrow players keep play, the position and mute.
-  @container (max-width: 24rem) {
-    .volume,
+    // As wide as its rates, not as a form's fields.
     .speed {
-      display: none;
+        --select-small-width: 4.5rem;
     }
-  }
+
+    [nbButton] {
+        flex-shrink: 0;
+    }
+
+    // Narrow players keep play, the position and mute.
+    @container (max-width: 24rem) {
+        .volume,
+        .speed {
+            display: none;
+        }
+    }
 }

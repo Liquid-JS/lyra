@@ -1,36 +1,36 @@
 nb-phone-input {
-  display: inline-block;
-  vertical-align: middle;
+    display: inline-block;
+    vertical-align: middle;
 
-  &.full-width {
-    display: block;
-  }
+    &.full-width {
+        display: block;
+    }
 
-  // The flag and the arrow close together, and the number apart from the button, which the field pads it by.
-  .nb-phone-input-country {
-    gap: 0.25rem;
-    margin-inline-end: 0.25rem;
-  }
+    // The flag and the arrow close together, and the number apart from the button, which the field pads it by.
+    .nb-phone-input-country {
+        gap: 0.25rem;
+        margin-inline-end: 0.25rem;
+    }
 
-  // The number reads left to right from the left in any page, as nbInput's tel fields do, while the country button
-  // and the field's padding for it follow the page's direction.
+    // The number reads left to right from the left in any page, as nbInput's tel fields do, while the country button
+    // and the field's padding for it follow the page's direction.
 }
 
 // The list is in an overlay, outside the component.
 .nb-phone-input-option {
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
 
-  nxt-flag {
-    flex: none;
-  }
+    nxt-flag {
+        flex: none;
+    }
 
-  .nb-phone-input-name {
-    flex: auto;
-  }
+    .nb-phone-input-name {
+        flex: auto;
+    }
 
-  .nb-phone-input-calling-code {
-    color: var(--text-hint-color);
-  }
+    .nb-phone-input-calling-code {
+        color: var(--text-hint-color);
+    }
 }

@@ -1,194 +1,195 @@
 :host {
-  display: block;
-  // Its sections go side by side where it has the room, whatever holds it.
-  container-type: inline-size;
+    display: block;
+
+    // Its sections go side by side where it has the room, whatever holds it.
+    container-type: inline-size;
 }
 
 // Two columns the sections flow through, where three don't fit.
 @container (min-width: 34rem) and (max-width: 51.99rem) {
-  .groups {
-    columns: 2;
-    column-gap: 2rem;
-  }
+    .groups {
+        columns: 2;
+        column-gap: 2rem;
+    }
 
-  .group {
-    break-inside: avoid;
-  }
+    .group {
+        break-inside: avoid;
+    }
 
-  :host .groups > .group:first-child h3.subtitle:first-child {
-    margin-top: 0;
-  }
+    :host .groups > .group:first-child h3.subtitle:first-child {
+        margin-top: 0;
+    }
 }
 
 @container (min-width: 52rem) {
-  .groups {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    grid-template-areas:
-      'identity colours components'
-      'text colours components'
-      'surfaces colours components'
-      'other other other';
-    align-content: start;
-    column-gap: 2rem;
-  }
+    .groups {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-areas:
+            "identity colours components"
+            "text colours components"
+            "surfaces colours components"
+            "other other other";
+        align-content: start;
+        column-gap: 2rem;
+    }
 
-  .identity {
-    grid-area: identity;
-  }
+    .identity {
+        grid-area: identity;
+    }
 
-  .colours {
-    grid-area: colours;
-  }
+    .colours {
+        grid-area: colours;
+    }
 
-  .text {
-    grid-area: text;
-  }
+    .text {
+        grid-area: text;
+    }
 
-  .surfaces {
-    grid-area: surfaces;
-  }
+    .surfaces {
+        grid-area: surfaces;
+    }
 
-  .components {
-    grid-area: components;
-  }
+    .components {
+        grid-area: components;
+    }
 
-  .other {
-    grid-area: other;
-  }
+    .other {
+        grid-area: other;
+    }
 
-  // Each column starts at the top; the first fields line up with the columns' headings.
-  :host .colours h3.subtitle:first-child,
-  :host .components h3.subtitle:first-child {
-    margin-top: 0;
-  }
+    // Each column starts at the top; the first fields line up with the columns' headings.
+    :host .colours h3.subtitle:first-child,
+    :host .components h3.subtitle:first-child {
+        margin-top: 0;
+    }
 }
 
 .field {
-  margin-bottom: 1rem;
+    margin-bottom: 1rem;
 
-  label {
-    display: block;
-    margin-bottom: 0.25rem;
-    font-weight: 600;
-  }
+    label {
+        display: block;
+        margin-bottom: 0.25rem;
+        font-weight: 600;
+    }
 
-  // The statuses' names.
-  &.color label {
-    text-transform: capitalize;
-  }
+    // The statuses' names.
+    &.color label {
+        text-transform: capitalize;
+    }
 }
 
 // Over the docs' own headings in cards, whose rule is the more specific without the groups.
 :host .groups h3.subtitle {
-  margin: 1.5rem 0 0.75rem;
-  color: inherit;
-  font-size: 1rem;
+    margin: 1.5rem 0 0.75rem;
+    color: inherit;
+    font-size: 1rem;
 }
 
 .palette {
-  display: flex;
-  margin-top: 0.25rem;
-  border-radius: 0.25rem;
-  overflow: hidden;
+    display: flex;
+    margin-top: 0.25rem;
+    border-radius: 0.25rem;
+    overflow: hidden;
 
-  span {
-    flex: 1;
-    height: 0.75rem;
-  }
+    span {
+        flex: 1;
+        height: 0.75rem;
+    }
 }
 
 // A field with a button beside it, as tall as the field: a reset, or the types' own defaults.
 .with-button {
-  display: flex;
-  align-items: stretch;
-  gap: 0.5rem;
+    display: flex;
+    align-items: stretch;
+    gap: 0.5rem;
 
-  > :first-child {
-    flex: 1;
-    min-width: 0;
-  }
+    > :first-child {
+        flex: 1;
+        min-width: 0;
+    }
 
-  button {
-    flex: none;
-  }
+    button {
+        flex: none;
+    }
 }
 
 // How many types have their own, on the button that shows them.
 .overrides-button .count {
-  margin-inline-start: 0.25rem;
-  font-size: 0.75rem;
-  font-weight: 700;
+    margin-inline-start: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 700;
 }
 
 // The types' own defaults, under the field, a name beside each where there's room.
 .overrides {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  align-items: center;
-  gap: 0.25rem 0.75rem;
-  margin-top: 0.5rem;
-  padding: 0.75rem;
-  border-radius: 0.25rem;
-  background: var(--background-basic-color-2);
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    align-items: center;
+    gap: 0.25rem 0.75rem;
+    margin-top: 0.5rem;
+    padding: 0.75rem;
+    border-radius: 0.25rem;
+    background: var(--background-basic-color-2);
 
-  label {
-    margin: 0.25rem 0 0;
-    font-weight: 400;
-  }
+    label {
+        margin: 0.25rem 0 0;
+        font-weight: 400;
+    }
 }
 
 @container (min-width: 20rem) {
-  .overrides {
-    grid-template-columns: minmax(0, 7rem) minmax(0, 1fr);
+    .overrides {
+        grid-template-columns: minmax(0, 7rem) minmax(0, 1fr);
 
-    label {
-      margin: 0;
+        label {
+            margin: 0;
+        }
     }
-  }
 }
 
 // The other variables, by name and value, which are code: monospaced, and broken anywhere to fit; each value under its
 // name in a narrow column, beside it where there's room.
 .variables {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  margin: 0;
-  font-family: monospace;
-  font-size: 0.8125rem;
-
-  dt,
-  dd {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
     margin: 0;
-    overflow-wrap: anywhere;
-  }
+    font-family: monospace;
+    font-size: 0.8125rem;
 
-  dd {
-    margin-bottom: 0.5rem;
-    padding-inline-start: 1rem;
-    opacity: 0.75;
-  }
+    dt,
+    dd {
+        margin: 0;
+        overflow-wrap: anywhere;
+    }
+
+    dd {
+        margin-bottom: 0.5rem;
+        padding-inline-start: 1rem;
+        opacity: 0.75;
+    }
 }
 
 @container (min-width: 34rem) {
-  .variables {
-    grid-template-columns: minmax(0, max-content) minmax(0, 1fr);
-    gap: 0.25rem 1rem;
+    .variables {
+        grid-template-columns: minmax(0, max-content) minmax(0, 1fr);
+        gap: 0.25rem 1rem;
 
-    dd {
-      margin-bottom: 0;
-      padding-inline-start: 0;
+        dd {
+            margin-bottom: 0;
+            padding-inline-start: 0;
+        }
     }
-  }
 }
 
 .hint {
-  margin-top: -0.5rem;
-  font-size: 0.8125rem;
-  opacity: 0.75;
+    margin-top: -0.5rem;
+    font-size: 0.8125rem;
+    opacity: 0.75;
 
-  // Under a field's palette.
-  &.below {
-    margin: 0.375rem 0 0;
-  }
+    // Under a field's palette.
+    &.below {
+        margin: 0.375rem 0 0;
+    }
 }

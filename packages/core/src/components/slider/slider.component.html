@@ -1,53 +1,53 @@
 <div class="slider-track"
-  #track>
-  <div class="slider-fill"
-    [style.--nb-slider-fill-start]="fill().start"
-    [style.--nb-slider-fill-end]="fill().end"></div>
-  @for (tick of tickMarks(); track $index) {
-  <span class="slider-tick"
-    [class.active]="tick.active"
-    [style.--nb-slider-position]="tick.position"></span>
-  }
-  @for (thumb of thumbStates(); track $index) {
-  <div #thumb
-    class="slider-thumb"
-    role="slider"
-    [class.dragging]="dragging() === $index"
-    [style.--nb-slider-position]="positions()[$index]"
-    [attr.tabindex]="isDisabled() ? null : 0"
-    [attr.aria-valuenow]="thumb.value"
-    [attr.aria-valuemin]="thumb.min"
-    [attr.aria-valuemax]="thumb.max"
-    [attr.aria-valuetext]="thumb.text"
-    [attr.aria-orientation]="vertical() ? 'vertical' : null"
-    [attr.aria-disabled]="isDisabled() || null"
-    [attr.aria-label]="thumb.label"
-    [attr.aria-labelledby]="thumb.labelledBy"
-    [attr.aria-invalid]="validation?.ariaInvalid()"
-    [attr.aria-describedby]="validation?.describedBy()"
-    [attr.aria-required]="validation?.ariaRequired()"
-    (keydown)="onKeydown($event, $index)"
-    (blur)="onBlur()">
-    @if (showValue()) {
-    <span class="slider-value"
-      aria-hidden="true">{{ thumb.text }}</span>
+    #track>
+    <div class="slider-fill"
+        [style.--nb-slider-fill-start]="fill().start"
+        [style.--nb-slider-fill-end]="fill().end"></div>
+    @for (tick of tickMarks(); track $index) {
+    <span class="slider-tick"
+        [class.active]="tick.active"
+        [style.--nb-slider-position]="tick.position"></span>
     }
-  </div>
-  @if (range()) {
-  <span class="visually-hidden"
-    [id]="id + '-thumb-' + $index">{{ thumb.name }}</span>
-  }
-  }
+    @for (thumb of thumbStates(); track $index) {
+    <div #thumb
+        class="slider-thumb"
+        role="slider"
+        [class.dragging]="dragging() === $index"
+        [style.--nb-slider-position]="positions()[$index]"
+        [attr.tabindex]="isDisabled() ? null : 0"
+        [attr.aria-valuenow]="thumb.value"
+        [attr.aria-valuemin]="thumb.min"
+        [attr.aria-valuemax]="thumb.max"
+        [attr.aria-valuetext]="thumb.text"
+        [attr.aria-orientation]="vertical() ? 'vertical' : null"
+        [attr.aria-disabled]="isDisabled() || null"
+        [attr.aria-label]="thumb.label"
+        [attr.aria-labelledby]="thumb.labelledBy"
+        [attr.aria-invalid]="validation?.ariaInvalid()"
+        [attr.aria-describedby]="validation?.describedBy()"
+        [attr.aria-required]="validation?.ariaRequired()"
+        (keydown)="onKeydown($event, $index)"
+        (blur)="onBlur()">
+        @if (showValue()) {
+        <span class="slider-value"
+            aria-hidden="true">{{ thumb.text }}</span>
+        }
+    </div>
+    @if (range()) {
+    <span class="visually-hidden"
+        [id]="id + '-thumb-' + $index">{{ thumb.name }}</span>
+    }
+    }
 </div>
 @if (labelMarks().length) {
 <div class="slider-labels"
-  aria-hidden="true">
-  @for (mark of labelMarks(); track mark.align) {
-  <span class="slider-label"
-    [class]="'slider-label slider-label-' + mark.align"
-    [style.--nb-slider-position]="mark.position">
-    <span>{{ mark.text }}</span>
-  </span>
-  }
+    aria-hidden="true">
+    @for (mark of labelMarks(); track mark.align) {
+    <span class="slider-label"
+        [class]="'slider-label slider-label-' + mark.align"
+        [style.--nb-slider-position]="mark.position">
+        <span>{{ mark.text }}</span>
+    </span>
+    }
 </div>
 }

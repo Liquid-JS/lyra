@@ -1,33 +1,33 @@
 <nb-layout>
-  <nb-layout-header fixed>
-    <a href="#">Lyra</a>
+    <nb-layout-header fixed>
+        <a href="#">Lyra</a>
 
-    <button id="collapse-left"
-      (click)="collapseLeft()">Collapse Left</button>
-    <button id="collapse-right"
-      (click)="collapseRight()">Collapse Right</button>
-  </nb-layout-header>
+        <button id="collapse-left"
+            (click)="collapseLeft()">Collapse Left</button>
+        <button id="collapse-right"
+            (click)="collapseRight()">Collapse Right</button>
+    </nb-layout-header>
 
-  <nb-sidebar state="collapsed"
-    fixed
-    tag="left" />
+    <nb-sidebar state="collapsed"
+        fixed
+        tag="left" />
 
-  <nb-sidebar end
-    state="compacted"
-    tag="right">
-    <nb-sidebar-header>Some Header</nb-sidebar-header>
-    {{ content }}
-  </nb-sidebar>
+    <nb-sidebar end
+        state="compacted"
+        tag="right">
+        <nb-sidebar-header>Some Header</nb-sidebar-header>
+        {{ content }}
+    </nb-sidebar>
 
-  <nb-layout-column left>
-    {{ content }}
-  </nb-layout-column>
-  <nb-layout-column>
-    {{ content }}
-  </nb-layout-column>
-  <nb-layout-column>
-    {{ content }}
-  </nb-layout-column>
+    <nb-layout-column left>
+        {{ content }}
+    </nb-layout-column>
+    <nb-layout-column>
+        {{ content }}
+    </nb-layout-column>
+    <nb-layout-column>
+        {{ content }}
+    </nb-layout-column>
 
-  <nb-layout-footer fixed> &copy; Lyra </nb-layout-footer>
+    <nb-layout-footer fixed> &copy; Lyra </nb-layout-footer>
 </nb-layout>

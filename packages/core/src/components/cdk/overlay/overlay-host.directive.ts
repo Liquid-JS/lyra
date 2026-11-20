@@ -1,10 +1,10 @@
-import { DestroyRef, Directive, ElementRef, inject } from '@angular/core';
-import { OverlayContainer } from '@angular/cdk/overlay';
+import { DestroyRef, Directive, ElementRef, inject } from '@angular/core'
+import { OverlayContainer } from '@angular/cdk/overlay'
 
-import { NbOverlayContainerAdapter } from '../adapter/overlay-container-adapter';
-import { NbOverlay, NbOverlayContainer, NbOverlayPositionBuilder } from './mapping';
-import { NbOverlayService } from './overlay-service';
-import { NbPositionBuilderService } from './overlay-position';
+import { NbOverlayContainerAdapter } from '../adapter/overlay-container-adapter'
+import { NbOverlay, NbOverlayContainer, NbOverlayPositionBuilder } from './mapping'
+import { NbOverlayService } from './overlay-service'
+import { NbPositionBuilderService } from './overlay-position'
 
 /**
  * Shows the overlays of the components inside it, such as select options, autocompletes, datepickers, popovers and
@@ -24,23 +24,23 @@ import { NbPositionBuilderService } from './overlay-position';
  * Dialogs, windows and toasts opened from inside it still show in the layout.
  */
 @Directive({
-  selector: '[nbOverlayHost]',
-  providers: [
-    NbOverlayContainerAdapter,
-    { provide: OverlayContainer, useExisting: NbOverlayContainerAdapter },
-    { provide: NbOverlayContainer, useExisting: NbOverlayContainerAdapter },
-    NbOverlay,
-    NbOverlayPositionBuilder,
-    NbPositionBuilderService,
-    NbOverlayService,
-  ],
+    selector: '[nbOverlayHost]',
+    providers: [
+        NbOverlayContainerAdapter,
+        { provide: OverlayContainer, useExisting: NbOverlayContainerAdapter },
+        { provide: NbOverlayContainer, useExisting: NbOverlayContainerAdapter },
+        NbOverlay,
+        NbOverlayPositionBuilder,
+        NbPositionBuilderService,
+        NbOverlayService
+    ]
 })
 export class NbOverlayHostDirective {
-  constructor() {
-    const container = inject(NbOverlayContainerAdapter, { self: true });
-    const element = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
+    constructor() {
+        const container = inject(NbOverlayContainerAdapter, { self: true })
+        const element = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement
 
-    container.setContainer(element);
-    inject(DestroyRef).onDestroy(() => container.clearContainer(element));
-  }
+        container.setContainer(element)
+        inject(DestroyRef).onDestroy(() => container.clearContainer(element))
+    }
 }

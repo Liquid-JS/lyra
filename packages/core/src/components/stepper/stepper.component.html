@@ -1,47 +1,47 @@
 <ng-template><ng-content select="nb-step" /></ng-template>
 <div class="header">
-  @for (step of steps(); track step; let index = $index) {
-  @if (!step.hidden() && hasVisibleStepBefore(index)) {
-  <div [class.connector-past]="index <= selectedIndex()"
-    class="connector"></div>
-  }
-  @if (!step.hidden()) {
-  <div class="step"
-    [class.selected]="isStepSelected(step)"
-    [class.completed]="!isStepSelected(step) && step.isCompleted"
-    [class.noninteractive]="disableStepNavigation()"
-    [attr.role]="disableStepNavigation() ? null : 'button'"
-    [attr.tabindex]="disableStepNavigation() ? null : 0"
-    [attr.aria-current]="isStepSelected(step) ? 'step' : null"
-    (click)="changeStep(step)"
-    (keydown.enter)="$event.preventDefault(); changeStep(step)"
-    (keydown.space)="$event.preventDefault(); changeStep(step)">
-    <div class="label-index">
-      @if (!step.isCompleted || isStepSelected(step)) {
-      <span>{{ getStepNumber(index) }}</span>
-      }
-      @if (!isStepSelected(step) && step.isCompleted) {
-      <nb-icon icon="checkmark-outline"
-        pack="essentials" />
-      }
+    @for (step of steps(); track step; let index = $index) {
+    @if (!step.hidden() && hasVisibleStepBefore(index)) {
+    <div [class.connector-past]="index <= selectedIndex()"
+        class="connector"></div>
+    }
+    @if (!step.hidden()) {
+    <div class="step"
+        [class.selected]="isStepSelected(step)"
+        [class.completed]="!isStepSelected(step) && step.isCompleted"
+        [class.noninteractive]="disableStepNavigation()"
+        [attr.role]="disableStepNavigation() ? null : 'button'"
+        [attr.tabindex]="disableStepNavigation() ? null : 0"
+        [attr.aria-current]="isStepSelected(step) ? 'step' : null"
+        (click)="changeStep(step)"
+        (keydown.enter)="$event.preventDefault(); changeStep(step)"
+        (keydown.space)="$event.preventDefault(); changeStep(step)">
+        <div class="label-index">
+            @if (!step.isCompleted || isStepSelected(step)) {
+            <span>{{ getStepNumber(index) }}</span>
+            }
+            @if (!isStepSelected(step) && step.isCompleted) {
+            <nb-icon icon="checkmark-outline"
+                pack="essentials" />
+            }
+        </div>
+        <div class="label">
+            @if (step.isLabelTemplate()) {
+            <ng-container *ngTemplateOutlet="getStepTemplate(step)" />
+            }
+            @if (!step.isLabelTemplate()) {
+            <span dir="auto">{{ step.label() }}</span>
+            }
+        </div>
     </div>
-    <div class="label">
-      @if (step.isLabelTemplate()) {
-      <ng-container *ngTemplateOutlet="getStepTemplate(step)" />
-      }
-      @if (!step.isLabelTemplate()) {
-      <span dir="auto">{{ step.label() }}</span>
-      }
-    </div>
-  </div>
-  }
-  }
+    }
+    }
 </div>
 <div class="step-content">
-  <!-- A step's content fades in as it becomes the selected one. -->
-  @for (step of selectedSteps(); track step) {
-  <div animate.enter="step-enter">
-    <ng-container [ngTemplateOutlet]="step.content()" />
-  </div>
-  }
+    <!-- A step's content fades in as it becomes the selected one. -->
+    @for (step of selectedSteps(); track step) {
+    <div animate.enter="step-enter">
+        <ng-container [ngTemplateOutlet]="step.content()" />
+    </div>
+    }
 </div>

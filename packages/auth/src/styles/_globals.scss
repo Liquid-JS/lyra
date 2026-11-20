@@ -1,5 +1,5 @@
-@use 'global/components';
+@use "global/components";
 
 @mixin nb-auth-global() {
-  @include components.nb-auth-components();
+    @include components.nb-auth-components;
 }

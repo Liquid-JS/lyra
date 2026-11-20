@@ -1,181 +1,181 @@
-@use '../../../styles/themes' as *;
-@use 'relay-page' as *;
+@use "../../../styles/themes" as *;
+@use "relay-page" as *;
 
-@include relay-page-header();
+@include relay-page-header;
 
 :host {
-  display: block;
+    display: block;
 }
 
 .mono {
-  @include relay-mono();
+    @include relay-mono;
 }
 
 .hint {
-  margin: 0.25rem 0 0;
-  color: nb-theme(text-hint-color);
-  font-size: 0.875rem;
+    margin: 0.25rem 0 0;
+    color: nb-theme(text-hint-color);
+    font-size: 0.875rem;
 }
 
 .range {
-  width: 11rem;
+    width: 11rem;
 }
 
 nb-card {
-  margin: 0;
+    margin: 0;
 }
 
 // The log, and the picked event beside it where there's room, under it where there isn't.
 .layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 1rem;
-  align-items: start;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1rem;
+    align-items: start;
 }
 
 :host(.open) .layout {
-  @media (min-width: 1200px) {
-    grid-template-columns: minmax(0, 1fr) 26rem;
-  }
+    @media (width >= 1200px) {
+        grid-template-columns: minmax(0, 1fr) 26rem;
+    }
 }
 
 .table {
-  overflow-x: auto;
+    overflow-x: auto;
 }
 
 td {
-  font-size: 0.8125rem;
-  white-space: nowrap;
+    font-size: 0.8125rem;
+    white-space: nowrap;
 }
 
 td.mono {
-  color: nb-theme(text-hint-color);
+    color: nb-theme(text-hint-color);
 }
 
 .type {
-  font-weight: 500;
+    font-weight: 500;
 }
 
 .number {
-  text-align: end;
+    text-align: end;
 }
 
 tr[nbRow] {
-  cursor: pointer;
+    cursor: pointer;
 
-  &:hover {
-    background: nb-theme(background-basic-color-2);
-  }
+    &:hover {
+        background: nb-theme(background-basic-color-2);
+    }
 
-  &.selected {
-    background: nb-theme(color-primary-transparent-100);
-    box-shadow: inset 2px 0 0 nb-theme(color-primary-default);
-  }
+    &.selected {
+        background: nb-theme(color-primary-transparent-100);
+        box-shadow: inset 2px 0 0 nb-theme(color-primary-default);
+    }
 
-  &:focus-visible {
-    outline: 2px solid nb-theme(color-primary-default);
-    outline-offset: -2px;
-  }
+    &:focus-visible {
+        outline: 2px solid nb-theme(color-primary-default);
+        outline-offset: -2px;
+    }
 }
 
 nb-card-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-
-  .hint {
-    margin: 0;
-  }
-}
-
-.detail {
-  position: sticky;
-  top: calc(#{nb-theme(header-height)} + 1rem);
-
-  nb-card-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
-    font-size: 0.9375rem;
-  }
 
-  nb-card-body {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-
-    // Nothing in it shrinks: the lists and code blocks show whole, and the page scrolls.
-    > * {
-      flex: none;
+    .hint {
+        margin: 0;
     }
-  }
+}
 
-  nb-card-footer {
-    justify-content: flex-end;
-  }
+.detail {
+    position: sticky;
+    top: calc(#{nb-theme(header-height)} + 1rem);
+
+    nb-card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        font-size: 0.9375rem;
+    }
+
+    nb-card-body {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+
+        // Nothing in it shrinks: the lists and code blocks show whole, and the page scrolls.
+        > * {
+            flex: none;
+        }
+    }
+
+    nb-card-footer {
+        justify-content: flex-end;
+    }
 }
 
 .detail-title {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.625rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.625rem;
 }
 
 .facts {
-  display: grid;
-  gap: 0.625rem;
-  margin: 0;
-  font-size: 0.8125rem;
-
-  div {
-    display: flex;
-    justify-content: space-between;
-    gap: 1rem;
-  }
-
-  dt {
-    color: nb-theme(text-hint-color);
-  }
-
-  dd {
+    display: grid;
+    gap: 0.625rem;
     margin: 0;
-    text-align: end;
-  }
+    font-size: 0.8125rem;
+
+    div {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+    }
+
+    dt {
+        color: nb-theme(text-hint-color);
+    }
+
+    dd {
+        margin: 0;
+        text-align: end;
+    }
 }
 
 .label {
-  margin: 0.5rem 0 0;
-  color: nb-theme(text-hint-color);
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+    margin: 0.5rem 0 0;
+    color: nb-theme(text-hint-color);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
 }
 
 .attempts {
-  overflow: visible;
+    overflow: visible;
 
-  nb-list-item {
-    display: flex;
-    justify-content: space-between;
-    gap: 1rem;
-    padding: 0.5rem 0;
-    font-size: 0.8125rem;
-  }
+    nb-list-item {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 0.5rem 0;
+        font-size: 0.8125rem;
+    }
 
-  .ok {
-    color: nb-theme(text-success-color);
-  }
+    .ok {
+        color: nb-theme(text-success-color);
+    }
 
-  .bad {
-    color: nb-theme(text-danger-color);
-  }
+    .bad {
+        color: nb-theme(text-danger-color);
+    }
 }
 
 .code {
-  @include relay-code-block();
+    @include relay-code-block;
 
-  font-size: 0.75rem;
+    font-size: 0.75rem;
 }

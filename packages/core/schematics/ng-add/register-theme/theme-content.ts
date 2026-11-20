@@ -1,5 +1,5 @@
 export function createThemeContent(themeName: string): string {
-  return `@forward '@liquid-js/lyr-core/styles/theming';
+    return `@forward '@liquid-js/lyr-core/styles/theming';
 @use '@liquid-js/lyr-core/styles/theming' as *;
 @use '@liquid-js/lyr-core/styles/themes/${themeName}';
 
@@ -18,7 +18,7 @@ $nb-themes: nb-register-theme((
   // color-primary-900: #0c225b,
 
 ), ${themeName}, ${themeName});
-`;
+`
 }
 
 export const stylesContent = `@use 'themes' as *;
@@ -28,4 +28,4 @@ export const stylesContent = `@use 'themes' as *;
 @include nb-install() {
   @include nb-theme-global();
 };
-`;
+`

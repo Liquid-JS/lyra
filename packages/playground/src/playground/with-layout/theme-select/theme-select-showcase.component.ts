@@ -1,14 +1,14 @@
-import { Component } from '@angular/core';
+import { Component } from '@angular/core'
 import {
-  NbCardBodyComponent,
-  NbCardComponent,
-  NbContentSizeSwitcherComponent,
-  NbThemeSelectComponent,
-} from '@liquid-js/lyr-core';
+    NbCardBodyComponent,
+    NbCardComponent,
+    NbContentSizeSwitcherComponent,
+    NbThemeSelectComponent
+} from '@liquid-js/lyr-core'
 
 @Component({
-  selector: 'nb-theme-select-showcase',
-  template: `
+    selector: 'nb-theme-select-showcase',
+    template: `
     <nb-card>
       <nb-card-body class="preferences">
         <nb-theme-select />
@@ -16,7 +16,7 @@ import {
       </nb-card-body>
     </nb-card>
   `,
-  styles: `
+    styles: `
     .preferences {
       display: flex;
       flex-wrap: wrap;
@@ -25,6 +25,6 @@ import {
       min-height: 20rem;
     }
   `,
-  imports: [NbCardComponent, NbCardBodyComponent, NbThemeSelectComponent, NbContentSizeSwitcherComponent],
+    imports: [NbCardComponent, NbCardBodyComponent, NbThemeSelectComponent, NbContentSizeSwitcherComponent]
 })
 export class ThemeSelectShowcaseComponent {}

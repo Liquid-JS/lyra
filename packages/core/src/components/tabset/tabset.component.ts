@@ -1,27 +1,26 @@
-import { delay, filter, map } from 'rxjs/operators';
+import { delay, filter, map } from 'rxjs/operators'
 import {
-  AfterContentInit,
-  Component,
-  contentChild,
-  contentChildren,
-  DestroyRef,
-  inject,
-  input,
-  linkedSignal,
-  output,
-} from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ActivatedRoute } from '@angular/router';
+    AfterContentInit,
+    Component,
+    contentChild,
+    contentChildren,
+    DestroyRef,
+    inject,
+    input,
+    linkedSignal,
+    output
+} from '@angular/core'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
+import { ActivatedRoute } from '@angular/router'
 
-import { ɵconvertToBoolProperty as convertToBoolProperty, NbBooleanInput } from '@liquid-js/lyr-core/base';
-import { NbComponentOrCustomStatus } from '@liquid-js/lyr-core/base';
-import { NbBadgePosition, NbBadgeComponent } from '@liquid-js/lyr-core/badge';
-import { NbIconConfig, NbIconComponent } from '@liquid-js/lyr-core/icon';
-import { NbTabContentDirective } from './tab-content.directive';
-import { NbTabTitleDirective } from './tab-title.directive';
-import { NgTemplateOutlet } from '@angular/common';
+import { ɵconvertToBoolProperty as convertToBoolProperty, NbBooleanInput, NbComponentOrCustomStatus } from '@liquid-js/lyr-core/base'
+import { NbBadgePosition, NbBadgeComponent } from '@liquid-js/lyr-core/badge'
+import { NbIconConfig, NbIconComponent } from '@liquid-js/lyr-core/icon'
+import { NgTemplateOutlet } from '@angular/common'
+import { NbTabContentDirective } from './tab-content.directive'
+import { NbTabTitleDirective } from './tab-title.directive'
 
-let lastTabId = 0;
+let lastTabId = 0
 
 /**
  * A tab of an `nb-tabset`: its title, icon and badge, and its content.
@@ -33,84 +32,84 @@ let lastTabId = 0;
  * ```
  */
 @Component({
-  selector: 'nb-tab',
-  templateUrl: './tab.component.html',
-  imports: [NgTemplateOutlet],
-  host: {
-    role: 'tabpanel',
-    '[id]': 'panelId',
-    '[attr.aria-labelledby]': 'labelId',
-    '[class.disabled]': 'disabled()',
-    '[class.content-active]': 'isActive()',
-  },
+    selector: 'nb-tab',
+    templateUrl: './tab.component.html',
+    imports: [NgTemplateOutlet],
+    host: {
+        'role': 'tabpanel',
+        '[id]': 'panelId',
+        '[attr.aria-labelledby]': 'labelId',
+        '[class.disabled]': 'disabled()',
+        '[class.content-active]': 'isActive()'
+    }
 })
 export class NbTabComponent {
-  /** @internal The id of the tab's panel, which its tab controls. */
-  readonly panelId = `nb-tab-panel-${lastTabId}`;
-  /** @internal The id of the tab, which names its panel. */
-  readonly labelId = `nb-tab-${lastTabId++}`;
+    /** @internal The id of the tab's panel, which its tab controls. */
+    readonly panelId = `nb-tab-panel-${lastTabId}`
+    /** @internal The id of the tab, which names its panel. */
+    readonly labelId = `nb-tab-${lastTabId++}`
 
-  readonly tabContentDirective = contentChild(NbTabContentDirective);
-  readonly tabTitleDirective = contentChild(NbTabTitleDirective);
+    readonly tabContentDirective = contentChild(NbTabContentDirective)
+    readonly tabTitleDirective = contentChild(NbTabTitleDirective)
 
-  /** The title; an `nbTabTitle` template in the tab takes its place. */
-  readonly tabTitle = input<string>();
+    /** The title; an `nbTabTitle` template in the tab takes its place. */
+    readonly tabTitle = input<string>()
 
-  /** Set as `data-tab-id` on the tab, e.g. for tests. */
-  readonly tabId = input<string>();
+    /** Set as `data-tab-id` on the tab, e.g. for tests. */
+    readonly tabId = input<string>()
 
-  /** Shows the badge as a dot, without its text; in the top right corner unless `badgePosition` says otherwise. */
-  readonly badgeDot = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
+    /** Shows the badge as a dot, without its text; in the top right corner unless `badgePosition` says otherwise. */
+    readonly badgeDot = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty })
 
-  /** An icon before the title, by name or as an icon config. */
-  readonly tabIcon = input<string | NbIconConfig>();
+    /** An icon before the title, by name or as an icon config. */
+    readonly tabIcon = input<string | NbIconConfig>()
 
-  /** The tab can't be selected, by a click or the keyboard, which skips it. */
-  readonly disabled = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
+    /** The tab can't be selected, by a click or the keyboard, which skips it. */
+    readonly disabled = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty })
 
-  /**
-   * Hides the title, leaving the icon, on screens narrower than the theme's `$tabset-tab-text-hide-breakpoint`
-   * (36rem by default).
-   */
-  readonly responsive = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
+    /**
+     * Hides the title, leaving the icon, on screens narrower than the theme's `$tabset-tab-text-hide-breakpoint`
+     * (36rem by default).
+     */
+    readonly responsive = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty })
 
-  /**
-   * The value of the tabset's `routeParam` that selects this tab. The tabset doesn't navigate: the app navigates in
-   * `tabChange`, e.g. to `['..', tab.route()]`. For tabs that are links, see `nb-route-tabset`.
-   */
-  readonly route = input<string>();
+    /**
+     * The value of the tabset's `routeParam` that selects this tab. The tabset doesn't navigate: the app navigates in
+     * `tabChange`, e.g. to `['..', tab.route()]`. For tabs that are links, see `nb-route-tabset`.
+     */
+    readonly route = input<string>()
 
-  /** Selected at the start. Without an active tab, or a `routeParam`, the tabset selects its first tab. */
-  readonly active = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
+    /** Selected at the start. Without an active tab, or a `routeParam`, the tabset selects its first tab. */
+    readonly active = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty })
 
-  /** Renders an `nbTabContent` from the start, rather than when the tab is first selected. */
-  readonly lazyLoad = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
+    /** Renders an `nbTabContent` from the start, rather than when the tab is first selected. */
+    readonly lazyLoad = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty })
 
-  /** The badge's text. */
-  readonly badgeText = input<string>();
+    /** The badge's text. */
+    readonly badgeText = input<string>()
 
-  /** The badge's status colour; 'basic' by default. */
-  readonly badgeStatus = input<NbComponentOrCustomStatus>('basic');
+    /** The badge's status colour; 'basic' by default. */
+    readonly badgeStatus = input<NbComponentOrCustomStatus>('basic')
 
-  /**
-   * Where the badge sits on the tab, e.g. 'top end' or 'bottom start'. Without one, a badge's text follows the tab's
-   * title and a dot sits in the top right corner.
-   */
-  readonly badgePosition = input<NbBadgePosition>();
+    /**
+     * Where the badge sits on the tab, e.g. 'top end' or 'bottom start'. Without one, a badge's text follows the tab's
+     * title and a dot sits in the top right corner.
+     */
+    readonly badgePosition = input<NbBadgePosition>()
 
-  /**
-   * Whether the tab is active: the `active` input, until the tabset selects another tab.
-   */
-  readonly isActive = linkedSignal(() => this.active());
+    /**
+     * Whether the tab is active: the `active` input, until the tabset selects another tab.
+     */
+    readonly isActive = linkedSignal(() => this.active())
 
-  /**
-   * Whether the tab's `nbTabContent` is rendered: since the tab was first active, or from the start with
-   * `lazyLoad`.
-   */
-  readonly init = linkedSignal<boolean, boolean>({
-    source: () => this.isActive() || this.lazyLoad(),
-    computation: (render, previous) => render || !!previous?.value,
-  });
+    /**
+     * Whether the tab's `nbTabContent` is rendered: since the tab was first active, or from the start with
+     * `lazyLoad`.
+     */
+    readonly init = linkedSignal<boolean, boolean>({
+        source: () => this.isActive() || this.lazyLoad(),
+        computation: (render, previous) => render || !!previous?.value
+    })
 }
 
 /**
@@ -188,7 +187,6 @@ export class NbTabComponent {
  * The tabs are a tab list: Tab reaches the selected tab, the arrow keys, Home and End move between the others, and
  * Enter or Space selects one. With `routeParam`, the tabset selects the tab whose `route` is the param's value, and
  * the app navigates in `tabChange`.
- *
  * @styles
  *
  * tabset-background-color:
@@ -236,85 +234,85 @@ export class NbTabComponent {
  * tabset-scrollbar-width:
  */
 @Component({
-  selector: 'nb-tabset',
-  styleUrls: ['./tabset.component.scss'],
-  templateUrl: './tabset.component.html',
-  imports: [NbIconComponent, NgTemplateOutlet, NbBadgeComponent],
-  host: {
-    '[class.full-width]': 'fullWidth()',
-  },
+    selector: 'nb-tabset',
+    styleUrls: ['./tabset.component.scss'],
+    templateUrl: './tabset.component.html',
+    imports: [NbIconComponent, NgTemplateOutlet, NbBadgeComponent],
+    host: {
+        '[class.full-width]': 'fullWidth()'
+    }
 })
 export class NbTabsetComponent implements AfterContentInit {
-  private readonly route = inject(ActivatedRoute);
-  private readonly destroyRef = inject(DestroyRef);
+    private readonly route = inject(ActivatedRoute)
+    private readonly destroyRef = inject(DestroyRef)
 
-  readonly tabs = contentChildren(NbTabComponent);
+    readonly tabs = contentChildren(NbTabComponent)
 
-  /** The tabs share the tabset's width. */
-  readonly fullWidth = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
+    /** The tabs share the tabset's width. */
+    readonly fullWidth = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty })
 
-  /** A route param the tabset selects the tab by: the tab whose `route` is its value. */
-  readonly routeParam = input<string>();
+    /** A route param the tabset selects the tab by: the tab whose `route` is its value. */
+    readonly routeParam = input<string>()
 
-  /** Emits the tab selected by the user, the route or at the start. */
-  readonly tabChange = output<NbTabComponent>();
+    /** Emits the tab selected by the user, the route or at the start. */
+    readonly tabChange = output<NbTabComponent>()
 
-  ngAfterContentInit() {
-    this.route.params
-      .pipe(
-        map((params) => {
-          const routeParam = this.routeParam();
-          return this.tabs().find((tab) => (routeParam ? tab.route() === params[routeParam] : tab.isActive()));
-        }),
-        // Select after the change detection that rendered the tabs.
-        delay(0),
-        map((tab?: NbTabComponent) => tab || this.tabs()[0]),
-        filter((tab): tab is NbTabComponent => !!tab),
-        takeUntilDestroyed(this.destroyRef),
-      )
-      .subscribe((tabToSelect: NbTabComponent) => this.selectTab(tabToSelect));
-  }
-
-  /** Selects a tab, unless it's disabled. */
-  selectTab(selectedTab: NbTabComponent) {
-    if (!selectedTab.disabled()) {
-      this.tabs().forEach((tab) => tab.isActive.set(tab === selectedTab));
-      this.tabChange.emit(selectedTab);
+    ngAfterContentInit() {
+        this.route.params
+            .pipe(
+                map((params) => {
+                    const routeParam = this.routeParam()
+                    return this.tabs().find((tab) => (routeParam ? tab.route() === params[routeParam] : tab.isActive()))
+                }),
+                // Select after the change detection that rendered the tabs.
+                delay(0),
+                map((tab?: NbTabComponent) => tab || this.tabs()[0]),
+                filter((tab): tab is NbTabComponent => !!tab),
+                takeUntilDestroyed(this.destroyRef)
+            )
+            .subscribe((tabToSelect: NbTabComponent) => this.selectTab(tabToSelect))
     }
-  }
 
-  /** @internal Tab reaches the selected tab, or the first one that isn't disabled; the arrow keys the others. */
-  isTabbable(tab: NbTabComponent) {
-    const tabs = this.tabs();
-    const active = tabs.find((item) => item.isActive() && !item.disabled());
-    return tab === (active ?? tabs.find((item) => !item.disabled()));
-  }
+    /** Selects a tab, unless it's disabled. */
+    selectTab(selectedTab: NbTabComponent) {
+        if (!selectedTab.disabled()) {
+            this.tabs().forEach((tab) => tab.isActive.set(tab === selectedTab))
+            this.tabChange.emit(selectedTab)
+        }
+    }
 
-  /**
-   * @internal As in a tab list: the arrow keys, Home and End move between the tabs, in the page's direction, and
-   * Enter or Space selects one.
-   */
-  onKeydown(event: KeyboardEvent, tab: NbTabComponent) {
-    const current = event.currentTarget as HTMLElement;
-    const list = current.parentElement;
-    if (!list || event.target !== current) {
-      return;
+    /** @internal Tab reaches the selected tab, or the first one that isn't disabled; the arrow keys the others. */
+    isTabbable(tab: NbTabComponent) {
+        const tabs = this.tabs()
+        const active = tabs.find((item) => item.isActive() && !item.disabled())
+        return tab === (active ?? tabs.find((item) => !item.disabled()))
     }
-    const elements = Array.from(list.querySelectorAll<HTMLElement>(':scope > [role="tab"]:not([aria-disabled="true"])'));
-    const index = elements.indexOf(current);
-    const step = getComputedStyle(list).direction === 'rtl' ? -1 : 1;
-    const targets: Record<string, HTMLElement | undefined> = {
-      ArrowRight: elements[(index + step + elements.length) % elements.length],
-      ArrowLeft: elements[(index - step + elements.length) % elements.length],
-      Home: elements[0],
-      End: elements[elements.length - 1],
-    };
-    if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault();
-      this.selectTab(tab);
-    } else if (index >= 0 && targets[event.key]) {
-      event.preventDefault();
-      targets[event.key]?.focus();
+
+    /**
+     * @internal As in a tab list: the arrow keys, Home and End move between the tabs, in the page's direction, and
+     * Enter or Space selects one.
+     */
+    onKeydown(event: KeyboardEvent, tab: NbTabComponent) {
+        const current = event.currentTarget as HTMLElement
+        const list = current.parentElement
+        if (!list || event.target !== current) {
+            return
+        }
+        const elements = Array.from(list.querySelectorAll<HTMLElement>(':scope > [role="tab"]:not([aria-disabled="true"])'))
+        const index = elements.indexOf(current)
+        const step = getComputedStyle(list).direction === 'rtl' ? -1 : 1
+        const targets: Record<string, HTMLElement | undefined> = {
+            ArrowRight: elements[(index + step + elements.length) % elements.length],
+            ArrowLeft: elements[(index - step + elements.length) % elements.length],
+            Home: elements[0],
+            End: elements[elements.length - 1]
+        }
+        if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault()
+            this.selectTab(tab)
+        } else if (index >= 0 && targets[event.key]) {
+            event.preventDefault()
+            targets[event.key]?.focus()
+        }
     }
-  }
 }

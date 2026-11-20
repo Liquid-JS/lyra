@@ -1,17 +1,16 @@
-import { Component, computed, inject, input } from '@angular/core';
-import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { Component, computed, inject, input } from '@angular/core'
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser'
 
-import { injectNbIconStyle } from '@liquid-js/lyr-core/base';
-import { NbComponentOrCustomStatus } from '@liquid-js/lyr-core/base';
-import { NbIconLibraries } from './icon-libraries';
-import { NbIconOptions } from './icon';
-import { NbIconRef } from './icon-ref';
+import { injectNbIconStyle, NbComponentOrCustomStatus } from '@liquid-js/lyr-core/base'
+import { NbIconLibraries } from './icon-libraries'
+import { NbIconOptions } from './icon'
+import { NbIconRef } from './icon-ref'
 
 export interface NbIconConfig {
-  icon: string;
-  pack?: string;
-  status?: NbComponentOrCustomStatus;
-  options?: NbIconOptions;
+    icon: string
+    pack?: string
+    status?: NbComponentOrCustomStatus
+    options?: NbIconOptions
 }
 
 /**
@@ -54,7 +53,6 @@ export interface NbIconConfig {
  * ```html
  * <nb-icon icon="star" status="warning"></nb-icon>
  * ```
- *
  * @stacked-example(Colored Icons, icon/icon-colors.component)
  *
  * `pack` takes the icon from a pack other than the default one:
@@ -73,7 +71,6 @@ export interface NbIconConfig {
  * ```html
  * <nb-icon icon="heart-outline" [options]="{ animation: { type: 'pulse', infinite: true, hover: false } }"></nb-icon>
  * ```
- *
  * @styles
  *
  * icon-font-size:
@@ -90,68 +87,69 @@ export interface NbIconConfig {
  * icon-control-color:
  */
 @Component({
-  selector: 'nb-icon',
-  styleUrls: [`./icon.component.scss`],
-  template: '',
-  providers: [{ provide: NbIconRef, useExisting: NbIconComponent }],
-  host: {
-    '[class]': 'hostClasses()',
-    '[innerHtml]': 'html()',
-  },
+    selector: 'nb-icon',
+    styleUrls: ['./icon.component.scss'],
+    template: '',
+    providers: [{ provide: NbIconRef, useExisting: NbIconComponent }],
+    host: {
+        '[class]': 'hostClasses()',
+        '[innerHtml]': 'html()'
+    }
 })
 export class NbIconComponent {
-  protected readonly sanitizer = inject(DomSanitizer);
-  protected readonly iconLibrary = inject(NbIconLibraries);
+    protected readonly sanitizer = inject(DomSanitizer)
+    protected readonly iconLibrary = inject(NbIconLibraries)
 
-  /** The icon's name in its pack. */
-  readonly icon = input<string>();
+    /** The icon's name in its pack. */
+    readonly icon = input<string>()
 
-  /** The pack to take the icon from; the default pack when unset. Throws when no pack is registered as the default. */
-  readonly pack = input<string>();
+    /** The pack to take the icon from; the default pack when unset. Throws when no pack is registered as the default. */
+    readonly pack = input<string>()
 
-  /** Settings the icon pack supports, e.g. an animation. */
-  readonly options = input<NbIconOptions>();
+    /** Settings the icon pack supports, e.g. an animation. */
+    readonly options = input<NbIconOptions>()
 
-  /** Colours the icon with a status colour. */
-  readonly status = input<NbComponentOrCustomStatus>();
+    /** Colours the icon with a status colour. */
+    readonly status = input<NbComponentOrCustomStatus>()
 
-  /**
-   * All the icon's inputs as one object, or just the icon's name as a string; an object replaces the separate inputs
-   * entirely.
-   * @docs-private
-   */
-  readonly config = input<string | NbIconConfig>();
+    /**
+     * All the icon's inputs as one object, or just the icon's name as a string; an object replaces the separate inputs
+     * entirely.
+     *
+     * @docs-private
+     */
+    readonly config = input<string | NbIconConfig>()
 
-  // The icon to render: `config` when it is set, the separate inputs otherwise.
-  protected readonly resolved = computed<Partial<NbIconConfig>>(() => {
-    const config = this.config();
-    if (!config) {
-      return { icon: this.icon(), pack: this.pack(), status: this.status(), options: this.options() };
-    }
-    if (typeof config === 'string') {
-      return { icon: config, pack: this.pack(), status: this.status(), options: this.options() };
-    }
-    return config;
-  });
+    // The icon to render: `config` when it is set, the separate inputs otherwise.
+    protected readonly resolved = computed<Partial<NbIconConfig>>(() => {
+        const config = this.config()
+        if (!config) {
+            return { icon: this.icon(), pack: this.pack(), status: this.status(), options: this.options() }
+        }
+        if (typeof config === 'string') {
+            return { icon: config, pack: this.pack(), status: this.status(), options: this.options() }
+        }
+        return config
+    })
 
-  // The app's icon style, if it has one: icons in the other style use this one where their pack has both.
-  protected readonly iconStyle = injectNbIconStyle();
+    // The app's icon style, if it has one: icons in the other style use this one where their pack has both.
+    protected readonly iconStyle = injectNbIconStyle()
 
-  protected readonly iconDefinition = computed(() => {
-    const { icon, pack } = this.resolved();
-    // An unset icon is still looked up (as an empty name), so a missing pack fails as it does for a set one.
-    return this.iconLibrary.getIcon(icon ?? '', pack, this.iconStyle());
-  });
+    protected readonly iconDefinition = computed(() => {
+        const { icon, pack } = this.resolved()
+        // An unset icon is still looked up (as an empty name), so a missing pack fails as it does for a set one.
+        return this.iconLibrary.getIcon(icon ?? '', pack, this.iconStyle())
+    })
 
-  protected readonly html = computed<SafeHtml>(() => {
-    const content = this.iconDefinition()?.icon.getContent(this.resolved().options);
-    return content ? this.sanitizer.bypassSecurityTrustHtml(content) : '';
-  });
+    protected readonly html = computed<SafeHtml>(() => {
+        const content = this.iconDefinition()?.icon.getContent(this.resolved().options)
+        return content ? this.sanitizer.bypassSecurityTrustHtml(content) : ''
+    })
 
-  protected readonly hostClasses = computed(() => {
-    const { status, options } = this.resolved();
-    // Pack and icon classes may hold several space-separated names.
-    const iconClasses = (this.iconDefinition()?.icon.getClasses(options) ?? []).flatMap((name) => name.split(/\s+/));
-    return [...iconClasses, status && `status-${status}`].filter(Boolean);
-  });
+    protected readonly hostClasses = computed(() => {
+        const { status, options } = this.resolved()
+        // Pack and icon classes may hold several space-separated names.
+        const iconClasses = (this.iconDefinition()?.icon.getClasses(options) ?? []).flatMap((name) => name.split(/\s+/))
+        return [...iconClasses, status && `status-${status}`].filter(Boolean)
+    })
 }

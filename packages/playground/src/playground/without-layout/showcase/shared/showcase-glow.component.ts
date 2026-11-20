@@ -1,4 +1,4 @@
-import { Component, input } from '@angular/core';
+import { Component, input } from '@angular/core'
 
 /**
  * A soft glow of a colour, for behind a page's content: a radial gradient from the colour at its centre to nothing at
@@ -7,9 +7,9 @@ import { Component, input } from '@angular/core';
  * inside an `overflow: hidden` ancestor; it's square, and stays out of the way of the pointer.
  */
 @Component({
-  selector: 'npg-showcase-glow',
-  template: '',
-  styles: `
+    selector: 'npg-showcase-glow',
+    template: '',
+    styles: `
     :host {
       display: block;
       aspect-ratio: 1;
@@ -22,20 +22,20 @@ import { Component, input } from '@angular/core';
       );
     }
   `,
-  host: {
-    '[style.--glow-color]': 'color()',
-    '[style.--glow-opacity]': 'opacity() + "%"',
-    '[style.--glow-solid]': 'solid() + "%"',
-    '[style.--glow-half]': 'half() + "%"',
-  },
+    host: {
+        '[style.--glow-color]': 'color()',
+        '[style.--glow-opacity]': 'opacity() + "%"',
+        '[style.--glow-solid]': 'solid() + "%"',
+        '[style.--glow-half]': 'half() + "%"'
+    }
 })
 export class ShowcaseGlowComponent {
-  /** The glow's colour, as a CSS colour, e.g. `var(--color-primary-400)`. */
-  readonly color = input('var(--color-primary-400)');
-  /** How opaque its centre is, in percent. */
-  readonly opacity = input(70);
-  /** Up to which share of its radius it's fully that opaque, in percent. */
-  readonly solid = input(0);
-  /** At which share of its radius it's half as opaque, in percent. */
-  readonly half = input(50);
+    /** The glow's colour, as a CSS colour, e.g. `var(--color-primary-400)`. */
+    readonly color = input('var(--color-primary-400)')
+    /** How opaque its centre is, in percent. */
+    readonly opacity = input(70)
+    /** Up to which share of its radius it's fully that opaque, in percent. */
+    readonly solid = input(0)
+    /** At which share of its radius it's half as opaque, in percent. */
+    readonly half = input(50)
 }

@@ -1,33 +1,33 @@
 @if (icon()) {
 @if (link()) {
 <a class="icon-container"
-  [attr.tabindex]="disabled() ? -1 : 0"
-  [attr.aria-disabled]="disabled() || null"
-  [routerLink]="link()"
-  [title]="title()">
-  <nb-icon [config]="icon()" />
-  <ng-container [ngTemplateOutlet]="badgeTemplate" />
+    [attr.tabindex]="disabled() ? -1 : 0"
+    [attr.aria-disabled]="disabled() || null"
+    [routerLink]="link()"
+    [title]="title()">
+    <nb-icon [config]="icon()" />
+    <ng-container [ngTemplateOutlet]="badgeTemplate" />
 </a>
 }
 @if (href() && !link()) {
 <a class="icon-container"
-  [attr.tabindex]="disabled() ? -1 : 0"
-  [attr.aria-disabled]="disabled() || null"
-  [href]="href()"
-  [title]="title()">
-  <nb-icon [config]="icon()" />
-  <ng-container [ngTemplateOutlet]="badgeTemplate" />
+    [attr.tabindex]="disabled() ? -1 : 0"
+    [attr.aria-disabled]="disabled() || null"
+    [href]="href()"
+    [title]="title()">
+    <nb-icon [config]="icon()" />
+    <ng-container [ngTemplateOutlet]="badgeTemplate" />
 </a>
 }
 @if (!href() && !link()) {
 <a class="icon-container"
-  [attr.tabindex]="disabled() ? -1 : 0"
-  [attr.aria-disabled]="disabled() || null"
-  href="#"
-  [title]="title()"
-  (click)="$event.preventDefault()">
-  <nb-icon [config]="icon()" />
-  <ng-container [ngTemplateOutlet]="badgeTemplate" />
+    [attr.tabindex]="disabled() ? -1 : 0"
+    [attr.aria-disabled]="disabled() || null"
+    href="#"
+    [title]="title()"
+    (click)="$event.preventDefault()">
+    <nb-icon [config]="icon()" />
+    <ng-container [ngTemplateOutlet]="badgeTemplate" />
 </a>
 }
 } @else {
@@ -36,10 +36,10 @@
 }
 
 <ng-template #badgeTemplate>
-  @if (badgeText() || badgeDot()) {
-  <nb-badge [text]="badgeText()"
-    [dotMode]="badgeDot()"
-    [status]="badgeStatus()"
-    [position]="badgePosition()" />
-  }
+    @if (badgeText() || badgeDot()) {
+    <nb-badge [text]="badgeText()"
+        [dotMode]="badgeDot()"
+        [status]="badgeStatus()"
+        [position]="badgePosition()" />
+    }
 </ng-template>

@@ -1,73 +1,73 @@
 <nb-card>
-  <nb-card-body>
-    <form [formGroup]="form"
-      (ngSubmit)="save()">
-      <div class="field">
-        <label class="label"
-          for="mask-name">Name on the card</label>
-        <input nbInput
-          fullWidth
-          id="mask-name"
-          autocomplete="cc-name"
-          formControlName="name"
-          nbValidation
-          #name="nbValidation" />
-        <nb-validation-errors [for]="name" />
-      </div>
+    <nb-card-body>
+        <form [formGroup]="form"
+            (ngSubmit)="save()">
+            <div class="field">
+                <label class="label"
+                    for="mask-name">Name on the card</label>
+                <input nbInput
+                    fullWidth
+                    id="mask-name"
+                    autocomplete="cc-name"
+                    formControlName="name"
+                    nbValidation
+                    #name="nbValidation" />
+                <nb-validation-errors [for]="name" />
+            </div>
 
-      <div class="field">
-        <label class="label"
-          for="mask-card">Card number</label>
-        <input nbInput
-          fullWidth
-          id="mask-card"
-          inputmode="numeric"
-          autocomplete="cc-number"
-          nbMask="#### #### #### ####"
-          formControlName="card"
-          nbValidation
-          #card="nbValidation" />
-        <nb-validation-errors [for]="card" />
-      </div>
+            <div class="field">
+                <label class="label"
+                    for="mask-card">Card number</label>
+                <input nbInput
+                    fullWidth
+                    id="mask-card"
+                    inputmode="numeric"
+                    autocomplete="cc-number"
+                    nbMask="#### #### #### ####"
+                    formControlName="card"
+                    nbValidation
+                    #card="nbValidation" />
+                <nb-validation-errors [for]="card" />
+            </div>
 
-      <div class="field">
-        <label class="label"
-          for="mask-expiry">Expiry date (MM/YY)</label>
-        <input nbInput
-          fullWidth
-          id="mask-expiry"
-          inputmode="numeric"
-          autocomplete="cc-exp"
-          nbMask="##/##"
-          nbMaskValue="masked"
-          formControlName="expiry"
-          nbValidation
-          #expiry="nbValidation" />
-        <nb-validation-errors [for]="expiry" />
-      </div>
+            <div class="field">
+                <label class="label"
+                    for="mask-expiry">Expiry date (MM/YY)</label>
+                <input nbInput
+                    fullWidth
+                    id="mask-expiry"
+                    inputmode="numeric"
+                    autocomplete="cc-exp"
+                    nbMask="##/##"
+                    nbMaskValue="masked"
+                    formControlName="expiry"
+                    nbValidation
+                    #expiry="nbValidation" />
+                <nb-validation-errors [for]="expiry" />
+            </div>
 
-      <div class="field">
-        <label class="label"
-          for="mask-code">Security code</label>
-        <input nbInput
-          fullWidth
-          id="mask-code"
-          inputmode="numeric"
-          autocomplete="cc-csc"
-          nbMask="###"
-          formControlName="code"
-          nbValidation
-          #code="nbValidation" />
-        <nb-validation-errors [for]="code" />
-      </div>
+            <div class="field">
+                <label class="label"
+                    for="mask-code">Security code</label>
+                <input nbInput
+                    fullWidth
+                    id="mask-code"
+                    inputmode="numeric"
+                    autocomplete="cc-csc"
+                    nbMask="###"
+                    formControlName="code"
+                    nbValidation
+                    #code="nbValidation" />
+                <nb-validation-errors [for]="code" />
+            </div>
 
-      <button nbButton
-        status="primary"
-        type="submit">Pay</button>
-    </form>
+            <button nbButton
+                status="primary"
+                type="submit">Pay</button>
+        </form>
 
-    @if (saved(); as values) {
-    <p class="paragraph saved">Sent: <code>{{ values | json }}</code></p>
-    }
-  </nb-card-body>
+        @if (saved(); as values) {
+        <p class="paragraph saved">Sent: <code>{{ values | json }}</code></p>
+        }
+    </nb-card-body>
 </nb-card>

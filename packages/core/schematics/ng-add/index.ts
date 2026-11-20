@@ -1,32 +1,32 @@
-import { Rule, SchematicContext, Tree } from '@angular-devkit/schematics';
-import { NodePackageInstallTask, RunSchematicTask } from '../util/devkit-tasks.js';
+import { Rule, SchematicContext, Tree } from '@angular-devkit/schematics'
+import { NodePackageInstallTask, RunSchematicTask } from '../util/devkit-tasks.js'
 
-import { Schema } from './schema.js';
+import {
+    addDependencyToPackageJson,
+    addDevDependencyToPackageJson,
+    getDevDependencyVersionFromPackageJson,
+    getLyraPeerDependencyVersion,
+    getLyraVersion
+} from '../util/package.js'
+import { Schema } from './schema.js'
 // Imported from `util/package` directly, not from `util`: the other utilities use `@angular/cdk/schematics` and
 // `@schematics/angular`, which aren't installed yet at this step.
-import {
-  addDependencyToPackageJson,
-  addDevDependencyToPackageJson,
-  getDevDependencyVersionFromPackageJson,
-  getLyraPeerDependencyVersion,
-  getLyraVersion,
-} from '../util/package.js';
 
 /** The `ng add` entry: adds the dependencies to `package.json`, installs them, then sets the project up. */
 export function ngAdd(options: Schema): Rule {
-  return runSetupSchematics(options);
+    return runSetupSchematics(options)
 }
 
 function installMainPeerDependencies(tree: Tree) {
-  const angularCliVersion = getDevDependencyVersionFromPackageJson(tree, '@angular/cli');
-  const lyraVersion = getLyraVersion();
-  const angularCdkVersion = getLyraPeerDependencyVersion('@angular/cdk');
+    const angularCliVersion = getDevDependencyVersionFromPackageJson(tree, '@angular/cli')
+    const lyraVersion = getLyraVersion()
+    const angularCdkVersion = getLyraPeerDependencyVersion('@angular/cdk')
 
-  addDependencyToPackageJson(tree, '@angular/cdk', angularCdkVersion, true);
-  addDependencyToPackageJson(tree, '@liquid-js/lyr-core', lyraVersion);
-  addDependencyToPackageJson(tree, '@liquid-js/lyr-icons', lyraVersion);
+    addDependencyToPackageJson(tree, '@angular/cdk', angularCdkVersion, true)
+    addDependencyToPackageJson(tree, '@liquid-js/lyr-core', lyraVersion)
+    addDependencyToPackageJson(tree, '@liquid-js/lyr-icons', lyraVersion)
 
-  addDevDependencyToPackageJson(tree, '@schematics/angular', angularCliVersion);
+    addDevDependencyToPackageJson(tree, '@schematics/angular', angularCliVersion)
 }
 
 /**
@@ -35,11 +35,11 @@ function installMainPeerDependencies(tree: Tree) {
  * install task are the only way to run a schematic after it.
  */
 function runSetupSchematics(options: Schema) {
-  return (tree: Tree, context: SchematicContext) => {
-    installMainPeerDependencies(tree);
+    return (tree: Tree, context: SchematicContext) => {
+        installMainPeerDependencies(tree)
 
-    const installTaskId = context.addTask(new NodePackageInstallTask());
-    const postInstallTaskId = context.addTask(new RunSchematicTask('post-install', options), [installTaskId]);
-    context.addTask(new RunSchematicTask('setup', options), [postInstallTaskId]);
-  };
+        const installTaskId = context.addTask(new NodePackageInstallTask())
+        const postInstallTaskId = context.addTask(new RunSchematicTask('post-install', options), [installTaskId])
+        context.addTask(new RunSchematicTask('setup', options), [postInstallTaskId])
+    }
 }

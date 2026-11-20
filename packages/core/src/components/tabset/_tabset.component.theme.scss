@@ -1,146 +1,151 @@
-@use '../../styles/theming' as *;
+@use "../../styles/theming" as *;
 
 @mixin nb-tabset-theme() {
-  nb-tabset {
-    background-color: nb-theme(tabset-background-color);
-    border-radius: nb-theme(tabset-border-radius);
-    box-shadow: nb-theme(tabset-shadow);
+    nb-tabset {
+        background-color: nb-theme(tabset-background-color);
+        border-radius: nb-theme(tabset-border-radius);
+        box-shadow: nb-theme(tabset-shadow);
 
-    .tabset {
-      border-bottom: nb-theme(tabset-divider-width) nb-theme(tabset-divider-style) nb-theme(tabset-divider-color);
-    }
-
-    .tab-link {
-      background-color: nb-theme(tabset-tab-background-color);
-      cursor: pointer;
-      padding: nb-theme(tabset-tab-padding);
-
-      // On a narrow screen, tabs take less room, so a few fit across it.
-      @media screen and (max-width: $tabset-tab-text-hide-breakpoint) {
-        padding: nb-theme(tabset-tab-small-padding);
-      }
-      color: nb-theme(tabset-tab-text-color);
-      font-family: nb-theme(tabset-tab-text-font-family);
-      font-size: nb-theme(tabset-tab-text-font-size);
-      font-weight: nb-theme(tabset-tab-text-font-weight);
-      line-height: nb-theme(tabset-tab-text-line-height);
-      text-transform: nb-theme(tabset-tab-text-transform);
-      @include nb-component-animation(background-color, color);
-
-      &::before {
-        background-color: nb-theme(tabset-tab-underline-color);
-        height: nb-theme(tabset-tab-underline-width);
-        @include nb-component-animation(background-color);
-      }
-    }
-
-    nb-badge.dot-mode.position-left {
-      left: nb-theme(tabset-tab-badge-dot-mode-horizontal-offset);
-    }
-
-    nb-badge.dot-mode.position-right {
-      right: nb-theme(tabset-tab-badge-dot-mode-horizontal-offset);
-    }
-
-    nb-badge.dot-mode.position-start {
-      @include nb-ltr(left, nb-theme(tabset-tab-badge-dot-mode-horizontal-offset));
-      @include nb-rtl(right, nb-theme(tabset-tab-badge-dot-mode-horizontal-offset));
-    }
-
-    nb-badge.dot-mode.position-end {
-      @include nb-ltr(right, nb-theme(tabset-tab-badge-dot-mode-horizontal-offset));
-      @include nb-rtl(left, nb-theme(tabset-tab-badge-dot-mode-horizontal-offset));
-    }
-
-    .tab.active {
-      .tab-link {
-        background-color: nb-theme(tabset-tab-active-background-color);
-        color: nb-theme(tabset-tab-active-text-color);
-        &::before {
-          background-color: nb-theme(tabset-tab-active-underline-color);
+        .tabset {
+            border-bottom: nb-theme(tabset-divider-width) nb-theme(tabset-divider-style) nb-theme(tabset-divider-color);
         }
-      }
-    }
 
-    // The keyboard's tab, with a ring inside it as a menu item's; a click doesn't leave the focus colours.
-    .tab:focus {
-      outline: none;
-    }
+        .tab-link {
+            background-color: nb-theme(tabset-tab-background-color);
+            cursor: pointer;
+            padding: nb-theme(tabset-tab-padding);
 
-    .tab:focus-visible {
-      .tab-link {
-        background-color: nb-theme(tabset-tab-focus-background-color);
-        color: nb-theme(tabset-tab-focus-text-color);
-        box-shadow: inset 0 0 0 nb-theme(tabset-tab-outline-width) nb-theme(tabset-tab-outline-color);
-        &::before {
-          background-color: nb-theme(tabset-tab-focus-underline-color);
+            // On a narrow screen, tabs take less room, so a few fit across it.
+            @media screen and (max-width: $tabset-tab-text-hide-breakpoint) {
+                padding: nb-theme(tabset-tab-small-padding);
+            }
+
+            color: nb-theme(tabset-tab-text-color);
+            font-family: nb-theme(tabset-tab-text-font-family);
+            font-size: nb-theme(tabset-tab-text-font-size);
+            font-weight: nb-theme(tabset-tab-text-font-weight);
+            line-height: nb-theme(tabset-tab-text-line-height);
+            text-transform: nb-theme(tabset-tab-text-transform);
+            @include nb-component-animation(background-color, color);
+
+            &:before {
+                background-color: nb-theme(tabset-tab-underline-color);
+                height: nb-theme(tabset-tab-underline-width);
+                @include nb-component-animation(background-color);
+            }
         }
-      }
-    }
 
-    .tab:hover {
-      .tab-link {
-        color: nb-theme(tabset-tab-hover-text-color);
-        background-color: nb-theme(tabset-tab-hover-background-color);
-        &::before {
-          background-color: nb-theme(tabset-tab-hover-underline-color);
+        nb-badge.dot-mode.position-left {
+            left: nb-theme(tabset-tab-badge-dot-mode-horizontal-offset);
         }
-      }
-    }
 
-    .tab.disabled {
-      cursor: default;
-      pointer-events: none;
-
-      .tab-link {
-        background-color: nb-theme(tabset-tab-disabled-background-color);
-        color: nb-theme(tabset-tab-disabled-text-color);
-        cursor: default;
-        pointer-events: none;
-        &::before {
-          background-color: nb-theme(tabset-tab-disabled-underline-color);
+        nb-badge.dot-mode.position-right {
+            right: nb-theme(tabset-tab-badge-dot-mode-horizontal-offset);
         }
-      }
-    }
 
-    .tab.responsive {
-      @media screen and (max-width: $tabset-tab-text-hide-breakpoint) {
-        .tab-text {
-          display: none;
+        nb-badge.dot-mode.position-start {
+            @include nb-ltr(left, nb-theme(tabset-tab-badge-dot-mode-horizontal-offset));
+            @include nb-rtl(right, nb-theme(tabset-tab-badge-dot-mode-horizontal-offset));
         }
-      }
+
+        nb-badge.dot-mode.position-end {
+            @include nb-ltr(right, nb-theme(tabset-tab-badge-dot-mode-horizontal-offset));
+            @include nb-rtl(left, nb-theme(tabset-tab-badge-dot-mode-horizontal-offset));
+        }
+
+        .tab.active {
+            .tab-link {
+                background-color: nb-theme(tabset-tab-active-background-color);
+                color: nb-theme(tabset-tab-active-text-color);
+
+                &:before {
+                    background-color: nb-theme(tabset-tab-active-underline-color);
+                }
+            }
+        }
+
+        // The keyboard's tab, with a ring inside it as a menu item's; a click doesn't leave the focus colours.
+        .tab:focus {
+            outline: none;
+        }
+
+        .tab:focus-visible {
+            .tab-link {
+                background-color: nb-theme(tabset-tab-focus-background-color);
+                color: nb-theme(tabset-tab-focus-text-color);
+                box-shadow: inset 0 0 0 nb-theme(tabset-tab-outline-width) nb-theme(tabset-tab-outline-color);
+
+                &:before {
+                    background-color: nb-theme(tabset-tab-focus-underline-color);
+                }
+            }
+        }
+
+        .tab:hover {
+            .tab-link {
+                color: nb-theme(tabset-tab-hover-text-color);
+                background-color: nb-theme(tabset-tab-hover-background-color);
+
+                &:before {
+                    background-color: nb-theme(tabset-tab-hover-underline-color);
+                }
+            }
+        }
+
+        .tab.disabled {
+            cursor: default;
+            pointer-events: none;
+
+            .tab-link {
+                background-color: nb-theme(tabset-tab-disabled-background-color);
+                color: nb-theme(tabset-tab-disabled-text-color);
+                cursor: default;
+                pointer-events: none;
+
+                &:before {
+                    background-color: nb-theme(tabset-tab-disabled-underline-color);
+                }
+            }
+        }
+
+        .tab.responsive {
+            @media screen and (max-width: $tabset-tab-text-hide-breakpoint) {
+                .tab-text {
+                    display: none;
+                }
+            }
+        }
+
+        nb-tab {
+            background-color: nb-theme(tabset-content-background-color);
+            color: nb-theme(tabset-content-text-color);
+            font-family: nb-theme(tabset-content-text-font-family);
+            font-size: nb-theme(tabset-content-text-font-size);
+            font-weight: nb-theme(tabset-content-text-font-weight);
+            line-height: nb-theme(tabset-content-text-line-height);
+            padding: nb-theme(tabset-content-padding);
+
+            // On a narrow screen, as close to the edge as the tabs' titles, which take less room there too.
+            @media screen and (max-width: $tabset-tab-text-hide-breakpoint) {
+                padding: nb-theme(tabset-content-small-padding);
+            }
+
+            @include nb-scrollbars(
+                nb-theme(tabset-scrollbar-color),
+                nb-theme(tabset-scrollbar-background-color),
+                nb-theme(tabset-scrollbar-width)
+            );
+        }
     }
 
-    nb-tab {
-      background-color: nb-theme(tabset-content-background-color);
-      color: nb-theme(tabset-content-text-color);
-      font-family: nb-theme(tabset-content-text-font-family);
-      font-size: nb-theme(tabset-content-text-font-size);
-      font-weight: nb-theme(tabset-content-text-font-weight);
-      line-height: nb-theme(tabset-content-text-line-height);
-      padding: nb-theme(tabset-content-padding);
+    // A tabset placed directly in a card lines up with the card's header and footer.
+    nb-card > nb-tabset {
+        .tabset {
+            border-bottom: nb-theme(card-divider-width) nb-theme(card-divider-style) nb-theme(card-divider-color);
+        }
 
-      // On a narrow screen, as close to the edge as the tabs' titles, which take less room there too.
-      @media screen and (max-width: $tabset-tab-text-hide-breakpoint) {
-        padding: nb-theme(tabset-content-small-padding);
-      }
-
-      @include nb-scrollbars(
-        nb-theme(tabset-scrollbar-color),
-        nb-theme(tabset-scrollbar-background-color),
-        nb-theme(tabset-scrollbar-width)
-      );
+        nb-tab {
+            padding: nb-theme(card-padding);
+        }
     }
-  }
-
-  // A tabset placed directly in a card lines up with the card's header and footer.
-  nb-card > nb-tabset {
-    .tabset {
-      border-bottom: nb-theme(card-divider-width) nb-theme(card-divider-style) nb-theme(card-divider-color);
-    }
-
-    nb-tab {
-      padding: nb-theme(card-padding);
-    }
-  }
 }

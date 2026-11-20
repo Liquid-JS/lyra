@@ -1,17 +1,17 @@
 :host {
-  display: block;
+    display: block;
 }
 
 .theme-radio-label {
-  display: inline-flex;
-  align-items: center;
-  margin-inline-end: 0.5rem;
+    display: inline-flex;
+    align-items: center;
+    margin-inline-end: 0.5rem;
 
-  &:last-child {
-    margin-inline-end: 0;
-  }
+    &:last-child {
+        margin-inline-end: 0;
+    }
 }
 
 .theme-radio {
-  margin-inline-end: 0.125rem;
+    margin-inline-end: 0.125rem;
 }

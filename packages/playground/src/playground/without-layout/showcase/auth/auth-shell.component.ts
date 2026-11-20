@@ -1,17 +1,17 @@
-import { Component, signal } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
-import { NbLayoutColumnComponent, NbLayoutComponent } from '@liquid-js/lyr-core';
+import { Component, signal } from '@angular/core'
+import { RouterOutlet } from '@angular/router'
+import { NbLayoutColumnComponent, NbLayoutComponent } from '@liquid-js/lyr-core'
 
-import { SiteMockupComponent } from '../site/site-mockup.component';
-import { AuthPanel, AuthPanelComponent } from './parts/auth-panel.component';
+import { SiteMockupComponent } from '../site/site-mockup.component'
+import { AuthPanel, AuthPanelComponent } from './parts/auth-panel.component'
 
 /**
  * The frame of an app's sign-in pages, split in two: the page on one side, and on the other a panel in the theme's
  * colours with a picture of the app and a word from a customer. Phones show the page only.
  */
 @Component({
-  selector: 'npg-auth-shell',
-  template: `
+    selector: 'npg-auth-shell',
+    template: `
     <nb-layout>
       <nb-layout-column class="column">
         <div class="split">
@@ -28,7 +28,7 @@ import { AuthPanel, AuthPanelComponent } from './parts/auth-panel.component';
       </nb-layout-column>
     </nb-layout>
   `,
-  styles: `
+    styles: `
     // The frame fills the screen, without the layout's padding at any width.
     nb-layout {
       --layout-padding: 0;
@@ -99,8 +99,8 @@ import { AuthPanel, AuthPanelComponent } from './parts/auth-panel.component';
       border-radius: var(--border-radius);
     }
   `,
-  imports: [AuthPanelComponent, NbLayoutComponent, NbLayoutColumnComponent, RouterOutlet, SiteMockupComponent],
+    imports: [AuthPanelComponent, NbLayoutComponent, NbLayoutColumnComponent, RouterOutlet, SiteMockupComponent]
 })
 export class AuthShellComponent {
-  protected readonly panel = signal<AuthPanel>('tagline');
+    protected readonly panel = signal<AuthPanel>('tagline')
 }

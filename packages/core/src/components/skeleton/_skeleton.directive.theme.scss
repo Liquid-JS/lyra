@@ -1,77 +1,81 @@
-@use '../../styles/theming' as *;
+@use "../../styles/theming" as *;
 
 @mixin nb-skeleton-theme() {
-  // The highlight is a wave that repeats across the viewport and moves at a steady pace. Each placeholder shows its part
-  // of the waves, so they pass over all placeholders in turn, as one: the directive gives each its distance from the
-  // viewport's start, in pixels, and the page's time as it shows, which keeps them all on one clock. A pass moves the
-  // waves on by one repeat, so each pass carries on from the last without a jump, at any viewport's width.
-  $wave: 480;
-  $ms-per-px: 5;
+    // The highlight is a wave that repeats across the viewport and moves at a steady pace. Each placeholder shows its part
+    // of the waves, so they pass over all placeholders in turn, as one: the directive gives each its distance from the
+    // viewport's start, in pixels, and the page's time as it shows, which keeps them all on one clock. A pass moves the
+    // waves on by one repeat, so each pass carries on from the last without a jump, at any viewport's width.
+    $wave: 480;
+    $ms-per-px: 5;
 
-  @keyframes nb-skeleton-shimmer {
-    from {
-      background-position: calc(-1px * var(--nb-skeleton-left, 0)) 0;
+    @keyframes nb-skeleton-shimmer {
+        from {
+            background-position: calc(-1px * var(--nb-skeleton-left, 0)) 0;
+        }
+
+        to {
+            background-position: calc(#{$wave}px - 1px * var(--nb-skeleton-left, 0)) 0;
+        }
     }
 
-    to {
-      background-position: calc(#{$wave}px - 1px * var(--nb-skeleton-left, 0)) 0;
+    .nb-skeleton {
+        // The content is there for its shape only.
+        color: transparent !important;
+        border-color: transparent !important;
+        box-shadow: none !important;
+        pointer-events: none;
+        // stylelint-disable-next-line property-no-vendor-prefix -- Safari needs it, and the prebuilt themes skip Autoprefixer.
+        -webkit-user-select: none;
+        user-select: none;
+        border-radius: nb-theme(skeleton-border-radius);
+
+        // Over the element's own background, e.g. an avatar's colour.
+        background-color: nb-theme(skeleton-background-color) !important;
+        background-image:
+            linear-gradient(
+                90deg,
+                transparent,
+                #{nb-theme(skeleton-highlight-color)} 25%,
+                transparent 50%
+            ) !important;
+
+        // Over the element's own background shorthand too, which would set its own size and repeat.
+        background-size: #{$wave}px 100% !important;
+        background-repeat: repeat !important;
+        animation: nb-skeleton-shimmer #{$wave * $ms-per-px}ms linear infinite;
+        animation-delay: calc(var(--nb-skeleton-clock, 0) * -1ms);
+        @include nb-rtl(animation-direction, reverse);
+
+        // Each line of an inline element is its own bar.
+        // stylelint-disable-next-line property-no-vendor-prefix -- Safari needs it, and the prebuilt themes skip Autoprefixer.
+        -webkit-box-decoration-break: clone;
+        box-decoration-break: clone;
+
+        // An empty element still has some height.
+        min-block-size: 1em;
+
+        > *,
+        &::placeholder {
+            visibility: hidden;
+        }
+
+        // A loading image shows none of its picture, or its broken-image icon.
+        &:is(img, video) {
+            object-position: -100vw 0;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            animation: none;
+            background-image: none !important;
+        }
     }
-  }
 
-  .nb-skeleton {
-    // The content is there for its shape only.
-    color: transparent !important;
-    border-color: transparent !important;
-    box-shadow: none !important;
-    pointer-events: none;
-    user-select: none;
-    -webkit-user-select: none;
-
-    border-radius: nb-theme(skeleton-border-radius);
-    // Over the element's own background, e.g. an avatar's colour.
-    background-color: nb-theme(skeleton-background-color) !important;
-    background-image: linear-gradient(
-      90deg,
-      transparent,
-      #{nb-theme(skeleton-highlight-color)} 25%,
-      transparent 50%
-    ) !important;
-    // Over the element's own background shorthand too, which would set its own size and repeat.
-    background-size: #{$wave}px 100% !important;
-    background-repeat: repeat !important;
-    animation: nb-skeleton-shimmer #{$wave * $ms-per-px}ms linear infinite;
-    animation-delay: calc(var(--nb-skeleton-clock, 0) * -1ms);
-    @include nb-rtl(animation-direction, reverse);
-
-    // Each line of an inline element is its own bar.
-    box-decoration-break: clone;
-    -webkit-box-decoration-break: clone;
-
-    // An empty element still has some height.
-    min-block-size: 1em;
-
-    > *,
-    &::placeholder {
-      visibility: hidden;
+    .nb-skeleton-circle {
+        border-radius: 50% !important;
     }
 
-    // A loading image shows none of its picture, or its broken-image icon.
-    &:is(img, video) {
-      object-position: -100vw 0;
+    .nb-skeleton-sized {
+        display: inline-block;
+        min-inline-size: var(--nb-skeleton-width);
     }
-
-    @media (prefers-reduced-motion: reduce) {
-      animation: none;
-      background-image: none !important;
-    }
-  }
-
-  .nb-skeleton-circle {
-    border-radius: 50% !important;
-  }
-
-  .nb-skeleton-sized {
-    display: inline-block;
-    min-inline-size: var(--nb-skeleton-width);
-  }
 }

@@ -1,23 +1,23 @@
 :host {
-  display: flex;
-  align-items: center;
-  cursor: pointer;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
 
-  &:focus {
-    outline: 0;
-  }
+    &:focus {
+        outline: 0;
+    }
 }
 
 // Turns over as the item expands, and back as it collapses; the timing function is the entered state's.
 .expansion-indicator {
-  transition: transform 150ms ease-out;
+    transition: transform 150ms ease-out;
 
-  :host(.accordion-item-header-expanded) & {
-    transform: rotate(180deg);
-    transition-timing-function: ease-in;
-  }
+    :host(.accordion-item-header-expanded) & {
+        transform: rotate(180deg);
+        transition-timing-function: ease-in;
+    }
 
-  @media (prefers-reduced-motion: reduce) {
-    transition: none;
-  }
+    @media (prefers-reduced-motion: reduce) {
+        transition: none;
+    }
 }

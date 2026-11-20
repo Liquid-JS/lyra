@@ -1,18 +1,18 @@
 <ng-content select="nb-card-front" />
 <div class="second-card-container">
-  <ng-content select="nb-card-back" />
+    <ng-content select="nb-card-back" />
 </div>
 @if (showToggleButton()) {
 <a class="reveal-button"
-  role="button"
-  tabindex="0"
-  [attr.aria-label]="toggleButtonLabel() ?? texts().toggle"
-  [attr.aria-expanded]="revealed()"
-  (click)="toggle()"
-  (keydown.enter)="toggle()"
-  (keydown.space)="$event.preventDefault(); toggle()">
-  <nb-icon icon="chevron-down-outline"
-    pack="essentials"
-    aria-hidden="true" />
+    role="button"
+    tabindex="0"
+    [attr.aria-label]="toggleButtonLabel() ?? texts().toggle"
+    [attr.aria-expanded]="revealed()"
+    (click)="toggle()"
+    (keydown.enter)="toggle()"
+    (keydown.space)="$event.preventDefault(); toggle()">
+    <nb-icon icon="chevron-down-outline"
+        pack="essentials"
+        aria-hidden="true" />
 </a>
 }

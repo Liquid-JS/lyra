@@ -1,12 +1,12 @@
 <button class="nb-tree-grid-header-change-sort-button"
-  type="button"
-  tabindex="0"
-  [attr.disabled]="disabledAttributeValue()">
-  <ng-content />
+    type="button"
+    tabindex="0"
+    [attr.disabled]="disabledAttributeValue()">
+    <ng-content />
 </button>
 @if (sortIcon(); as sortIcon) {
 <ng-container [ngTemplateOutlet]="sortIcon"
-  [ngTemplateOutletContext]="iconContext()" />
+    [ngTemplateOutletContext]="iconContext()" />
 } @else {
 <nb-sort-icon [direction]="shownDirection()" />
 }

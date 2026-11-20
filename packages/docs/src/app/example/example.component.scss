@@ -2,65 +2,65 @@
 $color-gray-background: #f1f2f3;
 
 :host {
-  display: block;
-  background-color: $color-gray-background;
+    display: block;
+    background-color: $color-gray-background;
 }
 
 // In a docs page's frame, as tall as its content, which the frame then takes; a layout as tall as the frame would keep
 // it from getting shorter.
 :host(.sized-to-content) {
-  --layout-min-height: 0;
+    --layout-min-height: 0;
 }
 
 // The button whose menu goes back to the docs, shows the code and customises the theme, over a full-screen example.
 // Above the page, e.g. a mobile app's fixed tabs, but under overlays, so menus and windows cover it. In the same corner
 // in either direction, so switching it doesn't move the button away.
 .controls {
-  position: fixed;
-  right: 1.5rem;
-  z-index: 1042;
+    position: fixed;
+    right: 1.5rem;
+    z-index: 1042;
 
-  button {
-    box-shadow:
-      0 0.75rem 2rem rgb(16 20 38 / 35%),
-      0 0 0 0.25rem rgb(255 255 255 / 35%);
-  }
+    button {
+        box-shadow:
+            0 0.75rem 2rem rgb(16, 20, 38, 0.35),
+            0 0 0 0.25rem rgb(255, 255, 255, 0.35);
+    }
 }
 
 // On a phone, the page is the phone's: the window's own is hidden behind it, the menu's button kept.
 :host(.phone-shown) > :not(.controls, .phone-view, router-outlet) {
-  display: none;
+    display: none;
 }
 
 // The example on a phone, in the middle of the window, on the theme's background.
 .phone-view {
-  position: fixed;
-  inset: 0;
-  z-index: 1041;
-  display: grid;
-  place-items: center;
-  background-color: var(--background-basic-color-3);
+    position: fixed;
+    inset: 0;
+    z-index: 1041;
+    display: grid;
+    place-items: center;
+    background-color: var(--background-basic-color-3);
 }
 
 // As wide as the window, which the phone scales down to fit; as wide as the phone, the phone would keep the scale it
 // was first measured at.
 .phone-view > ngd-device-frame {
-  justify-self: stretch;
-  text-align: center;
+    justify-self: stretch;
+    text-align: center;
 }
 
 // The examples' English text, marked by what holds it right to left, reads left to right where the page puts it: a
 // row's in its text's direction, which leaves the row's layout alone, and other text between left-to-right marks
 // where it ends the element, as contents of the text, without weight, so an element's own pseudo-elements, e.g. a divider's lines, stay as they
 // are.
-:host-context([dir='rtl']) ::ng-deep {
-  [data-ngd-text='row'] {
-    unicode-bidi: plaintext;
-  }
+:host-context([dir=rtl]) ::ng-deep {
+    [data-ngd-text=row] {
+        unicode-bidi: plaintext;
+    }
 
-  :where([data-ngd-text='text'], [data-ngd-text='start'])::before,
-  :where([data-ngd-text='text'], [data-ngd-text='end'])::after {
-    content: '\200E';
-    display: contents;
-  }
+    :where([data-ngd-text=text], [data-ngd-text=start]):before,
+    :where([data-ngd-text=text], [data-ngd-text=end]):after {
+        content: "\200E";
+        display: contents;
+    }
 }

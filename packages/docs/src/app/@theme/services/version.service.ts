@@ -1,46 +1,46 @@
-import { inject, Service } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable, of } from 'rxjs';
-import { map, shareReplay, catchError } from 'rxjs/operators';
+import { inject, Service } from '@angular/core'
+import { HttpClient } from '@angular/common/http'
+import { Observable, of } from 'rxjs'
+import { map, shareReplay, catchError } from 'rxjs/operators'
 
-import { environment } from '../../../environments/environment';
+import { environment } from '../../../environments/environment'
 
 export interface Version {
-  checkoutTarget: string;
-  name: string;
-  path: string;
-  isCurrent?: boolean;
+    checkoutTarget: string
+    name: string
+    path: string
+    isCurrent?: boolean
 }
 
-import { VERSION_NAME } from '../../../version';
+import { VERSION_NAME } from '../../../version'
 
 @Service()
 export class NgdVersionService {
-  private readonly http = inject(HttpClient);
+    private readonly http = inject(HttpClient)
 
-  protected readonly devVersion: Version = { name: VERSION_NAME, path: '.', checkoutTarget: 'master', isCurrent: true };
+    protected readonly devVersion: Version = { name: VERSION_NAME, path: '.', checkoutTarget: 'master', isCurrent: true }
 
-  supportedVersions$: Observable<Version[]>;
+    supportedVersions$: Observable<Version[]>
 
-  constructor() {
-    if (environment.production) {
-      this.supportedVersions$ = this.http.get<Version[]>(environment.versionsUrl).pipe(
-        catchError(() => of([])),
-        shareReplay(1),
-      );
-    } else this.supportedVersions$ = of([this.devVersion]).pipe(shareReplay(1));
-  }
-
-  getCurrentVersion(): Observable<Version | undefined> {
-    if (environment.production) {
-      return this.supportedVersions$.pipe(
-        map((versions: Version[]) => versions.find(({ name }) => name === VERSION_NAME)),
-      );
+    constructor() {
+        if (environment.production) {
+            this.supportedVersions$ = this.http.get<Version[]>(environment.versionsUrl).pipe(
+                catchError(() => of([])),
+                shareReplay(1)
+            )
+        } else this.supportedVersions$ = of([this.devVersion]).pipe(shareReplay(1))
     }
-    return of(this.devVersion);
-  }
 
-  getSupportedVersions(): Observable<Version[]> {
-    return this.supportedVersions$;
-  }
+    getCurrentVersion(): Observable<Version | undefined> {
+        if (environment.production) {
+            return this.supportedVersions$.pipe(
+                map((versions: Version[]) => versions.find(({ name }) => name === VERSION_NAME))
+            )
+        }
+        return of(this.devVersion)
+    }
+
+    getSupportedVersions(): Observable<Version[]> {
+        return this.supportedVersions$
+    }
 }

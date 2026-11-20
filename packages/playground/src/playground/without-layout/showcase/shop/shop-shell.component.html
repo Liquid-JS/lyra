@@ -1,61 +1,61 @@
 <nb-layout>
-  <nb-layout-header fixed>
-    <a class="brand"
-      routerLink="products"><span class="logo"
-        aria-hidden="true"><nb-icon icon="shopping-bag-outline" /></span> Acme Store</a>
-    <form class="search"
-      role="search"
-      (submit)="$event.preventDefault()">
-      <nb-form-field>
-        <nb-icon nbPrefix
-          icon="search-outline" />
-        <input nbInput
-          fullWidth
-          type="search"
-          placeholder="Search the store"
-          aria-label="Search the store" />
-      </nb-form-field>
-    </form>
-    <div class="actions">
-      <a nbButton
-        ghost
-        routerLink="orders"
-        routerLinkActive="active"
-        aria-label="Your orders">
-        <nb-icon icon="person-outline" />
-        <span class="action-text">Orders</span>
-      </a>
-      <a nbButton
-        edge="end"
-        ghost
-        class="cart"
-        routerLink="cart"
-        routerLinkActive="active"
-        [attr.aria-label]="'Cart, ' + cart.count() + (cart.count() === 1 ? ' item' : ' items')">
-        <nb-icon icon="shopping-cart-outline" />
-        <span class="action-text">Cart</span>
-        @if (cart.count()) {
-        <nb-badge [text]="cart.count() + ''"
-          status="primary"
-          position="top end" />
-        }
-      </a>
-    </div>
-  </nb-layout-header>
+    <nb-layout-header fixed>
+        <a class="brand"
+            routerLink="products"><span class="logo"
+                aria-hidden="true"><nb-icon icon="shopping-bag-outline" /></span> Acme Store</a>
+        <form class="search"
+            role="search"
+            (submit)="$event.preventDefault()">
+            <nb-form-field>
+                <nb-icon nbPrefix
+                    icon="search-outline" />
+                <input nbInput
+                    fullWidth
+                    type="search"
+                    placeholder="Search the store"
+                    aria-label="Search the store" />
+            </nb-form-field>
+        </form>
+        <div class="actions">
+            <a nbButton
+                ghost
+                routerLink="orders"
+                routerLinkActive="active"
+                aria-label="Your orders">
+                <nb-icon icon="person-outline" />
+                <span class="action-text">Orders</span>
+            </a>
+            <a nbButton
+                edge="end"
+                ghost
+                class="cart"
+                routerLink="cart"
+                routerLinkActive="active"
+                [attr.aria-label]="'Cart, ' + cart.count() + (cart.count() === 1 ? ' item' : ' items')">
+                <nb-icon icon="shopping-cart-outline" />
+                <span class="action-text">Cart</span>
+                @if (cart.count()) {
+                <nb-badge [text]="cart.count() + ''"
+                    status="primary"
+                    position="top end" />
+                }
+            </a>
+        </div>
+    </nb-layout-header>
 
-  <nb-layout-column class="page">
-    <div class="content">
-      <router-outlet />
-    </div>
-  </nb-layout-column>
+    <nb-layout-column class="page">
+        <div class="content">
+            <router-outlet />
+        </div>
+    </nb-layout-column>
 
-  <nb-layout-footer>
-    <div class="footer">
-      <span>© {{ year }} Acme Store</span>
-      <span class="perks">
-        <span><nb-icon icon="paper-plane-outline" /> Free delivery over $50</span>
-        <span><nb-icon icon="refresh-outline" /> 30-day returns</span>
-      </span>
-    </div>
-  </nb-layout-footer>
+    <nb-layout-footer>
+        <div class="footer">
+            <span>© {{ year }} Acme Store</span>
+            <span class="perks">
+                <span><nb-icon icon="paper-plane-outline" /> Free delivery over $50</span>
+                <span><nb-icon icon="refresh-outline" /> 30-day returns</span>
+            </span>
+        </div>
+    </nb-layout-footer>
 </nb-layout>

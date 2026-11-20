@@ -1,11 +1,11 @@
-import { Component } from '@angular/core';
-import { NbButtonComponent, NbPopoverDirective } from '@liquid-js/lyr-core';
+import { Component } from '@angular/core'
+import { NbButtonComponent, NbPopoverDirective } from '@liquid-js/lyr-core'
 
 @Component({
-  selector: 'nb-popover-placements',
-  templateUrl: './popover-placements.component.html',
-  styles: [
-    `
+    selector: 'nb-popover-placements',
+    templateUrl: './popover-placements.component.html',
+    styles: [
+        `
       :host {
         display: block;
         margin: 4rem 0;
@@ -14,8 +14,8 @@ import { NbButtonComponent, NbPopoverDirective } from '@liquid-js/lyr-core';
       button {
         margin: 1rem;
       }
-    `,
-  ],
-  imports: [NbButtonComponent, NbPopoverDirective],
+    `
+    ],
+    imports: [NbButtonComponent, NbPopoverDirective]
 })
 export class PopoverPlacementsComponent {}

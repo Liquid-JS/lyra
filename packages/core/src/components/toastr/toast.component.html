@@ -1,39 +1,39 @@
 @if (hasIcon() && icon()) {
 <div class="icon-container">
-  <nb-icon [config]="icon()" />
+    <nb-icon [config]="icon()" />
 </div>
 }
 <div class="content-container">
-  <span class="title subtitle"
-    dir="auto">{{ toast().title }}</span>
-  <div class="message"><span dir="auto">{{ toast().message }}</span></div>
-  @if (actions().length) {
-  <div class="actions">
-    @for (action of actions(); track action) {
-    <button nbButton
-      type="button"
-      size="small"
-      tabindex="0"
-      [appearance]="action.appearance ?? 'ghost'"
-      [edge]="$last && (action.appearance ?? 'ghost') === 'ghost' ? 'end' : undefined"
-      [status]="action.status ?? actionStatus()"
-      [loading]="pending() === action"
-      (click)="runAction(action, $event)">{{ action.text }}</button>
+    <span class="title subtitle"
+        dir="auto">{{ toast().title }}</span>
+    <div class="message"><span dir="auto">{{ toast().message }}</span></div>
+    @if (actions().length) {
+    <div class="actions">
+        @for (action of actions(); track action) {
+        <button nbButton
+            type="button"
+            size="small"
+            tabindex="0"
+            [appearance]="action.appearance ?? 'ghost'"
+            [edge]="$last && (action.appearance ?? 'ghost') === 'ghost' ? 'end' : undefined"
+            [status]="action.status ?? actionStatus()"
+            [loading]="pending() === action"
+            (click)="runAction(action, $event)">{{ action.text }}</button>
+        }
+    </div>
     }
-  </div>
-  }
 </div>
 @if (closeButton()) {
 <!-- Chrome, as a window's close button: ghost, light on a toast of a colour. -->
 <button type="button"
-  nbButton
-  ghost
-  size="small"
-  class="close-button"
-  [status]="closeStatus()"
-  [attr.aria-label]="toast().config.closeButtonLabel ?? texts().close"
-  (click)="onCloseClick($event)">
-  <nb-icon icon="close-outline"
-    pack="essentials" />
+    nbButton
+    ghost
+    size="small"
+    class="close-button"
+    [status]="closeStatus()"
+    [attr.aria-label]="toast().config.closeButtonLabel ?? texts().close"
+    (click)="onCloseClick($event)">
+    <nb-icon icon="close-outline"
+        pack="essentials" />
 </button>
 }

@@ -1,47 +1,47 @@
-import { Component, inject, signal } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { of } from 'rxjs';
-import { catchError, take } from 'rxjs/operators';
-import { NbAuthService } from '@liquid-js/lyr-auth';
+import { Component, inject, signal } from '@angular/core'
+import { toSignal } from '@angular/core/rxjs-interop'
+import { of } from 'rxjs'
+import { catchError, take } from 'rxjs/operators'
+import { NbAuthService } from '@liquid-js/lyr-auth'
 
-import { FirebaseAPIService } from '../firebase-api.service';
-import { JsonPipe } from '@angular/common';
+import { JsonPipe } from '@angular/common'
+import { FirebaseAPIService } from '../firebase-api.service'
 
 @Component({
-  selector: 'app-google-auth-showcase',
-  templateUrl: './identity-providers-auth-showcase.component.html',
-  styleUrls: ['./identity-providers-auth-showcase.component.scss'],
-  imports: [JsonPipe],
+    selector: 'app-google-auth-showcase',
+    templateUrl: './identity-providers-auth-showcase.component.html',
+    styleUrls: ['./identity-providers-auth-showcase.component.scss'],
+    imports: [JsonPipe]
 })
 export class IdentityProvidersAuthShowcaseComponent {
-  private readonly firebaseApi = inject(FirebaseAPIService);
-  private readonly authService = inject(NbAuthService);
+    private readonly firebaseApi = inject(FirebaseAPIService)
+    private readonly authService = inject(NbAuthService)
 
-  readonly userToken = toSignal(this.authService.onTokenChange());
-  readonly isAuthenticated = toSignal(this.authService.onAuthenticationChange());
-  readonly data = signal<any>(undefined);
+    readonly userToken = toSignal(this.authService.onTokenChange())
+    readonly isAuthenticated = toSignal(this.authService.onAuthenticationChange())
+    readonly data = signal<any>(undefined)
 
-  logout() {
-    this.authService
-      .logout('google')
-      .pipe(take(1))
-      .subscribe();
-  }
+    logout() {
+        this.authService
+            .logout('google')
+            .pipe(take(1))
+            .subscribe()
+    }
 
-  loginWithGoogle() {
-    this.authService
-      .authenticate('google')
-      .pipe(take(1))
-      .subscribe();
-  }
+    loginWithGoogle() {
+        this.authService
+            .authenticate('google')
+            .pipe(take(1))
+            .subscribe()
+    }
 
-  getData() {
-    this.firebaseApi
-      .getGreeting()
-      .pipe(
-        take(1),
-        catchError((error) => of(error)),
-      )
-      .subscribe((data) => this.data.set(data));
-  }
+    getData() {
+        this.firebaseApi
+            .getGreeting()
+            .pipe(
+                take(1),
+                catchError((error) => of(error))
+            )
+            .subscribe((data) => this.data.set(data))
+    }
 }

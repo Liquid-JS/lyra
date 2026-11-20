@@ -1,20 +1,20 @@
 <nb-card>
-  <nb-card-body>
-    <div class="field">
-      <label class="label"
-        for="validation-username">Username</label>
-      <input nbInput
-        fullWidth
-        id="validation-username"
-        [formControl]="username"
-        nbValidation
-        #validation="nbValidation" />
-      <nb-validation-errors [for]="validation">
-        <ng-template nbValidationError="minlength"
-          let-error>
-          {{ lengthMessage(error) }}
-        </ng-template>
-      </nb-validation-errors>
-    </div>
-  </nb-card-body>
+    <nb-card-body>
+        <div class="field">
+            <label class="label"
+                for="validation-username">Username</label>
+            <input nbInput
+                fullWidth
+                id="validation-username"
+                [formControl]="username"
+                nbValidation
+                #validation="nbValidation" />
+            <nb-validation-errors [for]="validation">
+                <ng-template nbValidationError="minlength"
+                    let-error>
+                    {{ lengthMessage(error) }}
+                </ng-template>
+            </nb-validation-errors>
+        </div>
+    </nb-card-body>
 </nb-card>

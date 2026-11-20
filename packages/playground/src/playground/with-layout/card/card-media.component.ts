@@ -1,15 +1,15 @@
-import { Component } from '@angular/core';
+import { Component } from '@angular/core'
 import {
-  NbCardBodyComponent,
-  NbCardComponent,
-  NbCardMediaDirective,
-  NbIconComponent,
-} from '@liquid-js/lyr-core';
+    NbCardBodyComponent,
+    NbCardComponent,
+    NbCardMediaDirective,
+    NbIconComponent
+} from '@liquid-js/lyr-core'
 
 @Component({
-  selector: 'nb-card-media',
-  templateUrl: './card-media.component.html',
-  styles: `
+    selector: 'nb-card-media',
+    templateUrl: './card-media.component.html',
+    styles: `
     .cards {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
@@ -34,6 +34,6 @@ import {
       font-size: 3rem;
     }
   `,
-  imports: [NbCardComponent, NbCardBodyComponent, NbCardMediaDirective, NbIconComponent],
+    imports: [NbCardComponent, NbCardBodyComponent, NbCardMediaDirective, NbIconComponent]
 })
 export class CardMediaComponent {}

@@ -1,277 +1,281 @@
-@use '../../styles/theming' as *;
-@use 'option-list-look' as look;
+@use "../../styles/theming" as *;
+@use "option-list-look" as look;
 
 @mixin nb-option-list-theme() {
-  nb-option-list {
-    // Fits the overlay pane when it's made smaller than the list, so the list scrolls instead of being cut off.
-    display: flex;
-    flex-direction: column;
-    max-height: 100%;
-    @include look.surface();
-    overflow: hidden;
+    nb-option-list {
+        // Fits the overlay pane when it's made smaller than the list, so the list scrolls instead of being cut off.
+        display: flex;
+        flex-direction: column;
+        max-height: 100%;
+        @include look.surface;
 
-    .option-list {
-      min-height: 0;
-      max-height: nb-theme(option-list-max-height);
-      margin: 0;
-      padding: 0;
-      overflow: auto;
+        overflow: hidden;
 
-      @include look.scrollbars();
+        .option-list {
+            min-height: 0;
+            max-height: nb-theme(option-list-max-height);
+            margin: 0;
+            padding: 0;
+            overflow: auto;
+
+            @include look.scrollbars;
+        }
+
+        $adjacent-border: nb-theme(option-list-adjacent-border-width) nb-theme(option-list-adjacent-border-style)
+            nb-theme(option-list-adjacent-border-color);
+
+        &.position-top {
+            border-bottom: $adjacent-border;
+        }
+
+        &.position-bottom {
+            border-top: $adjacent-border;
+        }
     }
 
-    $adjacent-border: nb-theme(option-list-adjacent-border-width) nb-theme(option-list-adjacent-border-style)
-      nb-theme(option-list-adjacent-border-color);
-    &.position-top {
-      border-bottom: $adjacent-border;
-    }
-    &.position-bottom {
-      border-top: $adjacent-border;
-    }
-  }
-
-  nb-option-group {
-    color: nb-theme(option-group-text-color);
-    font-family: nb-theme(option-text-font-family);
-  }
-
-  @each $size in nb-get-sizes() {
-    nb-option-list.size-#{$size} nb-option-group {
-      font-size: nb-theme(option-#{$size}-text-font-size);
-      font-weight: nb-theme(option-#{$size}-text-font-weight);
-      line-height: nb-theme(option-#{$size}-text-line-height);
-
-      .option-group-title {
-        padding: nb-theme(option-#{$size}-padding);
-        padding-inline: nb-theme(option-#{$size}-padding-inline);
-        font-weight: nb-theme(option-group-text-font-weight);
-      }
-
-      nb-option {
-        padding-inline-start: nb-theme(option-group-#{$size}-start-padding);
-      }
-    }
-  }
-
-  nb-option {
-    background-color: nb-theme(option-background-color);
-    color: nb-theme(option-text-color);
-    font-family: nb-theme(option-text-font-family);
-
-    &.active {
-      background-color: nb-theme(option-active-background-color);
-      color: nb-theme(option-active-text-color);
+    nb-option-group {
+        color: nb-theme(option-group-text-color);
+        font-family: nb-theme(option-text-font-family);
     }
 
-    &.selected {
-      background-color: nb-theme(option-selected-background-color);
-      color: nb-theme(option-selected-text-color);
+    @each $size in nb-get-sizes() {
+        nb-option-list.size-#{$size} nb-option-group {
+            font-size: nb-theme(option-#{$size}-text-font-size);
+            font-weight: nb-theme(option-#{$size}-text-font-weight);
+            line-height: nb-theme(option-#{$size}-text-line-height);
+
+            .option-group-title {
+                padding: nb-theme(option-#{$size}-padding);
+                padding-inline: nb-theme(option-#{$size}-padding-inline);
+                font-weight: nb-theme(option-group-text-font-weight);
+            }
+
+            nb-option {
+                padding-inline-start: nb-theme(option-group-#{$size}-start-padding);
+            }
+        }
     }
 
-    // Selected and under the keyboard's highlight.
-    &.selected.active {
-      background-color: nb-theme(option-selected-active-background-color);
-      color: nb-theme(option-selected-active-text-color);
-    }
-
-    &:focus {
-      background-color: nb-theme(option-focus-background-color);
-      color: nb-theme(option-focus-text-color);
-      outline: none;
-
-      &.selected {
-        background-color: nb-theme(option-selected-focus-background-color);
-        color: nb-theme(option-selected-focus-text-color);
-      }
-    }
-
-    &:hover {
-      background-color: nb-theme(option-hover-background-color);
-      color: nb-theme(option-hover-text-color);
-
-      &.selected {
-        background-color: nb-theme(option-selected-hover-background-color);
-        color: nb-theme(option-selected-hover-text-color);
-      }
-    }
-
-    &.multiple {
-      &.selected {
+    nb-option {
         background-color: nb-theme(option-background-color);
         color: nb-theme(option-text-color);
-      }
+        font-family: nb-theme(option-text-font-family);
 
-      &:focus {
-        background-color: nb-theme(option-focus-background-color);
-        color: nb-theme(option-focus-text-color);
-      }
-    }
-  }
+        &.active {
+            background-color: nb-theme(option-active-background-color);
+            color: nb-theme(option-active-text-color);
+        }
 
-  @each $size in nb-get-sizes() {
-    nb-option-list.size-#{$size} nb-option,
-    nb-option-list.size-#{$size} .option-nested-row {
-      font-size: nb-theme(option-#{$size}-text-font-size);
-      font-weight: nb-theme(option-#{$size}-text-font-weight);
-      line-height: nb-theme(option-#{$size}-text-line-height);
-      padding: nb-theme(option-#{$size}-padding);
-      padding-inline: nb-theme(option-#{$size}-padding-inline);
-    }
+        &.selected {
+            background-color: nb-theme(option-selected-background-color);
+            color: nb-theme(option-selected-text-color);
+        }
 
-    // Options in nested options are indented by how deep they are in the view.
-    nb-option-list.size-#{$size} .nb-option-indented::before {
-      content: '';
-      flex: none;
-      width: calc((var(--nb-option-level) - 1) * #{nb-theme(option-nested-#{$size}-indent)});
-    }
+        // Selected and under the keyboard's highlight.
+        &.selected.active {
+            background-color: nb-theme(option-selected-active-background-color);
+            color: nb-theme(option-selected-active-text-color);
+        }
 
-    // The checkbox of options in a multiple select is the select's size, and no taller than a line of text, so
-    // options with and without one are as tall.
-    nb-option-list.size-#{$size} nb-option nb-checkbox .custom-checkbox {
-      max-width: nb-theme(option-#{$size}-text-line-height);
-      max-height: nb-theme(option-#{$size}-text-line-height);
-    }
+        &:focus {
+            background-color: nb-theme(option-focus-background-color);
+            color: nb-theme(option-focus-text-color);
+            outline: none;
 
-    // The icon is no taller than the text, or the checkbox of options in a multiple select, so a row is as tall as an
-    // option.
-    nb-option-list.size-#{$size} .option-nested-icon {
-      font-size: min(1.25rem, #{nb-theme(option-#{$size}-text-line-height)});
-    }
+            &.selected {
+                background-color: nb-theme(option-selected-focus-background-color);
+                color: nb-theme(option-selected-focus-text-color);
+            }
+        }
 
-    nb-option-list.size-#{$size} .option-nested-row.multiple .option-nested-icon {
-      font-size: min(#{nb-theme(checkbox-#{$size}-height)}, #{nb-theme(option-#{$size}-text-line-height)});
-    }
+        &:hover {
+            background-color: nb-theme(option-hover-background-color);
+            color: nb-theme(option-hover-text-color);
 
-    nb-option-list.size-#{$size} nb-option-group .option-nested-row {
-      padding-inline-start: nb-theme(option-group-#{$size}-start-padding);
-    }
+            &.selected {
+                background-color: nb-theme(option-selected-hover-background-color);
+                color: nb-theme(option-selected-hover-text-color);
+            }
+        }
 
-    nb-option-list.size-#{$size} .option-nested-back {
-      font-size: nb-theme(option-#{$size}-text-font-size);
-      font-weight: nb-theme(option-#{$size}-text-font-weight);
-      line-height: nb-theme(option-#{$size}-text-line-height);
-      padding: nb-theme(option-#{$size}-padding);
-      padding-inline: nb-theme(option-#{$size}-padding-inline);
-    }
-  }
+        &.multiple {
+            &.selected {
+                background-color: nb-theme(option-background-color);
+                color: nb-theme(option-text-color);
+            }
 
-  // The row of a nested option looks like an option, without being selected itself.
-  .option-nested-row {
-    background-color: nb-theme(option-background-color);
-    color: nb-theme(option-text-color);
-    font-family: nb-theme(option-text-font-family);
-    user-select: none;
-    @include nb-component-animation(background-color, color);
-
-    &:hover {
-      background-color: nb-theme(option-hover-background-color);
-      color: nb-theme(option-hover-text-color);
+            &:focus {
+                background-color: nb-theme(option-focus-background-color);
+                color: nb-theme(option-focus-text-color);
+            }
+        }
     }
 
-    .option-nested-icon {
-      color: nb-theme(option-nested-icon-color);
-    }
-  }
+    @each $size in nb-get-sizes() {
+        nb-option-list.size-#{$size} nb-option,
+        nb-option-list.size-#{$size} .option-nested-row {
+            font-size: nb-theme(option-#{$size}-text-font-size);
+            font-weight: nb-theme(option-#{$size}-text-font-weight);
+            line-height: nb-theme(option-#{$size}-text-line-height);
+            padding: nb-theme(option-#{$size}-padding);
+            padding-inline: nb-theme(option-#{$size}-padding-inline);
+        }
 
-  nb-option-nested {
-    &:focus > .option-nested-row {
-      background-color: nb-theme(option-focus-background-color);
-      color: nb-theme(option-focus-text-color);
-    }
+        // Options in nested options are indented by how deep they are in the view.
+        nb-option-list.size-#{$size} .nb-option-indented::before {
+            content: "";
+            flex: none;
+            width: calc((var(--nb-option-level) - 1) * #{nb-theme(option-nested-#{$size}-indent)});
+        }
 
-    &.active > .option-nested-row {
-      background-color: nb-theme(option-active-background-color);
-      color: nb-theme(option-active-text-color);
-    }
+        // The checkbox of options in a multiple select is the select's size, and no taller than a line of text, so
+        // options with and without one are as tall.
+        nb-option-list.size-#{$size} nb-option nb-checkbox .custom-checkbox {
+            max-width: nb-theme(option-#{$size}-text-line-height);
+            max-height: nb-theme(option-#{$size}-text-line-height);
+        }
 
-    // Shows that an option in it is selected, also while it's collapsed.
-    &.has-selected > .option-nested-row .option-nested-title {
-      color: nb-theme(option-nested-selected-text-color);
-    }
+        // The icon is no taller than the text, or the checkbox of options in a multiple select, so a row is as tall as an
+        // option.
+        nb-option-list.size-#{$size} .option-nested-icon {
+            font-size: min(1.25rem, #{nb-theme(option-#{$size}-text-line-height)});
+        }
 
-    &[disabled] > .option-nested-row {
-      background-color: nb-theme(option-disabled-background-color);
-      color: nb-theme(option-disabled-text-color);
+        nb-option-list.size-#{$size} .option-nested-row.multiple .option-nested-icon {
+            font-size: min(#{nb-theme(checkbox-#{$size}-height)}, #{nb-theme(option-#{$size}-text-line-height)});
+        }
 
-      .option-nested-icon,
-      .option-nested-title {
-        color: inherit;
-      }
-    }
-  }
+        nb-option-list.size-#{$size} nb-option-group .option-nested-row {
+            padding-inline-start: nb-theme(option-group-#{$size}-start-padding);
+        }
 
-  // Goes back from the nested option the list is drilled into.
-  .option-nested-back {
-    display: flex;
-    align-items: center;
-    width: 100%;
-    margin: 0;
-    border: 0;
-    border-bottom: nb-theme(option-list-adjacent-border-width) nb-theme(option-list-adjacent-border-style)
-      nb-theme(option-list-adjacent-border-color);
-    background-color: nb-theme(option-background-color);
-    color: nb-theme(option-text-color);
-    font-family: nb-theme(option-text-font-family);
-    text-align: start;
-    cursor: pointer;
-    @include nb-component-animation(background-color, color);
-
-    &:hover {
-      background-color: nb-theme(option-hover-background-color);
-      color: nb-theme(option-hover-text-color);
+        nb-option-list.size-#{$size} .option-nested-back {
+            font-size: nb-theme(option-#{$size}-text-font-size);
+            font-weight: nb-theme(option-#{$size}-text-font-weight);
+            line-height: nb-theme(option-#{$size}-text-line-height);
+            padding: nb-theme(option-#{$size}-padding);
+            padding-inline: nb-theme(option-#{$size}-padding-inline);
+        }
     }
 
-    &:focus-visible {
-      background-color: nb-theme(option-focus-background-color);
-      color: nb-theme(option-focus-text-color);
-      outline: none;
+    // The row of a nested option looks like an option, without being selected itself.
+    .option-nested-row {
+        background-color: nb-theme(option-background-color);
+        color: nb-theme(option-text-color);
+        font-family: nb-theme(option-text-font-family);
+        user-select: none;
+        @include nb-component-animation(background-color, color);
+
+        &:hover {
+            background-color: nb-theme(option-hover-background-color);
+            color: nb-theme(option-hover-text-color);
+        }
+
+        .option-nested-icon {
+            color: nb-theme(option-nested-icon-color);
+        }
     }
 
-    nb-icon {
-      flex: none;
-      color: nb-theme(option-nested-icon-color);
-      @include nb-ltr(margin-right, 0.5rem);
-      @include nb-rtl(margin-left, 0.5rem);
-      @include nb-rtl(transform, scaleX(-1));
+    nb-option-nested {
+        &:focus > .option-nested-row {
+            background-color: nb-theme(option-focus-background-color);
+            color: nb-theme(option-focus-text-color);
+        }
+
+        &.active > .option-nested-row {
+            background-color: nb-theme(option-active-background-color);
+            color: nb-theme(option-active-text-color);
+        }
+
+        // Shows that an option in it is selected, also while it's collapsed.
+        &.has-selected > .option-nested-row .option-nested-title {
+            color: nb-theme(option-nested-selected-text-color);
+        }
+
+        &[disabled] > .option-nested-row {
+            background-color: nb-theme(option-disabled-background-color);
+            color: nb-theme(option-disabled-text-color);
+
+            .option-nested-icon,
+            .option-nested-title {
+                color: inherit;
+            }
+        }
     }
 
-    span {
-      flex: 1;
-      min-width: 0;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+    // Goes back from the nested option the list is drilled into.
+    .option-nested-back {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        margin: 0;
+        border: 0;
+        border-bottom:
+            nb-theme(option-list-adjacent-border-width) nb-theme(option-list-adjacent-border-style)
+            nb-theme(option-list-adjacent-border-color);
+        background-color: nb-theme(option-background-color);
+        color: nb-theme(option-text-color);
+        font-family: nb-theme(option-text-font-family);
+        text-align: start;
+        cursor: pointer;
+        @include nb-component-animation(background-color, color);
+
+        &:hover {
+            background-color: nb-theme(option-hover-background-color);
+            color: nb-theme(option-hover-text-color);
+        }
+
+        &:focus-visible {
+            background-color: nb-theme(option-focus-background-color);
+            color: nb-theme(option-focus-text-color);
+            outline: none;
+        }
+
+        nb-icon {
+            flex: none;
+            color: nb-theme(option-nested-icon-color);
+            @include nb-ltr(margin-right, 0.5rem);
+            @include nb-rtl(margin-left, 0.5rem);
+            @include nb-rtl(transform, scaleX(-1));
+        }
+
+        span {
+            flex: 1;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
     }
-  }
 
-  nb-option,
-  nb-option-group {
-    user-select: none;
+    nb-option,
+    nb-option-group {
+        user-select: none;
 
-    &[disabled] {
-      background-color: nb-theme(option-disabled-background-color);
-      color: nb-theme(option-disabled-text-color);
-    }
-  }
-
-  // A long list lays out only the options near its view; the windowing keeps the space of the others as margins.
-  // Until the windowing has decided which options to lay out.
-  .option-list.nb-option-list-pending :is(nb-option, .option-nested-row) {
-    display: none;
-  }
-
-  .option-list.nb-option-list-windowed {
-    // The windowing keeps the view in place itself, as options are measured; the browser's own anchoring would move it again.
-    overflow-anchor: none;
-
-    :is(nb-option, .option-nested-row):not(.nb-option-in-view) {
-      display: none;
+        &[disabled] {
+            background-color: nb-theme(option-disabled-background-color);
+            color: nb-theme(option-disabled-text-color);
+        }
     }
 
-    &::after {
-      content: '';
-      display: block;
-      height: var(--nb-option-list-end-space, 0);
+    // A long list lays out only the options near its view; the windowing keeps the space of the others as margins.
+    // Until the windowing has decided which options to lay out.
+    .option-list.nb-option-list-pending :is(nb-option, .option-nested-row) {
+        display: none;
     }
-  }
+
+    .option-list.nb-option-list-windowed {
+        // The windowing keeps the view in place itself, as options are measured; the browser's own anchoring would move it again.
+        overflow-anchor: none;
+
+        :is(nb-option, .option-nested-row):not(.nb-option-in-view) {
+            display: none;
+        }
+
+        &:after {
+            content: "";
+            display: block;
+            height: var(--nb-option-list-end-space, 0);
+        }
+    }
 }

@@ -1,102 +1,103 @@
-@use '../@theme/styles/themes' as *;
-@use '../../../../core/src/styles/globals' as *;
+@use "../@theme/styles/themes" as *;
+@use "../../../../core/src/styles/globals" as *;
 
-@include nb-install-component() {
-  $content-width: nb-theme(content-width);
-  $settings-width: nb-theme(settings-col-width);
-  $settings-margin: nb-theme(settings-col-margin);
-  $layout-background-color: nb-theme(layout-background-color);
+@include nb-install-component {
+    $content-width: nb-theme(content-width);
+    $settings-width: nb-theme(settings-col-width);
+    $settings-margin: nb-theme(settings-col-margin);
+    $layout-background-color: nb-theme(layout-background-color);
 
-  .menu-sidebar {
-    background-color: $layout-background-color;
+    .menu-sidebar {
+        background-color: $layout-background-color;
 
-    &.fixed {
-      box-shadow: 8px 0 20px 0 rgba(218, 224, 235, 0.6);
-    }
-  }
-
-  .content-center {
-    max-width: $content-width;
-    width: 100%;
-    margin-left: auto;
-    margin-right: auto;
-    display: flex;
-    flex-wrap: wrap;
-  }
-
-  .contact-us {
-    padding: 5rem 1rem;
-
-    h2 {
-      font-family: nb-theme(text-heading-4-font-family);
-      font-size: nb-theme(text-heading-4-font-size);
-      font-weight: normal;
-      line-height: nb-theme(text-heading-4-line-height);
-    }
-  }
-
-  ::ng-deep nb-layout .main-container {
-    padding-top: 3rem;
-
-    .scrollable {
-      padding-top: 0;
-    }
-  }
-
-  ::ng-deep nb-layout .layout-container {
-    max-width: $content-width;
-    width: 100%;
-    margin-left: auto;
-    margin-right: auto;
-  }
-
-  ::ng-deep nb-sidebar nb-menu {
-    .menu-group {
-      padding-left: 0;
+        &.fixed {
+            box-shadow: 8px 0 20px 0 rgb(218, 224, 235, 0.6);
+        }
     }
 
-    // Items have no icons of their own; sections keep their expand chevrons.
-    .menu-icon {
-      display: none;
+    .content-center {
+        max-width: $content-width;
+        width: 100%;
+        margin-left: auto;
+        margin-right: auto;
+        display: flex;
+        flex-wrap: wrap;
     }
 
-    .menu-item {
-      border: none !important;
-
-      .menu-title {
-        flex: 1 1 auto;
-      }
-    }
-
-    .menu-items .menu-item .menu-item a {
-      &:hover,
-      &.active,
-      &:focus {
-        outline: none !important;
-      }
-    }
-  }
-
-  ::ng-deep nb-layout-footer ngd-footer .contact {
-    display: none;
-  }
-
-  // Room below the page for its tabs, which a phone shows as a bar along the bottom.
-  @media screen and (max-width: 39.99em) {
-    &:has(ngd-page-tabs.horizontal) ::ng-deep nb-layout-footer {
-      padding-bottom: 4rem;
-    }
-  }
-
-  @include media-breakpoint-up(xl) {
     .contact-us {
-      padding: 5rem 0;
-    }
-  }
+        padding: 5rem 1rem;
 
-  @include media-breakpoint-up(macpro) {
-    ::ng-deep nb-layout-footer {
-      margin-right: $settings-width + $settings-margin;
+        h2 {
+            font-family: nb-theme(text-heading-4-font-family);
+            font-size: nb-theme(text-heading-4-font-size);
+            font-weight: normal;
+            line-height: nb-theme(text-heading-4-line-height);
+        }
     }
-  }
+
+    ::ng-deep nb-layout .main-container {
+        padding-top: 3rem;
+
+        .scrollable {
+            padding-top: 0;
+        }
+    }
+
+    ::ng-deep nb-layout .layout-container {
+        max-width: $content-width;
+        width: 100%;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    ::ng-deep nb-sidebar nb-menu {
+        .menu-group {
+            padding-left: 0;
+        }
+
+        // Items have no icons of their own; sections keep their expand chevrons.
+        .menu-icon {
+            display: none;
+        }
+
+        .menu-item {
+            border: none !important;
+
+            .menu-title {
+                flex: 1 1 auto;
+            }
+        }
+
+        .menu-items .menu-item .menu-item a {
+            &:hover,
+            &.active,
+            &:focus {
+                outline: none !important;
+            }
+        }
+    }
+
+    ::ng-deep nb-layout-footer ngd-footer .contact {
+        display: none;
+    }
+
+    // Room below the page for its tabs, which a phone shows as a bar along the bottom.
+    @media screen and (width <= 39.99em) {
+        // stylelint-disable-next-line nesting-selector-no-missing-scoping-root -- nb-install-component nests this in the host.
+        &:has(ngd-page-tabs.horizontal) ::ng-deep nb-layout-footer {
+            padding-bottom: 4rem;
+        }
+    }
+
+    @include media-breakpoint-up(xl) {
+        .contact-us {
+            padding: 5rem 0;
+        }
+    }
+
+    @include media-breakpoint-up(macpro) {
+        ::ng-deep nb-layout-footer {
+            margin-right: $settings-width + $settings-margin;
+        }
+    }
 }

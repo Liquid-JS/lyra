@@ -1,11 +1,11 @@
 <nb-card [ngdFragment]="source().slag">
-  <nb-card-body>
-    <h2>{{ source().name }}</h2>
-    @if (hasProps(source())) {
-    <ngd-props-block [source]="source()" />
-    }
-    @if (hasMethods(source())) {
-    <ngd-methods-block [source]="source()" />
-    }
-  </nb-card-body>
+    <nb-card-body>
+        <h2>{{ source().name }}</h2>
+        @if (hasProps(source())) {
+        <ngd-props-block [source]="source()" />
+        }
+        @if (hasMethods(source())) {
+        <ngd-methods-block [source]="source()" />
+        }
+    </nb-card-body>
 </nb-card>

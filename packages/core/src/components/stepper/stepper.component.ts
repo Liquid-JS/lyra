@@ -1,28 +1,28 @@
 import {
-  ChangeDetectionStrategy,
-  Component,
-  contentChildren,
-  computed,
-  effect,
-  input,
-  model,
-  output,
-  TemplateRef,
-  untracked,
-} from '@angular/core';
-import { ɵconvertToBoolProperty as convertToBoolProperty, NbBooleanInput } from '@liquid-js/lyr-core/base';
-import { NB_STEPPER } from './stepper-tokens';
-import { NbStepComponent } from './step.component';
-import { NbIconComponent } from '@liquid-js/lyr-core/icon';
-import { NgTemplateOutlet } from '@angular/common';
+    ChangeDetectionStrategy,
+    Component,
+    contentChildren,
+    computed,
+    effect,
+    input,
+    model,
+    output,
+    TemplateRef,
+    untracked
+} from '@angular/core'
+import { ɵconvertToBoolProperty as convertToBoolProperty, NbBooleanInput } from '@liquid-js/lyr-core/base'
+import { NbIconComponent } from '@liquid-js/lyr-core/icon'
+import { NgTemplateOutlet } from '@angular/common'
+import { NB_STEPPER } from './stepper-tokens'
+import { NbStepComponent } from './step.component'
 
-export type NbStepperOrientation = 'vertical' | 'horizontal';
+export type NbStepperOrientation = 'vertical' | 'horizontal'
 
 export interface NbStepChangeEvent {
-  index: number;
-  step: NbStepComponent;
-  previouslySelectedIndex: number;
-  previouslySelectedStep: NbStepComponent;
+    index: number
+    step: NbStepComponent
+    previouslySelectedIndex: number
+    previouslySelectedStep: NbStepComponent
 }
 
 /**
@@ -87,7 +87,6 @@ export interface NbStepChangeEvent {
  *   ...
  * </nb-stepper>
  * ```
- *
  * @stacked-example(Validation, stepper/stepper-validation.component)
  *
  * The steps run across (`horizontal`, the default) or down (`vertical`):
@@ -99,7 +98,6 @@ export interface NbStepChangeEvent {
  *
  * `stepChange` emits an `NbStepChangeEvent` with the step selected and the one left:
  * @stacked-example(Step change event, stepper/stepper-step-change-event.component)
- *
  * @styles
  *
  * stepper-step-text-color:
@@ -129,182 +127,182 @@ export interface NbStepChangeEvent {
  * stepper-step-outline-color:
  */
 @Component({
-  selector: 'nb-stepper',
-  styleUrls: ['./stepper.component.scss'],
-  templateUrl: './stepper.component.html',
-  providers: [{ provide: NB_STEPPER, useExisting: NbStepperComponent }],
-  // A step's completed state reads its form control's validity, which no signal tracks.
-  changeDetection: ChangeDetectionStrategy.Eager,
-  imports: [NbIconComponent, NgTemplateOutlet],
-  host: {
-    '[class.vertical]': "orientation() === 'vertical'",
-    '[class.horizontal]': "orientation() === 'horizontal'",
-  },
+    selector: 'nb-stepper',
+    styleUrls: ['./stepper.component.scss'],
+    templateUrl: './stepper.component.html',
+    providers: [{ provide: NB_STEPPER, useExisting: NbStepperComponent }],
+    // A step's completed state reads its form control's validity, which no signal tracks.
+    changeDetection: ChangeDetectionStrategy.Eager,
+    imports: [NbIconComponent, NgTemplateOutlet],
+    host: {
+        '[class.vertical]': "orientation() === 'vertical'",
+        '[class.horizontal]': "orientation() === 'horizontal'"
+    }
 })
 export class NbStepperComponent {
-  /**
-   * Selected step index. It supports two-way binding; a change from outside is applied like a step selection, so
-   * a linear stepper reverts to the current step when the steps before the new one aren't completed.
-   */
-  readonly selectedIndex = model(0);
+    /**
+     * Selected step index. It supports two-way binding; a change from outside is applied like a step selection, so
+     * a linear stepper reverts to the current step when the steps before the new one aren't completed.
+     */
+    readonly selectedIndex = model(0)
 
-  /** The steps in the header can't be picked; the user moves with `nbStepperPrevious` and `nbStepperNext` buttons. */
-  readonly disableStepNavigation = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
+    /** The steps in the header can't be picked; the user moves with `nbStepperPrevious` and `nbStepperNext` buttons. */
+    readonly disableStepNavigation = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty })
 
-  /** Across (`horizontal`, the default) or down. */
-  readonly orientation = input<NbStepperOrientation>('horizontal');
+    /** Across (`horizontal`, the default) or down. */
+    readonly orientation = input<NbStepperOrientation>('horizontal')
 
-  /** A step can be reached only once the steps before it are completed; on by default. */
-  readonly linear = input<boolean, NbBooleanInput>(true, { transform: convertToBoolProperty });
+    /** A step can be reached only once the steps before it are completed; on by default. */
+    readonly linear = input<boolean, NbBooleanInput>(true, { transform: convertToBoolProperty })
 
-  /** Emits after another step is selected, or the stepper is reset, with the step and the one left. */
-  readonly stepChange = output<NbStepChangeEvent>();
+    /** Emits after another step is selected, or the stepper is reset, with the step and the one left. */
+    readonly stepChange = output<NbStepChangeEvent>()
 
-  readonly steps = contentChildren(NbStepComponent);
+    readonly steps = contentChildren(NbStepComponent)
 
-  readonly selected = computed<NbStepComponent | undefined>(() => this.steps()[this.selectedIndex()]);
-  /** The selected step as a list, so its content is a view of its own, entering as the step is selected. */
-  protected readonly selectedSteps = computed(() => {
-    const selected = this.selected();
-    return selected ? [selected] : [];
-  });
+    readonly selected = computed<NbStepComponent | undefined>(() => this.steps()[this.selectedIndex()])
+    /** The selected step as a list, so its content is a view of its own, entering as the step is selected. */
+    protected readonly selectedSteps = computed(() => {
+        const selected = this.selected()
+        return selected ? [selected] : []
+    })
 
-  // The index the stepper last reported with `stepChange`; undefined until the steps render.
-  protected appliedIndex?: number;
+    // The index the stepper last reported with `stepChange`; undefined until the steps render.
+    protected appliedIndex?: number
 
-  constructor() {
-    effect(() => {
-      const index = this.selectedIndex();
-      const steps = this.steps();
-      untracked(() => {
-        if (!steps.length) {
-          return;
+    constructor() {
+        effect(() => {
+            const index = this.selectedIndex()
+            const steps = this.steps()
+            untracked(() => {
+                if (!steps.length) {
+                    return
+                }
+                if (this.appliedIndex === undefined) {
+                    // The initial index is taken as it is.
+                    this.appliedIndex = index
+                } else if (index !== this.appliedIndex) {
+                    this.selectIndex(index)
+                }
+            })
+        })
+    }
+
+    /**
+     * Selects the step at the index, if the stepper allows it, and emits `stepChange`. Leaving the current step marks
+     * it as visited, whether or not the move goes through.
+     */
+    selectIndex(index: number) {
+        const steps = this.steps()
+        const previouslySelectedIndex = this.appliedIndex ?? this.selectedIndex()
+        const previouslySelectedStep = steps[previouslySelectedIndex]
+        previouslySelectedStep?.interacted.set(true)
+
+        if (!this.canBeSelected(index, previouslySelectedIndex)) {
+            // A rejected change from outside goes back to the current step.
+            this.selectedIndex.set(previouslySelectedIndex)
+            return
         }
-        if (this.appliedIndex === undefined) {
-          // The initial index is taken as it is.
-          this.appliedIndex = index;
-        } else if (index !== this.appliedIndex) {
-          this.selectIndex(index);
+
+        this.appliedIndex = index
+        this.selectedIndex.set(index)
+        this.stepChange.emit({
+            index,
+            step: steps[index],
+            previouslySelectedIndex,
+            previouslySelectedStep
+        })
+    }
+
+    /** Selects the step, if the stepper allows it. */
+    selectStep(step: NbStepComponent) {
+        this.selectIndex(this.steps().indexOf(step))
+    }
+
+    /** Selects the next step that isn't hidden, if the stepper allows it. */
+    next() {
+        const index = this.steps().findIndex((step, i) => i > this.selectedIndex() && !step.hidden())
+        if (index !== -1) {
+            this.selectIndex(index)
         }
-      });
-    });
-  }
-
-  /**
-   * Selects the step at the index, if the stepper allows it, and emits `stepChange`. Leaving the current step marks
-   * it as visited, whether or not the move goes through.
-   */
-  selectIndex(index: number) {
-    const steps = this.steps();
-    const previouslySelectedIndex = this.appliedIndex ?? this.selectedIndex();
-    const previouslySelectedStep = steps[previouslySelectedIndex];
-    previouslySelectedStep?.interacted.set(true);
-
-    if (!this.canBeSelected(index, previouslySelectedIndex)) {
-      // A rejected change from outside goes back to the current step.
-      this.selectedIndex.set(previouslySelectedIndex);
-      return;
     }
 
-    this.appliedIndex = index;
-    this.selectedIndex.set(index);
-    this.stepChange.emit({
-      index,
-      step: steps[index],
-      previouslySelectedIndex,
-      previouslySelectedStep,
-    });
-  }
-
-  /** Selects the step, if the stepper allows it. */
-  selectStep(step: NbStepComponent) {
-    this.selectIndex(this.steps().indexOf(step));
-  }
-
-  /** Selects the next step that isn't hidden, if the stepper allows it. */
-  next() {
-    const index = this.steps().findIndex((step, i) => i > this.selectedIndex() && !step.hidden());
-    if (index !== -1) {
-      this.selectIndex(index);
-    }
-  }
-
-  /** Selects the previous step that isn't hidden. */
-  previous() {
-    const steps = this.steps();
-    for (let i = this.selectedIndex() - 1; i >= 0; i--) {
-      if (!steps[i].hidden()) {
-        this.selectIndex(i);
-        return;
-      }
-    }
-  }
-
-  /** Selects a step the user picked in the header, unless `disableStepNavigation`. */
-  changeStep(step: NbStepComponent) {
-    if (!this.disableStepNavigation()) {
-      step.select();
-    }
-  }
-
-  /** Goes back to the first step and resets every step and its `stepControl`; emits `stepChange`. */
-  reset() {
-    const steps = this.steps();
-    const previouslySelectedIndex = this.selectedIndex();
-    const previouslySelectedStep = steps[previouslySelectedIndex];
-
-    this.appliedIndex = 0;
-    this.selectedIndex.set(0);
-    steps.forEach((step) => step.reset());
-
-    this.stepChange.emit({
-      index: 0,
-      step: steps[0],
-      previouslySelectedIndex,
-      previouslySelectedStep,
-    });
-  }
-
-  isStepSelected(step: NbStepComponent) {
-    return this.selected() === step;
-  }
-
-  /** @docs-private The number shown for the step at the index: hidden steps aren't counted. */
-  getStepNumber(index: number): number {
-    return this.steps().filter((step, i) => i <= index && !step.hidden()).length;
-  }
-
-  /** @docs-private */
-  hasVisibleStepBefore(index: number): boolean {
-    return this.steps().some((step, i) => i < index && !step.hidden());
-  }
-
-  /** @docs-private */
-  getStepTemplate(step: NbStepComponent): TemplateRef<unknown> | undefined {
-    const label = step.label();
-    return label instanceof TemplateRef ? label : undefined;
-  }
-
-  protected isStepValid(index: number): boolean {
-    return this.steps()[index].isCompleted;
-  }
-
-  protected canBeSelected(indexToCheck: number, currentIndex: number): boolean {
-    const steps = this.steps();
-    if (!steps.length || indexToCheck < 0 || indexToCheck >= steps.length || indexToCheck === currentIndex) {
-      return false;
+    /** Selects the previous step that isn't hidden. */
+    previous() {
+        const steps = this.steps()
+        for (let i = this.selectedIndex() - 1; i >= 0; i--) {
+            if (!steps[i].hidden()) {
+                this.selectIndex(i)
+                return
+            }
+        }
     }
 
-    if (indexToCheck <= currentIndex || !this.linear()) {
-      return true;
+    /** Selects a step the user picked in the header, unless `disableStepNavigation`. */
+    changeStep(step: NbStepComponent) {
+        if (!this.disableStepNavigation()) {
+            step.select()
+        }
     }
 
-    for (let i = currentIndex; i < indexToCheck; i++) {
-      // A hidden step can't be completed, so it doesn't block the steps after it.
-      if (!steps[i].hidden() && !this.isStepValid(i)) {
-        return false;
-      }
+    /** Goes back to the first step and resets every step and its `stepControl`; emits `stepChange`. */
+    reset() {
+        const steps = this.steps()
+        const previouslySelectedIndex = this.selectedIndex()
+        const previouslySelectedStep = steps[previouslySelectedIndex]
+
+        this.appliedIndex = 0
+        this.selectedIndex.set(0)
+        steps.forEach((step) => step.reset())
+
+        this.stepChange.emit({
+            index: 0,
+            step: steps[0],
+            previouslySelectedIndex,
+            previouslySelectedStep
+        })
     }
-    return true;
-  }
+
+    isStepSelected(step: NbStepComponent) {
+        return this.selected() === step
+    }
+
+    /** @docs-private The number shown for the step at the index: hidden steps aren't counted. */
+    getStepNumber(index: number): number {
+        return this.steps().filter((step, i) => i <= index && !step.hidden()).length
+    }
+
+    /** @docs-private */
+    hasVisibleStepBefore(index: number): boolean {
+        return this.steps().some((step, i) => i < index && !step.hidden())
+    }
+
+    /** @docs-private */
+    getStepTemplate(step: NbStepComponent): TemplateRef<unknown> | undefined {
+        const label = step.label()
+        return label instanceof TemplateRef ? label : undefined
+    }
+
+    protected isStepValid(index: number): boolean {
+        return this.steps()[index].isCompleted
+    }
+
+    protected canBeSelected(indexToCheck: number, currentIndex: number): boolean {
+        const steps = this.steps()
+        if (!steps.length || indexToCheck < 0 || indexToCheck >= steps.length || indexToCheck === currentIndex) {
+            return false
+        }
+
+        if (indexToCheck <= currentIndex || !this.linear()) {
+            return true
+        }
+
+        for (let i = currentIndex; i < indexToCheck; i++) {
+            // A hidden step can't be completed, so it doesn't block the steps after it.
+            if (!steps[i].hidden() && !this.isStepValid(i)) {
+                return false
+            }
+        }
+        return true
+    }
 }

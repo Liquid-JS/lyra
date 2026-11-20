@@ -1,86 +1,86 @@
 <nb-layout>
-  <nb-layout-header fixed>
-    <a class="brand"
-      routerLink="home"><span class="logo"
-        aria-hidden="true"></span> Acme</a>
-    <div class="sections"
-      role="navigation"
-      aria-label="Sections">
-      <a routerLink="home"
-        fragment="features"
-        (click)="scrollTo('features')">Features</a>
-      <a routerLink="home"
-        fragment="pricing"
-        (click)="scrollTo('pricing')">Pricing</a>
-      <a routerLink="blog"
-        routerLinkActive="active">Blog</a>
-    </div>
-    <div class="actions">
-      <a nbButton
-        ghost
-        class="sign-in"
-        routerLink="../auth/sign-in">Sign in</a>
-      <a nbButton
-        status="primary"
-        routerLink="../auth/sign-up">Get started</a>
-      <button nbButton
-        ghost
-        class="menu"
-        type="button"
-        aria-label="Menu"
-        nbContextMenuTag="site-sections"
-        [nbContextMenu]="sections">
-        <nb-icon icon="menu-outline" />
-      </button>
-    </div>
-  </nb-layout-header>
-
-  <nb-layout-column class="page">
-    <router-outlet />
-  </nb-layout-column>
-
-  <nb-layout-footer>
-    <div class="footer">
-      <div class="about">
-        <span class="brand"><span class="logo"
-            aria-hidden="true"></span> Acme</span>
-        <p>The CRM for small teams: customers, invoices and reports in one place.</p>
-        <!-- A valid address subscribes; the browser asks for one that isn't. -->
-        @if (subscribed(); as address) {
-        <p class="newsletter-done"
-          role="status">Thanks! The next issue goes to {{ address }}.</p>
-        } @else {
-        <form class="newsletter"
-          (submit)="$event.preventDefault(); subscribed.set(email.value)">
-          <label class="label"
-            for="newsletter-email">Get our monthly newsletter</label>
-          <span class="newsletter-row">
-            <input #email
-              nbInput
-              id="newsletter-email"
-              type="email"
-              required
-              placeholder="you@example.com" />
+    <nb-layout-header fixed>
+        <a class="brand"
+            routerLink="home"><span class="logo"
+                aria-hidden="true"></span> Acme</a>
+        <div class="sections"
+            role="navigation"
+            aria-label="Sections">
+            <a routerLink="home"
+                fragment="features"
+                (click)="scrollTo('features')">Features</a>
+            <a routerLink="home"
+                fragment="pricing"
+                (click)="scrollTo('pricing')">Pricing</a>
+            <a routerLink="blog"
+                routerLinkActive="active">Blog</a>
+        </div>
+        <div class="actions">
+            <a nbButton
+                ghost
+                class="sign-in"
+                routerLink="../auth/sign-in">Sign in</a>
+            <a nbButton
+                status="primary"
+                routerLink="../auth/sign-up">Get started</a>
             <button nbButton
-              status="primary"
-              type="submit">Subscribe</button>
-          </span>
-        </form>
-        }
-      </div>
-      @for (column of footer; track column.title) {
-      <div role="navigation"
-        [attr.aria-label]="column.title">
-        <h2 class="label">{{ column.title }}</h2>
-        <ul>
-          @for (link of column.links; track link) {
-          <li><a href="#"
-              (click)="$event.preventDefault()">{{ link }}</a></li>
-          }
-        </ul>
-      </div>
-      }
-    </div>
-    <p class="copyright">© {{ year }} Acme Ltd. All rights reserved.</p>
-  </nb-layout-footer>
+                ghost
+                class="menu"
+                type="button"
+                aria-label="Menu"
+                nbContextMenuTag="site-sections"
+                [nbContextMenu]="sections">
+                <nb-icon icon="menu-outline" />
+            </button>
+        </div>
+    </nb-layout-header>
+
+    <nb-layout-column class="page">
+        <router-outlet />
+    </nb-layout-column>
+
+    <nb-layout-footer>
+        <div class="footer">
+            <div class="about">
+                <span class="brand"><span class="logo"
+                        aria-hidden="true"></span> Acme</span>
+                <p>The CRM for small teams: customers, invoices and reports in one place.</p>
+                <!-- A valid address subscribes; the browser asks for one that isn't. -->
+                @if (subscribed(); as address) {
+                <p class="newsletter-done"
+                    role="status">Thanks! The next issue goes to {{ address }}.</p>
+                } @else {
+                <form class="newsletter"
+                    (submit)="$event.preventDefault(); subscribed.set(email.value)">
+                    <label class="label"
+                        for="newsletter-email">Get our monthly newsletter</label>
+                    <span class="newsletter-row">
+                        <input #email
+                            nbInput
+                            id="newsletter-email"
+                            type="email"
+                            required
+                            placeholder="you@example.com" />
+                        <button nbButton
+                            status="primary"
+                            type="submit">Subscribe</button>
+                    </span>
+                </form>
+                }
+            </div>
+            @for (column of footer; track column.title) {
+            <div role="navigation"
+                [attr.aria-label]="column.title">
+                <h2 class="label">{{ column.title }}</h2>
+                <ul>
+                    @for (link of column.links; track link) {
+                    <li><a href="#"
+                            (click)="$event.preventDefault()">{{ link }}</a></li>
+                    }
+                </ul>
+            </div>
+            }
+        </div>
+        <p class="copyright">© {{ year }} Acme Ltd. All rights reserved.</p>
+    </nb-layout-footer>
 </nb-layout>

@@ -1,11 +1,11 @@
-import { DecimalPipe } from '@angular/common';
-import { Component, input } from '@angular/core';
-import { NbIconComponent } from '@liquid-js/lyr-core';
+import { DecimalPipe } from '@angular/common'
+import { Component, input } from '@angular/core'
+import { NbIconComponent } from '@liquid-js/lyr-core'
 
 /** A rating out of five: the stars, the figure, and how many reviews it's from. */
 @Component({
-  selector: 'npg-learn-stars',
-  template: `
+    selector: 'npg-learn-stars',
+    template: `
     <span class="stars" role="img" [attr.aria-label]="rating() + ' out of 5'">
       @for (star of stars; track star) {
         <nb-icon [icon]="star <= Math.round(rating()) ? 'star' : 'star-outline'" />
@@ -16,7 +16,7 @@ import { NbIconComponent } from '@liquid-js/lyr-core';
       <span class="reviews">({{ reviews | number }})</span>
     }
   `,
-  styles: `
+    styles: `
     :host {
       display: inline-flex;
       align-items: center;
@@ -38,11 +38,11 @@ import { NbIconComponent } from '@liquid-js/lyr-core';
       color: var(--text-hint-color);
     }
   `,
-  imports: [DecimalPipe, NbIconComponent],
+    imports: [DecimalPipe, NbIconComponent]
 })
 export class LearnStarsComponent {
-  readonly rating = input.required<number>();
-  readonly reviews = input<number>();
-  protected readonly stars = [1, 2, 3, 4, 5];
-  protected readonly Math = Math;
+    readonly rating = input.required<number>()
+    readonly reviews = input<number>()
+    protected readonly stars = [1, 2, 3, 4, 5]
+    protected readonly Math = Math
 }

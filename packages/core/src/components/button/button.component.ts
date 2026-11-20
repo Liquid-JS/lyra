@@ -1,12 +1,13 @@
-import { Component, DestroyRef, inject, input, Renderer2 } from '@angular/core';
+import { Component, DestroyRef, inject, input, Renderer2 } from '@angular/core'
 
-import { ɵconvertToBoolProperty as convertToBoolProperty, NbBooleanInput } from '@liquid-js/lyr-core/base';
-import { NbButton } from './base-button';
+import { ɵconvertToBoolProperty as convertToBoolProperty, NbBooleanInput } from '@liquid-js/lyr-core/base'
+import { NbButton } from './base-button'
 
 /**
  * Basic button component.
  *
  * Default button size is `medium` and status color is `basic`:
+ *
  * @stacked-example(Button Showcase, button/button-showcase.component)
  *
  * ```html
@@ -40,15 +41,12 @@ import { NbButton } from './base-button';
  * @stacked-example(Button Colors, button/button-colors.component.html)
  *
  * They come in five sizes, from `tiny` to `giant`:
- *
  * @stacked-example(Button Sizes, button/button-sizes.component.html)
  *
  * Besides the default `filled` appearance there are `outline` and `ghost`:
- *
  * @stacked-example(Outline Buttons, button/button-outline.component.html)
  *
  * and `hero`, with a gradient and a glow:
- *
  * @stacked-example(Button Hero, button/button-hero.component.html)
  *
  * The shapes combine with the other properties:
@@ -79,9 +77,7 @@ import { NbButton } from './base-button';
  * Set `loading` while the action the button started runs. The button shows a spinner in place of its content,
  * keeps its size and focus, ignores clicks, and tells assistive technology it is busy:
  * @stacked-example(Loading Button, button/button-loading.component)
- *
  * @additional-example(Interactive example, button/button-interactive.component)
- *
  * @styles
  *
  * button-cursor:
@@ -556,55 +552,55 @@ import { NbButton } from './base-button';
  * button-hero-control-disabled-text-color:
  */
 @Component({
-  selector: 'button[nbButton],a[nbButton],input[type="button"][nbButton],input[type="submit"][nbButton]',
-  template: `
+    selector: 'button[nbButton],a[nbButton],input[type="button"][nbButton],input[type="submit"][nbButton]',
+    template: `
     @if (loading()) {
       <span class="nb-button-spinner" aria-hidden="true"></span>
     }
     <ng-content />
   `,
-  providers: [
-    { provide: NbButton, useExisting: NbButtonComponent },
-  ],
+    providers: [
+        { provide: NbButton, useExisting: NbButtonComponent }
+    ]
 })
 export class NbButtonComponent extends NbButton {
-  /**
-   * Sets the `hero` appearance, over `appearance` and the other boolean appearances.
-   */
-  readonly hero = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
+    /**
+     * Sets the `hero` appearance, over `appearance` and the other boolean appearances.
+     */
+    readonly hero = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty })
 
-  /**
-   * Shows a spinner in place of the content and ignores clicks, e.g. while a form submits.
-   * Unlike `disabled`, the button keeps its focus and looks enabled.
-   */
-  readonly loading = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
+    /**
+     * Shows a spinner in place of the content and ignores clicks, e.g. while a form submits.
+     * Unlike `disabled`, the button keeps its focus and looks enabled.
+     */
+    readonly loading = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty })
 
-  constructor() {
-    super();
-    // A capture listener on the button runs before every click listener on it, including the ones its user
-    // binds with (click), which a host listener can't guarantee.
-    const listen = (event: Event) => this.onClick(event);
-    const unlisten = inject(Renderer2).listen(this.hostElement.nativeElement, 'click', listen, { capture: true });
-    inject(DestroyRef).onDestroy(unlisten);
-  }
-
-  protected override appearanceFlag() {
-    return this.hero() ? 'hero' : super.appearanceFlag();
-  }
-
-  protected override isBusy() {
-    return this.loading();
-  }
-
-  // The spinner is not content, so it doesn't count as a leading icon.
-  protected override get nodes(): Node[] {
-    return super.nodes.filter((node) => !(node instanceof Element && node.classList.contains('nb-button-spinner')));
-  }
-
-  onClick(event: Event) {
-    if (this.properties().disabled || this.loading()) {
-      event.preventDefault();
-      event.stopImmediatePropagation();
+    constructor() {
+        super()
+        // A capture listener on the button runs before every click listener on it, including the ones its user
+        // binds with (click), which a host listener can't guarantee.
+        const listen = (event: Event) => this.onClick(event)
+        const unlisten = inject(Renderer2).listen(this.hostElement.nativeElement, 'click', listen, { capture: true })
+        inject(DestroyRef).onDestroy(unlisten)
     }
-  }
+
+    protected override appearanceFlag() {
+        return this.hero() ? 'hero' : super.appearanceFlag()
+    }
+
+    protected override isBusy() {
+        return this.loading()
+    }
+
+    // The spinner is not content, so it doesn't count as a leading icon.
+    protected override get nodes(): Node[] {
+        return super.nodes.filter((node) => !(node instanceof Element && node.classList.contains('nb-button-spinner')))
+    }
+
+    onClick(event: Event) {
+        if (this.properties().disabled || this.loading()) {
+            event.preventDefault()
+            event.stopImmediatePropagation()
+        }
+    }
 }

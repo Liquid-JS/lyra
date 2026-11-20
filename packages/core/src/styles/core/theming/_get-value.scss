@@ -1,83 +1,83 @@
-@use 'sass:list';
-@use 'sass:map';
-@use 'sass:math';
-@use 'sass:meta';
-@use '../functions';
-@use 'scale';
+@use "sass:list";
+@use "sass:map";
+@use "sass:math";
+@use "sass:meta";
+@use "../functions";
+@use "scale";
 
 @function nb-deep-find-value($theme, $key, $value) {
-  // Another value times a factor: that value, resolved, multiplied.
-  @if (scale.nb-is-scaled($value)) {
-    $base-key: map.get($value, nb-scale);
-    $base: nb-deep-find-value($theme, $base-key, map.get($theme, $base-key));
-    $factor: map.get($value, factor);
-    @if (meta.type-of($base) == 'number') {
-      @return $base * $factor;
+    // Another value times a factor: that value, resolved, multiplied.
+    @if scale.nb-is-scaled($value) {
+        $base-key: map.get($value, nb-scale);
+        $base: nb-deep-find-value($theme, $base-key, map.get($theme, $base-key));
+        $factor: map.get($value, factor);
+        @if meta.type-of($base) == "number" {
+            @return $base * $factor;
+        }
+        @return calc(#{$base} * #{$factor});
     }
-    @return calc(#{$base} * #{$factor});
-  }
 
-  // Other values added up: each resolved, the lengths of one unit added, the rest left to a calc().
-  @if (scale.nb-is-sum($value)) {
-    $totals: ();
-    @each $term in map.get($value, nb-sum) {
-      $resolved: $term;
-      @if (scale.nb-is-scaled($term)) {
-        $resolved: nb-deep-find-value($theme, null, $term);
-      } @else if (meta.type-of($term) == 'string' and map.has-key($theme, $term)) {
-        $resolved: nb-deep-find-value($theme, $term, map.get($theme, $term));
-      }
-      $totals: _add($totals, $resolved);
+    // Other values added up: each resolved, the lengths of one unit added, the rest left to a calc().
+    @if scale.nb-is-sum($value) {
+        $totals: ();
+        @each $term in map.get($value, nb-sum) {
+            $resolved: $term;
+            @if scale.nb-is-scaled($term) {
+                $resolved: nb-deep-find-value($theme, null, $term);
+            } @else if meta.type-of($term) == "string" and map.has-key($theme, $term) {
+                $resolved: nb-deep-find-value($theme, $term, map.get($theme, $term));
+            }
+            $totals: -add($totals, $resolved);
+        }
+        @if list.length($totals) == 1 {
+            @return list.nth($totals, 1);
+        }
+        $css: "";
+        @each $total in $totals {
+            @if $css == "" {
+                $css: "#{$total}";
+            } @else if meta.type-of($total) == "number" and $total < 0 {
+                $css: "#{$css} - #{-$total}";
+            } @else {
+                $css: "#{$css} + #{$total}";
+            }
+        }
+        @return calc(#{$css});
     }
-    @if (list.length($totals) == 1) {
-      @return list.nth($totals, 1);
+
+    $parent-value: map.get($theme, $value);
+
+    @if $parent-value {
+        @return nb-deep-find-value($theme, $value, $parent-value);
     }
-    $css: '';
-    @each $total in $totals {
-      @if ($css == '') {
-        $css: '#{$total}';
-      } @else if (meta.type-of($total) == 'number' and $total < 0) {
-        $css: '#{$css} - #{-$total}';
-      } @else {
-        $css: '#{$css} + #{$total}';
-      }
-    }
-    @return calc(#{$css});
-  }
 
-  $parent-value: map.get($theme, $value);
-
-  @if ($parent-value != null) {
-    @return nb-deep-find-value($theme, $value, $parent-value);
-  }
-
-  @return $value;
+    @return $value;
 }
 
 // A term added to the totals: to a length it's compatible with, or as one of its own.
-@function _add($totals, $term) {
-  @if (meta.type-of($term) == 'number') {
-    $index: 0;
-    @each $total in $totals {
-      $index: $index + 1;
-      @if (meta.type-of($total) == 'number' and math.compatible($total, $term)) {
-        @return list.set-nth($totals, $index, $total + $term);
-      }
+@function -add($totals, $term) {
+    @if meta.type-of($term) == "number" {
+        $index: 0;
+        @each $total in $totals {
+            $index: $index + 1;
+            @if meta.type-of($total) == "number" and math.compatible($total, $term) {
+                @return list.set-nth($totals, $index, $total + $term);
+            }
+        }
     }
-  }
-  @return list.append($totals, $term);
+    @return list.append($totals, $term);
 }
 
 @function nb-process-theme($theme) {
-  $processed-theme: ();
-  @each $key, $value in $theme {
-    $processed-theme: functions.map-set($processed-theme, $key, nb-deep-find-value($theme, $key, $value));
-  }
-  @return $processed-theme;
+    $processed-theme: ();
+    @each $key, $value in $theme {
+        $processed-theme: functions.map-set($processed-theme, $key, nb-deep-find-value($theme, $key, $value));
+    }
+    @return $processed-theme;
 }
 
 /// A theme variable, as the CSS custom property every installed theme sets: `nb-theme(border-radius)` is
 /// `var(--border-radius)`, so it follows the theme an element is in, and changes to the variable at run time.
 @function nb-theme($key) {
-  @return var(--#{$key});
+    @return var(--#{$key});
 }

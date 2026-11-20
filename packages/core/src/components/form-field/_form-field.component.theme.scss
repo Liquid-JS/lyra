@@ -1,103 +1,104 @@
-@use '../../styles/theming' as *;
+@use "../../styles/theming" as *;
 
 @mixin nb-form-field-theme() {
-  .nb-form-control-container {
-    max-width: inherit;
-  }
-
-  .nb-form-field-addon {
-    display: flex;
-    flex-shrink: 0;
-    justify-content: center;
-    align-items: center;
-    z-index: 1;
-
-    &-disabled {
-      color: nb-theme(form-field-addon-disabled-text-color);
-    }
-  }
-
-  nb-form-field.nb-transition .nb-form-field-addon {
-    @include nb-component-animation(color);
-  }
-
-  @each $status in nb-get-statuses() {
-    .nb-form-field-addon-#{$status} {
-      color: nb-theme(form-field-addon-#{$status}-text-color);
-
-      &-highlight {
-        color: nb-theme(form-field-addon-#{$status}-highlight-text-color);
-      }
-    }
-  }
-
-  @each $size in nb-get-sizes() {
-    $form-field-max-width: nb-theme(form-field-#{$size}-max-width);
-    $addon-height: nb-theme(form-field-addon-#{$size}-height);
-    $addon-width: nb-theme(form-field-addon-#{$size}-width);
-
-    .nb-form-field-limited-width.nb-form-field-size-#{$size} {
-      width: nb-theme(form-field-#{$size}-width);
-      max-width: $form-field-max-width;
+    .nb-form-control-container {
+        max-width: inherit;
     }
 
-    .nb-form-field-prefix-#{$size},
-    .nb-form-field-suffix-#{$size} {
-      $icon-size: nb-theme(form-field-addon-#{$size}-icon-size);
+    .nb-form-field-addon {
+        display: flex;
+        flex-shrink: 0;
+        justify-content: center;
+        align-items: center;
+        z-index: 1;
 
-      box-sizing: border-box;
-      height: $addon-height;
-      min-width: $addon-width;
-      // An icon fills the minimum width; text gets the same space around it.
-      padding-inline: calc((#{$addon-width} - #{$icon-size}) / 2);
-      white-space: nowrap;
-      font-size: nb-theme(form-field-addon-#{$size}-font-size);
-      line-height: nb-theme(form-field-addon-#{$size}-line-height);
-      font-weight: nb-theme(form-field-addon-#{$size}-font-weight);
-
-      nb-icon {
-        font-size: $icon-size;
-        line-height: $icon-size;
-      }
-
-      // Buttons and selects bring their own padding; an icon button is as wide as an icon addon.
-      &:has(> :is([nbButton], nb-select)) {
-        padding-inline: 0;
-      }
-
-      > [nbButton].icon-start.icon-end {
-        width: $addon-width;
-      }
+        &-disabled {
+            color: nb-theme(form-field-addon-disabled-text-color);
+        }
     }
 
-    .nb-form-field-prefix-#{$size} {
-      margin-inline-end: calc(var(--nb-form-field-prefix-width, #{$addon-width}) * -1);
+    nb-form-field.nb-transition .nb-form-field-addon {
+        @include nb-component-animation(color);
     }
 
-    .nb-form-field-suffix-#{$size} {
-      margin-inline-start: calc(var(--nb-form-field-suffix-width, #{$addon-width}) * -1);
+    @each $status in nb-get-statuses() {
+        .nb-form-field-addon-#{$status} {
+            color: nb-theme(form-field-addon-#{$status}-text-color);
+
+            &-highlight {
+                color: nb-theme(form-field-addon-#{$status}-highlight-text-color);
+            }
+        }
     }
-  }
+
+    @each $size in nb-get-sizes() {
+        $form-field-max-width: nb-theme(form-field-#{$size}-max-width);
+        $addon-height: nb-theme(form-field-addon-#{$size}-height);
+        $addon-width: nb-theme(form-field-addon-#{$size}-width);
+
+        .nb-form-field-limited-width.nb-form-field-size-#{$size} {
+            width: nb-theme(form-field-#{$size}-width);
+            max-width: $form-field-max-width;
+        }
+
+        .nb-form-field-prefix-#{$size},
+        .nb-form-field-suffix-#{$size} {
+            $icon-size: nb-theme(form-field-addon-#{$size}-icon-size);
+
+            box-sizing: border-box;
+            height: $addon-height;
+            min-width: $addon-width;
+
+            // An icon fills the minimum width; text gets the same space around it.
+            padding-inline: calc((#{$addon-width} - #{$icon-size}) / 2);
+            white-space: nowrap;
+            font-size: nb-theme(form-field-addon-#{$size}-font-size);
+            line-height: nb-theme(form-field-addon-#{$size}-line-height);
+            font-weight: nb-theme(form-field-addon-#{$size}-font-weight);
+
+            nb-icon {
+                font-size: $icon-size;
+                line-height: $icon-size;
+            }
+
+            // Buttons and selects bring their own padding; an icon button is as wide as an icon addon.
+            &:has(> :is([nbButton], nb-select)) {
+                padding-inline: 0;
+            }
+
+            > [nbButton].icon-start.icon-end {
+                width: $addon-width;
+            }
+        }
+
+        .nb-form-field-prefix-#{$size} {
+            margin-inline-end: calc(var(--nb-form-field-prefix-width, #{$addon-width}) * -1);
+        }
+
+        .nb-form-field-suffix-#{$size} {
+            margin-inline-start: calc(var(--nb-form-field-suffix-width, #{$addon-width}) * -1);
+        }
+    }
 }
 
 @mixin nb-form-field-root-component($selector) {
-  nb-form-field #{$selector} {
-    width: 100%;
-  }
+    nb-form-field #{$selector} {
+        width: 100%;
+    }
 }
 
 @mixin nb-form-field-with-prefix($selector, $size) {
-  $addon-width: nb-theme(form-field-addon-#{$size}-width);
+    $addon-width: nb-theme(form-field-addon-#{$size}-width);
 
-  .nb-form-field-control-with-prefix #{$selector} {
-    padding-inline-start: var(--nb-form-field-prefix-width, #{$addon-width});
-  }
+    .nb-form-field-control-with-prefix #{$selector} {
+        padding-inline-start: var(--nb-form-field-prefix-width, #{$addon-width});
+    }
 }
 
 @mixin nb-form-field-with-suffix($selector, $size) {
-  $addon-width: nb-theme(form-field-addon-#{$size}-width);
+    $addon-width: nb-theme(form-field-addon-#{$size}-width);
 
-  .nb-form-field-control-with-suffix #{$selector} {
-    padding-inline-end: var(--nb-form-field-suffix-width, #{$addon-width});
-  }
+    .nb-form-field-control-with-suffix #{$selector} {
+        padding-inline-end: var(--nb-form-field-suffix-width, #{$addon-width});
+    }
 }

@@ -1,20 +1,20 @@
-import { Component, input } from '@angular/core';
-import { NbIconComponent } from '@liquid-js/lyr-core';
+import { Component, input } from '@angular/core'
+import { NbIconComponent } from '@liquid-js/lyr-core'
 
-import { illustration } from '../../shared/showcase-images';
-import { ShowcaseLogoComponent } from '../../shared/showcase-logo.component';
-import { ShowcaseLogoName } from '../../shared/showcase-logos';
+import { illustration } from '../../shared/showcase-images'
+import { ShowcaseLogoComponent } from '../../shared/showcase-logo.component'
+import { ShowcaseLogoName } from '../../shared/showcase-logos'
 
 /** What a sign-in page's frame shows beside or below it: a customer's quote, the plan's benefits, or a tagline. */
-export type AuthPanel = 'quote' | 'benefits' | 'tagline';
+export type AuthPanel = 'quote' | 'benefits' | 'tagline'
 
 /**
  * The words around a sign-in page: a customer's quote with their avatar, the plan's benefits or a tagline, and the
  * logos of customers. Its colours are the text's, so it suits a coloured panel, a photo or the page.
  */
 @Component({
-  selector: 'npg-auth-panel',
-  template: `
+    selector: 'npg-auth-panel',
+    template: `
     @switch (panel()) {
       @case ('quote') {
         <figure class="quote">
@@ -51,7 +51,7 @@ export type AuthPanel = 'quote' | 'benefits' | 'tagline';
       </ul>
     </div>
   `,
-  styles: `
+    styles: `
     :host {
       display: flex;
       flex-direction: column;
@@ -149,27 +149,27 @@ export type AuthPanel = 'quote' | 'benefits' | 'tagline';
       }
     }
   `,
-  imports: [NbIconComponent, ShowcaseLogoComponent],
+    imports: [NbIconComponent, ShowcaseLogoComponent]
 })
 export class AuthPanelComponent {
-  readonly panel = input<AuthPanel>('tagline');
+    readonly panel = input<AuthPanel>('tagline')
 
-  protected readonly quote = {
-    text: 'We closed a third more deals this quarter, and for once the whole team actually likes the tool.',
-    name: 'Emma Brown',
-    role: 'Head of Sales, Fabrikam',
-  };
-  protected readonly avatar = illustration('Emma Brown', 'notionists');
-  protected readonly benefits = [
-    'Unlimited customers and contacts',
-    'Invoices that chase themselves',
-    'Reports for the whole team',
-    'Free for 14 days, no card needed',
-  ];
-  protected readonly logos: { name: ShowcaseLogoName; label: string }[] = [
-    { name: 'northwind', label: 'Northwind' },
-    { name: 'contoso', label: 'Contoso' },
-    { name: 'tailspin', label: 'Tailspin' },
-    { name: 'litware', label: 'Litware' },
-  ];
+    protected readonly quote = {
+        text: 'We closed a third more deals this quarter, and for once the whole team actually likes the tool.',
+        name: 'Emma Brown',
+        role: 'Head of Sales, Fabrikam'
+    }
+    protected readonly avatar = illustration('Emma Brown', 'notionists')
+    protected readonly benefits = [
+        'Unlimited customers and contacts',
+        'Invoices that chase themselves',
+        'Reports for the whole team',
+        'Free for 14 days, no card needed'
+    ]
+    protected readonly logos: Array<{ name: ShowcaseLogoName, label: string }> = [
+        { name: 'northwind', label: 'Northwind' },
+        { name: 'contoso', label: 'Contoso' },
+        { name: 'tailspin', label: 'Tailspin' },
+        { name: 'litware', label: 'Litware' }
+    ]
 }

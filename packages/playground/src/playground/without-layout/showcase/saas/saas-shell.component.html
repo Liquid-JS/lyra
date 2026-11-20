@@ -1,57 +1,57 @@
 <nb-layout windowMode>
-  <nb-layout-header fixed>
-    <div class="header-start">
-      <button nbButton
-        edge="start"
-        ghost
-        type="button"
-        aria-label="Show or hide the menu"
-        (click)="toggleSidebar()">
-        <nb-icon icon="menu-2-outline" />
-      </button>
-      <a class="brand"
-        routerLink="dashboard">
-        <span class="logo"
-          aria-hidden="true"></span>
-        Acme <strong>CRM</strong>
-      </a>
-    </div>
+    <nb-layout-header fixed>
+        <div class="header-start">
+            <button nbButton
+                edge="start"
+                ghost
+                type="button"
+                aria-label="Show or hide the menu"
+                (click)="toggleSidebar()">
+                <nb-icon icon="menu-2-outline" />
+            </button>
+            <a class="brand"
+                routerLink="dashboard">
+                <span class="logo"
+                    aria-hidden="true"></span>
+                Acme <strong>CRM</strong>
+            </a>
+        </div>
 
-    <nb-form-field class="search">
-      <nb-icon nbPrefix
-        icon="search-outline" />
-      <input nbInput
-        fullWidth
-        type="search"
-        placeholder="Search customers, invoices…"
-        aria-label="Search" />
-    </nb-form-field>
+        <nb-form-field class="search">
+            <nb-icon nbPrefix
+                icon="search-outline" />
+            <input nbInput
+                fullWidth
+                type="search"
+                placeholder="Search customers, invoices…"
+                aria-label="Search" />
+        </nb-form-field>
 
-    <nb-actions>
-      <nb-action icon="bell-outline"
-        title="Notifications"
-        badgeDot
-        badgeStatus="danger" />
-      <nb-action class="settings"
-        icon="settings-2-outline"
-        title="Settings"
-        [link]="link('settings')" />
-      <nb-action>
-        <nb-user name="Jane Doe"
-          title="Account manager"
-          [picture]="userPhoto"
-          [nbContextMenu]="userMenu" />
-      </nb-action>
-    </nb-actions>
-  </nb-layout-header>
+        <nb-actions>
+            <nb-action icon="bell-outline"
+                title="Notifications"
+                badgeDot
+                badgeStatus="danger" />
+            <nb-action class="settings"
+                icon="settings-2-outline"
+                title="Settings"
+                [link]="link('settings')" />
+            <nb-action>
+                <nb-user name="Jane Doe"
+                    title="Account manager"
+                    [picture]="userPhoto"
+                    [nbContextMenu]="userMenu" />
+            </nb-action>
+        </nb-actions>
+    </nb-layout-header>
 
-  <nb-sidebar responsive
-    tag="saas">
-    <nb-menu tag="saas-menu"
-      [items]="menu" />
-  </nb-sidebar>
+    <nb-sidebar responsive
+        tag="saas">
+        <nb-menu tag="saas-menu"
+            [items]="menu" />
+    </nb-sidebar>
 
-  <nb-layout-column>
-    <router-outlet />
-  </nb-layout-column>
+    <nb-layout-column>
+        <router-outlet />
+    </nb-layout-column>
 </nb-layout>

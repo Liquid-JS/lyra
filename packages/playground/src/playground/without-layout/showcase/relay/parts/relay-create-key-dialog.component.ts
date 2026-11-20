@@ -1,34 +1,34 @@
-import { Component, inject, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { Component, inject, signal } from '@angular/core'
+import { FormsModule } from '@angular/forms'
 import {
-  NbButtonComponent,
-  NbCardBodyComponent,
-  NbCardComponent,
-  NbCardFooterComponent,
-  NbCardHeaderComponent,
-  NbDatepickerDirective,
-  NbDatepickerComponent,
-  NbDialogRef,
-  NbFormFieldComponent,
-  NbInputDirective,
-  NbRadioComponent,
-  NbRadioGroupComponent,
-} from '@liquid-js/lyr-core';
+    NbButtonComponent,
+    NbCardBodyComponent,
+    NbCardComponent,
+    NbCardFooterComponent,
+    NbCardHeaderComponent,
+    NbDatepickerDirective,
+    NbDatepickerComponent,
+    NbDialogRef,
+    NbFormFieldComponent,
+    NbInputDirective,
+    NbRadioComponent,
+    NbRadioGroupComponent
+} from '@liquid-js/lyr-core'
 
-import { Environment } from '../relay-data';
+import { Environment } from '../relay-data'
 
 /** What a new key is made with. */
 export interface NewKey {
-  name: string;
-  environment: Environment;
-  expires?: Date;
+    name: string
+    environment: Environment
+    expires?: Date
 }
 
 /** Whether a dialog's result is a new key, rather than nothing from a dialog dismissed. */
 /** Asks for a new key's name, its environment and when it should stop working, and gives them back. */
 @Component({
-  selector: 'npg-relay-create-key-dialog',
-  template: `
+    selector: 'npg-relay-create-key-dialog',
+    template: `
     <nb-card class="dialog">
       <nb-card-header>Create an API key</nb-card-header>
       <nb-card-body>
@@ -68,7 +68,7 @@ export interface NewKey {
       </nb-card-footer>
     </nb-card>
   `,
-  styles: `
+    styles: `
     .dialog {
       width: min(28rem, calc(100vw - 2rem));
       margin: 0;
@@ -108,29 +108,29 @@ export interface NewKey {
       gap: 0.5rem;
     }
   `,
-  imports: [
-    FormsModule,
-    NbButtonComponent,
-    NbCardBodyComponent,
-    NbCardComponent,
-    NbCardFooterComponent,
-    NbCardHeaderComponent,
-    NbDatepickerComponent,
-    NbDatepickerDirective,
-    NbFormFieldComponent,
-    NbInputDirective,
-    NbRadioComponent,
-    NbRadioGroupComponent,
-  ],
+    imports: [
+        FormsModule,
+        NbButtonComponent,
+        NbCardBodyComponent,
+        NbCardComponent,
+        NbCardFooterComponent,
+        NbCardHeaderComponent,
+        NbDatepickerComponent,
+        NbDatepickerDirective,
+        NbFormFieldComponent,
+        NbInputDirective,
+        NbRadioComponent,
+        NbRadioGroupComponent
+    ]
 })
 export class RelayCreateKeyDialogComponent {
-  protected readonly ref = inject<NbDialogRef<RelayCreateKeyDialogComponent, NewKey>>(NbDialogRef);
+    protected readonly ref = inject<NbDialogRef<RelayCreateKeyDialogComponent, NewKey>>(NbDialogRef)
 
-  readonly name = signal('');
-  readonly environment = signal<Environment>('live');
-  readonly expires = signal<Date | undefined>(undefined);
+    readonly name = signal('')
+    readonly environment = signal<Environment>('live')
+    readonly expires = signal<Date | undefined>(undefined)
 
-  create() {
-    this.ref.close({ name: this.name().trim(), environment: this.environment(), expires: this.expires() });
-  }
+    create() {
+        this.ref.close({ name: this.name().trim(), environment: this.environment(), expires: this.expires() })
+    }
 }

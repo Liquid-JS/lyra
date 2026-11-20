@@ -1,33 +1,33 @@
 <label class="label">
-  <input type="checkbox"
-    class="native-input visually-hidden"
-    tabindex="0"
-    [attr.aria-invalid]="validation?.ariaInvalid()"
-    [attr.aria-describedby]="validation?.describedBy()"
-    [attr.aria-labelledby]="labelledBy()"
-    [attr.aria-required]="validation?.ariaRequired()"
-    [disabled]="isDisabled()"
-    [checked]="isChecked()"
-    (change)="updateValueAndIndeterminate($event)"
-    (blur)="setTouched()"
-    (click)="$event.stopPropagation(); focusOnClick($event)"
-    [indeterminate]="isIndeterminate()">
-  <span [class.indeterminate]="isIndeterminate()"
-    [class.checked]="isChecked()"
-    class="custom-checkbox">
-    @if (isIndeterminate()) {
-    <nb-icon icon="minus-bold-outline"
-      pack="essentials"
-      class="custom-checkbox-icon" />
-    }
-    @if (isChecked() && !isIndeterminate()) {
-    <nb-icon icon="checkmark-bold-outline"
-      pack="essentials"
-      class="custom-checkbox-icon" />
-    }
-  </span>
-  <span class="text"
-    [id]="textId">
-    <ng-content />
-  </span>
+    <input type="checkbox"
+        class="native-input visually-hidden"
+        tabindex="0"
+        [attr.aria-invalid]="validation?.ariaInvalid()"
+        [attr.aria-describedby]="validation?.describedBy()"
+        [attr.aria-labelledby]="labelledBy()"
+        [attr.aria-required]="validation?.ariaRequired()"
+        [disabled]="isDisabled()"
+        [checked]="isChecked()"
+        (change)="updateValueAndIndeterminate($event)"
+        (blur)="setTouched()"
+        (click)="$event.stopPropagation(); focusOnClick($event)"
+        [indeterminate]="isIndeterminate()">
+    <span [class.indeterminate]="isIndeterminate()"
+        [class.checked]="isChecked()"
+        class="custom-checkbox">
+        @if (isIndeterminate()) {
+        <nb-icon icon="minus-bold-outline"
+            pack="essentials"
+            class="custom-checkbox-icon" />
+        }
+        @if (isChecked() && !isIndeterminate()) {
+        <nb-icon icon="checkmark-bold-outline"
+            pack="essentials"
+            class="custom-checkbox-icon" />
+        }
+    </span>
+    <span class="text"
+        [id]="textId">
+        <ng-content />
+    </span>
 </label>

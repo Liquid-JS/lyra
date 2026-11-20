@@ -1,49 +1,49 @@
 <ul class="route-tabset">
-  @for (tab of tabs(); track tab) {
-  @if (tab.disabled) {
-  <li [class.responsive]="tab.responsive"
-    class="route-tab disabled"
-    tabindex="-1">
-    <a tabindex="-1"
-      class="tab-link">
-      @if (tab.icon) {
-      <nb-icon [config]="tab.icon" />
-      }
-      @if (tab.title) {
-      <span class="tab-text"
-        dir="auto">{{ tab.title }}</span>
-      }
-    </a>
-  </li>
-  } @else {
-  <li routerLinkActive="active"
-    [routerLinkActiveOptions]="activeLinkOptions() | nbMergeConfigs : tab.activeLinkOptions"
-    class="route-tab">
-    <a (click)="selectTab(tab)"
-      tabindex="0"
-      routerLinkActive
-      ariaCurrentWhenActive="page"
-      [routerLinkActiveOptions]="activeLinkOptions() | nbMergeConfigs : tab.activeLinkOptions"
-      [routerLink]="tab.route"
-      [class.responsive]="tab.responsive"
-      [queryParams]="tab.queryParams"
-      [queryParamsHandling]="tab.queryParamsHandling"
-      [fragment]="tab.fragment"
-      [preserveFragment]="tab.preserveFragment"
-      [skipLocationChange]="tab.skipLocationChange"
-      [replaceUrl]="tab.replaceUrl"
-      [state]="tab.state"
-      class="tab-link">
-      @if (tab.icon) {
-      <nb-icon [config]="tab.icon" />
-      }
-      @if (tab.title) {
-      <span class="tab-text"
-        dir="auto">{{ tab.title }}</span>
-      }
-    </a>
-  </li>
-  }
-  }
+    @for (tab of tabs(); track tab) {
+    @if (tab.disabled) {
+    <li [class.responsive]="tab.responsive"
+        class="route-tab disabled"
+        tabindex="-1">
+        <a tabindex="-1"
+            class="tab-link">
+            @if (tab.icon) {
+            <nb-icon [config]="tab.icon" />
+            }
+            @if (tab.title) {
+            <span class="tab-text"
+                dir="auto">{{ tab.title }}</span>
+            }
+        </a>
+    </li>
+    } @else {
+    <li routerLinkActive="active"
+        [routerLinkActiveOptions]="activeLinkOptions() | nbMergeConfigs : tab.activeLinkOptions"
+        class="route-tab">
+        <a (click)="selectTab(tab)"
+            tabindex="0"
+            routerLinkActive
+            ariaCurrentWhenActive="page"
+            [routerLinkActiveOptions]="activeLinkOptions() | nbMergeConfigs : tab.activeLinkOptions"
+            [routerLink]="tab.route"
+            [class.responsive]="tab.responsive"
+            [queryParams]="tab.queryParams"
+            [queryParamsHandling]="tab.queryParamsHandling"
+            [fragment]="tab.fragment"
+            [preserveFragment]="tab.preserveFragment"
+            [skipLocationChange]="tab.skipLocationChange"
+            [replaceUrl]="tab.replaceUrl"
+            [state]="tab.state"
+            class="tab-link">
+            @if (tab.icon) {
+            <nb-icon [config]="tab.icon" />
+            }
+            @if (tab.title) {
+            <span class="tab-text"
+                dir="auto">{{ tab.title }}</span>
+            }
+        </a>
+    </li>
+    }
+    }
 </ul>
 <router-outlet />

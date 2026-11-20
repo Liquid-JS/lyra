@@ -1,13 +1,13 @@
-@use '../../styles/theming' as *;
+@use "../../styles/theming" as *;
 
 :host {
-  display: flex;
-  flex-direction: column;
-  position: relative;
+    display: flex;
+    flex-direction: column;
+    position: relative;
 
-  .close {
-    position: absolute;
-    top: 0.5rem;
-    inset-inline-end: 0.5rem;
-  }
+    .close {
+        position: absolute;
+        top: 0.5rem;
+        inset-inline-end: 0.5rem;
+    }
 }

@@ -1,20 +1,20 @@
-import { Component, computed, inject, input, signal } from '@angular/core';
-import { toObservable, toSignal } from '@angular/core/rxjs-interop';
-import { NB_WINDOW, NbButtonComponent, NbIconComponent } from '@liquid-js/lyr-core';
-import { catchError, forkJoin, map, of, switchMap } from 'rxjs';
+import { Component, computed, inject, input, signal } from '@angular/core'
+import { toObservable, toSignal } from '@angular/core/rxjs-interop'
+import { NB_WINDOW, NbButtonComponent, NbIconComponent } from '@liquid-js/lyr-core'
+import { catchError, forkJoin, map, of, switchMap } from 'rxjs'
 
-import { NgdCodeLoaderService } from '../../../@theme/services';
-import { NgdCodeBlockComponent } from '../code-block/code-block.component';
+import { NgdCodeLoaderService } from '../../../@theme/services'
+import { NgdCodeBlockComponent } from '../code-block/code-block.component'
 
-const REPOSITORY = 'https://github.com/Liquid-JS/lyra/tree/master/packages/playground/src/playground';
+const REPOSITORY = 'https://github.com/Liquid-JS/lyra/tree/master/packages/playground/src/playground'
 
 /**
  * An example screen's code: its files and the app's it uses in a list, and the chosen one's code with a button that
  * copies it; in a window over the screen.
  */
 @Component({
-  selector: 'ngd-example-code',
-  template: `
+    selector: 'ngd-example-code',
+    template: `
     <nav class="files" aria-label="Files">
       @for (group of groups(); track group.name) {
         @if (group.files.length) {
@@ -50,7 +50,7 @@ const REPOSITORY = 'https://github.com/Liquid-JS/lyra/tree/master/packages/playg
       <p class="source"><a [href]="folder" target="_blank" rel="noopener">See the whole example on GitHub</a></p>
     }
   `,
-  styles: `
+    styles: `
     :host {
       display: grid;
       grid-template-columns: 16rem minmax(0, 1fr);
@@ -135,60 +135,60 @@ const REPOSITORY = 'https://github.com/Liquid-JS/lyra/tree/master/packages/playg
       }
     }
   `,
-  imports: [NbButtonComponent, NbIconComponent, NgdCodeBlockComponent],
+    imports: [NbButtonComponent, NbIconComponent, NgdCodeBlockComponent]
 })
 export class NgdExampleCodeComponent {
-  protected readonly codeLoader = inject(NgdCodeLoaderService);
-  protected readonly window = inject(NB_WINDOW);
+    protected readonly codeLoader = inject(NgdCodeLoaderService)
+    protected readonly window = inject(NB_WINDOW)
 
-  /** The screen's files, as paths under the playground's examples. */
-  readonly files = input.required<string[]>();
-  /** Files the app's screens share, e.g. its frame. */
-  readonly shared = input<string[]>([]);
+    /** The screen's files, as paths under the playground's examples. */
+    readonly files = input.required<string[]>()
+    /** Files the app's screens share, e.g. its frame. */
+    readonly shared = input<string[]>([])
 
-  protected readonly groups = computed(() => [
-    { name: 'This screen', files: this.files() },
-    { name: 'The app', files: this.shared() },
-  ]);
+    protected readonly groups = computed(() => [
+        { name: 'This screen', files: this.files() },
+        { name: 'The app', files: this.shared() }
+    ])
 
-  protected readonly selected = signal<string | undefined>(undefined);
-  /** The file shown: the one chosen, or the screen's first. */
-  protected readonly shown = computed(() => this.selected() ?? this.files()[0] ?? '');
+    protected readonly selected = signal<string | undefined>(undefined)
+    /** The file shown: the one chosen, or the screen's first. */
+    protected readonly shown = computed(() => this.selected() ?? this.files()[0] ?? '')
 
-  protected readonly loaded = toSignal(
-    toObservable(computed(() => [...this.files(), ...this.shared()])).pipe(
-      switchMap((files) =>
-        forkJoin(files.map((path) => this.codeLoader.load(path).pipe(catchError(() => of(''))))).pipe(
-          map((codes) => new Map(files.map((path, index) => [path, codes[index]]))),
+    protected readonly loaded = toSignal(
+        toObservable(computed(() => [...this.files(), ...this.shared()])).pipe(
+            switchMap((files) =>
+                forkJoin(files.map((path) => this.codeLoader.load(path).pipe(catchError(() => of(''))))).pipe(
+                    map((codes) => new Map(files.map((path, index) => [path, codes[index]])))
+                )
+            )
         ),
-      ),
-    ),
-    { initialValue: new Map<string, string>() },
-  );
-  protected readonly code = computed(() => this.loaded().get(this.shown()) ?? '');
+        { initialValue: new Map<string, string>() }
+    )
+    protected readonly code = computed(() => this.loaded().get(this.shown()) ?? '')
 
-  /** The folder of the example on GitHub. */
-  protected readonly folder = computed(() => {
-    const [first] = this.files();
-    if (!first) {
-      return undefined;
+    /** The folder of the example on GitHub. */
+    protected readonly folder = computed(() => {
+        const [first] = this.files()
+        if (!first) {
+            return undefined
+        }
+        const folder = first.split('/').slice(0, -1).join('/')
+        return `${REPOSITORY}/${first.startsWith('showcase/') ? 'without-layout' : 'with-layout'}/${folder}`
+    })
+
+    /** Whether the shown file was just copied, which its button says for a moment. */
+    protected readonly copied = signal(false)
+    protected copyTimer?: ReturnType<typeof setTimeout>
+
+    protected name(path: string) {
+        return path.split('/').pop() ?? path
     }
-    const folder = first.split('/').slice(0, -1).join('/');
-    return `${REPOSITORY}/${first.startsWith('showcase/') ? 'without-layout' : 'with-layout'}/${folder}`;
-  });
 
-  /** Whether the shown file was just copied, which its button says for a moment. */
-  protected readonly copied = signal(false);
-  protected copyTimer?: ReturnType<typeof setTimeout>;
-
-  protected name(path: string) {
-    return path.split('/').pop() ?? path;
-  }
-
-  protected async copy() {
-    await this.window?.navigator.clipboard.writeText(this.code());
-    this.copied.set(true);
-    clearTimeout(this.copyTimer);
-    this.copyTimer = setTimeout(() => this.copied.set(false), 2000);
-  }
+    protected async copy() {
+        await this.window?.navigator.clipboard.writeText(this.code())
+        this.copied.set(true)
+        clearTimeout(this.copyTimer)
+        this.copyTimer = setTimeout(() => this.copied.set(false), 2000)
+    }
 }

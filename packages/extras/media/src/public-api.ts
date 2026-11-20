@@ -1,6 +1,6 @@
-export * from './audio.component';
-export { nbFormatMediaTime, NbMediaPlayer } from './media-player';
-export * from './media-player.providers';
-export * from './media-types';
-export type { NbMediaPlayerTexts } from './texts';
-export * from './video.component';
+export * from './audio.component'
+export { nbFormatMediaTime, NbMediaPlayer } from './media-player'
+export * from './media-player.providers'
+export * from './media-types'
+export type { NbMediaPlayerTexts } from './texts'
+export * from './video.component'

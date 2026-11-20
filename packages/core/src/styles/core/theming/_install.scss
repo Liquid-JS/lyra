@@ -1,117 +1,118 @@
-@use 'sass:list';
-@use 'sass:map';
-@use 'sass:meta';
-@use '../../theming-variables';
-@use 'register';
-@use 'scale';
+@use "sass:list";
+@use "sass:map";
+@use "sass:meta";
+@use "../../theming-variables";
+@use "register";
+@use "scale";
 
 /// Styles for one theme: inside `.nb-theme-<name>`, if the theme is enabled.
 @mixin nb-for-theme($name) {
-  @if (list.index(register.nb-get-enabled-themes(), $name)) {
-    .nb-theme-#{$name} {
-      @content;
+    @if list.index(register.nb-get-enabled-themes(), $name) {
+        .nb-theme-#{$name} {
+            @content;
+        }
     }
-  }
 }
 
 @mixin nb-for-themes($names...) {
-  @each $name in $names {
-    @include nb-for-theme($name) {
-      @content;
+    @each $name in $names {
+        @include nb-for-theme($name) {
+            @content;
+        }
     }
-  }
 }
 
 /// Styles for every enabled theme but one.
 @mixin nb-except-theme($name) {
-  @include nb-except-for-themes($name) {
-    @content;
-  }
+    @include nb-except-for-themes($name) {
+        @content;
+    }
 }
 
 /// Styles for every enabled theme but the ones named.
 @mixin nb-except-for-themes($names...) {
-  @each $theme-name in register.nb-get-enabled-themes() {
-    @if (not list.index($names, $theme-name)) {
-      .nb-theme-#{$theme-name} {
-        @content;
-      }
+    @each $theme-name in register.nb-get-enabled-themes() {
+        @if not list.index($names, $theme-name) {
+            .nb-theme-#{$theme-name} {
+                @content;
+            }
+        }
     }
-  }
 }
 
 /// The variables every enabled theme has alike, as the name of another variable: written once, for all of them.
-@function _shared-aliases($themes) {
-  $shared: ();
-  $first: register.nb-get-registered-theme(list.nth($themes, 1));
-  @each $var, $value in $first {
-    @if (meta.type-of($value) == 'string' and map.get($first, $value)) {
-      $alike: true;
-      @each $theme-name in $themes {
-        @if (map.get(register.nb-get-registered-theme($theme-name), $var) != $value) {
-          $alike: false;
+@function -shared-aliases($themes) {
+    $shared: ();
+    $first: register.nb-get-registered-theme(list.nth($themes, 1));
+    @each $var, $value in $first {
+        @if meta.type-of($value) == "string" and map.get($first, $value) {
+            $alike: true;
+            @each $theme-name in $themes {
+                @if map.get(register.nb-get-registered-theme($theme-name), $var) != $value {
+                    $alike: false;
+                }
+            }
+            @if $alike {
+                $shared: map.set($shared, $var, $value);
+            }
         }
-      }
-      @if ($alike) {
-        $shared: map.set($shared, $var, $value);
-      }
     }
-  }
-  @return $shared;
+    @return $shared;
 }
 
 /// A theme's variables on its class, but the ones written for all themes at once (`$shared`).
 @mixin nb-install-css-properties($theme-name, $theme, $shared: ()) {
-  .nb-theme-#{$theme-name} {
-    @each $var, $value in $theme {
-      @if (map.has-key($shared, $var)) {
-        // Written once, for all the themes.
-      } @else if (scale.nb-is-scaled($value)) {
-        --#{$var}: #{scale.nb-scaled-css-property($value)};
-      } @else if (scale.nb-is-sum($value)) {
-        --#{$var}: #{scale.nb-sum-css-property($value, $theme)};
-      } @else if (meta.type-of($value) == 'string' and map.get($theme, $value)) {
-        --#{$var}: var(--#{$value});
-      } @else {
-        --#{$var}: #{$value};
-      }
+    .nb-theme-#{$theme-name} {
+        @each $var, $value in $theme {
+            @if map.has-key($shared, $var) {
+                // Written once, for all the themes.
+            } @else if scale.nb-is-scaled($value) {
+                --#{$var}: #{scale.nb-scaled-css-property($value)};
+            } @else if scale.nb-is-sum($value) {
+                --#{$var}: #{scale.nb-sum-css-property($value, $theme)};
+            } @else if meta.type-of($value) == "string" and map.get($theme, $value) {
+                --#{$var}: var(--#{$value});
+            } @else {
+                --#{$var}: #{$value};
+            }
+        }
     }
-  }
 }
 
 // Entry point
 // Installs component styles: `@content` in `:host`, reading the theme's CSS custom properties, so style the host
 // with `&` rather than another `:host`.
 @mixin nb-install-component() {
-  :host {
-    @content;
-  }
+    :host {
+        @content;
+    }
 }
 
 // Entry point
 // Installs global styles, and the enabled themes' CSS custom properties, each on its `.nb-theme-<name>` class.
 @mixin nb-install() {
-  @content;
+    @content;
 
-  @if (theming-variables.$nb-global-styles-on-install) {
-    $themes: register.nb-get-enabled-themes();
-    // The variables the themes have alike, once for all of them; each theme's own after, so they win on the same
-    // element.
-    $shared: ();
-    @if (list.length($themes) > 1) {
-      $shared: _shared-aliases($themes);
-      $selector: ();
-      @each $theme-name in $themes {
-        $selector: list.append($selector, '.nb-theme-#{$theme-name}', comma);
-      }
-      #{$selector} {
-        @each $var, $value in $shared {
-          --#{$var}: var(--#{$value});
+    @if theming-variables.$nb-global-styles-on-install {
+        $themes: register.nb-get-enabled-themes();
+
+        // The variables the themes have alike, once for all of them; each theme's own after, so they win on the same
+        // element.
+        $shared: ();
+        @if list.length($themes) > 1 {
+            $shared: -shared-aliases($themes);
+            $selector: ();
+            @each $theme-name in $themes {
+                $selector: list.append($selector, ".nb-theme-#{$theme-name}", comma);
+            }
+            #{$selector} {
+                @each $var, $value in $shared {
+                    --#{$var}: var(--#{$value});
+                }
+            }
         }
-      }
+        @each $theme-name in $themes {
+            @include nb-install-css-properties($theme-name, register.nb-get-registered-theme($theme-name), $shared);
+        }
     }
-    @each $theme-name in $themes {
-      @include nb-install-css-properties($theme-name, register.nb-get-registered-theme($theme-name), $shared);
-    }
-  }
 }

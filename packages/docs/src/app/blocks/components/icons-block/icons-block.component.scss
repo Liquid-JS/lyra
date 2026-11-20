@@ -1,86 +1,86 @@
-@use '../../../@theme/styles/themes' as *;
-@use '../../../../../../core/src/styles/globals' as *;
+@use "../../../@theme/styles/themes" as *;
+@use "../../../../../../core/src/styles/globals" as *;
 
-@include nb-install-component() {
-  .page-heading {
-    margin-bottom: 0;
-  }
-
-  .controls {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-    align-items: center;
-  }
-
-  .search {
-    flex: 1 1 16rem;
-  }
-
-  .status {
-    margin: 1rem 0 0;
-    color: nb-theme(text-hint-color);
-  }
-
-  // Far enough apart that, scrolled to from the table of contents, a category is the topmost one in view, which the
-  // page's address follows.
-  .category {
-    margin-bottom: 3rem;
-  }
-
-  .category-heading {
-    display: flex;
-    align-items: baseline;
-    gap: 0.5rem;
-    margin-bottom: 1rem;
-  }
-
-  .category-name {
-    margin: 0;
-  }
-
-  .count {
-    color: nb-theme(text-hint-color);
-    font-size: nb-theme(text-subtitle-font-size);
-  }
-
-  // Square cells, as many as fit across.
-  .icons {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(4.5rem, 1fr));
-    gap: 0.75rem;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
-
-  .icon {
-    display: grid;
-    place-items: center;
-    width: 100%;
-    aspect-ratio: 1;
-    padding: 0;
-    border: 1px solid nb-theme(border-basic-color-3);
-    border-radius: nb-theme(border-radius);
-    background: nb-theme(background-basic-color-1);
-    color: nb-theme(text-basic-color);
-    cursor: pointer;
-
-    &:hover {
-      border-color: nb-theme(color-primary-default);
+@include nb-install-component {
+    .page-heading {
+        margin-bottom: 0;
     }
 
-    &:focus-visible {
-      outline: 2px solid nb-theme(color-primary-default);
-      outline-offset: 2px;
+    .controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        align-items: center;
     }
 
-    nb-icon {
-      font-size: 1.75rem;
+    .search {
+        flex: 1 1 16rem;
     }
-  }
 
-  .none {
-    margin: 0 0 2rem;
-  }
+    .status {
+        margin: 1rem 0 0;
+        color: nb-theme(text-hint-color);
+    }
+
+    // Far enough apart that, scrolled to from the table of contents, a category is the topmost one in view, which the
+    // page's address follows.
+    .category {
+        margin-bottom: 3rem;
+    }
+
+    .category-heading {
+        display: flex;
+        align-items: baseline;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .category-name {
+        margin: 0;
+    }
+
+    .count {
+        color: nb-theme(text-hint-color);
+        font-size: nb-theme(text-subtitle-font-size);
+    }
+
+    // Square cells, as many as fit across.
+    .icons {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(4.5rem, 1fr));
+        gap: 0.75rem;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .icon {
+        display: grid;
+        place-items: center;
+        width: 100%;
+        aspect-ratio: 1;
+        padding: 0;
+        border: 1px solid nb-theme(border-basic-color-3);
+        border-radius: nb-theme(border-radius);
+        background: nb-theme(background-basic-color-1);
+        color: nb-theme(text-basic-color);
+        cursor: pointer;
+
+        &:hover {
+            border-color: nb-theme(color-primary-default);
+        }
+
+        &:focus-visible {
+            outline: 2px solid nb-theme(color-primary-default);
+            outline-offset: 2px;
+        }
+
+        nb-icon {
+            font-size: 1.75rem;
+        }
+    }
+
+    .none {
+        margin: 0 0 2rem;
+    }
 }

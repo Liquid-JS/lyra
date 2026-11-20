@@ -1,38 +1,38 @@
 {
-  "$schema": "http://json-schema.org/schema",
-  "$id": "ng-add",
-  "title": "Lyra Theme ng-add schematics",
-  "type": "object",
-  "properties": {
-    "project": {
-      "type": "string",
-      "description": "The name of the project.",
-      "$default": {
-        "$source": "projectName"
-      }
-    },
-    "theme": {
-      "enum": ["default", "dark", "cosmic", "corporate", "material-light", "material-dark"],
-      "description": "Visual theme to installed.",
-      "default": "default",
-      "x-prompt": "Which Lyra theme do you want to use:"
-    },
-    "customization": {
-      "type": "boolean",
-      "description": "Use prebuilt css styles or import customizable scss.",
-      "default": true,
-      "x-prompt": "Use customizable scss themes?"
-    },
-    "layout": {
-      "type": "boolean",
-      "description": "Whether root component has to be wrapped in nb-layout or not.",
-      "default": true
-    },
-    "animations": {
-      "type": "boolean",
-      "default": true,
-      "description": "No longer used: Lyra animates without an animations provider.",
-      "x-deprecated": "Lyra animates without an animations provider, so this option has no effect."
+    "$schema": "http://json-schema.org/schema",
+    "$id": "ng-add",
+    "title": "Lyra Theme ng-add schematics",
+    "type": "object",
+    "properties": {
+        "project": {
+            "type": "string",
+            "description": "The name of the project.",
+            "$default": {
+                "$source": "projectName"
+            }
+        },
+        "theme": {
+            "enum": ["default", "dark", "cosmic", "corporate", "material-light", "material-dark"],
+            "description": "Visual theme to installed.",
+            "default": "default",
+            "x-prompt": "Which Lyra theme do you want to use:"
+        },
+        "customization": {
+            "type": "boolean",
+            "description": "Use prebuilt css styles or import customizable scss.",
+            "default": true,
+            "x-prompt": "Use customizable scss themes?"
+        },
+        "layout": {
+            "type": "boolean",
+            "description": "Whether root component has to be wrapped in nb-layout or not.",
+            "default": true
+        },
+        "animations": {
+            "type": "boolean",
+            "default": true,
+            "description": "No longer used: Lyra animates without an animations provider.",
+            "x-deprecated": "Lyra animates without an animations provider, so this option has no effect."
+        }
     }
-  }
 }

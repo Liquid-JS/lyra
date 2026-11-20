@@ -1,101 +1,105 @@
-@use '../../styles/theming' as *;
+@use "../../styles/theming" as *;
 
 @mixin nb-route-tabset-theme() {
-  nb-route-tabset {
-    @include nb-scrollbars(
-      nb-theme(route-tabset-scrollbar-color),
-      nb-theme(route-tabset-scrollbar-background-color),
-      nb-theme(route-tabset-scrollbar-width)
-    );
+    nb-route-tabset {
+        background-color: nb-theme(route-tabset-background-color);
+        border-radius: nb-theme(route-tabset-border-radius);
+        box-shadow: nb-theme(route-tabset-shadow);
 
-    & {
-      background-color: nb-theme(route-tabset-background-color);
-      border-radius: nb-theme(route-tabset-border-radius);
-      box-shadow: nb-theme(route-tabset-shadow);
-    }
+        @include nb-scrollbars(
+            nb-theme(route-tabset-scrollbar-color),
+            nb-theme(route-tabset-scrollbar-background-color),
+            nb-theme(route-tabset-scrollbar-width)
+        );
 
-    .route-tabset {
-      border-bottom: nb-theme(route-tabset-divider-width) nb-theme(route-tabset-divider-style)
-        nb-theme(route-tabset-divider-color);
-    }
-
-    .tab-link {
-      background-color: nb-theme(route-tabset-tab-background-color);
-      cursor: pointer;
-      padding: nb-theme(route-tabset-tab-padding);
-
-      // On a narrow screen, tabs take less room, so a few fit across it.
-      @media screen and (max-width: $route-tabset-tab-text-hide-breakpoint) {
-        padding: nb-theme(route-tabset-tab-small-padding);
-      }
-      color: nb-theme(route-tabset-tab-text-color);
-      font-family: nb-theme(route-tabset-tab-text-font-family);
-      font-size: nb-theme(route-tabset-tab-text-font-size);
-      font-weight: nb-theme(route-tabset-tab-text-font-weight);
-      line-height: nb-theme(route-tabset-tab-text-line-height);
-      text-transform: nb-theme(route-tabset-tab-text-transform);
-      @include nb-component-animation(background-color, color);
-
-      &::before {
-        background-color: nb-theme(route-tabset-tab-underline-color);
-        height: nb-theme(route-tabset-tab-underline-width);
-        @include nb-component-animation(background-color);
-      }
-    }
-
-    .route-tab.active {
-      .tab-link {
-        background-color: nb-theme(route-tabset-tab-active-background-color);
-        color: nb-theme(route-tabset-tab-active-text-color);
-        &::before {
-          background-color: nb-theme(route-tabset-tab-active-underline-color);
+        .route-tabset {
+            border-bottom:
+                nb-theme(route-tabset-divider-width) nb-theme(route-tabset-divider-style)
+                nb-theme(route-tabset-divider-color);
         }
-      }
-    }
 
-    // The keyboard's tab, with a ring inside it as a menu item's; a click doesn't leave the focus colours.
-    .tab-link:focus {
-      outline: none;
-    }
+        .tab-link {
+            background-color: nb-theme(route-tabset-tab-background-color);
+            cursor: pointer;
+            padding: nb-theme(route-tabset-tab-padding);
 
-    .tab-link:focus-visible {
-      background-color: nb-theme(route-tabset-tab-focus-background-color);
-      color: nb-theme(route-tabset-tab-focus-text-color);
-      box-shadow: inset 0 0 0 nb-theme(route-tabset-tab-outline-width) nb-theme(route-tabset-tab-outline-color);
-      &::before {
-        background-color: nb-theme(route-tabset-tab-focus-underline-color);
-      }
-    }
+            // On a narrow screen, tabs take less room, so a few fit across it.
+            @media screen and (max-width: $route-tabset-tab-text-hide-breakpoint) {
+                padding: nb-theme(route-tabset-tab-small-padding);
+            }
 
-    .tab-link:hover {
-      background-color: nb-theme(route-tabset-tab-hover-background-color);
-      color: nb-theme(route-tabset-tab-hover-text-color);
-      &::before {
-        background-color: nb-theme(route-tabset-tab-hover-underline-color);
-      }
-    }
+            color: nb-theme(route-tabset-tab-text-color);
+            font-family: nb-theme(route-tabset-tab-text-font-family);
+            font-size: nb-theme(route-tabset-tab-text-font-size);
+            font-weight: nb-theme(route-tabset-tab-text-font-weight);
+            line-height: nb-theme(route-tabset-tab-text-line-height);
+            text-transform: nb-theme(route-tabset-tab-text-transform);
+            @include nb-component-animation(background-color, color);
 
-    .route-tab.disabled {
-      cursor: default;
-      pointer-events: none;
-
-      .tab-link {
-        background-color: nb-theme(route-tabset-tab-disabled-background-color);
-        color: nb-theme(route-tabset-tab-disabled-text-color);
-        cursor: default;
-        pointer-events: none;
-        &::before {
-          background-color: nb-theme(route-tabset-tab-disabled-underline-color);
+            &:before {
+                background-color: nb-theme(route-tabset-tab-underline-color);
+                height: nb-theme(route-tabset-tab-underline-width);
+                @include nb-component-animation(background-color);
+            }
         }
-      }
-    }
 
-    .route-tab.responsive {
-      @media screen and (max-width: $route-tabset-tab-text-hide-breakpoint) {
-        .tab-text {
-          display: none;
+        .route-tab.active {
+            .tab-link {
+                background-color: nb-theme(route-tabset-tab-active-background-color);
+                color: nb-theme(route-tabset-tab-active-text-color);
+
+                &:before {
+                    background-color: nb-theme(route-tabset-tab-active-underline-color);
+                }
+            }
         }
-      }
+
+        // The keyboard's tab, with a ring inside it as a menu item's; a click doesn't leave the focus colours.
+        .tab-link:focus {
+            outline: none;
+        }
+
+        .tab-link:focus-visible {
+            background-color: nb-theme(route-tabset-tab-focus-background-color);
+            color: nb-theme(route-tabset-tab-focus-text-color);
+            box-shadow: inset 0 0 0 nb-theme(route-tabset-tab-outline-width) nb-theme(route-tabset-tab-outline-color);
+
+            &:before {
+                background-color: nb-theme(route-tabset-tab-focus-underline-color);
+            }
+        }
+
+        .tab-link:hover {
+            background-color: nb-theme(route-tabset-tab-hover-background-color);
+            color: nb-theme(route-tabset-tab-hover-text-color);
+
+            &:before {
+                background-color: nb-theme(route-tabset-tab-hover-underline-color);
+            }
+        }
+
+        .route-tab.disabled {
+            cursor: default;
+            pointer-events: none;
+
+            .tab-link {
+                background-color: nb-theme(route-tabset-tab-disabled-background-color);
+                color: nb-theme(route-tabset-tab-disabled-text-color);
+                cursor: default;
+                pointer-events: none;
+
+                &:before {
+                    background-color: nb-theme(route-tabset-tab-disabled-underline-color);
+                }
+            }
+        }
+
+        .route-tab.responsive {
+            @media screen and (max-width: $route-tabset-tab-text-hide-breakpoint) {
+                .tab-text {
+                    display: none;
+                }
+            }
+        }
     }
-  }
 }

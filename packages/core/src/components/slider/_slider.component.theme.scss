@@ -1,146 +1,151 @@
-@use '../../styles/theming' as *;
+@use "../../styles/theming" as *;
 
 @mixin nb-slider-theme() {
-  nb-slider {
-    cursor: nb-theme(slider-cursor);
+    nb-slider {
+        cursor: nb-theme(slider-cursor);
 
-    // Its thumb and track by its size, as a toggle's switcher is.
-    @each $size in nb-get-sizes() {
-      &.size-#{$size} {
-        --nb-slider-thumb-size: #{nb-theme(slider-#{$size}-thumb-size)};
-        --nb-slider-track-height: #{nb-theme(slider-#{$size}-track-height)};
-      }
-    }
+        // Its thumb and track by its size, as a toggle's switcher is.
+        @each $size in nb-get-sizes() {
+            &.size-#{$size} {
+                --nb-slider-thumb-size: #{nb-theme(slider-#{$size}-thumb-size)};
+                --nb-slider-track-height: #{nb-theme(slider-#{$size}-track-height)};
+            }
+        }
 
-    // Room for the thumbs, which reach past the track's ends and edges.
-    &.horizontal {
-      padding: calc((var(--nb-slider-thumb-size) - var(--nb-slider-track-height)) / 2)
-        calc(var(--nb-slider-thumb-size) / 2);
+        // Room for the thumbs, which reach past the track's ends and edges.
+        &.horizontal {
+            padding:
+                calc((var(--nb-slider-thumb-size) - var(--nb-slider-track-height)) / 2)
+                calc(var(--nb-slider-thumb-size) / 2);
 
-      .slider-track {
-        height: var(--nb-slider-track-height);
-      }
-    }
+            .slider-track {
+                height: var(--nb-slider-track-height);
+            }
+        }
 
-    &.vertical {
-      height: nb-theme(slider-vertical-height);
-      padding: calc(var(--nb-slider-thumb-size) / 2)
-        calc((var(--nb-slider-thumb-size) - var(--nb-slider-track-height)) / 2);
+        &.vertical {
+            height: nb-theme(slider-vertical-height);
+            padding:
+                calc(var(--nb-slider-thumb-size) / 2)
+                calc((var(--nb-slider-thumb-size) - var(--nb-slider-track-height)) / 2);
 
-      .slider-track {
-        width: var(--nb-slider-track-height);
-      }
-    }
+            .slider-track {
+                width: var(--nb-slider-track-height);
+            }
+        }
 
-    .slider-track {
-      background-color: nb-theme(slider-track-background-color);
-      border-radius: nb-theme(slider-track-border-radius);
-    }
+        .slider-track {
+            background-color: nb-theme(slider-track-background-color);
+            border-radius: nb-theme(slider-track-border-radius);
+        }
 
-    .slider-fill {
-      border-radius: nb-theme(slider-track-border-radius);
-    }
+        .slider-fill {
+            border-radius: nb-theme(slider-track-border-radius);
+        }
 
-    .slider-thumb {
-      width: var(--nb-slider-thumb-size);
-      height: var(--nb-slider-thumb-size);
-      margin-inline-start: calc(var(--nb-slider-thumb-size) / -2);
-      border: nb-theme(slider-thumb-border-width) solid nb-theme(slider-thumb-border-color);
-      box-shadow: nb-theme(slider-thumb-shadow);
-      @include nb-component-animation(background-color, box-shadow);
-
-      &:focus-visible {
-        @include nb-outline(nb-theme(slider-outline-width), nb-theme(slider-outline-color));
-      }
-    }
-
-    .slider-tick {
-      width: nb-theme(slider-tick-size);
-      height: nb-theme(slider-tick-size);
-      margin-inline-start: calc(#{nb-theme(slider-tick-size)} / -2);
-      background-color: nb-theme(slider-tick-color);
-
-      &.active {
-        background-color: nb-theme(slider-tick-active-color);
-      }
-    }
-
-    .slider-value {
-      margin-bottom: nb-theme(slider-value-margin);
-      padding: nb-theme(slider-value-padding);
-      border-radius: nb-theme(slider-value-border-radius);
-      background-color: nb-theme(slider-value-background-color);
-      color: nb-theme(slider-value-text-color);
-      font-family: nb-theme(slider-value-text-font-family);
-      font-size: nb-theme(slider-value-text-font-size);
-      font-weight: nb-theme(slider-value-text-font-weight);
-      line-height: nb-theme(slider-value-text-line-height);
-    }
-
-    &.vertical .slider-value {
-      margin-bottom: 0;
-      margin-inline-end: nb-theme(slider-value-margin);
-    }
-
-    .slider-labels {
-      color: nb-theme(slider-label-text-color);
-      font-family: nb-theme(slider-label-text-font-family);
-      font-size: nb-theme(slider-label-text-font-size);
-      font-weight: nb-theme(slider-label-text-font-weight);
-      line-height: nb-theme(slider-label-text-line-height);
-    }
-
-    &.horizontal .slider-labels {
-      height: nb-theme(slider-label-text-line-height);
-      // Below the thumbs, which reach past the track.
-      margin-top: calc(
-        (var(--nb-slider-thumb-size) - var(--nb-slider-track-height)) / 2 + #{nb-theme(slider-label-margin)}
-      );
-    }
-
-    &.vertical .slider-labels {
-      margin-inline-start: calc(
-        (var(--nb-slider-thumb-size) - var(--nb-slider-track-height)) / 2 + #{nb-theme(slider-label-margin)}
-      );
-    }
-
-    @each $status in nb-get-statuses() {
-      &.status-#{$status} {
-        .slider-fill,
         .slider-thumb {
-          background-color: nb-theme(slider-#{$status}-color);
+            width: var(--nb-slider-thumb-size);
+            height: var(--nb-slider-thumb-size);
+            margin-inline-start: calc(var(--nb-slider-thumb-size) / -2);
+            border: nb-theme(slider-thumb-border-width) solid nb-theme(slider-thumb-border-color);
+            box-shadow: nb-theme(slider-thumb-shadow);
+            @include nb-component-animation(background-color, box-shadow);
+
+            &:focus-visible {
+                @include nb-outline(nb-theme(slider-outline-width), nb-theme(slider-outline-color));
+            }
         }
 
-        .slider-thumb:hover {
-          background-color: nb-theme(slider-#{$status}-hover-color);
+        .slider-tick {
+            width: nb-theme(slider-tick-size);
+            height: nb-theme(slider-tick-size);
+            margin-inline-start: calc(#{nb-theme(slider-tick-size)} / -2);
+            background-color: nb-theme(slider-tick-color);
+
+            &.active {
+                background-color: nb-theme(slider-tick-active-color);
+            }
         }
 
-        .slider-thumb.dragging,
-        .slider-thumb:active {
-          background-color: nb-theme(slider-#{$status}-active-color);
+        .slider-value {
+            margin-bottom: nb-theme(slider-value-margin);
+            padding: nb-theme(slider-value-padding);
+            border-radius: nb-theme(slider-value-border-radius);
+            background-color: nb-theme(slider-value-background-color);
+            color: nb-theme(slider-value-text-color);
+            font-family: nb-theme(slider-value-text-font-family);
+            font-size: nb-theme(slider-value-text-font-size);
+            font-weight: nb-theme(slider-value-text-font-weight);
+            line-height: nb-theme(slider-value-text-line-height);
         }
-      }
+
+        &.vertical .slider-value {
+            margin-bottom: 0;
+            margin-inline-end: nb-theme(slider-value-margin);
+        }
+
+        .slider-labels {
+            color: nb-theme(slider-label-text-color);
+            font-family: nb-theme(slider-label-text-font-family);
+            font-size: nb-theme(slider-label-text-font-size);
+            font-weight: nb-theme(slider-label-text-font-weight);
+            line-height: nb-theme(slider-label-text-line-height);
+        }
+
+        &.horizontal .slider-labels {
+            height: nb-theme(slider-label-text-line-height);
+
+            // Below the thumbs, which reach past the track.
+            margin-top:
+                calc(
+                    (var(--nb-slider-thumb-size) - var(--nb-slider-track-height)) / 2 + #{nb-theme(slider-label-margin)}
+                );
+        }
+
+        &.vertical .slider-labels {
+            margin-inline-start:
+                calc(
+                    (var(--nb-slider-thumb-size) - var(--nb-slider-track-height)) / 2 + #{nb-theme(slider-label-margin)}
+                );
+        }
+
+        @each $status in nb-get-statuses() {
+            &.status-#{$status} {
+                .slider-fill,
+                .slider-thumb {
+                    background-color: nb-theme(slider-#{$status}-color);
+                }
+
+                .slider-thumb:hover {
+                    background-color: nb-theme(slider-#{$status}-hover-color);
+                }
+
+                .slider-thumb.dragging,
+                .slider-thumb:active {
+                    background-color: nb-theme(slider-#{$status}-active-color);
+                }
+            }
+        }
+
+        &.disabled {
+            cursor: nb-theme(slider-disabled-cursor);
+
+            .slider-track {
+                background-color: nb-theme(slider-disabled-track-background-color);
+            }
+
+            .slider-fill {
+                background-color: nb-theme(slider-disabled-color);
+            }
+
+            // In every state; over the thumb's own surface, so the translucent colour doesn't show the track through it.
+            .slider-thumb,
+            .slider-thumb:hover,
+            .slider-thumb:active,
+            .slider-thumb.dragging {
+                background-color: nb-theme(slider-thumb-border-color);
+                background-image: linear-gradient(nb-theme(slider-disabled-color), nb-theme(slider-disabled-color));
+            }
+        }
     }
-
-    &.disabled {
-      cursor: nb-theme(slider-disabled-cursor);
-
-      .slider-track {
-        background-color: nb-theme(slider-disabled-track-background-color);
-      }
-
-      .slider-fill {
-        background-color: nb-theme(slider-disabled-color);
-      }
-
-      // In every state; over the thumb's own surface, so the translucent colour doesn't show the track through it.
-      .slider-thumb,
-      .slider-thumb:hover,
-      .slider-thumb:active,
-      .slider-thumb.dragging {
-        background-color: nb-theme(slider-thumb-border-color);
-        background-image: linear-gradient(nb-theme(slider-disabled-color), nb-theme(slider-disabled-color));
-      }
-    }
-  }
 }

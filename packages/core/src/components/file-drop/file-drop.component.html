@@ -1,60 +1,60 @@
 <input #nativeInput
-  type="file"
-  class="native-input visually-hidden"
-  tabindex="0"
-  [id]="id()"
-  [accept]="accept()"
-  [multiple]="multiple()"
-  [disabled]="isDisabled()"
-  [attr.aria-invalid]="validation?.ariaInvalid()"
-  [attr.aria-describedby]="describedBy()"
-  [attr.aria-labelledby]="validation?.labelledBy()"
-  [attr.aria-required]="validation?.ariaRequired()"
-  (cancel)="onTouched()"
-  (change)="onSelected()" />
+    type="file"
+    class="native-input visually-hidden"
+    tabindex="0"
+    [id]="id()"
+    [accept]="accept()"
+    [multiple]="multiple()"
+    [disabled]="isDisabled()"
+    [attr.aria-invalid]="validation?.ariaInvalid()"
+    [attr.aria-describedby]="describedBy()"
+    [attr.aria-labelledby]="validation?.labelledBy()"
+    [attr.aria-required]="validation?.ariaRequired()"
+    (cancel)="onTouched()"
+    (change)="onSelected()" />
 
 @if (files().length) {
 @if (preview(); as preview) {
 <ng-container *ngTemplateOutlet="preview.template; context: previewContext()" />
 } @else {
 <ul class="file-list"
-  [id]="listId()">
-  @for (file of files(); track file) {
-  <li class="file">
-    <span class="file-info">
-      <!-- A name aligns by its own direction, so a long one is cut at its end. -->
-      <span class="file-name"
-        dir="auto">{{ fileName(file) }}</span>
-      @if (formatSize(file); as size) {
-      <span class="file-size">{{ size }}</span>
-      }
-    </span>
-    <button type="button"
-      class="file-remove"
-      tabindex="0"
-      [disabled]="isDisabled()"
-      [attr.aria-label]="texts().remove(fileName(file))"
-      (click)="remove(file); nativeInput.focus()">
-      <nb-icon icon="close-outline"
-        pack="essentials" />
-    </button>
-  </li>
-  }
+    [id]="listId()">
+    @for (file of files(); track file) {
+    <li class="file">
+        <span class="file-info">
+            <!-- A name aligns by its own direction, so a long one is cut at its end. -->
+            <span class="file-name"
+                dir="auto">{{ fileName(file) }}</span>
+            @if (formatSize(file); as size) {
+            <span class="file-size">{{ size }}</span>
+            }
+        </span>
+        <button type="button"
+            class="file-remove"
+            tabindex="0"
+            [disabled]="isDisabled()"
+            [attr.aria-label]="texts().remove(fileName(file))"
+            (click)="remove(file); nativeInput.focus()">
+            <nb-icon icon="close-outline"
+                pack="essentials" />
+        </button>
+    </li>
+    }
 </ul>
 }
 }
 
 @if (!files().length || multiple()) {
 <div class="prompt"
-  [id]="promptId()">
-  <nb-icon icon="cloud-upload-outline"
-    pack="essentials" />
-  {{ resolvedPrompt() }}
+    [id]="promptId()">
+    <nb-icon icon="cloud-upload-outline"
+        pack="essentials" />
+    {{ resolvedPrompt() }}
 </div>
 }
 
 <span class="visually-hidden"
-  aria-live="polite">{{ announcement() }}</span>
+    aria-live="polite">{{ announcement() }}</span>
 
 <div class="drop-overlay"
-  aria-hidden="true">{{ texts().dropHere }}</div>
+    aria-hidden="true">{{ texts().dropHere }}</div>

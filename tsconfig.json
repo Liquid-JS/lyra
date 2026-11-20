@@ -1,283 +1,283 @@
 /* To learn more about Typescript configuration file: https://www.typescriptlang.org/docs/handbook/tsconfig-json.html. */
 /* To learn more about Angular compiler options: https://angular.dev/reference/configs/angular-compiler-options. */
 {
-  "compileOnSave": false,
-  "compilerOptions": {
-    "target": "ES2022",
-    "module": "preserve",
-    "lib": [
-      "ES2022",
-      "dom"
-    ],
-    "strict": true,
-    "noPropertyAccessFromIndexSignature": true,
-    "noImplicitReturns": true,
-    "noImplicitOverride": true,
-    "noFallthroughCasesInSwitch": true,
-    "isolatedModules": true,
-    "skipLibCheck": true,
-    "experimentalDecorators": true,
-    "useDefineForClassFields": false,
-    "importHelpers": true,
-    "paths": {
-      "@liquid-js/lyr-core": [
-        "./packages/core/src/public-api.ts"
-      ],
-      "@liquid-js/lyr-core/base": [
-        "./packages/core/src/base.public-api.ts"
-      ],
-      "@liquid-js/lyr-core/theme": [
-        "./packages/core/src/theme.public-api.ts"
-      ],
-      "@liquid-js/lyr-core/cdk": [
-        "./packages/core/src/components/cdk/public-api.ts"
-      ],
-      "@liquid-js/lyr-core/cdk-table": [
-        "./packages/core/src/components/cdk/table/public-api.ts"
-      ],
-      "@liquid-js/lyr-core/accordion": [
-        "./packages/core/src/components/accordion/public-api.ts"
-      ],
-      "@liquid-js/lyr-core/actions": [
-        "./packages/core/src/components/actions/public-api.ts"
-      ],
-      "@liquid-js/lyr-core/alert": [
-        "./packages/core/src/components/alert/public-api.ts"
-      ],
-      "@liquid-js/lyr-core/select": [
-        "./packages/core/src/components/select.public-api.ts"
-      ],
-      "@liquid-js/lyr-core/badge": [
-        "./packages/core/src/components/badge/public-api.ts"
-      ],
-      "@liquid-js/lyr-core/breadcrumbs": [
-        "./packages/core/src/components/breadcrumbs/public-api.ts"
-      ],
-      "@liquid-js/lyr-core/button": [
-        "./packages/core/src/components/button.public-api.ts"
-      ],
-      "@liquid-js/lyr-core/calendar": [
-        "./packages/core/src/components/calendar/public-api.ts"
-      ],
-      "@liquid-js/lyr-core/calendar-kit": [
-        "./packages/core/src/components/calendar-kit/public-api.ts"
-      ],
-      "@liquid-js/lyr-core/card": [
-        "./packages/core/src/components/card/public-api.ts"
-      ],
-      "@liquid-js/lyr-core/chat": [
-        "./packages/core/src/components/chat/public-api.ts"
-      ],
-      "@liquid-js/lyr-core/checkbox": [
-        "./packages/core/src/components/checkbox/public-api.ts"
-      ],
-      "@liquid-js/lyr-core/context-menu": [
-        "./packages/core/src/components/context-menu/public-api.ts"
-      ],
-      "@liquid-js/lyr-core/datepicker": [
-        "./packages/core/src/components/datepicker/public-api.ts"
-      ],
-      "@liquid-js/lyr-core/dialog": [
-        "./packages/core/src/components/dialog/public-api.ts"
-      ],
-      "@liquid-js/lyr-core/divider": [
-        "./packages/core/src/components/divider/public-api.ts"
-      ],
-      "@liquid-js/lyr-core/file-drop": [
-        "./packages/core/src/components/file-drop/public-api.ts"
-      ],
-      "@liquid-js/lyr-core/form-field": [
-        "./packages/core/src/components/form-field/public-api.ts"
-      ],
-      "@liquid-js/lyr-core/icon": [
-        "./packages/core/src/components/icon/public-api.ts"
-      ],
-      "@liquid-js/lyr-core/input": [
-        "./packages/core/src/components/input/public-api.ts"
-      ],
-      "@liquid-js/lyr-core/input-group": [
-        "./packages/core/src/components/input-group/public-api.ts"
-      ],
-      "@liquid-js/lyr-core/layout": [
-        "./packages/core/src/components/layout/public-api.ts"
-      ],
-      "@liquid-js/lyr-core/list": [
-        "./packages/core/src/components/list/public-api.ts"
-      ],
-      "@liquid-js/lyr-core/menu": [
-        "./packages/core/src/components/menu/public-api.ts"
-      ],
-      "@liquid-js/lyr-core/page-indicator": [
-        "./packages/core/src/components/page-indicator/public-api.ts"
-      ],
-      "@liquid-js/lyr-core/pagination": [
-        "./packages/core/src/components/pagination/public-api.ts"
-      ],
-      "@liquid-js/lyr-core/popover": [
-        "./packages/core/src/components/popover/public-api.ts"
-      ],
-      "@liquid-js/lyr-core/progress-bar": [
-        "./packages/core/src/components/progress-bar/public-api.ts"
-      ],
-      "@liquid-js/lyr-core/radio": [
-        "./packages/core/src/components/radio/public-api.ts"
-      ],
-      "@liquid-js/lyr-core/route-tabset": [
-        "./packages/core/src/components/route-tabset/public-api.ts"
-      ],
-      "@liquid-js/lyr-core/search": [
-        "./packages/core/src/components/search/public-api.ts"
-      ],
-      "@liquid-js/lyr-core/sidebar": [
-        "./packages/core/src/components/sidebar/public-api.ts"
-      ],
-      "@liquid-js/lyr-core/skeleton": [
-        "./packages/core/src/components/skeleton/public-api.ts"
-      ],
-      "@liquid-js/lyr-core/slider": [
-        "./packages/core/src/components/slider/public-api.ts"
-      ],
-      "@liquid-js/lyr-core/spinner": [
-        "./packages/core/src/components/spinner/public-api.ts"
-      ],
-      "@liquid-js/lyr-core/stepper": [
-        "./packages/core/src/components/stepper/public-api.ts"
-      ],
-      "@liquid-js/lyr-core/table": [
-        "./packages/core/src/components/table/public-api.ts"
-      ],
-      "@liquid-js/lyr-core/tabset": [
-        "./packages/core/src/components/tabset/public-api.ts"
-      ],
-      "@liquid-js/lyr-core/theme-select": [
-        "./packages/core/src/components/theme-select/public-api.ts"
-      ],
-      "@liquid-js/lyr-core/timepicker": [
-        "./packages/core/src/components/timepicker/public-api.ts"
-      ],
-      "@liquid-js/lyr-core/toastr": [
-        "./packages/core/src/components/toastr/public-api.ts"
-      ],
-      "@liquid-js/lyr-core/toc": [
-        "./packages/core/src/components/toc/public-api.ts"
-      ],
-      "@liquid-js/lyr-core/toggle": [
-        "./packages/core/src/components/toggle/public-api.ts"
-      ],
-      "@liquid-js/lyr-core/tooltip": [
-        "./packages/core/src/components/tooltip/public-api.ts"
-      ],
-      "@liquid-js/lyr-core/tree-grid": [
-        "./packages/core/src/components/tree-grid/public-api.ts"
-      ],
-      "@liquid-js/lyr-core/user": [
-        "./packages/core/src/components/user/public-api.ts"
-      ],
-      "@liquid-js/lyr-core/validation": [
-        "./packages/core/src/components/validation/public-api.ts"
-      ],
-      "@liquid-js/lyr-core/window": [
-        "./packages/core/src/components/window/public-api.ts"
-      ],
-      "@liquid-js/lyr-icons": [
-        "./packages/icons/src/public-api.ts"
-      ],
-      "@liquid-js/lyr-auth": [
-        "./packages/auth/src/public-api.ts"
-      ],
-      "@liquid-js/lyr-security": [
-        "./packages/security/src/public-api.ts"
-      ],
-      "@liquid-js/lyr-moment": [
-        "./packages/moment/src/public-api.ts"
-      ],
-      "@liquid-js/lyr-date-fns": [
-        "./packages/date-fns/src/public-api.ts"
-      ],
-      "@liquid-js/lyr-firebase-auth": [
-        "./packages/firebase-auth/src/public-api.ts"
-      ],
-      "@liquid-js/lyr-extras": [
-        "./packages/extras/src/public-api.ts"
-      ],
-      "@liquid-js/lyr-extras/*": [
-        "./packages/extras/*/src/public-api.ts"
-      ]
-    }
-  },
-  "angularCompilerOptions": {
-    "enableI18nLegacyMessageIdFormat": false,
-    "strictInjectionParameters": true,
-    "strictInputAccessModifiers": true,
-    "strictTemplates": true,
-    "extendedDiagnostics": {
-      "checks": {
-        "nullishCoalescingNotNullable": "suppress",
-        "optionalChainNotNullable": "suppress"
-      }
-    }
-  },
-  "files": [],
-  "references": [
-    {
-      "path": "./packages/core/tsconfig.lib.json"
+    "compileOnSave": false,
+    "compilerOptions": {
+        "target": "ES2022",
+        "module": "preserve",
+        "lib": [
+            "ES2022",
+            "dom"
+        ],
+        "strict": true,
+        "noPropertyAccessFromIndexSignature": true,
+        "noImplicitReturns": true,
+        "noImplicitOverride": true,
+        "noFallthroughCasesInSwitch": true,
+        "isolatedModules": true,
+        "skipLibCheck": true,
+        "experimentalDecorators": true,
+        "useDefineForClassFields": false,
+        "importHelpers": true,
+        "paths": {
+            "@liquid-js/lyr-core": [
+                "./packages/core/src/public-api.ts"
+            ],
+            "@liquid-js/lyr-core/base": [
+                "./packages/core/src/base.public-api.ts"
+            ],
+            "@liquid-js/lyr-core/theme": [
+                "./packages/core/src/theme.public-api.ts"
+            ],
+            "@liquid-js/lyr-core/cdk": [
+                "./packages/core/src/components/cdk/public-api.ts"
+            ],
+            "@liquid-js/lyr-core/cdk-table": [
+                "./packages/core/src/components/cdk/table/public-api.ts"
+            ],
+            "@liquid-js/lyr-core/accordion": [
+                "./packages/core/src/components/accordion/public-api.ts"
+            ],
+            "@liquid-js/lyr-core/actions": [
+                "./packages/core/src/components/actions/public-api.ts"
+            ],
+            "@liquid-js/lyr-core/alert": [
+                "./packages/core/src/components/alert/public-api.ts"
+            ],
+            "@liquid-js/lyr-core/select": [
+                "./packages/core/src/components/select.public-api.ts"
+            ],
+            "@liquid-js/lyr-core/badge": [
+                "./packages/core/src/components/badge/public-api.ts"
+            ],
+            "@liquid-js/lyr-core/breadcrumbs": [
+                "./packages/core/src/components/breadcrumbs/public-api.ts"
+            ],
+            "@liquid-js/lyr-core/button": [
+                "./packages/core/src/components/button.public-api.ts"
+            ],
+            "@liquid-js/lyr-core/calendar": [
+                "./packages/core/src/components/calendar/public-api.ts"
+            ],
+            "@liquid-js/lyr-core/calendar-kit": [
+                "./packages/core/src/components/calendar-kit/public-api.ts"
+            ],
+            "@liquid-js/lyr-core/card": [
+                "./packages/core/src/components/card/public-api.ts"
+            ],
+            "@liquid-js/lyr-core/chat": [
+                "./packages/core/src/components/chat/public-api.ts"
+            ],
+            "@liquid-js/lyr-core/checkbox": [
+                "./packages/core/src/components/checkbox/public-api.ts"
+            ],
+            "@liquid-js/lyr-core/context-menu": [
+                "./packages/core/src/components/context-menu/public-api.ts"
+            ],
+            "@liquid-js/lyr-core/datepicker": [
+                "./packages/core/src/components/datepicker/public-api.ts"
+            ],
+            "@liquid-js/lyr-core/dialog": [
+                "./packages/core/src/components/dialog/public-api.ts"
+            ],
+            "@liquid-js/lyr-core/divider": [
+                "./packages/core/src/components/divider/public-api.ts"
+            ],
+            "@liquid-js/lyr-core/file-drop": [
+                "./packages/core/src/components/file-drop/public-api.ts"
+            ],
+            "@liquid-js/lyr-core/form-field": [
+                "./packages/core/src/components/form-field/public-api.ts"
+            ],
+            "@liquid-js/lyr-core/icon": [
+                "./packages/core/src/components/icon/public-api.ts"
+            ],
+            "@liquid-js/lyr-core/input": [
+                "./packages/core/src/components/input/public-api.ts"
+            ],
+            "@liquid-js/lyr-core/input-group": [
+                "./packages/core/src/components/input-group/public-api.ts"
+            ],
+            "@liquid-js/lyr-core/layout": [
+                "./packages/core/src/components/layout/public-api.ts"
+            ],
+            "@liquid-js/lyr-core/list": [
+                "./packages/core/src/components/list/public-api.ts"
+            ],
+            "@liquid-js/lyr-core/menu": [
+                "./packages/core/src/components/menu/public-api.ts"
+            ],
+            "@liquid-js/lyr-core/page-indicator": [
+                "./packages/core/src/components/page-indicator/public-api.ts"
+            ],
+            "@liquid-js/lyr-core/pagination": [
+                "./packages/core/src/components/pagination/public-api.ts"
+            ],
+            "@liquid-js/lyr-core/popover": [
+                "./packages/core/src/components/popover/public-api.ts"
+            ],
+            "@liquid-js/lyr-core/progress-bar": [
+                "./packages/core/src/components/progress-bar/public-api.ts"
+            ],
+            "@liquid-js/lyr-core/radio": [
+                "./packages/core/src/components/radio/public-api.ts"
+            ],
+            "@liquid-js/lyr-core/route-tabset": [
+                "./packages/core/src/components/route-tabset/public-api.ts"
+            ],
+            "@liquid-js/lyr-core/search": [
+                "./packages/core/src/components/search/public-api.ts"
+            ],
+            "@liquid-js/lyr-core/sidebar": [
+                "./packages/core/src/components/sidebar/public-api.ts"
+            ],
+            "@liquid-js/lyr-core/skeleton": [
+                "./packages/core/src/components/skeleton/public-api.ts"
+            ],
+            "@liquid-js/lyr-core/slider": [
+                "./packages/core/src/components/slider/public-api.ts"
+            ],
+            "@liquid-js/lyr-core/spinner": [
+                "./packages/core/src/components/spinner/public-api.ts"
+            ],
+            "@liquid-js/lyr-core/stepper": [
+                "./packages/core/src/components/stepper/public-api.ts"
+            ],
+            "@liquid-js/lyr-core/table": [
+                "./packages/core/src/components/table/public-api.ts"
+            ],
+            "@liquid-js/lyr-core/tabset": [
+                "./packages/core/src/components/tabset/public-api.ts"
+            ],
+            "@liquid-js/lyr-core/theme-select": [
+                "./packages/core/src/components/theme-select/public-api.ts"
+            ],
+            "@liquid-js/lyr-core/timepicker": [
+                "./packages/core/src/components/timepicker/public-api.ts"
+            ],
+            "@liquid-js/lyr-core/toastr": [
+                "./packages/core/src/components/toastr/public-api.ts"
+            ],
+            "@liquid-js/lyr-core/toc": [
+                "./packages/core/src/components/toc/public-api.ts"
+            ],
+            "@liquid-js/lyr-core/toggle": [
+                "./packages/core/src/components/toggle/public-api.ts"
+            ],
+            "@liquid-js/lyr-core/tooltip": [
+                "./packages/core/src/components/tooltip/public-api.ts"
+            ],
+            "@liquid-js/lyr-core/tree-grid": [
+                "./packages/core/src/components/tree-grid/public-api.ts"
+            ],
+            "@liquid-js/lyr-core/user": [
+                "./packages/core/src/components/user/public-api.ts"
+            ],
+            "@liquid-js/lyr-core/validation": [
+                "./packages/core/src/components/validation/public-api.ts"
+            ],
+            "@liquid-js/lyr-core/window": [
+                "./packages/core/src/components/window/public-api.ts"
+            ],
+            "@liquid-js/lyr-icons": [
+                "./packages/icons/src/public-api.ts"
+            ],
+            "@liquid-js/lyr-auth": [
+                "./packages/auth/src/public-api.ts"
+            ],
+            "@liquid-js/lyr-security": [
+                "./packages/security/src/public-api.ts"
+            ],
+            "@liquid-js/lyr-moment": [
+                "./packages/moment/src/public-api.ts"
+            ],
+            "@liquid-js/lyr-date-fns": [
+                "./packages/date-fns/src/public-api.ts"
+            ],
+            "@liquid-js/lyr-firebase-auth": [
+                "./packages/firebase-auth/src/public-api.ts"
+            ],
+            "@liquid-js/lyr-extras": [
+                "./packages/extras/src/public-api.ts"
+            ],
+            "@liquid-js/lyr-extras/*": [
+                "./packages/extras/*/src/public-api.ts"
+            ]
+        }
     },
-    {
-      "path": "./packages/icons/tsconfig.lib.json"
+    "angularCompilerOptions": {
+        "enableI18nLegacyMessageIdFormat": false,
+        "strictInjectionParameters": true,
+        "strictInputAccessModifiers": true,
+        "strictTemplates": true,
+        "extendedDiagnostics": {
+            "checks": {
+                "nullishCoalescingNotNullable": "suppress",
+                "optionalChainNotNullable": "suppress"
+            }
+        }
     },
-    {
-      "path": "./packages/auth/tsconfig.lib.json"
-    },
-    {
-      "path": "./packages/security/tsconfig.lib.json"
-    },
-    {
-      "path": "./packages/moment/tsconfig.lib.json"
-    },
-    {
-      "path": "./packages/date-fns/tsconfig.lib.json"
-    },
-    {
-      "path": "./packages/firebase-auth/tsconfig.lib.json"
-    },
-    {
-      "path": "./packages/extras/tsconfig.lib.json"
-    },
-    {
-      "path": "./packages/core/tsconfig.spec.json"
-    },
-    {
-      "path": "./packages/icons/tsconfig.spec.json"
-    },
-    {
-      "path": "./packages/auth/tsconfig.spec.json"
-    },
-    {
-      "path": "./packages/security/tsconfig.spec.json"
-    },
-    {
-      "path": "./packages/moment/tsconfig.spec.json"
-    },
-    {
-      "path": "./packages/date-fns/tsconfig.spec.json"
-    },
-    {
-      "path": "./packages/firebase-auth/tsconfig.spec.json"
-    },
-    {
-      "path": "./packages/extras/tsconfig.spec.json"
-    },
-    {
-      "path": "./packages/playground/tsconfig.app.json"
-    },
-    {
-      "path": "./packages/docs/tsconfig.app.json"
-    },
-    {
-      "path": "./e2e/tsconfig.json"
-    },
-    {
-      "path": "./packages/core/tsconfig.schematics.spec.json"
-    }
-  ]
+    "files": [],
+    "references": [
+        {
+            "path": "./packages/core/tsconfig.lib.json"
+        },
+        {
+            "path": "./packages/icons/tsconfig.lib.json"
+        },
+        {
+            "path": "./packages/auth/tsconfig.lib.json"
+        },
+        {
+            "path": "./packages/security/tsconfig.lib.json"
+        },
+        {
+            "path": "./packages/moment/tsconfig.lib.json"
+        },
+        {
+            "path": "./packages/date-fns/tsconfig.lib.json"
+        },
+        {
+            "path": "./packages/firebase-auth/tsconfig.lib.json"
+        },
+        {
+            "path": "./packages/extras/tsconfig.lib.json"
+        },
+        {
+            "path": "./packages/core/tsconfig.spec.json"
+        },
+        {
+            "path": "./packages/icons/tsconfig.spec.json"
+        },
+        {
+            "path": "./packages/auth/tsconfig.spec.json"
+        },
+        {
+            "path": "./packages/security/tsconfig.spec.json"
+        },
+        {
+            "path": "./packages/moment/tsconfig.spec.json"
+        },
+        {
+            "path": "./packages/date-fns/tsconfig.spec.json"
+        },
+        {
+            "path": "./packages/firebase-auth/tsconfig.spec.json"
+        },
+        {
+            "path": "./packages/extras/tsconfig.spec.json"
+        },
+        {
+            "path": "./packages/playground/tsconfig.app.json"
+        },
+        {
+            "path": "./packages/docs/tsconfig.app.json"
+        },
+        {
+            "path": "./e2e/tsconfig.json"
+        },
+        {
+            "path": "./packages/core/tsconfig.schematics.spec.json"
+        }
+    ]
 }

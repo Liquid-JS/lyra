@@ -1,54 +1,54 @@
-import { inject, Service } from '@angular/core';
-import { NbDateService } from './date.service';
+import { inject, Service } from '@angular/core'
+import { NbDateService } from './date.service'
 
 @Service()
 export class NbCalendarTimeModelService<D> {
-  protected readonly dateService = inject<NbDateService<D>>(NbDateService);
+    protected readonly dateService = inject<NbDateService<D>>(NbDateService)
 
-  readonly MINUTES_AND_SECONDS = 60;
+    readonly MINUTES_AND_SECONDS = 60
 
-  getHoursRange(step: number = this.MINUTES_AND_SECONDS): D[] {
-    let date: D = this.getResetTime();
+    getHoursRange(step: number = this.MINUTES_AND_SECONDS): D[] {
+        let date: D = this.getResetTime()
 
-    const endDate = this.dateService.addDay(date, 1);
+        const endDate = this.dateService.addDay(date, 1)
 
-    const result = new Array<D>();
+        const result = new Array<D>()
 
-    while (this.dateService.compareDates(date, endDate) < 0) {
-      result.push(date);
-      date = this.dateService.addMinutes(date, step);
+        while (this.dateService.compareDates(date, endDate) < 0) {
+            result.push(date)
+            date = this.dateService.addMinutes(date, step)
+        }
+
+        return result
     }
 
-    return result;
-  }
+    getResetTime(): D {
+        let today = this.dateService.today()
+        today = this.dateService.setHours(today, 0)
+        today = this.dateService.setMinutes(today, 0)
+        today = this.dateService.setSeconds(today, 0)
+        today = this.dateService.setMilliseconds(today, 0)
 
-  getResetTime(): D {
-    let today = this.dateService.today();
-    today = this.dateService.setHours(today, 0);
-    today = this.dateService.setMinutes(today, 0);
-    today = this.dateService.setSeconds(today, 0);
-    today = this.dateService.setMilliseconds(today, 0);
-
-    return today;
-  }
-
-  paddToTwoSymbols(n: number): string {
-    if (n < 10) {
-      return '0' + n;
+        return today
     }
 
-    return n.toString();
-  }
+    paddToTwoSymbols(n: number): string {
+        if (n < 10) {
+            return '0' + n
+        }
 
-  buildDateFormat(twelveHoursFormat: boolean, withSeconds: boolean = false): string {
-    if (twelveHoursFormat) {
-      return `${this.dateService.getDateFormat()} ${this.dateService.getTwelveHoursFormat()}`;
+        return n.toString()
     }
 
-    if (withSeconds) {
-      return `${this.dateService.getDateFormat()} ${this.dateService.getTwentyFourHoursFormatWithSeconds()}`;
-    }
+    buildDateFormat(twelveHoursFormat: boolean, withSeconds: boolean = false): string {
+        if (twelveHoursFormat) {
+            return `${this.dateService.getDateFormat()} ${this.dateService.getTwelveHoursFormat()}`
+        }
 
-    return `${this.dateService.getDateFormat()} ${this.dateService.getTwentyFourHoursFormat()}`;
-  }
+        if (withSeconds) {
+            return `${this.dateService.getDateFormat()} ${this.dateService.getTwentyFourHoursFormatWithSeconds()}`
+        }
+
+        return `${this.dateService.getDateFormat()} ${this.dateService.getTwentyFourHoursFormat()}`
+    }
 }

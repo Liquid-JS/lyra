@@ -1,13 +1,13 @@
 import {
-  AfterViewInit,
-  Component,
-  Directive,
-  ElementRef,
-  NgZone,
-  OnDestroy,
-  inject,
-  input,
-} from '@angular/core';
+    AfterViewInit,
+    Component,
+    Directive,
+    ElementRef,
+    NgZone,
+    OnDestroy,
+    inject,
+    input
+} from '@angular/core'
 
 /**
  * A list of `nb-list-item`s, each holding any content, with dividers between them.
@@ -37,7 +37,6 @@ import {
  * export class PageModule { }
  * ```
  * ### Usage
- *
  * @stacked-example(Users list, list/users-list-showcase.component)
  *
  * An item can have a title, with a description under it, between what comes before it, such as an icon or an
@@ -62,7 +61,6 @@ import {
  *
  * A list that scrolls, e.g. one with a fixed height, takes the keyboard focus so it can be scrolled with the keys; a
  * `tabindex` set on it is left alone.
- *
  * @styles
  *
  * list-scrollbar-color:
@@ -97,84 +95,84 @@ import {
  * list-item-outline-color:
  */
 @Component({
-  selector: 'nb-list',
-  // Everything is projected: items rendered inside an <ng-container> don't match a `nb-list-item` selector.
-  template: `<ng-content />`,
-  styleUrls: ['./list.component.scss'],
-  host: {
-    '[attr.role]': 'role()',
-  },
+    selector: 'nb-list',
+    // Everything is projected: items rendered inside an <ng-container> don't match a `nb-list-item` selector.
+    template: '<ng-content />',
+    styleUrls: ['./list.component.scss'],
+    host: {
+        '[attr.role]': 'role()'
+    }
 })
 export class NbListComponent implements AfterViewInit, OnDestroy {
-  protected readonly hostRef = inject<ElementRef<HTMLElement>>(ElementRef);
-  protected readonly zone = inject(NgZone);
+    protected readonly hostRef = inject<ElementRef<HTMLElement>>(ElementRef)
+    protected readonly zone = inject(NgZone)
 
-  /** The ARIA role; `list` by default. */
-  readonly role = input('list');
+    /** The ARIA role; `list` by default. */
+    readonly role = input('list')
 
-  protected resizeObserver?: ResizeObserver;
-  protected mutationObserver?: MutationObserver;
-  protected hasOwnTabIndex = false;
+    protected resizeObserver?: ResizeObserver
+    protected mutationObserver?: MutationObserver
+    protected hasOwnTabIndex = false
 
-  ngAfterViewInit() {
-    if (typeof ResizeObserver === 'undefined' || typeof MutationObserver === 'undefined') {
-      return;
+    ngAfterViewInit() {
+        if (typeof ResizeObserver === 'undefined' || typeof MutationObserver === 'undefined') {
+            return
+        }
+
+        // A list that scrolls takes focus, so it can be scrolled with the keyboard. The list overflows when it or
+        // its items change size, or when items are added.
+        this.zone.runOutsideAngular(() => {
+            const host = this.hostRef.nativeElement
+            const resizeObserver = new ResizeObserver(() => this.updateTabIndex())
+            const observeItems = () => Array.from(host.children).forEach((item) => resizeObserver.observe(item))
+
+            this.resizeObserver = resizeObserver
+            resizeObserver.observe(host)
+            observeItems()
+
+            const mutationObserver = new MutationObserver(() => {
+                observeItems()
+                this.updateTabIndex()
+            })
+            this.mutationObserver = mutationObserver
+            mutationObserver.observe(host, { childList: true })
+        })
     }
 
-    // A list that scrolls takes focus, so it can be scrolled with the keyboard. The list overflows when it or
-    // its items change size, or when items are added.
-    this.zone.runOutsideAngular(() => {
-      const host = this.hostRef.nativeElement;
-      const resizeObserver = new ResizeObserver(() => this.updateTabIndex());
-      const observeItems = () => Array.from(host.children).forEach((item) => resizeObserver.observe(item));
-
-      this.resizeObserver = resizeObserver;
-      resizeObserver.observe(host);
-      observeItems();
-
-      const mutationObserver = new MutationObserver(() => {
-        observeItems();
-        this.updateTabIndex();
-      });
-      this.mutationObserver = mutationObserver;
-      mutationObserver.observe(host, { childList: true });
-    });
-  }
-
-  ngOnDestroy() {
-    this.resizeObserver?.disconnect();
-    this.mutationObserver?.disconnect();
-  }
-
-  protected updateTabIndex() {
-    const host = this.hostRef.nativeElement;
-    const scrollable = host.scrollHeight > host.clientHeight || host.scrollWidth > host.clientWidth;
-
-    // A tabindex set by the app is left alone.
-    if (scrollable && !host.hasAttribute('tabindex')) {
-      host.setAttribute('tabindex', '0');
-      this.hasOwnTabIndex = true;
-    } else if (!scrollable && this.hasOwnTabIndex) {
-      host.removeAttribute('tabindex');
-      this.hasOwnTabIndex = false;
+    ngOnDestroy() {
+        this.resizeObserver?.disconnect()
+        this.mutationObserver?.disconnect()
     }
-  }
+
+    protected updateTabIndex() {
+        const host = this.hostRef.nativeElement
+        const scrollable = host.scrollHeight > host.clientHeight || host.scrollWidth > host.clientWidth
+
+        // A tabindex set by the app is left alone.
+        if (scrollable && !host.hasAttribute('tabindex')) {
+            host.setAttribute('tabindex', '0')
+            this.hasOwnTabIndex = true
+        } else if (!scrollable && this.hasOwnTabIndex) {
+            host.removeAttribute('tabindex')
+            this.hasOwnTabIndex = false
+        }
+    }
 }
 
 /**
  * An item of a `nb-list`, holding any content; a direct child of the list.
  */
 @Component({
-  selector: 'nb-list-item',
-  template: `<ng-content />`,
-  styleUrls: ['list-item.component.scss'],
-  host: {
-    '[attr.role]': 'role()',
-  },
+    selector: 'nb-list-item',
+    template: '<ng-content />',
+    styleUrls: ['list-item.component.scss'],
+    host: {
+        '[attr.role]': 'role()'
+    }
 })
 export class NbListItemComponent {
-  /** The ARIA role; `listitem` by default. */
-  readonly role = input('listitem');
+    /** The ARIA role; `listitem` by default. */
+    readonly role = input('listitem')
 }
 
 /**
@@ -182,22 +180,22 @@ export class NbListItemComponent {
  * title.
  */
 @Component({
-  selector: 'nb-list-item-title',
-  template: `<ng-content />`,
+    selector: 'nb-list-item-title',
+    template: '<ng-content />'
 })
 export class NbListItemTitleComponent {}
 
 /** A description under the title of a `nb-list-item`, in a `nb-list-item-title`. */
 @Component({
-  selector: 'nb-list-item-description',
-  template: `<ng-content />`,
+    selector: 'nb-list-item-description',
+    template: '<ng-content />'
 })
 export class NbListItemDescriptionComponent {}
 
 /** The actions of a `nb-list-item`, such as buttons, at its end. */
 @Component({
-  selector: 'nb-list-item-actions',
-  template: `<ng-content />`,
+    selector: 'nb-list-item-actions',
+    template: '<ng-content />'
 })
 export class NbListItemActionsComponent {}
 
@@ -212,7 +210,7 @@ export class NbListItemActionsComponent {}
  * ```
  */
 @Directive({
-  selector: '[nbListItemLink]',
-  host: { class: 'list-item-link' },
+    selector: '[nbListItemLink]',
+    host: { class: 'list-item-link' }
 })
 export class NbListItemLinkDirective {}

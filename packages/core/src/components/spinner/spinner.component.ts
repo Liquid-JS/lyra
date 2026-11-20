@@ -1,11 +1,9 @@
-import { Component, input, computed } from '@angular/core';
+import { Component, input, computed } from '@angular/core'
 
-import { NbComponentSize } from '@liquid-js/lyr-core/base';
-import { NbComponentOrCustomStatus } from '@liquid-js/lyr-core/base';
-import { injectNbTexts, NbLocalize } from '@liquid-js/lyr-core/base';
+import { NbComponentSize, NbComponentOrCustomStatus, injectNbTexts, NbLocalize } from '@liquid-js/lyr-core/base'
 
 /** @internal */
-declare const $localize: NbLocalize;
+declare const $localize: NbLocalize
 
 /**
  * A spinner with a message, "Loading..." by default; a `status` region, so assistive technologies announce it.
@@ -46,37 +44,37 @@ declare const $localize: NbLocalize;
  * spinner-height-giant:
  */
 @Component({
-  selector: 'nb-spinner',
-  templateUrl: './spinner.component.html',
-  styleUrls: ['./spinner.component.scss'],
-  host: {
-    '[class]': 'hostClasses()',
-    // Announces its message, or "Loading..." without one.
-    role: 'status',
-    '[attr.aria-label]': 'shownMessage() ? null : texts().message',
-  },
+    selector: 'nb-spinner',
+    templateUrl: './spinner.component.html',
+    styleUrls: ['./spinner.component.scss'],
+    host: {
+        '[class]': 'hostClasses()',
+        // Announces its message, or "Loading..." without one.
+        'role': 'status',
+        '[attr.aria-label]': 'shownMessage() ? null : texts().message'
+    }
 })
 export class NbSpinnerComponent {
-  protected readonly texts = injectNbTexts('spinner', () => ({
-    message: $localize`:@@nb.spinner.message:Loading...`,
-  }));
+    protected readonly texts = injectNbTexts('spinner', () => ({
+        message: $localize`:@@nb.spinner.message:Loading...`
+    }))
 
-  /** The message shown, "Loading..." by default; an empty one shows none. */
-  protected readonly shownMessage = computed(() => this.message() ?? this.texts().message);
+    /** The message shown, "Loading..." by default; an empty one shows none. */
+    protected readonly shownMessage = computed(() => this.message() ?? this.texts().message)
 
-  /** The message beside the spinner: "Loading..." when unset, none when empty. */
-  readonly message = input<string>();
+    /** The message beside the spinner: "Loading..." when unset, none when empty. */
+    readonly message = input<string>()
 
-  /** `tiny`, `small`, `medium` (default), `large` or `giant`. */
-  readonly size = input<NbComponentSize>('medium');
+    /** `tiny`, `small`, `medium` (default), `large` or `giant`. */
+    readonly size = input<NbComponentSize>('medium')
 
-  /** `basic` (default), `primary`, `info`, `success`, `warning`, `danger` or `control`. */
-  readonly status = input<NbComponentOrCustomStatus>('basic');
+    /** `basic` (default), `primary`, `info`, `success`, `warning`, `danger` or `control`. */
+    readonly status = input<NbComponentOrCustomStatus>('basic')
 
-  protected readonly hostClasses = computed(() =>
-    [
-      this.size() && `size-${this.size()}`,
-      this.status() && `status-${this.status()}`,
-    ].filter(Boolean),
-  );
+    protected readonly hostClasses = computed(() =>
+        [
+            this.size() && `size-${this.size()}`,
+            this.status() && `status-${this.status()}`
+        ].filter(Boolean)
+    )
 }

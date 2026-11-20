@@ -1,19 +1,19 @@
-import { Component, input } from '@angular/core';
-import { NbIconComponent } from '@liquid-js/lyr-core';
+import { Component, input } from '@angular/core'
+import { NbIconComponent } from '@liquid-js/lyr-core'
 
-import { ShopProduct } from '../shop-data';
+import { ShopProduct } from '../shop-data'
 
 /** A product's photo, filling the element, or its icon on a tinted ground when it has none. */
 @Component({
-  selector: 'npg-shop-picture',
-  template: `
+    selector: 'npg-shop-picture',
+    template: `
     @if (product().image; as image) {
       <img alt="" [attr.loading]="eager() ? null : 'lazy'" [src]="image" />
     } @else {
       <nb-icon [icon]="product().icon" />
     }
   `,
-  styles: `
+    styles: `
     :host {
       display: flex;
       align-items: center;
@@ -37,10 +37,10 @@ import { ShopProduct } from '../shop-data';
       font-size: inherit;
     }
   `,
-  imports: [NbIconComponent],
+    imports: [NbIconComponent]
 })
 export class ShopPictureComponent {
-  readonly product = input.required<ShopProduct>();
-  /** Loads at once, for the picture a page opens with. */
-  readonly eager = input(false);
+    readonly product = input.required<ShopProduct>()
+    /** Loads at once, for the picture a page opens with. */
+    readonly eager = input(false)
 }

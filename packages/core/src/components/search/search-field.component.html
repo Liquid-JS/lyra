@@ -1,33 +1,34 @@
+<!-- eslint-disable-next-line @angular-eslint/template/interactive-supports-focus -- Escape bubbles up from the field inside. -->
 <div class="search"
-  (keydown.escape)="onEscape($event)">
-  <button type="button"
-    (click)="emitClose()"
-    nbButton
-    ghost
-    size="medium"
-    class="close-button"
-    [attr.aria-label]="texts().close">
-    <nb-icon icon="close-outline"
-      pack="essentials" />
-  </button>
-  <div class="form-wrapper">
-    <form class="form"
-      (keyup.enter)="submitSearch(searchInput.value)">
-      <div class="form-content">
-        <!-- Takes the direction of the term; an empty field keeps the page's, for its placeholder. -->
-        <input class="search-input"
-          #searchInput
-          [attr.dir]="searchInput.value ? 'auto' : null"
-          (input)="emitSearchInput(searchInput.value)"
-          autocomplete="off"
-          [attr.placeholder]="placeholder()"
-          [attr.aria-label]="placeholder() || null"
-          [attr.aria-describedby]="hint() ? hintId : null"
-          tabindex="-1"
-          (blur)="focusInput()" />
-      </div>
-      <span class="info"
-        [id]="hintId">{{ hint() }}</span>
-    </form>
-  </div>
+    (keydown.escape)="onEscape($event)">
+    <button type="button"
+        (click)="emitClose()"
+        nbButton
+        ghost
+        size="medium"
+        class="close-button"
+        [attr.aria-label]="texts().close">
+        <nb-icon icon="close-outline"
+            pack="essentials" />
+    </button>
+    <div class="form-wrapper">
+        <form class="form"
+            (keyup.enter)="submitSearch(searchInput.value)">
+            <div class="form-content">
+                <!-- Takes the direction of the term; an empty field keeps the page's, for its placeholder. -->
+                <input class="search-input"
+                    #searchInput
+                    [attr.dir]="searchInput.value ? 'auto' : null"
+                    (input)="emitSearchInput(searchInput.value)"
+                    autocomplete="off"
+                    [attr.placeholder]="placeholder()"
+                    [attr.aria-label]="placeholder() || null"
+                    [attr.aria-describedby]="hint() ? hintId : null"
+                    tabindex="-1"
+                    (blur)="focusInput()" />
+            </div>
+            <span class="info"
+                [id]="hintId">{{ hint() }}</span>
+        </form>
+    </div>
 </div>

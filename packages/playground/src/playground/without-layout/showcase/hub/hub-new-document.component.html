@@ -1,66 +1,66 @@
 <header class="page-header">
-  <div>
-    <a class="back"
-      routerLink="..">
-      <nb-icon icon="arrow-back-outline" />
-      Documents
-    </a>
-    <h1 class="h4">New document</h1>
-  </div>
-  <div class="actions">
-    <button nbButton
-      ghost
-      type="button"
-      routerLink="..">Cancel</button>
-    <button nbButton
-      status="primary"
-      type="button"
-      (click)="save()">
-      <nb-icon icon="checkmark-outline" />
-      Save
-    </button>
-  </div>
+    <div>
+        <a class="back"
+            routerLink="..">
+            <nb-icon icon="arrow-back-outline" />
+            Documents
+        </a>
+        <h1 class="h4">New document</h1>
+    </div>
+    <div class="actions">
+        <button nbButton
+            ghost
+            type="button"
+            routerLink="..">Cancel</button>
+        <button nbButton
+            status="primary"
+            type="button"
+            (click)="save()">
+            <nb-icon icon="checkmark-outline" />
+            Save
+        </button>
+    </div>
 </header>
 
 <nb-card>
-  <nb-card-body>
-    <div class="details">
-      <div class="field">
-        <label class="label"
-          for="document-title">Title</label>
-        <input nbInput
-          fullWidth
-          id="document-title"
-          autocomplete="off"
-          placeholder="e.g. Onboarding checklist"
-          [status]="titleMissing() ? 'danger' : 'basic'"
-          [attr.aria-describedby]="titleMissing() ? 'document-title-error' : null"
-          [ngModel]="title()"
-          (ngModelChange)="title.set($event)" />
-        @if (titleMissing()) {
-        <p class="caption error"
-          id="document-title-error">Give the document a title.</p>
-        }
-      </div>
-      <div class="field">
-        <label class="label"
-          id="document-folder">Folder</label>
-        <nb-select fullWidth
-          aria-labelledby="document-folder"
-          [selected]="folder()"
-          (selectedChange)="folder.set($event ?? folder())">
-          @for (path of folders; track path) {
-          <nb-option [value]="path">{{ path }}</nb-option>
-          }
-        </nb-select>
-      </div>
-    </div>
+    <nb-card-body>
+        <div class="details">
+            <div class="field">
+                <label class="label"
+                    for="document-title">Title</label>
+                <input nbInput
+                    fullWidth
+                    id="document-title"
+                    autocomplete="off"
+                    placeholder="e.g. Onboarding checklist"
+                    [status]="titleMissing() ? 'danger' : 'basic'"
+                    [attr.aria-describedby]="titleMissing() ? 'document-title-error' : null"
+                    [ngModel]="title()"
+                    (ngModelChange)="title.set($event)" />
+                @if (titleMissing()) {
+                <p class="caption error"
+                    id="document-title-error">Give the document a title.</p>
+                }
+            </div>
+            <div class="field">
+                <label class="label"
+                    id="document-folder">Folder</label>
+                <nb-select fullWidth
+                    aria-labelledby="document-folder"
+                    [selected]="folder()"
+                    (selectedChange)="folder.set($event ?? folder())">
+                    @for (path of folders; track path) {
+                    <nb-option [value]="path">{{ path }}</nb-option>
+                    }
+                </nb-select>
+            </div>
+        </div>
 
-    <nb-markdown-editor height="34rem"
-      aria-label="Document text"
-      placeholder="Write the document"
-      [previewStyle]="previewStyle()"
-      [ngModel]="text()"
-      (ngModelChange)="text.set($event)" />
-  </nb-card-body>
+        <nb-markdown-editor height="34rem"
+            aria-label="Document text"
+            placeholder="Write the document"
+            [previewStyle]="previewStyle()"
+            [ngModel]="text()"
+            (ngModelChange)="text.set($event)" />
+    </nb-card-body>
 </nb-card>

@@ -1,28 +1,28 @@
 @if (paginationItem(); as paginationItem) {
 <nb-card [class.invisible]="!paginationItem.prev"
-  class="left-block">
-  @if (paginationItem.prev) {
-  <a [routerLink]="paginationItem.prev.link"
-    [attr.title]="paginationItem.prev.title">
-    <div class="page-title">
-      <nb-icon icon="arrow-back-outline" />
-      <span>{{ paginationItem.prev.title }}</span>
-    </div>
-    <div class="description">Previous page</div>
-  </a>
-  }
+    class="left-block">
+    @if (paginationItem.prev) {
+    <a [routerLink]="paginationItem.prev.link"
+        [attr.title]="paginationItem.prev.title">
+        <div class="page-title">
+            <nb-icon icon="arrow-back-outline" />
+            <span>{{ paginationItem.prev.title }}</span>
+        </div>
+        <div class="description">Previous page</div>
+    </a>
+    }
 </nb-card>
 <nb-card [class.invisible]="!paginationItem.next"
-  class="right-block">
-  @if (paginationItem.next) {
-  <a [routerLink]="paginationItem.next.link"
-    [attr.title]="paginationItem.next.title">
-    <div class="page-title">
-      <span>{{ paginationItem.next.title }}</span>
-      <nb-icon icon="arrow-forward-outline" />
-    </div>
-    <div class="description">Next page</div>
-  </a>
-  }
+    class="right-block">
+    @if (paginationItem.next) {
+    <a [routerLink]="paginationItem.next.link"
+        [attr.title]="paginationItem.next.title">
+        <div class="page-title">
+            <span>{{ paginationItem.next.title }}</span>
+            <nb-icon icon="arrow-forward-outline" />
+        </div>
+        <div class="description">Next page</div>
+    </a>
+    }
 </nb-card>
 }

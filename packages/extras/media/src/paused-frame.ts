@@ -1,4 +1,4 @@
-type WebKitDocument = Document & { webkitFullscreenElement?: Element | null };
+type WebKitDocument = Document & { webkitFullscreenElement?: Element | null }
 
 /**
  * Works around Safari taking every click while a video is paused in full screen.
@@ -15,49 +15,49 @@ type WebKitDocument = Document & { webkitFullscreenElement?: Element | null };
  * @internal
  */
 export function nbHoldPausedFrame(video: HTMLVideoElement, container: HTMLElement, still: HTMLCanvasElement) {
-  if (!('webkitSetPresentationMode' in video)) {
-    return () => {};
-  }
-  const document = container.ownerDocument as WebKitDocument;
-  const fullscreen = () => (document.fullscreenElement ?? document.webkitFullscreenElement) === container;
+    if (!('webkitSetPresentationMode' in video)) {
+        return () => {}
+    }
+    const document = container.ownerDocument as WebKitDocument
+    const fullscreen = () => (document.fullscreenElement ?? document.webkitFullscreenElement) === container
 
-  const release = () => {
-    still.classList.remove('shown');
-    video.style.removeProperty('width');
-    video.style.removeProperty('height');
-  };
-  const hold = () => {
+    const release = () => {
+        still.classList.remove('shown')
+        video.style.removeProperty('width')
+        video.style.removeProperty('height')
+    }
+    const hold = () => {
     // A video that hasn't played shows its poster, and WebKit leaves it alone.
-    if (!video.played.length || video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA || !video.videoWidth) {
-      return;
+        if (!video.played.length || video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA || !video.videoWidth) {
+            return
+        }
+        try {
+            still.width = video.videoWidth
+            still.height = video.videoHeight
+            still.getContext('2d')?.drawImage(video, 0, 0)
+        } catch {
+            return
+        }
+        still.classList.add('shown')
+        video.style.width = '0'
+        video.style.height = '0'
     }
-    try {
-      still.width = video.videoWidth;
-      still.height = video.videoHeight;
-      still.getContext('2d')?.drawImage(video, 0, 0);
-    } catch {
-      return;
+    const update = () => (video.paused && !video.seeking && fullscreen() ? hold() : release())
+
+    const controller = new AbortController()
+    const options = { signal: controller.signal }
+    for (const type of ['pause', 'seeked', 'ended']) {
+        video.addEventListener(type, update, options)
     }
-    still.classList.add('shown');
-    video.style.width = '0';
-    video.style.height = '0';
-  };
-  const update = () => (video.paused && !video.seeking && fullscreen() ? hold() : release());
+    // While it plays or seeks, the video shows its frames itself.
+    video.addEventListener('play', release, options)
+    video.addEventListener('seeking', release, options)
+    document.addEventListener('fullscreenchange', update, options)
+    document.addEventListener('webkitfullscreenchange', update, options)
+    update()
 
-  const controller = new AbortController();
-  const options = { signal: controller.signal };
-  for (const type of ['pause', 'seeked', 'ended']) {
-    video.addEventListener(type, update, options);
-  }
-  // While it plays or seeks, the video shows its frames itself.
-  video.addEventListener('play', release, options);
-  video.addEventListener('seeking', release, options);
-  document.addEventListener('fullscreenchange', update, options);
-  document.addEventListener('webkitfullscreenchange', update, options);
-  update();
-
-  return () => {
-    controller.abort();
-    release();
-  };
+    return () => {
+        controller.abort()
+        release()
+    }
 }

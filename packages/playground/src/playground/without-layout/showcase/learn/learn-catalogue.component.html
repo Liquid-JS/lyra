@@ -1,178 +1,178 @@
 <section class="hero">
-  <div class="wrap">
-    <p class="eyebrow caption-2">Courses for working professionals</p>
-    <h1>Learn the craft from people who do it every day</h1>
-    <p class="lead">Short, practical courses in design, product and data, taught by practitioners. Learn at your pace,
-      keep every course for good.</p>
-    <nb-form-field class="search">
-      <nb-icon nbPrefix
-        icon="search-outline" />
-      <input nbInput
-        #searchInput
-        fullWidth
-        fieldSize="large"
-        type="search"
-        placeholder="Courses, topics, instructors"
-        aria-label="Search courses"
-        [value]="query()"
-        (input)="search(searchInput.value)" />
-    </nb-form-field>
-    <nb-tag-list class="categories"
-      aria-label="Categories">
-      <nb-tag text="All"
-        appearance="outline"
-        [selected]="category() === 'All'"
-        (selectedChange)="$event.selected && pickCategory('All')" />
-      @for (item of categories; track item) {
-      <nb-tag [text]="item"
-        appearance="outline"
-        [selected]="category() === item"
-        (selectedChange)="$event.selected && pickCategory(item)" />
-      }
-    </nb-tag-list>
-  </div>
+    <div class="wrap">
+        <p class="eyebrow caption-2">Courses for working professionals</p>
+        <h1>Learn the craft from people who do it every day</h1>
+        <p class="lead">Short, practical courses in design, product and data, taught by practitioners. Learn at your pace,
+            keep every course for good.</p>
+        <nb-form-field class="search">
+            <nb-icon nbPrefix
+                icon="search-outline" />
+            <input nbInput
+                #searchInput
+                fullWidth
+                fieldSize="large"
+                type="search"
+                placeholder="Courses, topics, instructors"
+                aria-label="Search courses"
+                [value]="query()"
+                (input)="search(searchInput.value)" />
+        </nb-form-field>
+        <nb-tag-list class="categories"
+            aria-label="Categories">
+            <nb-tag text="All"
+                appearance="outline"
+                [selected]="category() === 'All'"
+                (selectedChange)="$event.selected && pickCategory('All')" />
+            @for (item of categories; track item) {
+            <nb-tag [text]="item"
+                appearance="outline"
+                [selected]="category() === item"
+                (selectedChange)="$event.selected && pickCategory(item)" />
+            }
+        </nb-tag-list>
+    </div>
 </section>
 
 <div class="wrap">
-  @if (continuing.length && category() === 'All' && !query()) {
-  <section class="continuing"
-    aria-labelledby="continuing-title">
-    <h2 id="continuing-title"
-      class="h4">Pick up where you left off</h2>
-    <div class="continuing-row">
-      @for (course of continuing; track course.id) {
-      <nb-card class="continuing-card">
-        <div nbCardMedia
-          class="thumb">
-          <img [src]="cover(course)"
-            alt=""
-            width="800"
-            height="500" />
+    @if (continuing.length && category() === 'All' && !query()) {
+    <section class="continuing"
+        aria-labelledby="continuing-title">
+        <h2 id="continuing-title"
+            class="h4">Pick up where you left off</h2>
+        <div class="continuing-row">
+            @for (course of continuing; track course.id) {
+            <nb-card class="continuing-card">
+                <div nbCardMedia
+                    class="thumb">
+                    <img [src]="cover(course)"
+                        alt=""
+                        width="800"
+                        height="500" />
+                </div>
+                <nb-card-body>
+                    <p class="caption-2 eyebrow">{{ course.category }} · {{ course.level }}</p>
+                    <a class="subtitle title"
+                        routerLink="../course">{{ course.title }}</a>
+                    <div class="progress">
+                        <nb-progress-bar size="tiny"
+                            status="primary"
+                            [value]="course.progress ?? 0"
+                            aria-label="Progress" />
+                        <span class="caption">{{ course.progress }}% complete</span>
+                    </div>
+                    <a nbButton
+                        status="primary"
+                        size="small"
+                        class="continue"
+                        routerLink="../lesson">
+                        Continue
+                        <nb-icon icon="arrow-forward-outline" />
+                    </a>
+                </nb-card-body>
+            </nb-card>
+            }
         </div>
-        <nb-card-body>
-          <p class="caption-2 eyebrow">{{ course.category }} · {{ course.level }}</p>
-          <a class="subtitle title"
-            routerLink="../course">{{ course.title }}</a>
-          <div class="progress">
-            <nb-progress-bar size="tiny"
-              status="primary"
-              [value]="course.progress ?? 0"
-              aria-label="Progress" />
-            <span class="caption">{{ course.progress }}% complete</span>
-          </div>
-          <a nbButton
-            status="primary"
-            size="small"
-            class="continue"
-            routerLink="../lesson">
-            Continue
-            <nb-icon icon="arrow-forward-outline" />
-          </a>
-        </nb-card-body>
-      </nb-card>
-      }
-    </div>
-  </section>
-  }
+    </section>
+    }
 
-  <!-- The filters, once: in a column beside the grid, or folded above it on a phone. -->
-  <ng-template #filters>
-    <div class="filter-group">
-      <h3 class="label">Level</h3>
-      @for (level of levels; track level) {
-      <nb-checkbox [checked]="pickedLevels().has(level)"
-        (checkedChange)="toggleLevel(level, $event)">{{ level }}</nb-checkbox>
-      }
-    </div>
-    <div class="filter-group">
-      <h3 class="label">Duration</h3>
-      @for (duration of durations; track duration.id) {
-      <nb-checkbox [checked]="pickedDurations().has(duration.id)"
-        (checkedChange)="toggleDuration(duration.id, $event)">{{ duration.label }}</nb-checkbox>
-      }
-    </div>
-    <div class="filter-group">
-      <h3 class="label">Price</h3>
-      @for (price of prices; track price.id) {
-      <nb-checkbox [checked]="pickedPrices().has(price.id)"
-        (checkedChange)="togglePrice(price.id, $event)">{{ price.label }}</nb-checkbox>
-      }
-    </div>
-    <div class="filter-group">
-      <h3 class="label">Sort by</h3>
-      <nb-radio-group [value]="sort()"
-        (valueChange)="sortBy($event)">
-        <nb-radio value="popular">Most popular</nb-radio>
-        <nb-radio value="rating">Highest rated</nb-radio>
-        <nb-radio value="price">Price, low to high</nb-radio>
-      </nb-radio-group>
-    </div>
-    <button nbButton
-      edge="start"
-      ghost
-      size="small"
-      type="button"
-      [disabled]="!filterCount() && sort() === 'popular'"
-      (click)="clear()">Clear filters</button>
-  </ng-template>
-
-  <div class="results">
-    <aside class="filters-column"
-      aria-label="Filters">
-      <nb-card>
-        <nb-card-body>
-          <ng-container *ngTemplateOutlet="filters" />
-        </nb-card-body>
-      </nb-card>
-    </aside>
-
-    <nb-accordion class="filters-folded">
-      <nb-accordion-item>
-        <nb-accordion-item-header>
-          Filters
-          @if (filterCount(); as count) {
-          <span class="count">{{ count }}</span>
-          }
-        </nb-accordion-item-header>
-        <nb-accordion-item-body>
-          <ng-container *ngTemplateOutlet="filters" />
-        </nb-accordion-item-body>
-      </nb-accordion-item>
-    </nb-accordion>
-
-    <section class="grid-section"
-      aria-live="polite">
-      <p class="count-line">{{ filtered().length }} {{ filtered().length === 1 ? 'course' : 'courses' }}
-        @if (category() !== 'All') { in {{ category() }} }
-        @if (query()) { for “{{ query() }}” }
-      </p>
-      @if (shown().length) {
-      <div class="grid">
-        @for (course of shown(); track course.id; let i = $index) {
-        <npg-learn-course-card [course]="course"
-          [eager]="i < 3" />
-        }
-      </div>
-      } @else {
-      <nb-card class="empty">
-        <nb-card-body>
-          <nb-icon icon="search-outline" />
-          <p class="subtitle">Nothing matches those filters</p>
-          <p>Try another category, or clear the filters.</p>
-          <button nbButton
+    <!-- The filters, once: in a column beside the grid, or folded above it on a phone. -->
+    <ng-template #filters>
+        <div class="filter-group">
+            <h3 class="label">Level</h3>
+            @for (level of levels; track level) {
+            <nb-checkbox [checked]="pickedLevels().has(level)"
+                (checkedChange)="toggleLevel(level, $event)">{{ level }}</nb-checkbox>
+            }
+        </div>
+        <div class="filter-group">
+            <h3 class="label">Duration</h3>
+            @for (duration of durations; track duration.id) {
+            <nb-checkbox [checked]="pickedDurations().has(duration.id)"
+                (checkedChange)="toggleDuration(duration.id, $event)">{{ duration.label }}</nb-checkbox>
+            }
+        </div>
+        <div class="filter-group">
+            <h3 class="label">Price</h3>
+            @for (price of prices; track price.id) {
+            <nb-checkbox [checked]="pickedPrices().has(price.id)"
+                (checkedChange)="togglePrice(price.id, $event)">{{ price.label }}</nb-checkbox>
+            }
+        </div>
+        <div class="filter-group">
+            <h3 class="label">Sort by</h3>
+            <nb-radio-group [value]="sort()"
+                (valueChange)="sortBy($event)">
+                <nb-radio value="popular">Most popular</nb-radio>
+                <nb-radio value="rating">Highest rated</nb-radio>
+                <nb-radio value="price">Price, low to high</nb-radio>
+            </nb-radio-group>
+        </div>
+        <button nbButton
+            edge="start"
+            ghost
             size="small"
             type="button"
-            (click)="clear(); pickCategory('All'); search('')">Show everything</button>
-        </nb-card-body>
-      </nb-card>
-      }
-      @if (filtered().length > pageSize) {
-      <nb-pagination [length]="filtered().length"
-        [pageSize]="pageSize"
-        [page]="page()"
-        (pageChange)="page.set($event)"
-        size="small" />
-      }
-    </section>
-  </div>
+            [disabled]="!filterCount() && sort() === 'popular'"
+            (click)="clear()">Clear filters</button>
+    </ng-template>
+
+    <div class="results">
+        <aside class="filters-column"
+            aria-label="Filters">
+            <nb-card>
+                <nb-card-body>
+                    <ng-container *ngTemplateOutlet="filters" />
+                </nb-card-body>
+            </nb-card>
+        </aside>
+
+        <nb-accordion class="filters-folded">
+            <nb-accordion-item>
+                <nb-accordion-item-header>
+                    Filters
+                    @if (filterCount(); as count) {
+                    <span class="count">{{ count }}</span>
+                    }
+                </nb-accordion-item-header>
+                <nb-accordion-item-body>
+                    <ng-container *ngTemplateOutlet="filters" />
+                </nb-accordion-item-body>
+            </nb-accordion-item>
+        </nb-accordion>
+
+        <section class="grid-section"
+            aria-live="polite">
+            <p class="count-line">{{ filtered().length }} {{ filtered().length === 1 ? 'course' : 'courses' }}
+                @if (category() !== 'All') { in {{ category() }} }
+                @if (query()) { for “{{ query() }}” }
+            </p>
+            @if (shown().length) {
+            <div class="grid">
+                @for (course of shown(); track course.id; let i = $index) {
+                <npg-learn-course-card [course]="course"
+                    [eager]="i < 3" />
+                }
+            </div>
+            } @else {
+            <nb-card class="empty">
+                <nb-card-body>
+                    <nb-icon icon="search-outline" />
+                    <p class="subtitle">Nothing matches those filters</p>
+                    <p>Try another category, or clear the filters.</p>
+                    <button nbButton
+                        size="small"
+                        type="button"
+                        (click)="clear(); pickCategory('All'); search('')">Show everything</button>
+                </nb-card-body>
+            </nb-card>
+            }
+            @if (filtered().length > pageSize) {
+            <nb-pagination [length]="filtered().length"
+                [pageSize]="pageSize"
+                [page]="page()"
+                (pageChange)="page.set($event)"
+                size="small" />
+            }
+        </section>
+    </div>
 </div>

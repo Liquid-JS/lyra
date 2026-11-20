@@ -1,14 +1,14 @@
-import { inject, Pipe, PipeTransform } from '@angular/core';
-import { ValidationErrors } from '@angular/forms';
+import { inject, Pipe, PipeTransform } from '@angular/core'
+import { ValidationErrors } from '@angular/forms'
 
-import { NB_VALIDATION_OPTIONS, nbValidationParam } from './validation-options';
-import type { NbValidationError } from '@liquid-js/lyr-core/base';
-import { injectNbValidationTexts } from './validation-texts';
+import type { NbValidationError } from '@liquid-js/lyr-core/base'
+import { NB_VALIDATION_OPTIONS, nbValidationParam } from './validation-options'
+import { injectNbValidationTexts } from './validation-texts'
 
 /** An error of signal forms, as `field().errors()` lists them. */
 interface NbSignalError {
-  readonly kind: string;
-  readonly message?: string;
+    readonly kind: string
+    readonly message?: string
 }
 
 /**
@@ -16,10 +16,10 @@ interface NbSignalError {
  * `CompatValidationError`, with it as the context: the error's value, as in reactive forms.
  */
 function compatContext(error: object): { message?: unknown } | undefined {
-  if ('context' in error && 'control' in error && typeof error.context === 'object' && error.context) {
-    return error.context;
-  }
-  return undefined;
+    if ('context' in error && 'control' in error && typeof error.context === 'object' && error.context) {
+        return error.context
+    }
+    return undefined
 }
 
 /**
@@ -35,26 +35,26 @@ function compatContext(error: object): { message?: unknown } | undefined {
  * ```
  */
 export function toNbValidationErrors(
-  errors?: ValidationErrors | readonly NbSignalError[] | null,
+    errors?: ValidationErrors | ReadonlyArray<NbSignalError> | null
 ): NbValidationError[] {
-  if (!errors) {
-    return [];
-  }
-  const list: NbValidationError[] = Array.isArray(errors)
-    ? (errors as readonly NbSignalError[]).map((error) => ({
-      kind: error.kind,
-      message: error.message,
-      params: compatContext(error) ?? error,
-    }))
-    : Object.entries(errors as ValidationErrors).map(([kind, params]) => ({ kind, params }));
-  const kinds = new Set<string>();
-  return list.filter(({ kind }) => {
-    if (kinds.has(kind)) {
-      return false;
+    if (!errors) {
+        return []
     }
-    kinds.add(kind);
-    return true;
-  });
+    const list: NbValidationError[] = Array.isArray(errors)
+        ? (errors as ReadonlyArray<NbSignalError>).map((error) => ({
+            kind: error.kind,
+            message: error.message,
+            params: compatContext(error) ?? error
+        }))
+        : Object.entries(errors as ValidationErrors).map(([kind, params]) => ({ kind, params }))
+    const kinds = new Set<string>()
+    return list.filter(({ kind }) => {
+        if (kinds.has(kind)) {
+            return false
+        }
+        kinds.add(kind)
+        return true
+    })
 }
 
 /**
@@ -68,20 +68,20 @@ export function toNbValidationErrors(
  * ```
  */
 export function injectNbValidationMessage(): (error: NbValidationError) => string {
-  const options = inject(NB_VALIDATION_OPTIONS);
-  const texts = injectNbValidationTexts();
-  return (error) => {
-    if (error.message) {
-      return error.message;
+    const options = inject(NB_VALIDATION_OPTIONS)
+    const texts = injectNbValidationTexts()
+    return (error) => {
+        if (error.message) {
+            return error.message
+        }
+        const param = nbValidationParam(error, 'message')
+        const message =
+            options.messages[error.kind] ?? texts()[error.kind] ?? (typeof param === 'string' ? param : undefined)
+        if (message === undefined) {
+            return ''
+        }
+        return typeof message === 'function' ? message(error) : message
     }
-    const param = nbValidationParam(error, 'message');
-    const message =
-      options.messages[error.kind] ?? texts()[error.kind] ?? (typeof param === 'string' ? param : undefined);
-    if (message === undefined) {
-      return '';
-    }
-    return typeof message === 'function' ? message(error) : message;
-  };
 }
 
 /**
@@ -90,9 +90,9 @@ export function injectNbValidationMessage(): (error: NbValidationError) => strin
  */
 @Pipe({ name: 'nbValidationErrors' })
 export class NbValidationErrorsPipe implements PipeTransform {
-  transform(errors?: ValidationErrors | readonly NbSignalError[] | null): NbValidationError[] {
-    return toNbValidationErrors(errors);
-  }
+    transform(errors?: ValidationErrors | ReadonlyArray<NbSignalError> | null): NbValidationError[] {
+        return toNbValidationErrors(errors)
+    }
 }
 
 /**
@@ -102,9 +102,9 @@ export class NbValidationErrorsPipe implements PipeTransform {
  */
 @Pipe({ name: 'nbValidationMessage', pure: false })
 export class NbValidationMessagePipe implements PipeTransform {
-  protected readonly message = injectNbValidationMessage();
+    protected readonly message = injectNbValidationMessage()
 
-  transform(error?: NbValidationError | null): string {
-    return error ? this.message(error) : '';
-  }
+    transform(error?: NbValidationError | null): string {
+        return error ? this.message(error) : ''
+    }
 }

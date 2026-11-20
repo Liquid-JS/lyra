@@ -1,62 +1,62 @@
 <nb-card class="profile">
-  <div nbCardMedia
-    class="band"
-    aria-hidden="true"></div>
-  <nb-card-body class="who">
-    <nb-user size="giant"
-      name="Jane Doe"
-      onlyPicture
-      [picture]="avatar" />
-    <h2>Jane Doe</h2>
-    <p class="caption">Operations lead, Northwind Traders</p>
-    <div class="quick">
-      <a nbButton
-        status="primary"
-        [href]="'tel:' + dialable(customer.phone)">
-        <nb-icon icon="phone-outline" />
-        Call
-      </a>
-      <a nbButton
-        appearance="outline"
-        [href]="'mailto:' + customer.email">
-        <nb-icon icon="email-outline" />
-        Email
-      </a>
-    </div>
-  </nb-card-body>
-  <nb-card-body class="numbers">
-    @for (item of numbers; track item.label) {
-    <span>
-      <span class="value">{{ item.value }}</span>
-      <span class="caption">{{ item.label }}</span>
-    </span>
-    }
-  </nb-card-body>
+    <div nbCardMedia
+        class="band"
+        aria-hidden="true"></div>
+    <nb-card-body class="who">
+        <nb-user size="giant"
+            name="Jane Doe"
+            onlyPicture
+            [picture]="avatar" />
+        <h2>Jane Doe</h2>
+        <p class="caption">Operations lead, Northwind Traders</p>
+        <div class="quick">
+            <a nbButton
+                status="primary"
+                [href]="'tel:' + dialable(customer.phone)">
+                <nb-icon icon="phone-outline" />
+                Call
+            </a>
+            <a nbButton
+                appearance="outline"
+                [href]="'mailto:' + customer.email">
+                <nb-icon icon="email-outline" />
+                Email
+            </a>
+        </div>
+    </nb-card-body>
+    <nb-card-body class="numbers">
+        @for (item of numbers; track item.label) {
+        <span>
+            <span class="value">{{ item.value }}</span>
+            <span class="caption">{{ item.label }}</span>
+        </span>
+        }
+    </nb-card-body>
 </nb-card>
 
 <nb-card>
-  <nb-tabset fullWidth>
-    <nb-tab tabTitle="Activity">
-      <nb-list>
-        @for (item of activity; track item.title) {
-        <nb-list-item>
-          <span class="tile"
-            [class]="'tile status-' + item.status"><nb-icon [icon]="item.icon" /></span>
-          <span class="item">
-            <span>{{ item.title }}</span>
-            <span class="caption">{{ item.when }}</span>
-          </span>
-        </nb-list-item>
-        }
-      </nb-list>
-    </nb-tab>
-    <nb-tab tabTitle="Details">
-      <dl class="details">
-        @for (item of details; track item.label) {
-        <dt class="caption">{{ item.label }}</dt>
-        <dd>{{ item.value }}</dd>
-        }
-      </dl>
-    </nb-tab>
-  </nb-tabset>
+    <nb-tabset fullWidth>
+        <nb-tab tabTitle="Activity">
+            <nb-list>
+                @for (item of activity; track item.title) {
+                <nb-list-item>
+                    <span class="tile"
+                        [class]="'tile status-' + item.status"><nb-icon [icon]="item.icon" /></span>
+                    <span class="item">
+                        <span>{{ item.title }}</span>
+                        <span class="caption">{{ item.when }}</span>
+                    </span>
+                </nb-list-item>
+                }
+            </nb-list>
+        </nb-tab>
+        <nb-tab tabTitle="Details">
+            <dl class="details">
+                @for (item of details; track item.label) {
+                <dt class="caption">{{ item.label }}</dt>
+                <dd>{{ item.value }}</dd>
+                }
+            </dl>
+        </nb-tab>
+    </nb-tabset>
 </nb-card>

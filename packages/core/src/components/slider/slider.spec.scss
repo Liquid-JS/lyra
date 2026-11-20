@@ -1,10 +1,10 @@
 // The default theme's slider styles, which specs don't load otherwise.
-@use '@liquid-js/lyr-core/styles/all' as *;
-@use 'slider.component.theme' as slider;
+@use "@liquid-js/lyr-core/styles/all" as *;
+@use "slider.component.theme" as slider;
 
 $nb-enabled-themes: (default);
 
-@include nb-install() {
-  @include nb-theme-base();
-  @include slider.nb-slider-theme();
+@include nb-install {
+    @include nb-theme-base;
+    @include slider.nb-slider-theme;
 }

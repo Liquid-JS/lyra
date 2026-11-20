@@ -1,18 +1,18 @@
-import * as ts from 'typescript';
-import { Path } from '@angular-devkit/core';
-import { Tree } from '@angular-devkit/schematics';
-import { findNodes, parseSourceFile, getSourceNodes } from '@angular/cdk/schematics';
-import { getNodeIndentation } from './formatting.js';
+import * as ts from 'typescript'
+import { Path } from '@angular-devkit/core'
+import { Tree } from '@angular-devkit/schematics'
+import { findNodes, parseSourceFile, getSourceNodes } from '@angular/cdk/schematics'
+import { getNodeIndentation } from './formatting.js'
 
 /**
  * Returns all exported and named class declarations with a given decorator.
  */
 export function getClassWithDecorator(tree: Tree, path: Path, decoratorName: string): ts.ClassDeclaration[] {
-  return findNodes(parseSourceFile(tree, path), ts.SyntaxKind.ClassDeclaration)
-    .filter((node): node is ts.ClassDeclaration => ts.isClassDeclaration(node))
-    .filter((node) => isNodeExported(node))
-    .filter((node) => node.name != null)
-    .filter((node) => hasDecoratorCall(node, decoratorName));
+    return findNodes(parseSourceFile(tree, path), ts.SyntaxKind.ClassDeclaration)
+        .filter((node): node is ts.ClassDeclaration => ts.isClassDeclaration(node))
+        .filter((node) => isNodeExported(node))
+        .filter((node) => node.name != null)
+        .filter((node) => hasDecoratorCall(node, decoratorName))
 }
 
 /**
@@ -21,16 +21,16 @@ export function getClassWithDecorator(tree: Tree, path: Path, decoratorName: str
  * /angular-cli/blob/e3f56ebc71d57c79528fb4926a267e5ed4f9c74d/packages/schematics/angular/utility/ast-utils.ts#L282
  */
 export function hasDecoratorCall(classDeclaration: ts.ClassDeclaration, decoratorName: string): boolean {
-  const decorators = ts.canHaveDecorators(classDeclaration) ? ts.getDecorators(classDeclaration) : undefined;
+    const decorators = ts.canHaveDecorators(classDeclaration) ? ts.getDecorators(classDeclaration) : undefined
 
-  if (decorators == null) {
-    return false;
-  }
+    if (decorators == null) {
+        return false
+    }
 
-  return decorators
-    .filter((d) => d.expression.kind === ts.SyntaxKind.CallExpression)
-    .map((d) => (d.expression as ts.CallExpression).expression)
-    .some((decoratorFactoryCall) => decoratorFactoryCall.getText() === decoratorName);
+    return decorators
+        .filter((d) => d.expression.kind === ts.SyntaxKind.CallExpression)
+        .map((d) => (d.expression as ts.CallExpression).expression)
+        .some((decoratorFactoryCall) => decoratorFactoryCall.getText() === decoratorName)
 }
 
 /**
@@ -38,62 +38,62 @@ export function hasDecoratorCall(classDeclaration: ts.ClassDeclaration, decorato
  * github.com/Microsoft/TypeScript-wiki/blob/d6867c43218212eff796dd971f54040234c2233a/Using-the-Compiler-API.md#L757
  * */
 export function isNodeExported(node: ts.Declaration): boolean {
-  return (
-    (ts.getCombinedModifierFlags(node) & ts.ModifierFlags.Export) !== 0 ||
+    return (
+        (ts.getCombinedModifierFlags(node) & ts.ModifierFlags.Export) !== 0 ||
     (!!node.parent && node.parent.kind === ts.SyntaxKind.SourceFile)
-  );
+    )
 }
 
 export function findDeclarationByIdentifier(source: ts.SourceFile, identifierText: string): ts.VariableDeclaration {
-  return getSourceNodes(source)
-    .filter((node): node is ts.VariableDeclaration => ts.isVariableDeclaration(node))
-    .find((node) => node.name.getText() === identifierText) as ts.VariableDeclaration;
+    return getSourceNodes(source)
+        .filter((node): node is ts.VariableDeclaration => ts.isVariableDeclaration(node))
+        .find((node) => node.name.getText() === identifierText) as ts.VariableDeclaration
 }
 
 export function addObjectProperty(
-  tree: Tree,
-  source: ts.SourceFile,
-  node: ts.ObjectLiteralExpression,
-  property: string,
+    tree: Tree,
+    source: ts.SourceFile,
+    node: ts.ObjectLiteralExpression,
+    property: string
 ) {
-  addNodeArrayElement(tree, source, node, property);
+    addNodeArrayElement(tree, source, node, property)
 }
 
 export function addArrayElement(tree: Tree, source: ts.SourceFile, node: ts.ArrayLiteralExpression, element: string) {
-  addNodeArrayElement(tree, source, node, element);
+    addNodeArrayElement(tree, source, node, element)
 }
 
 function addNodeArrayElement(
-  tree: Tree,
-  source: ts.SourceFile,
-  node: ts.ObjectLiteralExpression | ts.ArrayLiteralExpression,
-  element: string,
+    tree: Tree,
+    source: ts.SourceFile,
+    node: ts.ObjectLiteralExpression | ts.ArrayLiteralExpression,
+    element: string
 ) {
-  const elements = (node as ts.ObjectLiteralExpression).properties || (node as ts.ArrayLiteralExpression).elements;
+    const elements = (node as ts.ObjectLiteralExpression).properties || (node as ts.ArrayLiteralExpression).elements
 
-  const hasElements = elements.length > 0;
-  let insertPosition: number;
-  let toRemove = '';
-  if (hasElements) {
-    const lastEl = elements[elements.length - 1];
-    insertPosition = lastEl.getFullStart() + lastEl.getFullText().length;
-    toRemove = source.getFullText().slice(insertPosition, node.getEnd() - 1);
-  } else {
-    insertPosition = elements.pos;
-  }
+    const hasElements = elements.length > 0
+    let insertPosition: number
+    let toRemove = ''
+    if (hasElements) {
+        const lastEl = elements[elements.length - 1]
+        insertPosition = lastEl.getFullStart() + lastEl.getFullText().length
+        toRemove = source.getFullText().slice(insertPosition, node.getEnd() - 1)
+    } else {
+        insertPosition = elements.pos
+    }
 
-  const prevElementTrailingComma = hasElements ? ',' : '';
-  const nodeIndentation = ' '.repeat(getNodeIndentation(source.getFullText(), node));
-  const elementIndentation = nodeIndentation + '  ';
-  const indentedElement = elementIndentation + element.replace(/\n/gm, `\n${elementIndentation}`);
-  const closingBracketIndentation = nodeIndentation;
+    const prevElementTrailingComma = hasElements ? ',' : ''
+    const nodeIndentation = ' '.repeat(getNodeIndentation(source.getFullText(), node))
+    const elementIndentation = nodeIndentation + '    '
+    const indentedElement = elementIndentation + element.replace(/\n/gm, `\n${elementIndentation}`)
+    const closingBracketIndentation = nodeIndentation
 
-  const toAdd = prevElementTrailingComma + '\n' + indentedElement + ',\n' + closingBracketIndentation;
+    const toAdd = prevElementTrailingComma + '\n' + indentedElement + '\n' + closingBracketIndentation
 
-  const recorder = tree.beginUpdate(source.fileName);
-  if (toRemove.length) {
-    recorder.remove(insertPosition, toRemove.length);
-  }
-  recorder.insertLeft(insertPosition, toAdd);
-  tree.commitUpdate(recorder);
+    const recorder = tree.beginUpdate(source.fileName)
+    if (toRemove.length) {
+        recorder.remove(insertPosition, toRemove.length)
+    }
+    recorder.insertLeft(insertPosition, toAdd)
+    tree.commitUpdate(recorder)
 }

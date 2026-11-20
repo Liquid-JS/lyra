@@ -1,18 +1,18 @@
 .choice {
-  margin-inline-start: 1rem;
+    margin-inline-start: 1rem;
 }
 
 dialog {
-  padding: 0;
-  border: none;
-  background: transparent;
+    padding: 0;
+    border: none;
+    background: transparent;
 
-  nb-card {
-    margin: 0;
-  }
+    nb-card {
+        margin: 0;
+    }
 }
 
 // Room for the select's options in the docs example.
 nb-card-body {
-  min-height: 12rem;
+    min-height: 12rem;
 }

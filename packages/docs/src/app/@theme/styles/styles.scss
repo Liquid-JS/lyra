@@ -1,60 +1,65 @@
-@use 'themes' as *;
-@use 'buttons';
-@use 'reboot';
-@use 'common';
+@use "themes" as *;
+@use "buttons";
+@use "reboot";
+@use "common";
 
-@use '../../../../../core/src/styles/globals';
-@use '../../../../../core/src/styles/global/components' as *;
-@use '../../../../../core/src/styles/global/typography/typography';
+@use "../../../../../core/src/styles/globals";
+@use "../../../../../core/src/styles/global/components" as *;
+@use "../../../../../core/src/styles/global/typography/typography";
 
 // Normalize, helper classes and the overlays' structure, once for the page.
-@include globals.nb-theme-base();
+@include globals.nb-theme-base;
 
 // Loaded before the theme, as Bootstrap's stylesheet was, so the theme's own rules win.
-@include reboot.nbd-reboot();
+@include reboot.nbd-reboot;
 
-@include nb-install() {
-  @include nb-layout-theme();
-  @include nb-sidebar-theme();
-  @include nb-card-theme();
-  @include nb-menu-theme();
-  @include nb-actions-theme();
-  @include nb-search-theme();
-  @include nb-icon-theme();
-  @include nb-input-theme();
-  @include typography.nb-typography();
-  @include nb-buttons-theme();
-  @include nb-select-theme();
-  @include nb-option-list-theme();
-  @include nb-input-theme();
-  @include nb-overlay-theme();
-  @include nb-spinner-theme();
-  // The icon browser's search and style toggle.
-  @include nb-form-field-theme();
-  @include nb-buttons-toggle-theme();
-  @include nb-buttons-group-theme();
-  // The theme editor's sliders, checkbox and export tabs.
-  @include nb-slider-theme();
-  @include nb-tabset-theme();
-  @include nb-checkbox-theme();
-  // The header's More menu.
-  @include nb-context-menu-theme();
-  // The example gallery's dots.
-  @include nb-page-indicator-theme();
-  // The icon browser's names, and its dialog's toggle and toasts.
-  @include nb-tooltip-theme();
-  @include nb-toggle-theme();
-  @include nb-toast-theme();
+@include nb-install {
+    @include nb-layout-theme;
+    @include nb-sidebar-theme;
+    @include nb-card-theme;
+    @include nb-menu-theme;
+    @include nb-actions-theme;
+    @include nb-search-theme;
+    @include nb-icon-theme;
+    @include nb-input-theme;
+    @include typography.nb-typography;
+    @include nb-buttons-theme;
+    @include nb-select-theme;
+    @include nb-option-list-theme;
+    @include nb-input-theme;
+    @include nb-overlay-theme;
+    @include nb-spinner-theme;
 
-  @include buttons.nbd-buttons();
-  @include common.nbd-common();
+    // The icon browser's search and style toggle.
+    @include nb-form-field-theme;
+    @include nb-buttons-toggle-theme;
+    @include nb-buttons-group-theme;
 
-  // loading progress bar
+    // The theme editor's sliders, checkbox and export tabs.
+    @include nb-slider-theme;
+    @include nb-tabset-theme;
+    @include nb-checkbox-theme;
+
+    // The header's More menu.
+    @include nb-context-menu-theme;
+
+    // The example gallery's dots.
+    @include nb-page-indicator-theme;
+
+    // The icon browser's names, and its dialog's toggle and toasts.
+    @include nb-tooltip-theme;
+    @include nb-toggle-theme;
+    @include nb-toast-theme;
+
+    @include buttons.nbd-buttons;
+    @include common.nbd-common;
+
+    // loading progress bar
 }
 
 body {
-  min-width: 320px !important;
-  -webkit-font-smoothing: antialiased;
+    min-width: 320px !important;
+    -webkit-font-smoothing: antialiased;
 }
 
 // The docs' blocks are blocks of the page. As custom elements they're inline, around block content, which Safari
@@ -72,5 +77,5 @@ ngd-api-block,
 ngd-styles-block,
 ngd-styles-table-block,
 ngd-examples-block {
-  display: block;
+    display: block;
 }

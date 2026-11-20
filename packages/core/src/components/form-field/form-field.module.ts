@@ -1,18 +1,18 @@
-import { NgModule } from '@angular/core';
+import { NgModule } from '@angular/core'
 
-import { NbFormFieldComponent } from './form-field.component';
-import { NbPrefixDirective } from './prefix.directive';
-import { NbSuffixDirective } from './suffix.directive';
+import { NbFormFieldComponent } from './form-field.component'
+import { NbPrefixDirective } from './prefix.directive'
+import { NbSuffixDirective } from './suffix.directive'
 
 const COMPONENTS = [
-  NbFormFieldComponent,
-  NbPrefixDirective,
-  NbSuffixDirective,
-];
+    NbFormFieldComponent,
+    NbPrefixDirective,
+    NbSuffixDirective
+]
 
 @NgModule({
-  imports: [...COMPONENTS],
-  exports: [...COMPONENTS],
+    imports: [...COMPONENTS],
+    exports: [...COMPONENTS]
 })
 export class NbFormFieldModule {
 }

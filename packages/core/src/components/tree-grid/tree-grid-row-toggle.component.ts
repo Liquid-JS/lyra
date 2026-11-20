@@ -1,21 +1,20 @@
-import { Component, inject, input } from '@angular/core';
-import { NbTreeGridCellDirective } from './tree-grid-cell.component';
-import { NbIconComponent } from '@liquid-js/lyr-core/icon';
-import { injectNbTexts, NbLocalize } from '@liquid-js/lyr-core/base';
-import { ɵconvertToOptionalBoolProperty as convertToOptionalBoolProperty, NbBooleanInput } from '@liquid-js/lyr-core/base';
+import { Component, inject, input } from '@angular/core'
+import { NbIconComponent } from '@liquid-js/lyr-core/icon'
+import { injectNbTexts, NbLocalize, ɵconvertToOptionalBoolProperty as convertToOptionalBoolProperty, NbBooleanInput } from '@liquid-js/lyr-core/base'
+import { NbTreeGridCellDirective } from './tree-grid-cell.component'
 
 /** @internal */
-declare const $localize: NbLocalize;
+declare const $localize: NbLocalize
 
 /**
  * A chevron button in a cell that toggles the cell's row. It points down while the row is open, else towards the
  * row's end, and its label says whether it expands or collapses.
  */
 @Component({
-  selector: 'nb-tree-grid-row-toggle',
-  templateUrl: './tree-grid-row-toggle.component.html',
-  styles: [
-    `
+    selector: 'nb-tree-grid-row-toggle',
+    templateUrl: './tree-grid-row-toggle.component.html',
+    styles: [
+        `
       button {
         background: transparent;
         border: none;
@@ -38,28 +37,28 @@ declare const $localize: NbLocalize;
           transition: none;
         }
       }
-    `,
-  ],
-  imports: [NbIconComponent],
-  host: {
-    '(click)': 'toggleRow($event)',
-  },
+    `
+    ],
+    imports: [NbIconComponent],
+    host: {
+        '(click)': 'toggleRow($event)'
+    }
 })
 export class NbTreeGridRowToggleComponent {
-  protected readonly texts = injectNbTexts('treeGrid', () => ({
-    collapse: $localize`:@@nb.treeGrid.collapse:collapse`,
-    expand: $localize`:@@nb.treeGrid.expand:expand`,
-  }));
+    protected readonly texts = injectNbTexts('treeGrid', () => ({
+        collapse: $localize`:@@nb.treeGrid.collapse:collapse`,
+        expand: $localize`:@@nb.treeGrid.expand:expand`
+    }))
 
-  private readonly cell = inject(NbTreeGridCellDirective);
+    private readonly cell = inject(NbTreeGridCellDirective)
 
-  /** Whether the row is open, which turns the chevron and sets the label. */
-  readonly expanded = input<boolean | undefined, NbBooleanInput>(undefined, {
-    transform: convertToOptionalBoolProperty,
-  });
+    /** Whether the row is open, which turns the chevron and sets the label. */
+    readonly expanded = input<boolean | undefined, NbBooleanInput>(undefined, {
+        transform: convertToOptionalBoolProperty
+    })
 
-  toggleRow($event: Event) {
-    this.cell.toggleRow();
-    $event.stopPropagation();
-  }
+    toggleRow($event: Event) {
+        this.cell.toggleRow()
+        $event.stopPropagation()
+    }
 }

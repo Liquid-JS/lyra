@@ -1,140 +1,141 @@
 // Positions are fractions of the track, from 0 at its start to 1 at its end, in `--nb-slider-position`.
 :host {
-  display: block;
-  position: relative;
-  user-select: none;
-  -webkit-user-select: none;
-  // Vertical scrolling keeps working over a horizontal slider, and the other way round.
-  touch-action: pan-y;
+    display: block;
+    position: relative;
+    user-select: none;
+
+    // Vertical scrolling keeps working over a horizontal slider, and the other way round.
+    touch-action: pan-y;
 }
 
 :host(.vertical) {
-  display: inline-flex;
-  touch-action: pan-x;
+    display: inline-flex;
+    touch-action: pan-x;
 }
 
 .slider-track {
-  position: relative;
+    position: relative;
 }
 
 :host(.vertical) .slider-track {
-  height: 100%;
+    height: 100%;
 }
 
 .slider-fill {
-  position: absolute;
-  inset-block: 0;
-  inset-inline-start: calc(var(--nb-slider-fill-start) * 100%);
-  inset-inline-end: calc((1 - var(--nb-slider-fill-end)) * 100%);
+    position: absolute;
+    inset-block: 0;
+    inset-inline-start: calc(var(--nb-slider-fill-start) * 100%);
+    inset-inline-end: calc((1 - var(--nb-slider-fill-end)) * 100%);
 }
 
 :host(.vertical) .slider-fill {
-  inset-inline: 0;
-  inset-block: calc((1 - var(--nb-slider-fill-end)) * 100%) calc(var(--nb-slider-fill-start) * 100%);
+    inset-inline: 0;
+    inset-block: calc((1 - var(--nb-slider-fill-end)) * 100%) calc(var(--nb-slider-fill-start) * 100%);
 }
 
 .slider-thumb,
 .slider-tick {
-  position: absolute;
-  top: 50%;
-  inset-inline-start: calc(var(--nb-slider-position) * 100%);
-  translate: 0 -50%;
-  box-sizing: border-box;
-  border-radius: 50%;
+    position: absolute;
+    top: 50%;
+    inset-inline-start: calc(var(--nb-slider-position) * 100%);
+    translate: 0 -50%;
+    box-sizing: border-box;
+    border-radius: 50%;
 }
 
 :host(.vertical) {
-  .slider-thumb,
-  .slider-tick {
-    top: auto;
-    inset-inline-start: 50%;
-    bottom: calc(var(--nb-slider-position) * 100%);
-    translate: 0 50%;
-  }
+    .slider-thumb,
+    .slider-tick {
+        top: auto;
+        inset-inline-start: 50%;
+        bottom: calc(var(--nb-slider-position) * 100%);
+        translate: 0 50%;
+    }
 }
 
 .slider-thumb {
-  outline: none;
+    outline: none;
 }
 
 // Above the thumb, or beside it standing up; shown while the thumb moves or has the keyboard focus.
 .slider-value {
-  position: absolute;
-  bottom: 100%;
-  left: 50%;
-  translate: -50% 0;
-  white-space: nowrap;
-  // Numbers read the same in right-to-left text, e.g. "-6" rather than "6-".
-  unicode-bidi: plaintext;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.15s ease-in;
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    translate: -50% 0;
+    white-space: nowrap;
+
+    // Numbers read the same in right-to-left text, e.g. "-6" rather than "6-".
+    unicode-bidi: plaintext;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s ease-in;
 }
 
 .slider-thumb.dragging .slider-value,
 .slider-thumb:focus-visible .slider-value {
-  opacity: 1;
+    opacity: 1;
 }
 
 // Beside the thumb, away from the labels.
 :host(.vertical) .slider-value {
-  bottom: auto;
-  left: auto;
-  inset-inline-end: 100%;
-  top: 50%;
-  translate: 0 -50%;
+    bottom: auto;
+    left: auto;
+    inset-inline-end: 100%;
+    top: 50%;
+    translate: 0 -50%;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .slider-value {
-    transition: none;
-  }
+    .slider-value {
+        transition: none;
+    }
 }
 
 .slider-labels {
-  position: relative;
+    position: relative;
 }
 
 // A label of no width at its position, with its text centred on it, or along it at the ends.
 .slider-label {
-  position: absolute;
-  inset-inline-start: calc(var(--nb-slider-position) * 100%);
-  width: 0;
-  display: flex;
-  justify-content: center;
-  white-space: nowrap;
+    position: absolute;
+    inset-inline-start: calc(var(--nb-slider-position) * 100%);
+    width: 0;
+    display: flex;
+    justify-content: center;
+    white-space: nowrap;
 
-  > span {
-    unicode-bidi: plaintext;
-  }
+    > span {
+        unicode-bidi: plaintext;
+    }
 }
 
 .slider-label-start {
-  justify-content: flex-start;
+    justify-content: flex-start;
 }
 
 .slider-label-end {
-  justify-content: flex-end;
+    justify-content: flex-end;
 }
 
 :host(.vertical) {
-  .slider-labels {
-    height: 100%;
-  }
+    .slider-labels {
+        height: 100%;
+    }
 
-  .slider-label {
-    inset-inline-start: 0;
-    bottom: calc(var(--nb-slider-position) * 100%);
-    width: auto;
-    height: 0;
-    align-items: center;
-  }
+    .slider-label {
+        inset-inline-start: 0;
+        bottom: calc(var(--nb-slider-position) * 100%);
+        width: auto;
+        height: 0;
+        align-items: center;
+    }
 
-  .slider-label-start {
-    align-items: flex-end;
-  }
+    .slider-label-start {
+        align-items: flex-end;
+    }
 
-  .slider-label-end {
-    align-items: flex-start;
-  }
+    .slider-label-end {
+        align-items: flex-start;
+    }
 }

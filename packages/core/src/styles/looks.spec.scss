@@ -1,74 +1,74 @@
 // The themes of the components whose looks the mixins give other elements, and the mixins on plain elements, to
 // compare the two.
-@use '@liquid-js/lyr-core/styles/all' as *;
-@use '../components/button/button.component.theme' as button;
-@use '../components/input/input.directive.theme' as input;
-@use '../components/option/option-list.component.theme' as option-list;
-@use '../components/popover/popover.component.theme' as popover;
+@use "@liquid-js/lyr-core/styles/all" as *;
+@use "../components/button/button.component.theme" as button;
+@use "../components/input/input.directive.theme" as input;
+@use "../components/option/option-list.component.theme" as option-list;
+@use "../components/popover/popover.component.theme" as popover;
 
 $nb-enabled-themes: (default);
 
-@include nb-install() {
-  @include nb-theme-base();
-  @include button.nb-buttons-theme();
-  @include input.nb-input-theme();
-  @include option-list.nb-option-list-theme();
-  @include popover.nb-popover-theme();
+@include nb-install {
+    @include nb-theme-base;
+    @include button.nb-buttons-theme;
+    @include input.nb-input-theme;
+    @include option-list.nb-option-list-theme;
+    @include popover.nb-popover-theme;
 }
 
 // The styles are compared as they end up, not while they animate.
 .looks * {
-  transition: none !important;
+    transition: none !important;
 }
 
 .looks .pair {
-  display: flex;
-  gap: 1rem;
-  padding: 0.5rem;
+    display: flex;
+    gap: 1rem;
+    padding: 0.5rem;
 }
 
 @each $appearance in (filled, outline, ghost, hero) {
-  @each $status in nb-get-statuses() {
-    [data-look='button #{$appearance} #{$status} medium rectangle'] {
-      @include nb-button($appearance, $status);
+    @each $status in nb-get-statuses() {
+        [data-look="button #{$appearance} #{$status} medium rectangle"] {
+            @include nb-button($appearance, $status);
+        }
     }
-  }
 }
 
 @each $size in nb-get-sizes() {
-  [data-look='button filled basic #{$size} rectangle'] {
-    @include nb-button($size: $size);
-  }
+    [data-look="button filled basic #{$size} rectangle"] {
+        @include nb-button($size: $size);
+    }
 }
 
 @each $shape in nb-get-shapes() {
-  [data-look='button filled basic medium #{$shape}'] {
-    @include nb-button($shape: $shape);
-  }
+    [data-look="button filled basic medium #{$shape}"] {
+        @include nb-button($shape: $shape);
+    }
 }
 
 @each $status in nb-get-statuses() {
-  [data-look='input #{$status} medium rectangle'] {
-    @include nb-input($status);
-  }
+    [data-look="input #{$status} medium rectangle"] {
+        @include nb-input($status);
+    }
 }
 
 @each $size in nb-get-sizes() {
-  [data-look='input basic #{$size} rectangle'] {
-    @include nb-input($size: $size);
-  }
+    [data-look="input basic #{$size} rectangle"] {
+        @include nb-input($size: $size);
+    }
 }
 
 @each $shape in nb-get-shapes() {
-  [data-look='input basic medium #{$shape}'] {
-    @include nb-input($shape: $shape);
-  }
+    [data-look="input basic medium #{$shape}"] {
+        @include nb-input($shape: $shape);
+    }
 }
 
-[data-look='panel option-list'] {
-  @include nb-panel(option-list);
+[data-look="panel option-list"] {
+    @include nb-panel(option-list);
 }
 
-[data-look='panel popover'] {
-  @include nb-panel(popover);
+[data-look="panel popover"] {
+    @include nb-panel(popover);
 }

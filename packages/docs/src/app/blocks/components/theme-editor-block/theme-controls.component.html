@@ -1,245 +1,245 @@
 <!-- One column where it's narrow, e.g. in the editor's card or a docked window; three side by side where it's wide. -->
 <div class="groups">
-  <section class="group identity">
-    <div class="field">
-      <label [for]="id + '-name'">Name</label>
-      <input nbInput
-        fullWidth
-        [id]="id + '-name'"
-        [ngModel]="draft().name"
-        (ngModelChange)="themes.update({ name: $event })" />
-    </div>
+    <section class="group identity">
+        <div class="field">
+            <label [for]="id + '-name'">Name</label>
+            <input nbInput
+                fullWidth
+                [id]="id + '-name'"
+                [ngModel]="draft().name"
+                (ngModelChange)="themes.update({ name: $event })" />
+        </div>
 
-    <div class="field">
-      <label [id]="id + '-base'">Based on</label>
-      <nb-select fullWidth
-        [attr.aria-labelledby]="id + '-base'"
-        [selected]="draft().base"
-        (selectedChange)="$event && themes.setBase($event)">
-        @for (base of bases; track base) {
-        <nb-option [value]="base">{{ label(base) }}</nb-option>
-        }
-      </nb-select>
-    </div>
-  </section>
+        <div class="field">
+            <label [id]="id + '-base'">Based on</label>
+            <nb-select fullWidth
+                [attr.aria-labelledby]="id + '-base'"
+                [selected]="draft().base"
+                (selectedChange)="$event && themes.setBase($event)">
+                @for (base of bases; track base) {
+                <nb-option [value]="base">{{ label(base) }}</nb-option>
+                }
+            </nb-select>
+        </div>
+    </section>
 
-  <section class="group colours">
-    <h3 class="subtitle">Colours</h3>
-    @for (status of statuses; track status) {
-    <div class="field color">
-      <label [id]="id + '-color-' + status">{{ status }}</label>
-      <nb-color-picker fullWidth
-        alphaChannel="disabled"
-        outputFormat="hex"
-        [attr.aria-labelledby]="id + '-color-' + status"
-        [attr.aria-describedby]="id + '-color-' + status + '-hint'"
-        [ngModel]="draft().colors[status]"
-        (ngModelChange)="themes.setColor(status, $event)" />
-      <div class="palette"
-        aria-hidden="true">
-        @for (shade of palettes()[status]; track $index) {
-        <span [style.background-color]="shade"></span>
+    <section class="group colours">
+        <h3 class="subtitle">Colours</h3>
+        @for (status of statuses; track status) {
+        <div class="field color">
+            <label [id]="id + '-color-' + status">{{ status }}</label>
+            <nb-color-picker fullWidth
+                alphaChannel="disabled"
+                outputFormat="hex"
+                [attr.aria-labelledby]="id + '-color-' + status"
+                [attr.aria-describedby]="id + '-color-' + status + '-hint'"
+                [ngModel]="draft().colors[status]"
+                (ngModelChange)="themes.setColor(status, $event)" />
+            <div class="palette"
+                aria-hidden="true">
+                @for (shade of palettes()[status]; track $index) {
+                <span [style.background-color]="shade"></span>
+                }
+            </div>
+            @if (contrastOf()[status]; as reading) {
+            <p class="hint below"
+                [id]="id + '-color-' + status + '-hint'">
+                {{ readingText('Text in it', reading.ratio) }}
+                @if (reading.readable) {
+                <button nbButton
+                    ghost
+                    size="tiny"
+                    type="button"
+                    (click)="makeReadable(status)">Use the {{ reading.readable.text }} shade</button>
+                }
+                {{ controlText(reading.control) }}
+            </p>
+            }
+        </div>
         }
-      </div>
-      @if (contrastOf()[status]; as reading) {
-      <p class="hint below"
-        [id]="id + '-color-' + status + '-hint'">
-        {{ readingText('Text in it', reading.ratio) }}
-        @if (reading.readable) {
-        <button nbButton
-          ghost
-          size="tiny"
-          type="button"
-          (click)="makeReadable(status)">Use the {{ reading.readable.text }} shade</button>
+        <div class="field color">
+            <label [id]="id + '-color-basic'">Basic</label>
+            <nb-color-picker fullWidth
+                alphaChannel="disabled"
+                outputFormat="hex"
+                [attr.aria-labelledby]="id + '-color-basic'"
+                [attr.aria-describedby]="id + '-color-basic-hint'"
+                [ngModel]="basic()"
+                (ngModelChange)="themes.setBasic($event)" />
+            <div class="palette"
+                aria-hidden="true">
+                @for (shade of greys(); track $index) {
+                <span [style.background-color]="shade"></span>
+                }
+            </div>
+            <p class="hint below"
+                [id]="id + '-color-basic-hint'">The greys, which backgrounds, borders and text take theirs from.
+                @if (hintContrast(); as reading) {
+                {{ readingText('Hint text', reading.ratio) }}
+                @if (reading.readable) {
+                <button nbButton
+                    ghost
+                    size="tiny"
+                    type="button"
+                    (click)="makeHintReadable(reading.readable)">Use a darker grey</button>
+                }
+                }
+            </p>
+        </div>
+        <div class="field">
+            <nb-checkbox [checked]="aa()"
+                (checkedChange)="aa.set($event)">Hold text to 4.5:1, the stricter WCAG AA level for small text</nb-checkbox>
+            <p class="hint below">Text is held to 3:1 by default, plenty for most people and what most UI kits settle on.</p>
+        </div>
+    </section>
+
+    <section class="group surfaces">
+        <h3 class="subtitle">Backgrounds and text</h3>
+        @for (field of surfaceFields; track field.key) {
+        <div class="field">
+            <label [id]="id + '-surface-' + field.key">{{ field.label }}</label>
+            <div class="with-button">
+                <nb-color-picker fullWidth
+                    outputFormat="hex"
+                    [attr.aria-labelledby]="id + '-surface-' + field.key"
+                    [ngModel]="valueOf()(field.key)"
+                    (ngModelChange)="themes.setVariable(field.key, $event)" />
+                <button nbButton
+                    ghost
+                    type="button"
+                    [disabled]="!isSet(field.key)"
+                    [attr.aria-label]="'Reset ' + field.label"
+                    title="As the base theme has it"
+                    (click)="themes.setVariable(field.key)">
+                    <nb-icon icon="undo-outline" />
+                </button>
+            </div>
+        </div>
         }
-        {{ controlText(reading.control) }}
-      </p>
-      }
-    </div>
+    </section>
+
+    <section class="group text">
+        <h3 class="subtitle">Text and shape</h3>
+        <div class="field">
+            <label [for]="id + '-font-primary'">Font</label>
+            <input nbInput
+                fullWidth
+                [id]="id + '-font-primary'"
+                [ngModel]="draft().fontPrimary"
+                (ngModelChange)="themes.update({ fontPrimary: $event })" />
+        </div>
+        <div class="field">
+            <label [for]="id + '-font-secondary'">Heading font</label>
+            <input nbInput
+                fullWidth
+                [id]="id + '-font-secondary'"
+                [ngModel]="draft().fontSecondary"
+                (ngModelChange)="themes.update({ fontSecondary: $event })" />
+        </div>
+        <p class="hint">The fonts are names, as in CSS; the app loads them.</p>
+
+        <div class="field">
+            <label [id]="id + '-radius'">Corner radius</label>
+            <nb-slider [attr.aria-labelledby]="id + '-radius'"
+                [min]="0"
+                [max]="1.5"
+                [step]="0.0625"
+                [formatValue]="formatRadius"
+                [value]="draft().radius"
+                (valueChange)="themes.update({ radius: numberOf($event, draft().radius) })" />
+        </div>
+        <div class="field">
+            <label [id]="id + '-text'">Text size</label>
+            <nb-slider [attr.aria-labelledby]="id + '-text'"
+                [min]="0.85"
+                [max]="1.25"
+                [step]="0.05"
+                [formatValue]="formatScale"
+                [value]="draft().textScale"
+                (valueChange)="themes.update({ textScale: numberOf($event, draft().textScale) })" />
+        </div>
+    </section>
+
+    <section class="group components">
+        <h3 class="subtitle">Components</h3>
+        @for (field of defaultFields; track field.name) {
+        <div class="field">
+            <label [id]="id + '-default-' + field.name">{{ field.label }}</label>
+            <div class="with-button">
+                <nb-select fullWidth
+                    [attr.aria-labelledby]="id + '-default-' + field.name"
+                    [selected]="globalOf(field)"
+                    (selectedChange)="themes.setDefault(field.name, $event)">
+                    @if (field.unset) {
+                    <nb-option value="">{{ field.unset }}</nb-option>
+                    }
+                    @for (option of optionsOf(field); track option.value) {
+                    <nb-option [value]="option.value">{{ option.label }}</nb-option>
+                    }
+                </nb-select>
+                <button nbButton
+                    type="button"
+                    class="overrides-button"
+                    [ghost]="!open().has(field.name)"
+                    [outline]="open().has(field.name)"
+                    [attr.aria-expanded]="open().has(field.name)"
+                    [attr.aria-controls]="id + '-overrides-' + field.name"
+                    [attr.aria-label]="field.label + ' per component' + (overridesOf(field) ? ', ' + overridesOf(field) + ' set' : '')"
+                    title="Per component"
+                    (click)="toggle(field.name)">
+                    <nb-icon icon="options-2-outline" />
+                    @if (overridesOf(field)) {
+                    <span class="count"
+                        aria-hidden="true">{{ overridesOf(field) }}</span>
+                    }
+                </button>
+            </div>
+            @if (open().has(field.name)) {
+            <div class="overrides"
+                role="group"
+                [id]="id + '-overrides-' + field.name"
+                [attr.aria-label]="field.label + ' per component'">
+                @for (override of field.overrides; track override.type) {
+                <label [id]="id + '-override-' + field.name + '-' + override.type">{{ override.label }}</label>
+                <nb-select fullWidth
+                    size="small"
+                    [attr.aria-labelledby]="id + '-override-' + field.name + '-' + override.type"
+                    [selected]="defaultOf(field.name, override.type)"
+                    (selectedChange)="themes.setDefault(field.name, $event, override.type)">
+                    <nb-option value="">{{ inheritedLabel(field, override) }}</nb-option>
+                    @for (value of override.values ?? field.values; track value) {
+                    <nb-option [value]="value">{{ label(value) }}</nb-option>
+                    }
+                </nb-select>
+                }
+            </div>
+            }
+        </div>
+        }
+
+        <div class="field">
+            <label [id]="id + '-icon-style'">Icon style</label>
+            <nb-select fullWidth
+                [attr.aria-labelledby]="id + '-icon-style'"
+                [selected]="defaultOf('iconStyle')"
+                (selectedChange)="themes.setDefault('iconStyle', $event)">
+                <nb-option value="">As named</nb-option>
+                <nb-option value="outline">Outline</nb-option>
+                <nb-option value="filled">Filled</nb-option>
+            </nb-select>
+        </div>
+    </section>
+
+    @if (otherVariables().length) {
+    <section class="group other">
+        <h3 class="subtitle">Other variables</h3>
+        <p class="hint">From the theme this one started from. There are no controls for them here, but they're in its code.</p>
+        <dl class="variables">
+            @for (entry of otherVariables(); track entry[0]) {
+            <dt>{{ entry[0] }}</dt>
+            <dd>{{ entry[1] }}</dd>
+            }
+        </dl>
+    </section>
     }
-    <div class="field color">
-      <label [id]="id + '-color-basic'">Basic</label>
-      <nb-color-picker fullWidth
-        alphaChannel="disabled"
-        outputFormat="hex"
-        [attr.aria-labelledby]="id + '-color-basic'"
-        [attr.aria-describedby]="id + '-color-basic-hint'"
-        [ngModel]="basic()"
-        (ngModelChange)="themes.setBasic($event)" />
-      <div class="palette"
-        aria-hidden="true">
-        @for (shade of greys(); track $index) {
-        <span [style.background-color]="shade"></span>
-        }
-      </div>
-      <p class="hint below"
-        [id]="id + '-color-basic-hint'">The greys, which backgrounds, borders and text take theirs from.
-        @if (hintContrast(); as reading) {
-        {{ readingText('Hint text', reading.ratio) }}
-        @if (reading.readable) {
-        <button nbButton
-          ghost
-          size="tiny"
-          type="button"
-          (click)="makeHintReadable(reading.readable)">Use a darker grey</button>
-        }
-        }
-      </p>
-    </div>
-    <div class="field">
-      <nb-checkbox [checked]="aa()"
-        (checkedChange)="aa.set($event)">Hold text to 4.5:1, the stricter WCAG AA level for small text</nb-checkbox>
-      <p class="hint below">Text is held to 3:1 by default, plenty for most people and what most UI kits settle on.</p>
-    </div>
-  </section>
-
-  <section class="group surfaces">
-    <h3 class="subtitle">Backgrounds and text</h3>
-    @for (field of surfaceFields; track field.key) {
-    <div class="field">
-      <label [id]="id + '-surface-' + field.key">{{ field.label }}</label>
-      <div class="with-button">
-        <nb-color-picker fullWidth
-          outputFormat="hex"
-          [attr.aria-labelledby]="id + '-surface-' + field.key"
-          [ngModel]="valueOf()(field.key)"
-          (ngModelChange)="themes.setVariable(field.key, $event)" />
-        <button nbButton
-          ghost
-          type="button"
-          [disabled]="!isSet(field.key)"
-          [attr.aria-label]="'Reset ' + field.label"
-          title="As the base theme has it"
-          (click)="themes.setVariable(field.key)">
-          <nb-icon icon="undo-outline" />
-        </button>
-      </div>
-    </div>
-    }
-  </section>
-
-  <section class="group text">
-    <h3 class="subtitle">Text and shape</h3>
-    <div class="field">
-      <label [for]="id + '-font-primary'">Font</label>
-      <input nbInput
-        fullWidth
-        [id]="id + '-font-primary'"
-        [ngModel]="draft().fontPrimary"
-        (ngModelChange)="themes.update({ fontPrimary: $event })" />
-    </div>
-    <div class="field">
-      <label [for]="id + '-font-secondary'">Heading font</label>
-      <input nbInput
-        fullWidth
-        [id]="id + '-font-secondary'"
-        [ngModel]="draft().fontSecondary"
-        (ngModelChange)="themes.update({ fontSecondary: $event })" />
-    </div>
-    <p class="hint">The fonts are names, as in CSS; the app loads them.</p>
-
-    <div class="field">
-      <label [id]="id + '-radius'">Corner radius</label>
-      <nb-slider [attr.aria-labelledby]="id + '-radius'"
-        [min]="0"
-        [max]="1.5"
-        [step]="0.0625"
-        [formatValue]="formatRadius"
-        [value]="draft().radius"
-        (valueChange)="themes.update({ radius: numberOf($event, draft().radius) })" />
-    </div>
-    <div class="field">
-      <label [id]="id + '-text'">Text size</label>
-      <nb-slider [attr.aria-labelledby]="id + '-text'"
-        [min]="0.85"
-        [max]="1.25"
-        [step]="0.05"
-        [formatValue]="formatScale"
-        [value]="draft().textScale"
-        (valueChange)="themes.update({ textScale: numberOf($event, draft().textScale) })" />
-    </div>
-  </section>
-
-  <section class="group components">
-    <h3 class="subtitle">Components</h3>
-    @for (field of defaultFields; track field.name) {
-    <div class="field">
-      <label [id]="id + '-default-' + field.name">{{ field.label }}</label>
-      <div class="with-button">
-        <nb-select fullWidth
-          [attr.aria-labelledby]="id + '-default-' + field.name"
-          [selected]="globalOf(field)"
-          (selectedChange)="themes.setDefault(field.name, $event)">
-          @if (field.unset) {
-          <nb-option value="">{{ field.unset }}</nb-option>
-          }
-          @for (option of optionsOf(field); track option.value) {
-          <nb-option [value]="option.value">{{ option.label }}</nb-option>
-          }
-        </nb-select>
-        <button nbButton
-          type="button"
-          class="overrides-button"
-          [ghost]="!open().has(field.name)"
-          [outline]="open().has(field.name)"
-          [attr.aria-expanded]="open().has(field.name)"
-          [attr.aria-controls]="id + '-overrides-' + field.name"
-          [attr.aria-label]="field.label + ' per component' + (overridesOf(field) ? ', ' + overridesOf(field) + ' set' : '')"
-          title="Per component"
-          (click)="toggle(field.name)">
-          <nb-icon icon="options-2-outline" />
-          @if (overridesOf(field)) {
-          <span class="count"
-            aria-hidden="true">{{ overridesOf(field) }}</span>
-          }
-        </button>
-      </div>
-      @if (open().has(field.name)) {
-      <div class="overrides"
-        role="group"
-        [id]="id + '-overrides-' + field.name"
-        [attr.aria-label]="field.label + ' per component'">
-        @for (override of field.overrides; track override.type) {
-        <label [id]="id + '-override-' + field.name + '-' + override.type">{{ override.label }}</label>
-        <nb-select fullWidth
-          size="small"
-          [attr.aria-labelledby]="id + '-override-' + field.name + '-' + override.type"
-          [selected]="defaultOf(field.name, override.type)"
-          (selectedChange)="themes.setDefault(field.name, $event, override.type)">
-          <nb-option value="">{{ inheritedLabel(field, override) }}</nb-option>
-          @for (value of override.values ?? field.values; track value) {
-          <nb-option [value]="value">{{ label(value) }}</nb-option>
-          }
-        </nb-select>
-        }
-      </div>
-      }
-    </div>
-    }
-
-    <div class="field">
-      <label [id]="id + '-icon-style'">Icon style</label>
-      <nb-select fullWidth
-        [attr.aria-labelledby]="id + '-icon-style'"
-        [selected]="defaultOf('iconStyle')"
-        (selectedChange)="themes.setDefault('iconStyle', $event)">
-        <nb-option value="">As named</nb-option>
-        <nb-option value="outline">Outline</nb-option>
-        <nb-option value="filled">Filled</nb-option>
-      </nb-select>
-    </div>
-  </section>
-
-  @if (otherVariables().length) {
-  <section class="group other">
-    <h3 class="subtitle">Other variables</h3>
-    <p class="hint">From the theme this one started from. There are no controls for them here, but they're in its code.</p>
-    <dl class="variables">
-      @for (entry of otherVariables(); track entry[0]) {
-      <dt>{{ entry[0] }}</dt>
-      <dd>{{ entry[1] }}</dd>
-      }
-    </dl>
-  </section>
-  }
 </div>

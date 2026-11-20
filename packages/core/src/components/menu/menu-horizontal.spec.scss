@@ -1,12 +1,12 @@
 // The default theme's menu and icon styles, which specs don't load otherwise.
-@use '@liquid-js/lyr-core/styles/all' as *;
-@use 'menu.component.theme' as menu;
-@use '../icon/icon.component.theme' as icon;
+@use "@liquid-js/lyr-core/styles/all" as *;
+@use "menu.component.theme" as menu;
+@use "../icon/icon.component.theme" as icon;
 
 $nb-enabled-themes: (default);
 
-@include nb-install() {
-  @include nb-theme-base();
-  @include menu.nb-menu-theme();
-  @include icon.nb-icon-theme();
+@include nb-install {
+    @include nb-theme-base;
+    @include menu.nb-menu-theme;
+    @include icon.nb-icon-theme;
 }

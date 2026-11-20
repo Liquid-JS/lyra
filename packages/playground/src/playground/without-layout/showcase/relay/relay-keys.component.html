@@ -1,121 +1,121 @@
 <div class="page-header">
-  <div>
-    <h1 class="h5">API keys</h1>
-    <p class="hint">{{ keys().length }} keys, {{ live() }} live. Keys carry the whole account; keep them in a secret
-      store.</p>
-  </div>
-  <div class="tools">
-    <button nbButton
-      status="primary"
-      size="small"
-      type="button"
-      (click)="create()">
-      <nb-icon icon="plus-outline" />
-      Create key
-    </button>
-  </div>
+    <div>
+        <h1 class="h5">API keys</h1>
+        <p class="hint">{{ keys().length }} keys, {{ live() }} live. Keys carry the whole account; keep them in a secret
+            store.</p>
+    </div>
+    <div class="tools">
+        <button nbButton
+            status="primary"
+            size="small"
+            type="button"
+            (click)="create()">
+            <nb-icon icon="plus-outline" />
+            Create key
+        </button>
+    </div>
 </div>
 
 @if (created(); as newKey) {
 <nb-alert status="success"
-  closable
-  class="created"
-  (close)="created.set(undefined)">
-  <p class="alert-title">Copy your new key now. For your safety, it won't be shown again.</p>
-  <div class="secret">
-    <code class="mono">{{ newKey.secret }}</code>
-    <button nbButton
-      size="small"
-      status="success"
-      type="button"
-      (click)="copy(newKey.secret, 'key')">
-      <nb-icon icon="copy-outline" />
-      Copy
-    </button>
-  </div>
+    closable
+    class="created"
+    (close)="created.set(undefined)">
+    <p class="alert-title">Copy your new key now. For your safety, it won't be shown again.</p>
+    <div class="secret">
+        <code class="mono">{{ newKey.secret }}</code>
+        <button nbButton
+            size="small"
+            status="success"
+            type="button"
+            (click)="copy(newKey.secret, 'key')">
+            <nb-icon icon="copy-outline" />
+            Copy
+        </button>
+    </div>
 </nb-alert>
 }
 
 <nb-card>
-  <nb-card-header>Keys</nb-card-header>
-  <div class="table">
-    <table nbTable
-      [dataSource]="source">
-      <ng-container nbColumnDef="name">
-        <th nbHeaderCell
-          *nbHeaderCellDef>Name</th>
-        <td nbCell
-          *nbCellDef="let key; of: source"
-          class="name">{{ key.name }}</td>
-      </ng-container>
-      <ng-container nbColumnDef="key">
-        <th nbHeaderCell
-          *nbHeaderCellDef>Key</th>
-        <td nbCell
-          *nbCellDef="let key; of: source">
-          <span class="key">
-            <code class="mono">{{ key.prefix }}••••••••</code>
-            <button nbButton
-              ghost
-              size="tiny"
-              type="button"
-              aria-label="Copy the key's prefix"
-              (click)="copy(key.prefix, 'prefix')">
-              <nb-icon icon="copy-outline" />
-            </button>
-          </span>
-        </td>
-      </ng-container>
-      <ng-container nbColumnDef="environment">
-        <th nbHeaderCell
-          *nbHeaderCellDef>Environment</th>
-        <td nbCell
-          *nbCellDef="let key; of: source">
-          <nb-tag appearance="outline"
-            size="tiny"
-            [status]="key.environment === 'live' ? 'primary' : 'basic'"
-            [text]="key.environment" />
-        </td>
-      </ng-container>
-      <ng-container nbColumnDef="created">
-        <th nbHeaderCell
-          *nbHeaderCellDef>Created</th>
-        <td nbCell
-          *nbCellDef="let key; of: source">{{ key.created | date: 'd MMM y' }}</td>
-      </ng-container>
-      <ng-container nbColumnDef="lastUsed">
-        <th nbHeaderCell
-          *nbHeaderCellDef>Last used</th>
-        <td nbCell
-          *nbCellDef="let key; of: source">
-          @if (key.lastUsed) {
-          {{ key.lastUsed | date: 'd MMM, HH:mm' }}
-          } @else {
-          <span class="never">Never</span>
-          }
-        </td>
-      </ng-container>
-      <ng-container nbColumnDef="actions">
-        <th nbHeaderCell
-          *nbHeaderCellDef
-          class="actions"><span class="visually-hidden">Actions</span></th>
-        <td nbCell
-          *nbCellDef="let key; of: source"
-          class="actions">
-          <button nbButton
-            ghost
-            size="tiny"
-            type="button"
-            [attr.aria-label]="'Actions for ' + key.name"
-            [nbContextMenu]="actions">
-            <nb-icon icon="more-horizontal-outline" />
-          </button>
-        </td>
-      </ng-container>
-      <tr nbHeaderRow
-        *nbHeaderRowDef="columns"></tr>
-      <tr nbRow
-        *nbRowDef="let row; columns: columns"></tr>
-    </table>
-  </div>
+    <nb-card-header>Keys</nb-card-header>
+    <div class="table">
+        <table nbTable
+            [dataSource]="source">
+            <ng-container nbColumnDef="name">
+                <th nbHeaderCell
+                    *nbHeaderCellDef>Name</th>
+                <td nbCell
+                    *nbCellDef="let key; of: source"
+                    class="name">{{ key.name }}</td>
+            </ng-container>
+            <ng-container nbColumnDef="key">
+                <th nbHeaderCell
+                    *nbHeaderCellDef>Key</th>
+                <td nbCell
+                    *nbCellDef="let key; of: source">
+                    <span class="key">
+                        <code class="mono">{{ key.prefix }}••••••••</code>
+                        <button nbButton
+                            ghost
+                            size="tiny"
+                            type="button"
+                            aria-label="Copy the key's prefix"
+                            (click)="copy(key.prefix, 'prefix')">
+                            <nb-icon icon="copy-outline" />
+                        </button>
+                    </span>
+                </td>
+            </ng-container>
+            <ng-container nbColumnDef="environment">
+                <th nbHeaderCell
+                    *nbHeaderCellDef>Environment</th>
+                <td nbCell
+                    *nbCellDef="let key; of: source">
+                    <nb-tag appearance="outline"
+                        size="tiny"
+                        [status]="key.environment === 'live' ? 'primary' : 'basic'"
+                        [text]="key.environment" />
+                </td>
+            </ng-container>
+            <ng-container nbColumnDef="created">
+                <th nbHeaderCell
+                    *nbHeaderCellDef>Created</th>
+                <td nbCell
+                    *nbCellDef="let key; of: source">{{ key.created | date: 'd MMM y' }}</td>
+            </ng-container>
+            <ng-container nbColumnDef="lastUsed">
+                <th nbHeaderCell
+                    *nbHeaderCellDef>Last used</th>
+                <td nbCell
+                    *nbCellDef="let key; of: source">
+                    @if (key.lastUsed) {
+                    {{ key.lastUsed | date: 'd MMM, HH:mm' }}
+                    } @else {
+                    <span class="never">Never</span>
+                    }
+                </td>
+            </ng-container>
+            <ng-container nbColumnDef="actions">
+                <th nbHeaderCell
+                    *nbHeaderCellDef
+                    class="actions"><span class="visually-hidden">Actions</span></th>
+                <td nbCell
+                    *nbCellDef="let key; of: source"
+                    class="actions">
+                    <button nbButton
+                        ghost
+                        size="tiny"
+                        type="button"
+                        [attr.aria-label]="'Actions for ' + key.name"
+                        [nbContextMenu]="actions">
+                        <nb-icon icon="more-horizontal-outline" />
+                    </button>
+                </td>
+            </ng-container>
+            <tr nbHeaderRow
+                *nbHeaderRowDef="columns"></tr>
+            <tr nbRow
+                *nbRowDef="let row; columns: columns"></tr>
+        </table>
+    </div>
 </nb-card>

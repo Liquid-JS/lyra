@@ -1,256 +1,256 @@
 <section class="intro">
-  <h1 class="h2">Find a place to slow down</h1>
-  <p class="lead">Cabins by creeks, cottages by the sea and flats in the middle of things, from hosts who know them
-    well.</p>
+    <h1 class="h2">Find a place to slow down</h1>
+    <p class="lead">Cabins by creeks, cottages by the sea and flats in the middle of things, from hosts who know them
+        well.</p>
 
-  <form class="search"
-    role="search"
-    (submit)="$event.preventDefault()">
-    <nb-form-field class="where">
-      <nb-icon nbPrefix
-        icon="pin-outline" />
-      <input nbInput
-        fullWidth
-        #whereInput
-        type="text"
-        placeholder="Where to?"
-        aria-label="Where"
-        [nbAutocomplete]="places"
-        [value]="where()"
-        (input)="where.set(whereInput.value); page.set(0)" />
-      <nb-autocomplete #places
-        (selectedChange)="where.set($event ?? ''); page.set(0)">
-        @for (place of suggestions(); track place) {
-        <nb-option [value]="place">{{ place }}</nb-option>
-        }
-      </nb-autocomplete>
-    </nb-form-field>
+    <form class="search"
+        role="search"
+        (submit)="$event.preventDefault()">
+        <nb-form-field class="where">
+            <nb-icon nbPrefix
+                icon="pin-outline" />
+            <input nbInput
+                fullWidth
+                #whereInput
+                type="text"
+                placeholder="Where to?"
+                aria-label="Where"
+                [nbAutocomplete]="places"
+                [value]="where()"
+                (input)="where.set(whereInput.value); page.set(0)" />
+            <nb-autocomplete #places
+                (selectedChange)="where.set($event ?? ''); page.set(0)">
+                @for (place of suggestions(); track place) {
+                <nb-option [value]="place">{{ place }}</nb-option>
+                }
+            </nb-autocomplete>
+        </nb-form-field>
 
-    <nb-form-field class="when">
-      <nb-icon nbPrefix
-        icon="calendar-outline" />
-      <input nbInput
-        fullWidth
-        placeholder="Add dates"
-        aria-label="Dates"
-        [nbDatepicker]="when"
-        [ngModel]="trips.range()"
-        name="dates"
-        (ngModelChange)="trips.range.set($event)" />
-      <nb-rangepicker #when
-        format="MMM d"
-        [min]="today" />
-    </nb-form-field>
+        <nb-form-field class="when">
+            <nb-icon nbPrefix
+                icon="calendar-outline" />
+            <input nbInput
+                fullWidth
+                placeholder="Add dates"
+                aria-label="Dates"
+                [nbDatepicker]="when"
+                [ngModel]="trips.range()"
+                name="dates"
+                (ngModelChange)="trips.range.set($event)" />
+            <nb-rangepicker #when
+                format="MMM d"
+                [min]="today" />
+        </nb-form-field>
 
-    <nb-select class="who"
-      fullWidth
-      aria-label="Guests"
-      [selected]="trips.guests()"
-      (selectedChange)="trips.guests.set($event ?? 2)">
-      @for (guests of guestOptions; track guests) {
-      <nb-option [value]="guests">{{ guests }} {{ guests === 1 ? 'guest' : 'guests' }}</nb-option>
-      }
-    </nb-select>
+        <nb-select class="who"
+            fullWidth
+            aria-label="Guests"
+            [selected]="trips.guests()"
+            (selectedChange)="trips.guests.set($event ?? 2)">
+            @for (guests of guestOptions; track guests) {
+            <nb-option [value]="guests">{{ guests }} {{ guests === 1 ? 'guest' : 'guests' }}</nb-option>
+            }
+        </nb-select>
 
-    <button nbButton
-      status="primary"
-      type="submit">
-      <nb-icon icon="search-outline" />
-      Search
-    </button>
-  </form>
+        <button nbButton
+            status="primary"
+            type="submit">
+            <nb-icon icon="search-outline" />
+            Search
+        </button>
+    </form>
 </section>
 
 <div class="chips">
-  <nb-tag-list aria-label="Kinds of place">
-    @for (type of types; track type) {
-    <nb-tag [text]="type"
-      appearance="outline"
-      [selected]="selectedTypes().has(type)"
-      (selectedChange)="toggleType(type)" />
-    }
-  </nb-tag-list>
-  <nb-tag-list aria-label="Features">
-    @for (feature of features; track feature) {
-    <nb-tag [text]="feature"
-      appearance="outline"
-      status="primary"
-      [selected]="selectedFeatures().has(feature)"
-      (selectedChange)="toggleFeature(feature)" />
-    }
-  </nb-tag-list>
+    <nb-tag-list aria-label="Kinds of place">
+        @for (type of types; track type) {
+        <nb-tag [text]="type"
+            appearance="outline"
+            [selected]="selectedTypes().has(type)"
+            (selectedChange)="toggleType(type)" />
+        }
+    </nb-tag-list>
+    <nb-tag-list aria-label="Features">
+        @for (feature of features; track feature) {
+        <nb-tag [text]="feature"
+            appearance="outline"
+            status="primary"
+            [selected]="selectedFeatures().has(feature)"
+            (selectedChange)="toggleFeature(feature)" />
+        }
+    </nb-tag-list>
 </div>
 
 <!-- The filters, in the column beside the results, or on a phone in a dialog over them. -->
 <ng-template #filters
-  let-ref="dialogRef">
-  <nb-card class="filters-card">
-    <nb-card-body>
-      <div class="filters-heading">
-        <h2 class="subtitle">Filters</h2>
-        @if (activeFilters()) {
-        <button nbButton
-          ghost
-          size="small"
-          type="button"
-          (click)="clearFilters()">Clear all</button>
-        }
-      </div>
+    let-ref="dialogRef">
+    <nb-card class="filters-card">
+        <nb-card-body>
+            <div class="filters-heading">
+                <h2 class="subtitle">Filters</h2>
+                @if (activeFilters()) {
+                <button nbButton
+                    ghost
+                    size="small"
+                    type="button"
+                    (click)="clearFilters()">Clear all</button>
+                }
+            </div>
 
-      <h3 class="label">Price per night</h3>
-      <nb-slider range
-        aria-label="Price per night"
-        [min]="priceRange.min"
-        [max]="priceRange.max"
-        step="10"
-        [formatValue]="formatPrice"
-        [(value)]="price" />
+            <h3 class="label">Price per night</h3>
+            <nb-slider range
+                aria-label="Price per night"
+                [min]="priceRange.min"
+                [max]="priceRange.max"
+                step="10"
+                [formatValue]="formatPrice"
+                [(value)]="price" />
 
-      <h3 class="label">Kind of place</h3>
-      <div class="checks">
-        @for (type of types; track type) {
-        <nb-checkbox [checked]="selectedTypes().has(type)"
-          (checkedChange)="toggleType(type)">{{ type }}</nb-checkbox>
-        }
-      </div>
+            <h3 class="label">Kind of place</h3>
+            <div class="checks">
+                @for (type of types; track type) {
+                <nb-checkbox [checked]="selectedTypes().has(type)"
+                    (checkedChange)="toggleType(type)">{{ type }}</nb-checkbox>
+                }
+            </div>
 
-      <h3 class="label">Features</h3>
-      <div class="checks">
-        @for (feature of features; track feature) {
-        <nb-checkbox [checked]="selectedFeatures().has(feature)"
-          (checkedChange)="toggleFeature(feature)">{{ feature }}</nb-checkbox>
-        }
-      </div>
+            <h3 class="label">Features</h3>
+            <div class="checks">
+                @for (feature of features; track feature) {
+                <nb-checkbox [checked]="selectedFeatures().has(feature)"
+                    (checkedChange)="toggleFeature(feature)">{{ feature }}</nb-checkbox>
+                }
+            </div>
 
-      <h3 class="label">Rating</h3>
-      <nb-select fullWidth
-        aria-label="Minimum rating"
-        [selected]="minRating()"
-        (selectedChange)="minRating.set($event ?? 0); page.set(0)">
-        <nb-option [value]="0">Any rating</nb-option>
-        <nb-option [value]="4.5">4.5 and up</nb-option>
-        <nb-option [value]="4.8">4.8 and up</nb-option>
-        <nb-option [value]="5">5 only</nb-option>
-      </nb-select>
+            <h3 class="label">Rating</h3>
+            <nb-select fullWidth
+                aria-label="Minimum rating"
+                [selected]="minRating()"
+                (selectedChange)="minRating.set($event ?? 0); page.set(0)">
+                <nb-option [value]="0">Any rating</nb-option>
+                <nb-option [value]="4.5">4.5 and up</nb-option>
+                <nb-option [value]="4.8">4.8 and up</nb-option>
+                <nb-option [value]="5">5 only</nb-option>
+            </nb-select>
 
-      @if (ref) {
-      <button nbButton
-        fullWidth
-        status="primary"
-        class="show-results"
-        type="button"
-        (click)="ref.close()">Show {{ results().length }} places</button>
-      }
-    </nb-card-body>
-  </nb-card>
+            @if (ref) {
+            <button nbButton
+                fullWidth
+                status="primary"
+                class="show-results"
+                type="button"
+                (click)="ref.close()">Show {{ results().length }} places</button>
+            }
+        </nb-card-body>
+    </nb-card>
 </ng-template>
 
 <div class="results">
-  <aside class="filters-column">
-    <ng-container *ngTemplateOutlet="filters" />
-  </aside>
+    <aside class="filters-column">
+        <ng-container *ngTemplateOutlet="filters" />
+    </aside>
 
-  <div class="listings">
-    <div class="results-heading">
-      <p class="count"
-        role="status">
-        {{ results().length }} {{ results().length === 1 ? 'place' : 'places' }}
-        @if (where()) { in <strong>{{ where() }}</strong> }
-      </p>
-      <div class="results-tools">
-        <button nbButton
-          outline
-          size="small"
-          class="filters-button"
-          type="button"
-          (click)="openFilters(filters)">
-          <nb-icon icon="options-2-outline" />
-          Filters
-          @if (activeFilters(); as count) {
-          <nb-badge [text]="'' + count"
-            status="primary"
-            position="top end" />
-          }
-        </button>
-        <nb-select size="small"
-          aria-label="Sort by"
-          [selected]="sort()"
-          (selectedChange)="sort.set($event ?? 'recommended'); page.set(0)">
-          <nb-option value="recommended">Recommended</nb-option>
-          <nb-option value="rating">Top rated</nb-option>
-          <nb-option value="price-low">Price, low to high</nb-option>
-          <nb-option value="price-high">Price, high to low</nb-option>
-        </nb-select>
-      </div>
-    </div>
-
-    @if (shown().length) {
-    <div class="grid">
-      @for (listing of shown(); track listing.id) {
-      <nb-card class="listing">
-        <div nbCardMedia
-          class="photo">
-          <img [src]="listing.image"
-            [alt]="listing.name + ', ' + listing.type.toLowerCase() + ' in ' + listing.place"
-            width="800"
-            height="600"
-            [attr.loading]="$index < 4 ? null : 'lazy'" />
-          <button nbButton
-            ghost
-            size="small"
-            class="save"
-            type="button"
-            [attr.aria-pressed]="trips.isSaved(listing.id)"
-            [attr.aria-label]="(trips.isSaved(listing.id) ? 'Remove ' : 'Save ') + listing.name"
-            (click)="trips.toggleSaved(listing.id)">
-            <nb-icon [icon]="trips.isSaved(listing.id) ? 'heart' : 'heart-outline'" />
-          </button>
+    <div class="listings">
+        <div class="results-heading">
+            <p class="count"
+                role="status">
+                {{ results().length }} {{ results().length === 1 ? 'place' : 'places' }}
+                @if (where()) { in <strong>{{ where() }}</strong> }
+            </p>
+            <div class="results-tools">
+                <button nbButton
+                    outline
+                    size="small"
+                    class="filters-button"
+                    type="button"
+                    (click)="openFilters(filters)">
+                    <nb-icon icon="options-2-outline" />
+                    Filters
+                    @if (activeFilters(); as count) {
+                    <nb-badge [text]="'' + count"
+                        status="primary"
+                        position="top end" />
+                    }
+                </button>
+                <nb-select size="small"
+                    aria-label="Sort by"
+                    [selected]="sort()"
+                    (selectedChange)="sort.set($event ?? 'recommended'); page.set(0)">
+                    <nb-option value="recommended">Recommended</nb-option>
+                    <nb-option value="rating">Top rated</nb-option>
+                    <nb-option value="price-low">Price, low to high</nb-option>
+                    <nb-option value="price-high">Price, high to low</nb-option>
+                </nb-select>
+            </div>
         </div>
-        @if (listing.badge; as badge) {
-        <nb-badge [text]="badge.text"
-          [status]="badge.status"
-          position="top start" />
-        }
-        <nb-card-body>
-          <div class="title-row">
-            <a nbCardLink
-              class="name"
-              [routerLink]="['../listing', listing.id]">{{ listing.name }}</a>
-            <npg-stay-rating [rating]="listing.rating" />
-          </div>
-          <p class="place">{{ listing.type }} in {{ listing.place }}, {{ listing.region }}</p>
-          <p class="facts">{{ listing.guests }} guests · {{ listing.bedrooms }} {{ listing.bedrooms === 1 ? 'bedroom' :
-            'bedrooms' }} · {{ listing.baths }} {{ listing.baths === 1 ? 'bath' : 'baths' }}</p>
-        </nb-card-body>
-        <nb-card-footer>
-          <p class="price"><strong>{{ listing.price | currency: 'USD' : 'symbol' : '1.0-0' }}</strong> night</p>
-          <a nbButton
-            outline
-            size="small"
-            [routerLink]="['../listing', listing.id]">View</a>
-        </nb-card-footer>
-      </nb-card>
-      }
-    </div>
-    } @else {
-    <nb-card class="empty">
-      <nb-card-body>
-        <nb-icon icon="map-outline" />
-        <h2 class="h5">No places match</h2>
-        <p>Try fewer filters, or another place.</p>
-        <button nbButton
-          outline
-          size="small"
-          type="button"
-          (click)="clearFilters(); where.set('')">Clear filters</button>
-      </nb-card-body>
-    </nb-card>
-    }
 
-    @if (results().length > pageSize) {
-    <nb-pagination [length]="results().length"
-      [pageSize]="pageSize"
-      [(page)]="page" />
-    }
-  </div>
+        @if (shown().length) {
+        <div class="grid">
+            @for (listing of shown(); track listing.id) {
+            <nb-card class="listing">
+                <div nbCardMedia
+                    class="photo">
+                    <img [src]="listing.image"
+                        [alt]="listing.name + ', ' + listing.type.toLowerCase() + ' in ' + listing.place"
+                        width="800"
+                        height="600"
+                        [attr.loading]="$index < 4 ? null : 'lazy'" />
+                    <button nbButton
+                        ghost
+                        size="small"
+                        class="save"
+                        type="button"
+                        [attr.aria-pressed]="trips.isSaved(listing.id)"
+                        [attr.aria-label]="(trips.isSaved(listing.id) ? 'Remove ' : 'Save ') + listing.name"
+                        (click)="trips.toggleSaved(listing.id)">
+                        <nb-icon [icon]="trips.isSaved(listing.id) ? 'heart' : 'heart-outline'" />
+                    </button>
+                </div>
+                @if (listing.badge; as badge) {
+                <nb-badge [text]="badge.text"
+                    [status]="badge.status"
+                    position="top start" />
+                }
+                <nb-card-body>
+                    <div class="title-row">
+                        <a nbCardLink
+                            class="name"
+                            [routerLink]="['../listing', listing.id]">{{ listing.name }}</a>
+                        <npg-stay-rating [rating]="listing.rating" />
+                    </div>
+                    <p class="place">{{ listing.type }} in {{ listing.place }}, {{ listing.region }}</p>
+                    <p class="facts">{{ listing.guests }} guests · {{ listing.bedrooms }} {{ listing.bedrooms === 1 ? 'bedroom' :
+                        'bedrooms' }} · {{ listing.baths }} {{ listing.baths === 1 ? 'bath' : 'baths' }}</p>
+                </nb-card-body>
+                <nb-card-footer>
+                    <p class="price"><strong>{{ listing.price | currency: 'USD' : 'symbol' : '1.0-0' }}</strong> night</p>
+                    <a nbButton
+                        outline
+                        size="small"
+                        [routerLink]="['../listing', listing.id]">View</a>
+                </nb-card-footer>
+            </nb-card>
+            }
+        </div>
+        } @else {
+        <nb-card class="empty">
+            <nb-card-body>
+                <nb-icon icon="map-outline" />
+                <h2 class="h5">No places match</h2>
+                <p>Try fewer filters, or another place.</p>
+                <button nbButton
+                    outline
+                    size="small"
+                    type="button"
+                    (click)="clearFilters(); where.set('')">Clear filters</button>
+            </nb-card-body>
+        </nb-card>
+        }
+
+        @if (results().length > pageSize) {
+        <nb-pagination [length]="results().length"
+            [pageSize]="pageSize"
+            [(page)]="page" />
+        }
+    </div>
 </div>

@@ -1,76 +1,73 @@
-@use '../../styles/theming' as *;
-@use 'tag-filled';
-@use 'tag-outline';
-@use 'tag-hero';
+@use "../../styles/theming" as *;
+@use "tag-filled";
+@use "tag-outline";
+@use "tag-hero";
 
 @mixin nb-tag-theme() {
-  nb-tag {
-    border-style: nb-theme(tag-border-style);
-    border-width: nb-theme(tag-border-width);
-    border-radius: nb-theme(tag-border-radius);
+    nb-tag {
+        border-style: nb-theme(tag-border-style);
+        border-width: nb-theme(tag-border-width);
+        border-radius: nb-theme(tag-border-radius);
+        display: inline-flex;
+        align-items: center;
+        font-family: nb-theme(tag-text-font-family);
+        text-transform: nb-theme(tag-text-transform);
+        cursor: default;
 
-    display: inline-flex;
-    align-items: center;
-
-    font-family: nb-theme(tag-text-font-family);
-    text-transform: nb-theme(tag-text-transform);
-
-    cursor: default;
-
-    &.nb-transition {
-      @include nb-component-animation(background-color, border-color, color);
-    }
-
-    @each $size in nb-get-sizes() {
-      &.size-#{$size} {
-        font-size: nb-theme(tag-#{$size}-text-font-size);
-        font-weight: nb-theme(tag-#{$size}-text-font-weight);
-        line-height: nb-theme(tag-#{$size}-text-line-height);
-        padding: nb-theme(tag-#{$size}-padding);
-      }
-    }
-
-    @include tag-filled.nb-tag-filled();
-    @include tag-outline.nb-tag-outline();
-    @include tag-hero.nb-tag-hero();
-  }
-
-  .nb-tag-remove {
-    cursor: pointer;
-
-    @each $size in nb-get-sizes() {
-      &.size-#{$size} {
-        font-size: nb-theme(tag-#{$size}-text-line-height);
-
-        @include nb-ltr() {
-          margin-left: nb-theme(tag-#{$size}-close-offset);
-          margin-right: nb-theme-var-negative(nb-theme(tag-#{$size}-close-offset));
+        &.nb-transition {
+            @include nb-component-animation(background-color, border-color, color);
         }
-        @include nb-rtl() {
-          margin-right: nb-theme(tag-#{$size}-close-offset);
-          margin-left: nb-theme-var-negative(nb-theme(tag-#{$size}-close-offset));
+
+        @each $size in nb-get-sizes() {
+            &.size-#{$size} {
+                font-size: nb-theme(tag-#{$size}-text-font-size);
+                font-weight: nb-theme(tag-#{$size}-text-font-weight);
+                line-height: nb-theme(tag-#{$size}-text-line-height);
+                padding: nb-theme(tag-#{$size}-padding);
+            }
         }
-      }
-    }
-  }
 
-  // A tag on its own: the remove control is a button, which the keyboard reaches and shows the focus ring on.
-  .nb-tag-remove-button {
-    display: inline-flex;
-    padding: 0;
-    border: 0;
-    border-radius: 50%;
-    background: none;
-    color: inherit;
-    font-family: inherit;
-    line-height: 1;
-
-    &:focus {
-      outline: none;
+        @include tag-filled.nb-tag-filled;
+        @include tag-outline.nb-tag-outline;
+        @include tag-hero.nb-tag-hero;
     }
 
-    &:focus-visible {
-      box-shadow: 0 0 0 nb-theme(outline-width) nb-theme(outline-color);
+    .nb-tag-remove {
+        cursor: pointer;
+
+        @each $size in nb-get-sizes() {
+            &.size-#{$size} {
+                font-size: nb-theme(tag-#{$size}-text-line-height);
+
+                @include nb-ltr {
+                    margin-left: nb-theme(tag-#{$size}-close-offset);
+                    margin-right: nb-theme-var-negative(nb-theme(tag-#{$size}-close-offset));
+                }
+                @include nb-rtl {
+                    margin-right: nb-theme(tag-#{$size}-close-offset);
+                    margin-left: nb-theme-var-negative(nb-theme(tag-#{$size}-close-offset));
+                }
+            }
+        }
     }
-  }
+
+    // A tag on its own: the remove control is a button, which the keyboard reaches and shows the focus ring on.
+    .nb-tag-remove-button {
+        display: inline-flex;
+        padding: 0;
+        border: 0;
+        border-radius: 50%;
+        background: none;
+        color: inherit;
+        font-family: inherit;
+        line-height: 1;
+
+        &:focus {
+            outline: none;
+        }
+
+        &:focus-visible {
+            box-shadow: 0 0 0 nb-theme(outline-width) nb-theme(outline-color);
+        }
+    }
 }

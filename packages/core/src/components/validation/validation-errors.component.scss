@@ -1,24 +1,24 @@
 :host {
-  display: block;
+    display: block;
 }
 
 // Messages open and close their height with animations from the component; their gap is on the text inside, so
 // it opens and closes with them, and `flow-root` keeps that margin inside their height.
 .validation-error,
 .validation-helper {
-  display: flow-root;
+    display: flow-root;
 }
 
 // The helper text is closed while errors show, and hidden, which also leaves it out of the field's description.
 .validation-helper {
-  &.validation-collapsed {
-    height: 0;
-    opacity: 0;
-    visibility: hidden;
-  }
+    &.validation-collapsed {
+        height: 0;
+        opacity: 0;
+        visibility: hidden;
+    }
 
-  // No helper text, no room for it.
-  &:has(.validation-text:empty) {
-    display: none;
-  }
+    // No helper text, no room for it.
+    &:has(.validation-text:empty) {
+        display: none;
+    }
 }

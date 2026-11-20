@@ -1,100 +1,98 @@
-@use '../../styles/theming' as *;
+@use "../../styles/theming" as *;
 
 @mixin nb-list-theme() {
-  nb-list {
-    @include nb-scrollbars(
-      nb-theme(list-scrollbar-color),
-      nb-theme(list-scrollbar-background-color),
-      nb-theme(list-scrollbar-width)
-    );
-  }
-
-  nb-list-item {
-    border-bottom: nb-theme(list-item-divider-width) nb-theme(list-item-divider-style) nb-theme(list-item-divider-color);
-
-    color: nb-theme(list-item-text-color);
-    font-family: nb-theme(list-item-font-family);
-    font-size: nb-theme(list-item-font-size);
-    font-weight: nb-theme(list-item-font-weight);
-    line-height: nb-theme(list-item-line-height);
-    padding: nb-theme(list-item-padding);
-    padding-inline: nb-theme(list-item-padding-inline);
-
-    &:first-child {
-      border-top: nb-theme(list-item-divider-width) nb-theme(list-item-divider-style) nb-theme(list-item-divider-color);
+    nb-list {
+        @include nb-scrollbars(
+            nb-theme(list-scrollbar-color),
+            nb-theme(list-scrollbar-background-color),
+            nb-theme(list-scrollbar-width)
+        );
     }
 
-    // Laid out with a title and actions; other content keeps its own spacing.
-    &:has(> nb-list-item-title, > nb-list-item-actions) {
-      gap: nb-theme(list-item-gap);
-    }
-  }
+    nb-list-item {
+        border-bottom: nb-theme(list-item-divider-width) nb-theme(list-item-divider-style) nb-theme(list-item-divider-color);
+        color: nb-theme(list-item-text-color);
+        font-family: nb-theme(list-item-font-family);
+        font-size: nb-theme(list-item-font-size);
+        font-weight: nb-theme(list-item-font-weight);
+        line-height: nb-theme(list-item-line-height);
+        padding: nb-theme(list-item-padding);
+        padding-inline: nb-theme(list-item-padding-inline);
 
-  // In a card, items start where its header's text does; in a card's body, which is in already, where the body's text
-  // does. As specific as an item, so an item's own padding still wins.
-  :where(nb-card > nb-list) nb-list-item {
-    padding-inline: nb-theme(list-card-edge-padding);
-  }
+        &:first-child {
+            border-top: nb-theme(list-item-divider-width) nb-theme(list-item-divider-style) nb-theme(list-item-divider-color);
+        }
 
-  :where(nb-card-body nb-list) nb-list-item {
-    padding-inline: 0;
-  }
-
-  // Directly in a card, the card's border, or its header's or footer's divider, is above the first item and under the
-  // last one already.
-  :where(nb-card > nb-list) > nb-list-item:first-child {
-    border-top: none;
-  }
-
-  :where(nb-card > nb-list) > nb-list-item:last-child {
-    border-bottom: none;
-  }
-
-  nb-list-item-title {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    min-width: 0;
-
-    color: nb-theme(list-item-title-text-color);
-    font-family: nb-theme(list-item-title-font-family);
-    font-size: nb-theme(list-item-title-font-size);
-    font-weight: nb-theme(list-item-title-font-weight);
-    line-height: nb-theme(list-item-title-line-height);
-  }
-
-  nb-list-item-description {
-    color: nb-theme(list-item-description-text-color);
-    font-family: nb-theme(list-item-description-font-family);
-    font-size: nb-theme(list-item-description-font-size);
-    font-weight: nb-theme(list-item-description-font-weight);
-    line-height: nb-theme(list-item-description-line-height);
-  }
-
-  nb-list-item-actions {
-    display: flex;
-    align-items: center;
-    gap: nb-theme(list-item-actions-gap);
-    margin-inline-start: auto;
-  }
-
-  // An item with an `nbListItemLink` responds as one: the link covers it, and the item shows the link's states.
-  @include nb-stretched-link(nb-list-item, '.list-item-link');
-
-  nb-list-item:has(.list-item-link) {
-    @include nb-component-animation(background-color, box-shadow);
-
-    &:has(.list-item-link:hover) {
-      background-color: nb-theme(list-item-hover-background-color);
+        // Laid out with a title and actions; other content keeps its own spacing.
+        &:has(> nb-list-item-title, > nb-list-item-actions) {
+            gap: nb-theme(list-item-gap);
+        }
     }
 
-    &:has(.list-item-link:active) {
-      background-color: nb-theme(list-item-active-background-color);
+    // In a card, items start where its header's text does; in a card's body, which is in already, where the body's text
+    // does. As specific as an item, so an item's own padding still wins.
+    :where(nb-card > nb-list) nb-list-item {
+        padding-inline: nb-theme(list-card-edge-padding);
     }
 
-    // Inside, as the list clips what's outside its items.
-    &:has(.list-item-link:focus-visible) {
-      box-shadow: inset 0 0 0 nb-theme(list-item-outline-width) nb-theme(list-item-outline-color);
+    :where(nb-card-body nb-list) nb-list-item {
+        padding-inline: 0;
     }
-  }
+
+    // Directly in a card, the card's border, or its header's or footer's divider, is above the first item and under the
+    // last one already.
+    :where(nb-card > nb-list) > nb-list-item:first-child {
+        border-top: none;
+    }
+
+    :where(nb-card > nb-list) > nb-list-item:last-child {
+        border-bottom: none;
+    }
+
+    nb-list-item-title {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        min-width: 0;
+        color: nb-theme(list-item-title-text-color);
+        font-family: nb-theme(list-item-title-font-family);
+        font-size: nb-theme(list-item-title-font-size);
+        font-weight: nb-theme(list-item-title-font-weight);
+        line-height: nb-theme(list-item-title-line-height);
+    }
+
+    nb-list-item-description {
+        color: nb-theme(list-item-description-text-color);
+        font-family: nb-theme(list-item-description-font-family);
+        font-size: nb-theme(list-item-description-font-size);
+        font-weight: nb-theme(list-item-description-font-weight);
+        line-height: nb-theme(list-item-description-line-height);
+    }
+
+    nb-list-item-actions {
+        display: flex;
+        align-items: center;
+        gap: nb-theme(list-item-actions-gap);
+        margin-inline-start: auto;
+    }
+
+    // An item with an `nbListItemLink` responds as one: the link covers it, and the item shows the link's states.
+    @include nb-stretched-link(nb-list-item, ".list-item-link");
+
+    nb-list-item:has(.list-item-link) {
+        @include nb-component-animation(background-color, box-shadow);
+
+        &:has(.list-item-link:hover) {
+            background-color: nb-theme(list-item-hover-background-color);
+        }
+
+        &:has(.list-item-link:active) {
+            background-color: nb-theme(list-item-active-background-color);
+        }
+
+        // Inside, as the list clips what's outside its items.
+        &:has(.list-item-link:focus-visible) {
+            box-shadow: inset 0 0 0 nb-theme(list-item-outline-width) nb-theme(list-item-outline-color);
+        }
+    }
 }

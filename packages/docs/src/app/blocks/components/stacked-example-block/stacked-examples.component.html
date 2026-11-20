@@ -1,15 +1,15 @@
 <div>
-  <ngd-live-example-block [hidden]="!isLive"
-    [class.pulse-a]="pulse === 1"
-    [class.pulse-b]="pulse === 2"
-    [content]="content()"
-    [hasViewSwitch]="true"
-    (changeView)="changeView($event)" />
+    <ngd-live-example-block [hidden]="!isLive"
+        [class.pulse-a]="pulse === 1"
+        [class.pulse-b]="pulse === 2"
+        [content]="content()"
+        [hasViewSwitch]="true"
+        (changeView)="changeView($event)" />
 
-  <ngd-tabbed-example-block [hidden]="isLive"
-    [class.pulse-a]="pulse === 1"
-    [class.pulse-b]="pulse === 2"
-    [content]="content()"
-    [hasViewSwitch]="true"
-    (changeView)="changeView($event)" />
+    <ngd-tabbed-example-block [hidden]="isLive"
+        [class.pulse-a]="pulse === 1"
+        [class.pulse-b]="pulse === 2"
+        [content]="content()"
+        [hasViewSwitch]="true"
+        (changeView)="changeView($event)" />
 </div>

@@ -1,2 +1,2 @@
-export * from './icons.module';
-export * from './generated/icons';
+export * from './icons.module'
+export * from './generated/icons'

@@ -1,159 +1,166 @@
-@use '../../styles/theming' as *;
-@use 'button-look' as look;
+@use "../../styles/theming" as *;
+@use "button-look" as look;
 
 @mixin nb-buttons-theme() {
-  [nbButton] {
-    @include look.core();
+    [nbButton] {
+        @include look.core;
 
-    &.full-width {
-      width: 100%;
-    }
-
-    nb-icon {
-      // A label too long for the button doesn't squeeze its icon away.
-      flex-shrink: 0;
-      vertical-align: top;
-    }
-
-    &.nb-transition {
-      @include nb-component-animation(background-color, border-color, box-shadow, color);
-    }
-
-    @include look.base('[disabled], .btn-disabled');
-
-    // The content keeps its space, so the button doesn't change size; currentColor still gives the spinner its color.
-    &.btn-loading {
-      position: relative;
-      cursor: nb-theme(button-loading-cursor);
-      -webkit-text-fill-color: transparent;
-      text-shadow: none;
-
-      nb-icon {
-        visibility: hidden;
-      }
-    }
-
-    .nb-button-spinner {
-      position: absolute;
-      inset: 0;
-      margin: auto;
-      border: nb-theme(button-spinner-border-width) solid currentColor;
-      border-right-color: transparent;
-      border-radius: 50%;
-      animation: nb-button-spin 0.75s linear infinite;
-    }
-
-    @keyframes nb-button-spin {
-      to {
-        transform: rotate(360deg);
-      }
-    }
-
-    @each $size in nb-get-sizes() {
-      &.size-#{$size} {
-        @include look.size($size);
-
-        .nb-button-spinner {
-          height: nb-theme(button-#{$size}-icon-size);
-          width: nb-theme(button-#{$size}-icon-size);
+        &.full-width {
+            width: 100%;
         }
 
         nb-icon {
-          font-size: nb-theme(button-#{$size}-text-font-size);
-          height: nb-theme(button-#{$size}-icon-size);
-          width: nb-theme(button-#{$size}-icon-size);
-          margin-top: nb-theme(button-#{$size}-icon-vertical-margin);
-          margin-bottom: nb-theme(button-#{$size}-icon-vertical-margin);
+            // A label too long for the button doesn't squeeze its icon away.
+            flex-shrink: 0;
+            vertical-align: top;
         }
 
-        $icon-offset: nb-theme(button-#{$size}-icon-offset);
-        &.icon-start:not(.icon-end) nb-icon {
-          @include nb-ltr(margin-right, $icon-offset);
-          @include nb-rtl(margin-left, $icon-offset);
-        }
-        &.icon-end:not(.icon-start) nb-icon {
-          @include nb-ltr(margin-left, $icon-offset);
-          @include nb-rtl(margin-right, $icon-offset);
+        &.nb-transition {
+            @include nb-component-animation(background-color, border-color, box-shadow, color);
         }
 
-        @each $appearance in ('filled', 'outline', 'ghost', 'hero') {
-          &.icon-start.icon-end.appearance-#{$appearance} {
-            padding: nb-theme(icon-button-#{$appearance}-#{$size}-padding);
-            padding-block: 0;
-          }
+        @include look.base("[disabled], .btn-disabled");
+
+        // The content keeps its space, so the button doesn't change size; currentColor still gives the spinner its color.
+        &.btn-loading {
+            position: relative;
+            cursor: nb-theme(button-loading-cursor);
+            -webkit-text-fill-color: transparent;
+            text-shadow: none;
+
+            nb-icon {
+                visibility: hidden;
+            }
         }
 
-        // With an edge, the button reaches past it by as much as its content is inset, so its label, or the icon of an
-        // icon button (square, the icon in the middle), lines up with the content around it.
-        $label-edge: calc(-1 * #{nb-theme(control-#{$size}-inset)});
-        $icon-edge: calc((#{nb-theme(button-#{$size}-icon-size)} - #{nb-theme(control-#{$size}-height)}) / 2);
-        &.edge-start {
-          margin-inline-start: $label-edge;
-        }
-        &.edge-end {
-          margin-inline-end: $label-edge;
-        }
-        &.icon-start.icon-end.edge-start {
-          margin-inline-start: $icon-edge;
-        }
-        &.icon-start.icon-end.edge-end {
-          margin-inline-end: $icon-edge;
+        .nb-button-spinner {
+            position: absolute;
+            inset: 0;
+            margin: auto;
+            border: nb-theme(button-spinner-border-width) solid currentcolor;
+            border-right-color: transparent;
+            border-radius: 50%;
+            animation: nb-button-spin 0.75s linear infinite;
         }
 
-        // Inline, the button takes its label's line in the layout, or an icon button its icon's height.
-        &.btn-inline {
-          margin-block: calc((#{nb-theme(button-#{$size}-text-line-height)} - #{nb-theme(control-#{$size}-height)}) / 2);
+        @keyframes nb-button-spin {
+            to {
+                transform: rotate(360deg);
+            }
         }
-        &.icon-start.icon-end.btn-inline {
-          margin-block: $icon-edge;
+
+        @each $size in nb-get-sizes() {
+            &.size-#{$size} {
+                @include look.size($size);
+
+                .nb-button-spinner {
+                    height: nb-theme(button-#{$size}-icon-size);
+                    width: nb-theme(button-#{$size}-icon-size);
+                }
+
+                nb-icon {
+                    font-size: nb-theme(button-#{$size}-text-font-size);
+                    height: nb-theme(button-#{$size}-icon-size);
+                    width: nb-theme(button-#{$size}-icon-size);
+                    margin-top: nb-theme(button-#{$size}-icon-vertical-margin);
+                    margin-bottom: nb-theme(button-#{$size}-icon-vertical-margin);
+                }
+
+                $icon-offset: nb-theme(button-#{$size}-icon-offset);
+
+                &.icon-start:not(.icon-end) nb-icon {
+                    @include nb-ltr(margin-right, $icon-offset);
+                    @include nb-rtl(margin-left, $icon-offset);
+                }
+
+                &.icon-end:not(.icon-start) nb-icon {
+                    @include nb-ltr(margin-left, $icon-offset);
+                    @include nb-rtl(margin-right, $icon-offset);
+                }
+
+                @each $appearance in ("filled", "outline", "ghost", "hero") {
+                    &.icon-start.icon-end.appearance-#{$appearance} {
+                        padding: nb-theme(icon-button-#{$appearance}-#{$size}-padding);
+                        padding-block: 0;
+                    }
+                }
+
+                // With an edge, the button reaches past it by as much as its content is inset, so its label, or the icon of an
+                // icon button (square, the icon in the middle), lines up with the content around it.
+                $label-edge: calc(-1 * #{nb-theme(control-#{$size}-inset)});
+                $icon-edge: calc((#{nb-theme(button-#{$size}-icon-size)} - #{nb-theme(control-#{$size}-height)}) / 2);
+
+                &.edge-start {
+                    margin-inline-start: $label-edge;
+                }
+
+                &.edge-end {
+                    margin-inline-end: $label-edge;
+                }
+
+                &.icon-start.icon-end.edge-start {
+                    margin-inline-start: $icon-edge;
+                }
+
+                &.icon-start.icon-end.edge-end {
+                    margin-inline-end: $icon-edge;
+                }
+
+                // Inline, the button takes its label's line in the layout, or an icon button its icon's height.
+                &.btn-inline {
+                    margin-block: calc((#{nb-theme(button-#{$size}-text-line-height)} - #{nb-theme(control-#{$size}-height)}) / 2);
+                }
+
+                &.icon-start.icon-end.btn-inline {
+                    margin-block: $icon-edge;
+                }
+            }
         }
-      }
+
+        @each $shape in nb-get-shapes() {
+            &.shape-#{$shape} {
+                @include look.shape($shape);
+            }
+        }
     }
 
-    @each $shape in nb-get-shapes() {
-      &.shape-#{$shape} {
-        @include look.shape($shape);
-      }
+    a[nbButton] {
+        text-decoration: none;
     }
-  }
 
-  a[nbButton] {
-    text-decoration: none;
-  }
+    @each $appearance in look.$appearances {
+        [nbButton].appearance-#{$appearance} {
+            @include look.appearance($appearance);
 
-  @each $appearance in look.$appearances {
-    [nbButton].appearance-#{$appearance} {
-      @include look.appearance($appearance);
-
-      @each $size in nb-get-sizes() {
-        &.size-#{$size} {
-          @include look.padding($appearance, $size);
-        }
-      }
-
-      @each $status in nb-get-statuses() {
-        &.status-#{$status} {
-          @include look.status($appearance, $status, '[disabled], .btn-disabled');
-
-          @if $appearance == 'hero' {
-            &.button-pulse {
-              animation: button-hero-#{$status}-pulse 0.75s infinite alternate;
+            @each $size in nb-get-sizes() {
+                &.size-#{$size} {
+                    @include look.padding($appearance, $size);
+                }
             }
 
-            @include keyframes(button-hero-#{$status}-pulse) {
-              0% {
-                box-shadow: none;
-                opacity: 0.3;
-              }
+            @each $status in nb-get-statuses() {
+                &.status-#{$status} {
+                    @include look.status($appearance, $status, "[disabled], .btn-disabled");
 
-              100% {
-                box-shadow: 0 0 1rem 0 nb-theme(button-hero-#{$status}-left-background-color);
-                opacity: 0.8;
-              }
+                    @if $appearance == "hero" {
+                        &.button-pulse {
+                            animation: button-hero-#{$status}-pulse 0.75s infinite alternate;
+                        }
+
+                        @include keyframes(button-hero-#{$status}-pulse) {
+                            0% {
+                                box-shadow: none;
+                                opacity: 0.3;
+                            }
+
+                            100% {
+                                box-shadow: 0 0 1rem 0 nb-theme(button-hero-#{$status}-left-background-color);
+                                opacity: 0.8;
+                            }
+                        }
+                    }
+                }
             }
-          }
         }
-      }
     }
-  }
 }

@@ -1,10 +1,10 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Component, signal } from '@angular/core';
-import { By } from '@angular/platform-browser';
-import { NbThemeModule, NbChatModule, NbChatComponent } from '@liquid-js/lyr-core';
+import { ComponentFixture, TestBed } from '@angular/core/testing'
+import { Component, signal } from '@angular/core'
+import { By } from '@angular/platform-browser'
+import { NbThemeModule, NbChatModule, NbChatComponent } from '@liquid-js/lyr-core'
 
 @Component({
-  template: `
+    template: `
     <nb-chat [title]="title">
       <ng-template nbChatTitle [context]="{ text: contextTemplateText }" let-data>
         {{ staticTemplateText }} {{ data.text }}
@@ -29,118 +29,118 @@ import { NbThemeModule, NbChatModule, NbChatComponent } from '@liquid-js/lyr-cor
       <nb-chat-form [dropFiles]="false" />
     </nb-chat>
   `,
-  imports: [NbChatModule],
+    imports: [NbChatModule]
 })
 export class NbChatTitleTemplateTestComponent {
-  messages = [
-    {
-      reply: false,
-      type: 'link',
-      optionalData: {
-        href: 'https://akveo.github.io/ngx-admin/',
-        label: 'Visit Akveo Lyra',
-      },
-      date: new Date(),
-      user: {
-        name: 'Frodo Baggins',
-        avatar: 'https://i.gifer.com/no.gif',
-      },
-    },
-    {
-      text: 'Hello, how are you?',
-      reply: true,
-      type: 'text',
-      date: new Date(),
-      user: {
-        name: 'Bilbo Baggins',
-        avatar: '',
-      },
-    },
-  ];
+    messages = [
+        {
+            reply: false,
+            type: 'link',
+            optionalData: {
+                href: 'https://akveo.github.io/ngx-admin/',
+                label: 'Visit Akveo Lyra'
+            },
+            date: new Date(),
+            user: {
+                name: 'Frodo Baggins',
+                avatar: 'https://i.gifer.com/no.gif'
+            }
+        },
+        {
+            text: 'Hello, how are you?',
+            reply: true,
+            type: 'text',
+            date: new Date(),
+            user: {
+                name: 'Bilbo Baggins',
+                avatar: ''
+            }
+        }
+    ]
 
-  title = 'chat title';
-  staticTemplateText = 'staticTemplateText';
-  contextTemplateText = 'contextTemplateText';
+    title = 'chat title'
+    staticTemplateText = 'staticTemplateText'
+    contextTemplateText = 'contextTemplateText'
 }
 
 describe('NbChatTitleDirective', () => {
-  let fixture: ComponentFixture<NbChatTitleTemplateTestComponent>;
-  let testComponent: NbChatTitleTemplateTestComponent;
+    let fixture: ComponentFixture<NbChatTitleTemplateTestComponent>
+    let testComponent: NbChatTitleTemplateTestComponent
 
-  beforeEach(() => {
-    TestBed.configureTestingModule({
-      imports: [NbThemeModule.forRoot(), NbChatModule, NbChatTitleTemplateTestComponent],
-    });
+    beforeEach(() => {
+        TestBed.configureTestingModule({
+            imports: [NbThemeModule.forRoot(), NbChatModule, NbChatTitleTemplateTestComponent]
+        })
 
-    fixture = TestBed.createComponent(NbChatTitleTemplateTestComponent);
-    testComponent = fixture.componentInstance;
-    fixture.detectChanges();
-  });
+        fixture = TestBed.createComponent(NbChatTitleTemplateTestComponent)
+        testComponent = fixture.componentInstance
+        fixture.detectChanges()
+    })
 
-  it('should render title template if provided', () => {
-    const chatHeaderElement: HTMLElement = fixture.debugElement
-      .query(By.directive(NbChatComponent))
-      .query(By.css('.header')).nativeElement;
-    const expectedText = ` ${testComponent.staticTemplateText} ${testComponent.contextTemplateText} `;
+    it('should render title template if provided', () => {
+        const chatHeaderElement: HTMLElement = fixture.debugElement
+            .query(By.directive(NbChatComponent))
+            .query(By.css('.header')).nativeElement
+        const expectedText = ` ${testComponent.staticTemplateText} ${testComponent.contextTemplateText} `
 
-    expect(chatHeaderElement.textContent).toEqual(expectedText);
-  });
+        expect(chatHeaderElement.textContent).toEqual(expectedText)
+    })
 
-  it('should not render text title if template title is provided', () => {
-    const chatHeaderElement: HTMLElement = fixture.debugElement
-      .query(By.directive(NbChatComponent))
-      .query(By.css('.header')).nativeElement;
+    it('should not render text title if template title is provided', () => {
+        const chatHeaderElement: HTMLElement = fixture.debugElement
+            .query(By.directive(NbChatComponent))
+            .query(By.css('.header')).nativeElement
 
-    expect(chatHeaderElement.textContent).not.toContain(testComponent.title);
-  });
-});
+        expect(chatHeaderElement.textContent).not.toContain(testComponent.title)
+    })
+})
 
 @Component({
-  template: `<nb-chat title="Support" noMessagesPlaceholder="Nothing here yet" />`,
-  imports: [NbChatModule],
+    template: '<nb-chat title="Support" noMessagesPlaceholder="Nothing here yet" />',
+    imports: [NbChatModule]
 })
 class NbChatTextTitleTestComponent {}
 
 describe('NbChatComponent text title', () => {
-  // The texts take their own direction, without changing how the title is aligned in the header.
-  it('should isolate the direction of the title and the empty placeholder', () => {
-    TestBed.configureTestingModule({
-      imports: [NbThemeModule.forRoot(), NbChatModule, NbChatTextTitleTestComponent],
-    });
-    const fixture = TestBed.createComponent(NbChatTextTitleTestComponent);
-    fixture.detectChanges();
+    // The texts take their own direction, without changing how the title is aligned in the header.
+    it('should isolate the direction of the title and the empty placeholder', () => {
+        TestBed.configureTestingModule({
+            imports: [NbThemeModule.forRoot(), NbChatModule, NbChatTextTitleTestComponent]
+        })
+        const fixture = TestBed.createComponent(NbChatTextTitleTestComponent)
+        fixture.detectChanges()
 
-    const element: HTMLElement = fixture.nativeElement;
-    expect(element.querySelector('.header')?.hasAttribute('dir')).toBe(false);
-    expect(element.querySelector('.header [dir="auto"]')?.textContent).toBe('Support');
-    expect(element.querySelector('.no-messages')?.getAttribute('dir')).toBe('auto');
-  });
-});
+        const element: HTMLElement = fixture.nativeElement
+        expect(element.querySelector('.header')?.hasAttribute('dir')).toBe(false)
+        expect(element.querySelector('.header [dir="auto"]')?.textContent).toBe('Support')
+        expect(element.querySelector('.no-messages')?.getAttribute('dir')).toBe('auto')
+    })
+})
 
 @Component({
-  template: `<nb-chat [title]="title()" />`,
-  imports: [NbChatModule],
+    template: '<nb-chat [title]="title()" />',
+    imports: [NbChatModule]
 })
 class NbChatMessagesRegionTestComponent {
-  readonly title = signal('Support');
+    readonly title = signal('Support')
 }
 
 describe('NbChatComponent messages', () => {
-  // A Tab stop, so the messages scroll by keyboard in Safari too, named for screen readers.
-  it('should make the messages a named, focusable log', () => {
-    TestBed.configureTestingModule({
-      imports: [NbThemeModule.forRoot(), NbChatModule, NbChatMessagesRegionTestComponent],
-    });
-    const fixture = TestBed.createComponent(NbChatMessagesRegionTestComponent);
-    fixture.detectChanges();
+    // A Tab stop, so the messages scroll by keyboard in Safari too, named for screen readers.
+    it('should make the messages a named, focusable log', () => {
+        TestBed.configureTestingModule({
+            imports: [NbThemeModule.forRoot(), NbChatModule, NbChatMessagesRegionTestComponent]
+        })
+        const fixture = TestBed.createComponent(NbChatMessagesRegionTestComponent)
+        fixture.detectChanges()
 
-    const scrollable = (fixture.nativeElement as HTMLElement).querySelector('.scrollable');
-    expect(scrollable?.getAttribute('role')).toBe('log');
-    expect(scrollable?.getAttribute('tabindex')).toBe('0');
-    expect(scrollable?.getAttribute('aria-label')).toBe('Support');
+        const scrollable = (fixture.nativeElement as HTMLElement).querySelector('.scrollable')
+        expect(scrollable?.getAttribute('role')).toBe('log')
+        expect(scrollable?.getAttribute('tabindex')).toBe('0')
+        expect(scrollable?.getAttribute('aria-label')).toBe('Support')
 
-    fixture.componentInstance.title.set('');
-    fixture.detectChanges();
-    expect(scrollable?.getAttribute('aria-label')).toBe('Messages');
-  });
-});
+        fixture.componentInstance.title.set('')
+        fixture.detectChanges()
+        expect(scrollable?.getAttribute('aria-label')).toBe('Messages')
+    })
+})

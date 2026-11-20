@@ -1,19 +1,19 @@
-import { DatePipe } from '@angular/common';
-import { Component } from '@angular/core';
+import { DatePipe } from '@angular/common'
+import { Component } from '@angular/core'
 import {
-  NbCardModule,
-  NbDataTableModule,
-  NbInputModule,
-  NbPaginationComponent,
-  nbTableDataSource,
-} from '@liquid-js/lyr-core';
+    NbCardModule,
+    NbDataTableModule,
+    NbInputModule,
+    NbPaginationComponent,
+    nbTableDataSource
+} from '@liquid-js/lyr-core'
 
-import { TABLE_USERS } from './table-users';
+import { TABLE_USERS } from './table-users'
 
 @Component({
-  selector: 'nb-table-showcase',
-  templateUrl: './table-showcase.component.html',
-  styles: `
+    selector: 'nb-table-showcase',
+    templateUrl: './table-showcase.component.html',
+    styles: `
     nb-card-header {
       display: flex;
       align-items: center;
@@ -21,9 +21,9 @@ import { TABLE_USERS } from './table-users';
       gap: 1rem;
     }
   `,
-  imports: [DatePipe, NbCardModule, NbDataTableModule, NbInputModule, NbPaginationComponent],
+    imports: [DatePipe, NbCardModule, NbDataTableModule, NbInputModule, NbPaginationComponent]
 })
 export class TableShowcaseComponent {
-  readonly columns = ['name', 'email', 'role', 'joined'];
-  readonly source = nbTableDataSource({ data: TABLE_USERS, pageSize: 5 });
+    readonly columns = ['name', 'email', 'role', 'joined']
+    readonly source = nbTableDataSource({ data: TABLE_USERS, pageSize: 5 })
 }

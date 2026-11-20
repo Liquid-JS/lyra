@@ -1,97 +1,99 @@
-@use '../../../@theme/styles/themes' as *;
-@use '../../../../../../core/src/styles/globals' as *;
+@use "../../../@theme/styles/themes" as *;
+@use "../../../../../../core/src/styles/globals" as *;
 
-@include nb-install-component() {
-  $tab-fg: nb-theme(color-fg-heading-light);
-  $tab-active-fg: #ffffff;
-  $tab-active-bg: linear-gradient(225deg, #333c66 0%, #1d2447 100%);
-  $tabs-bb: #ebeff5;
+@include nb-install-component {
+    $tab-fg: nb-theme(color-fg-heading-light);
+    $tab-active-fg: #ffffff;
+    $tab-active-bg: linear-gradient(225deg, #333c66 0%, #1d2447 100%);
+    $tabs-bb: #ebeff5;
 
-  display: block;
-  position: relative;
+    display: block;
+    position: relative;
 
-  button {
-    background: transparent;
-    color: $tab-fg;
-    text-transform: inherit;
-    padding: 0.45rem 1.5rem;
-    position: absolute;
-    right: 0;
-    top: 0;
-    cursor: pointer;
-    font-weight: normal;
-    font-size: 0.9rem;
+    button {
+        background: transparent;
+        color: $tab-fg;
+        text-transform: inherit;
+        padding: 0.45rem 1.5rem;
+        position: absolute;
+        right: 0;
+        top: 0;
+        cursor: pointer;
+        font-weight: normal;
+        font-size: 0.9rem;
 
-    nb-icon {
-      font-size: 1rem;
-      vertical-align: middle;
-    }
-
-    &:focus,
-    &:active,
-    &:hover {
-      cursor: pointer;
-      color: $tab-fg;
-      outline: 0;
-    }
-
-    .text {
-      display: none;
-    }
-  }
-
-  ::ng-deep nb-tabset.tabs-container {
-    // The docs theme styles tabsets for the theme editor; the code view has its own tabs, and its code fills the tab.
-    --tabset-tab-padding: 0.25rem 0.5rem;
-    --tabset-content-padding: 0;
-    --tabset-divider-width: 0;
-    --tabset-tab-underline-color: transparent;
-    --tabset-tab-active-underline-color: transparent;
-    --tabset-tab-focus-underline-color: transparent;
-    --tabset-tab-hover-underline-color: transparent;
-
-    border-radius: 0.5rem 0.5rem 0 0;
-
-    > ul {
-      // Over the docs page's margin for lists in its text, whose selector outranks this one.
-      margin: 0 !important;
-      padding: 0;
-      border-radius: 0.5rem 0.5rem 0 0;
-      background-color: $tabs-bb;
-      overflow: hidden;
-
-      li {
-        padding: 0.4rem;
-        width: 20%;
-        // Over the tabset's own -1px, whose encapsulated selector outranks any from outside it.
-        margin-bottom: 0 !important;
-
-        &:first-child {
-          margin-left: 0;
+        nb-icon {
+            font-size: 1rem;
+            vertical-align: middle;
         }
 
-        a {
-          justify-content: center;
-          color: $tab-fg;
+        &:focus,
+        &:active,
+        &:hover {
+            cursor: pointer;
+            color: $tab-fg;
+            outline: 0;
         }
 
-        &.active {
-          background: $tab-active-bg;
-
-          a {
-            color: $tab-active-fg;
-          }
+        .text {
+            display: none;
         }
-      }
     }
-    .container {
-      border-radius: 0 0 0.5rem 0.5rem;
-    }
-  }
 
-  @include media-breakpoint-up(is) {
-    button .text {
-      display: inline;
+    ::ng-deep nb-tabset.tabs-container {
+        // The docs theme styles tabsets for the theme editor; the code view has its own tabs, and its code fills the tab.
+        --tabset-tab-padding: 0.25rem 0.5rem;
+        --tabset-content-padding: 0;
+        --tabset-divider-width: 0;
+        --tabset-tab-underline-color: transparent;
+        --tabset-tab-active-underline-color: transparent;
+        --tabset-tab-focus-underline-color: transparent;
+        --tabset-tab-hover-underline-color: transparent;
+
+        border-radius: 0.5rem 0.5rem 0 0;
+
+        > ul {
+            // Over the docs page's margin for lists in its text, whose selector outranks this one.
+            margin: 0 !important;
+            padding: 0;
+            border-radius: 0.5rem 0.5rem 0 0;
+            background-color: $tabs-bb;
+            overflow: hidden;
+
+            li {
+                padding: 0.4rem;
+                width: 20%;
+
+                // Over the tabset's own -1px, whose encapsulated selector outranks any from outside it.
+                margin-bottom: 0 !important;
+
+                &:first-child {
+                    margin-left: 0;
+                }
+
+                a {
+                    justify-content: center;
+                    color: $tab-fg;
+                }
+
+                &.active {
+                    background: $tab-active-bg;
+
+                    a {
+                        color: $tab-active-fg;
+                    }
+                }
+            }
+        }
+
+        .container {
+            border-radius: 0 0 0.5rem 0.5rem;
+        }
     }
-  }
+
+    @include media-breakpoint-up(is) {
+        button .text {
+            display: inline;
+        }
+    }
 }

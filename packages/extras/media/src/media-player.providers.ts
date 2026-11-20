@@ -1,33 +1,33 @@
-import { inject, InjectionToken, Provider } from '@angular/core';
+import { inject, InjectionToken, Provider } from '@angular/core'
 
-import type { NbMediaEngine, NbMediaExtension, NbMediaSourceKind } from './media-types';
+import type { NbMediaEngine, NbMediaExtension, NbMediaSourceKind } from './media-types'
 
 /**
  * Loads an engine when a player first needs one, so its code is only downloaded then, e.g.
  * `() => import('@videojs/hlsjs-video').then((m) => m.HlsJsAdapter)`.
  */
-export type NbMediaEngineLoader = () => NbMediaEngine | Promise<NbMediaEngine>;
+export type NbMediaEngineLoader = () => NbMediaEngine | Promise<NbMediaEngine>
 
 /** Loads an extension when a player first needs one, so its code is only downloaded then. */
-export type NbMediaExtensionLoader = () => NbMediaExtension | Promise<NbMediaExtension>;
+export type NbMediaExtensionLoader = () => NbMediaExtension | Promise<NbMediaExtension>
 
 /** The engines and extensions the players use. */
 export interface NbMediaPlayerConfig {
-  /** An engine for each kind of source; video and audio files play in the browser without one. */
-  engines: Partial<Record<NbMediaSourceKind, NbMediaEngineLoader>>;
-  /** The extensions each player has. */
-  extensions: NbMediaExtensionLoader[];
+    /** An engine for each kind of source; video and audio files play in the browser without one. */
+    engines: Partial<Record<NbMediaSourceKind, NbMediaEngineLoader>>
+    /** The extensions each player has. */
+    extensions: NbMediaExtensionLoader[]
 }
 
 /** The engines and extensions `provideNbMediaPlayer` sets. */
 export const NB_MEDIA_PLAYER_CONFIG = new InjectionToken<NbMediaPlayerConfig>('NB_MEDIA_PLAYER_CONFIG', {
-  factory: () => ({ engines: {}, extensions: [] }),
-});
+    factory: () => ({ engines: {}, extensions: [] })
+})
 
 /** A part of the players' setup, for `provideNbMediaPlayer`. */
 export interface NbMediaPlayerFeature {
-  engines?: NbMediaPlayerConfig['engines'];
-  extensions?: NbMediaExtensionLoader[];
+    engines?: NbMediaPlayerConfig['engines']
+    extensions?: NbMediaExtensionLoader[]
 }
 
 /**
@@ -45,7 +45,7 @@ export interface NbMediaPlayerFeature {
  * `() => import(...).then((m) => ({ adapter: m.SomeAdapter, element: 'iframe' }))`.
  */
 export function withMediaEngines(engines: NbMediaPlayerConfig['engines']): NbMediaPlayerFeature {
-  return { engines };
+    return { engines }
 }
 
 /**
@@ -56,7 +56,7 @@ export function withMediaEngines(engines: NbMediaPlayerConfig['engines']): NbMed
  * ```
  */
 export function withMediaExtensions(...extensions: NbMediaExtensionLoader[]): NbMediaPlayerFeature {
-  return { extensions };
+    return { extensions }
 }
 
 /**
@@ -76,19 +76,19 @@ export function withMediaExtensions(...extensions: NbMediaExtensionLoader[]): Nb
  * It sets them for the app, or for a route's or a component's players, on top of what's set above them.
  */
 export function provideNbMediaPlayer(...features: NbMediaPlayerFeature[]): Provider {
-  return {
-    provide: NB_MEDIA_PLAYER_CONFIG,
-    useFactory: (): NbMediaPlayerConfig => {
-      const parent = inject(NB_MEDIA_PLAYER_CONFIG, { skipSelf: true, optional: true });
-      const config: NbMediaPlayerConfig = {
-        engines: { ...parent?.engines },
-        extensions: [...(parent?.extensions ?? [])],
-      };
-      for (const feature of features) {
-        Object.assign(config.engines, feature.engines);
-        config.extensions.push(...(feature.extensions ?? []));
-      }
-      return config;
-    },
-  };
+    return {
+        provide: NB_MEDIA_PLAYER_CONFIG,
+        useFactory: (): NbMediaPlayerConfig => {
+            const parent = inject(NB_MEDIA_PLAYER_CONFIG, { skipSelf: true, optional: true })
+            const config: NbMediaPlayerConfig = {
+                engines: { ...parent?.engines },
+                extensions: [...(parent?.extensions ?? [])]
+            }
+            for (const feature of features) {
+                Object.assign(config.engines, feature.engines)
+                config.extensions.push(...(feature.extensions ?? []))
+            }
+            return config
+        }
+    }
 }

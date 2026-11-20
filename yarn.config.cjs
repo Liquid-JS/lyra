@@ -15,46 +15,46 @@
  * Yarn loads this file as CommonJS and reads `module.exports`.
  */
 
-/** @param {import('@yarnpkg/types').Yarn.Constraints.Context} context */
+/** @param context */
 function sameRangeEverywhere({ Yarn }) {
-  for (const dependency of Yarn.dependencies()) {
-    if (dependency.type === 'peerDependencies' || dependency.range.startsWith('workspace:')) {
-      continue;
+    for (const dependency of Yarn.dependencies()) {
+        if (dependency.type === 'peerDependencies' || dependency.range.startsWith('workspace:')) {
+            continue
+        }
+        for (const other of Yarn.dependencies({ ident: dependency.ident })) {
+            if (other.type !== 'peerDependencies' && !other.range.startsWith('workspace:')) {
+                dependency.update(other.range)
+            }
+        }
     }
-    for (const other of Yarn.dependencies({ ident: dependency.ident })) {
-      if (other.type !== 'peerDependencies' && !other.range.startsWith('workspace:')) {
-        dependency.update(other.range);
-      }
-    }
-  }
 }
 
-/** @param {import('@yarnpkg/types').Yarn.Constraints.Context} context */
+/** @param context */
 function manifestRoles({ Yarn }) {
-  for (const workspace of Yarn.workspaces()) {
-    const isRoot = workspace.cwd === '.';
-    const isPublished = !workspace.manifest.private;
-    for (const dependency of Yarn.dependencies({ workspace })) {
-      if (isRoot && dependency.type !== 'devDependencies') {
-        dependency.error(`The root manifest only declares devDependencies (found ${dependency.ident} in ${dependency.type}).`);
-      }
-      if (!isRoot && isPublished && dependency.type !== 'peerDependencies') {
-        dependency.error(`Published packages declare ${dependency.ident} as a peer dependency, not in ${dependency.type}.`);
-      }
-      if (!isRoot && !isPublished && dependency.type === 'devDependencies') {
-        const elsewhere = Yarn.dependencies({ ident: dependency.ident }).some((other) => other.workspace !== workspace);
-        if (elsewhere) {
-          dependency.error(`${dependency.ident} is shared with another workspace, so it belongs in the root devDependencies.`);
+    for (const workspace of Yarn.workspaces()) {
+        const isRoot = workspace.cwd === '.'
+        const isPublished = !workspace.manifest.private
+        for (const dependency of Yarn.dependencies({ workspace })) {
+            if (isRoot && dependency.type !== 'devDependencies') {
+                dependency.error(`The root manifest only declares devDependencies (found ${dependency.ident} in ${dependency.type}).`)
+            }
+            if (!isRoot && isPublished && dependency.type !== 'peerDependencies') {
+                dependency.error(`Published packages declare ${dependency.ident} as a peer dependency, not in ${dependency.type}.`)
+            }
+            if (!isRoot && !isPublished && dependency.type === 'devDependencies') {
+                const elsewhere = Yarn.dependencies({ ident: dependency.ident }).some((other) => other.workspace !== workspace)
+                if (elsewhere) {
+                    dependency.error(`${dependency.ident} is shared with another workspace, so it belongs in the root devDependencies.`)
+                }
+            }
         }
-      }
     }
-  }
 }
 
 module.exports = {
-  /** @param {import('@yarnpkg/types').Yarn.Constraints.Context} context */
-  async constraints(context) {
-    sameRangeEverywhere(context);
-    manifestRoles(context);
-  },
-};
+    /** @param context */
+    constraints: async (context) => {
+        sameRangeEverywhere(context)
+        manifestRoles(context)
+    }
+}

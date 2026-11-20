@@ -1,103 +1,106 @@
-@use '../../styles/theming' as *;
+@use "../../styles/theming" as *;
 
 @mixin nb-accordion-item-header() {
-  border-bottom-width: nb-theme(accordion-header-border-width);
-  border-bottom-style: nb-theme(accordion-header-border-style);
-  border-bottom-color: nb-theme(accordion-header-border-color);
-  color: nb-theme(accordion-header-text-color);
-  font-family: nb-theme(accordion-header-text-font-family);
-  font-size: nb-theme(accordion-header-text-font-size);
-  font-weight: nb-theme(accordion-header-text-font-weight);
-  line-height: nb-theme(accordion-header-text-line-height);
-  padding: nb-theme(accordion-padding);
+    border-bottom-width: nb-theme(accordion-header-border-width);
+    border-bottom-style: nb-theme(accordion-header-border-style);
+    border-bottom-color: nb-theme(accordion-header-border-color);
+    color: nb-theme(accordion-header-text-color);
+    font-family: nb-theme(accordion-header-text-font-family);
+    font-size: nb-theme(accordion-header-text-font-size);
+    font-weight: nb-theme(accordion-header-text-font-weight);
+    line-height: nb-theme(accordion-header-text-line-height);
+    padding: nb-theme(accordion-padding);
 
-  @include nb-headings();
+    @include nb-headings;
 }
 
 @mixin nb-accordion-theme() {
-  nb-accordion {
-    display: block;
-    border: nb-theme(accordion-border-width) nb-theme(accordion-border-style) nb-theme(accordion-border-color);
-    box-shadow: nb-theme(accordion-shadow);
-    border-radius: nb-theme(accordion-border-radius);
+    nb-accordion {
+        display: block;
+        border: nb-theme(accordion-border-width) nb-theme(accordion-border-style) nb-theme(accordion-border-color);
+        box-shadow: nb-theme(accordion-shadow);
+        border-radius: nb-theme(accordion-border-radius);
 
-    // Over the page, a shadow stands for the border, as on a floating card.
-    &.appearance-floating {
-      border-color: transparent;
-      box-shadow: nb-theme(accordion-floating-shadow);
-    }
-  }
-
-  nb-accordion-item-header {
-    @include nb-accordion-item-header();
-    column-gap: 1rem;
-
-    // At the end of the header, where its text would end.
-    .expansion-indicator {
-      flex: none;
-      margin-inline-start: auto;
+        // Over the page, a shadow stands for the border, as on a floating card.
+        &.appearance-floating {
+            border-color: transparent;
+            box-shadow: nb-theme(accordion-floating-shadow);
+        }
     }
 
-    // A button: it shows the pointer over it, and the keyboard's focus with a ring inside the accordion's edges.
-    &:not([aria-disabled='true']):hover {
-      background-color: nb-theme(accordion-header-hover-background-color);
+    nb-accordion-item-header {
+        @include nb-accordion-item-header;
+
+        column-gap: 1rem;
+
+        // At the end of the header, where its text would end.
+        .expansion-indicator {
+            flex: none;
+            margin-inline-start: auto;
+        }
+
+        // A button: it shows the pointer over it, and the keyboard's focus with a ring inside the accordion's edges.
+        &:not([aria-disabled=true]):hover {
+            background-color: nb-theme(accordion-header-hover-background-color);
+        }
+
+        &:focus-visible {
+            box-shadow: inset 0 0 0 nb-theme(accordion-header-outline-width) nb-theme(accordion-header-outline-color);
+        }
     }
 
-    &:focus-visible {
-      box-shadow: inset 0 0 0 nb-theme(accordion-header-outline-width) nb-theme(accordion-header-outline-color);
+    nb-accordion-item {
+        background-color: nb-theme(accordion-item-background-color);
+        color: nb-theme(accordion-item-text-color);
+        font-family: nb-theme(accordion-item-text-font-family);
+        font-size: nb-theme(accordion-item-text-font-size);
+        font-weight: nb-theme(accordion-item-text-font-weight);
+        line-height: nb-theme(accordion-item-text-line-height);
+
+        &.disabled nb-accordion-item-header {
+            color: nb-theme(accordion-header-disabled-text-color);
+            cursor: default;
+        }
+
+        // The accordion's corners, inside its border.
+        $inner-radius: max(0px, calc(#{nb-theme(accordion-border-radius)} - #{nb-theme(accordion-border-width)}));
+
+        &:first-child {
+            border-start-start-radius: $inner-radius;
+            border-start-end-radius: $inner-radius;
+        }
+
+        &:last-child {
+            border-end-start-radius: $inner-radius;
+            border-end-end-radius: $inner-radius;
+
+            &.collapsed nb-accordion-item-header {
+                border-bottom: none;
+            }
+        }
+
+        // The header's hover and focus keep to the accordion's corners.
+        &:first-child > nb-accordion-item-header {
+            border-start-start-radius: $inner-radius;
+            border-start-end-radius: $inner-radius;
+        }
+
+        &:last-child.collapsed > nb-accordion-item-header {
+            border-end-start-radius: $inner-radius;
+            border-end-end-radius: $inner-radius;
+        }
     }
-  }
 
-  nb-accordion-item {
-    background-color: nb-theme(accordion-item-background-color);
-    color: nb-theme(accordion-item-text-color);
-    font-family: nb-theme(accordion-item-text-font-family);
-    font-size: nb-theme(accordion-item-text-font-size);
-    font-weight: nb-theme(accordion-item-text-font-weight);
-    line-height: nb-theme(accordion-item-text-line-height);
-
-    &.disabled nb-accordion-item-header {
-      color: nb-theme(accordion-header-disabled-text-color);
-      cursor: default;
+    nb-accordion-item:not(.collapsed) + nb-accordion-item nb-accordion-item-header {
+        border-top-color: nb-theme(accordion-header-border-color);
+        border-top-style: nb-theme(accordion-header-border-style);
+        border-top-width: nb-theme(accordion-header-border-width);
     }
 
-    // The accordion's corners, inside its border.
-    $inner-radius: max(0px, calc(#{nb-theme(accordion-border-radius)} - #{nb-theme(accordion-border-width)}));
-
-    &:first-child {
-      border-start-start-radius: $inner-radius;
-      border-start-end-radius: $inner-radius;
+    nb-accordion-item-body .item-body {
+        flex: 1;
+        overflow: auto;
+        padding: nb-theme(accordion-padding);
+        position: relative;
     }
-    &:last-child {
-      border-end-start-radius: $inner-radius;
-      border-end-end-radius: $inner-radius;
-
-      &.collapsed nb-accordion-item-header {
-        border-bottom: none;
-      }
-    }
-
-    // The header's hover and focus keep to the accordion's corners.
-    &:first-child > nb-accordion-item-header {
-      border-start-start-radius: $inner-radius;
-      border-start-end-radius: $inner-radius;
-    }
-    &:last-child.collapsed > nb-accordion-item-header {
-      border-end-start-radius: $inner-radius;
-      border-end-end-radius: $inner-radius;
-    }
-  }
-
-  nb-accordion-item:not(.collapsed) + nb-accordion-item nb-accordion-item-header {
-    border-top-color: nb-theme(accordion-header-border-color);
-    border-top-style: nb-theme(accordion-header-border-style);
-    border-top-width: nb-theme(accordion-header-border-width);
-  }
-
-  nb-accordion-item-body .item-body {
-    flex: 1;
-    overflow: auto;
-    padding: nb-theme(accordion-padding);
-    position: relative;
-  }
 }

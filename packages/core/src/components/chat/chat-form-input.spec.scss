@@ -1,16 +1,16 @@
 // The default theme's chat, input, button and icon styles, which specs don't load otherwise.
-@use '@liquid-js/lyr-core/styles/all' as *;
-@use 'chat.component.theme' as chat;
-@use '../input/input.directive.theme' as input;
-@use '../button/button.component.theme' as button;
-@use '../icon/icon.component.theme' as icon;
+@use "@liquid-js/lyr-core/styles/all" as *;
+@use "chat.component.theme" as chat;
+@use "../input/input.directive.theme" as input;
+@use "../button/button.component.theme" as button;
+@use "../icon/icon.component.theme" as icon;
 
 $nb-enabled-themes: (default);
 
-@include nb-install() {
-  @include nb-theme-base();
-  @include chat.nb-chat-theme();
-  @include input.nb-input-theme();
-  @include button.nb-buttons-theme();
-  @include icon.nb-icon-theme();
+@include nb-install {
+    @include nb-theme-base;
+    @include chat.nb-chat-theme;
+    @include input.nb-input-theme;
+    @include button.nb-buttons-theme;
+    @include icon.nb-icon-theme;
 }

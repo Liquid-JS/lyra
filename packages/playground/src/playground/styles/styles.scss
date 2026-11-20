@@ -1,21 +1,21 @@
-@use '../../../../core/src/styles/globals' as *;
-@use '../../../../auth/src/styles/globals' as *;
-@use 'themes' as *;
-@use 'example-helpers' as *;
+@use "../../../../core/src/styles/globals" as *;
+@use "../../../../auth/src/styles/globals" as *;
+@use "themes" as *;
+@use "example-helpers" as *;
 
-@include nb-install() {
-  @include nb-theme-global();
-  @include nb-auth-global();
+@include nb-install {
+    @include nb-theme-global;
+    @include nb-auth-global;
 
-  @include nb-example-helpers();
+    @include nb-example-helpers;
 }
 
 body {
-  min-width: 320px;
-  -webkit-font-smoothing: antialiased;
+    min-width: 320px;
+    -webkit-font-smoothing: antialiased;
 }
 
 nb-card.popover-card {
-  margin: 0;
-  box-shadow: none;
+    margin: 0;
+    box-shadow: none;
 }

@@ -1,12 +1,12 @@
-@use '../../../styles/themes' as *;
+@use "../../../styles/themes" as *;
 
 :host {
-  display: block;
+    display: block;
 }
 
 // A section scrolled to from the header lands below it.
 .section {
-  scroll-margin-top: nb-theme(header-height);
+    scroll-margin-top: nb-theme(header-height);
 }
 
 // Sections share a width and spacing.
@@ -14,291 +14,291 @@
 .section,
 .customers,
 .stats {
-  width: 100%;
-  max-width: 72rem;
-  margin: 0 auto;
-  padding: 4rem 1.5rem;
+    width: 100%;
+    max-width: 72rem;
+    margin: 0 auto;
+    padding: 4rem 1.5rem;
 
-  @media (max-width: 767.98px) {
-    padding: 2.5rem 1rem;
-  }
+    @media (width <= 767.98px) {
+        padding: 2.5rem 1rem;
+    }
 }
 
 h1,
 h2,
 h3 {
-  margin: 0;
+    margin: 0;
 }
 
 h1 {
-  font-size: clamp(2rem, 5vw, 3.25rem);
-  line-height: 1.15;
+    font-size: clamp(2rem, 5vw, 3.25rem);
+    line-height: 1.15;
 }
 
 h2 {
-  font-size: clamp(1.5rem, 3vw, 2.25rem);
-  line-height: 1.2;
+    font-size: clamp(1.5rem, 3vw, 2.25rem);
+    line-height: 1.2;
 }
 
 h3 {
-  font-size: 1.125rem;
+    font-size: 1.125rem;
 }
 
 .lead {
-  color: nb-theme(text-hint-color);
-  font-size: 1.125rem;
-  line-height: 1.6;
+    color: nb-theme(text-hint-color);
+    font-size: 1.125rem;
+    line-height: 1.6;
 }
 
 .hint {
-  color: nb-theme(text-hint-color);
+    color: nb-theme(text-hint-color);
 }
 
 .hero {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
-  align-items: center;
-  gap: 3rem;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+    align-items: center;
+    gap: 3rem;
 
-  @media (max-width: 991.98px) {
-    grid-template-columns: minmax(0, 1fr);
-  }
+    @media (width <= 991.98px) {
+        grid-template-columns: minmax(0, 1fr);
+    }
 }
 
 .hero-text {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 1.25rem;
-
-  p {
-    margin: 0;
-  }
-}
-
-.buttons {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-}
-
-.customers {
-  padding-top: 0;
-  text-align: center;
-
-  ul {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 1rem 3rem;
-    margin: 1rem 0 0;
-    padding: 0;
-    list-style: none;
-  }
-
-  li {
-    display: flex;
-  }
-
-  // In the hint's colour, which reads on any theme's background, where the logos' own colours may not.
-  npg-showcase-logo {
-    height: 1.75rem;
-    color: nb-theme(text-hint-color);
-  }
-}
-
-.section-header {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1rem;
-  max-width: 40rem;
-  margin: 0 auto 3rem;
-  text-align: center;
-
-  p {
-    margin: 0;
-  }
-}
-
-.features {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
-  gap: 2rem;
-}
-
-.feature {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-
-  p {
-    margin: 0;
-    color: nb-theme(text-hint-color);
-  }
-}
-
-.feature-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.75rem;
-  height: 2.75rem;
-  margin-bottom: 0.5rem;
-  border-radius: calc(#{nb-theme(border-radius)} * 2);
-  background: nb-theme(color-primary-transparent-200);
-  color: nb-theme(color-primary-default);
-  font-size: 1.5rem;
-
-  // Its icon at the size above, which an icon doesn't take from what holds it.
-  nb-icon {
-    font-size: inherit;
-  }
-}
-
-.split {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  align-items: center;
-  gap: 4rem;
-
-  > div {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
+    gap: 1.25rem;
+
+    p {
+        margin: 0;
+    }
+}
+
+.buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.customers {
+    padding-top: 0;
+    text-align: center;
+
+    ul {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 1rem 3rem;
+        margin: 1rem 0 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    li {
+        display: flex;
+    }
+
+    // In the hint's colour, which reads on any theme's background, where the logos' own colours may not.
+    npg-showcase-logo {
+        height: 1.75rem;
+        color: nb-theme(text-hint-color);
+    }
+}
+
+.section-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     gap: 1rem;
-  }
+    max-width: 40rem;
+    margin: 0 auto 3rem;
+    text-align: center;
 
-  &.reverse npg-site-mockup {
-    order: 1;
-  }
+    p {
+        margin: 0;
+    }
+}
 
-  @media (max-width: 991.98px) {
-    grid-template-columns: minmax(0, 1fr);
+.features {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
     gap: 2rem;
+}
+
+.feature {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+
+    p {
+        margin: 0;
+        color: nb-theme(text-hint-color);
+    }
+}
+
+.feature-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    margin-bottom: 0.5rem;
+    border-radius: calc(#{nb-theme(border-radius)} * 2);
+    background: nb-theme(color-primary-transparent-200);
+    color: nb-theme(color-primary-default);
+    font-size: 1.5rem;
+
+    // Its icon at the size above, which an icon doesn't take from what holds it.
+    nb-icon {
+        font-size: inherit;
+    }
+}
+
+.split {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: center;
+    gap: 4rem;
+
+    > div {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
 
     &.reverse npg-site-mockup {
-      order: 0;
+        order: 1;
     }
-  }
+
+    @media (width <= 991.98px) {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 2rem;
+
+        &.reverse npg-site-mockup {
+            order: 0;
+        }
+    }
 }
 
 .checks {
-  display: flex;
-  flex-direction: column;
-  gap: 0.625rem;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-
-  li {
     display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
+    flex-direction: column;
+    gap: 0.625rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
 
-  nb-icon {
-    color: nb-theme(color-success-default);
-  }
+    li {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    nb-icon {
+        color: nb-theme(color-success-default);
+    }
 }
 
 // A band in the primary colour.
 .stats {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1.5rem;
-  max-width: none;
-  background: nb-theme(color-primary-default);
-  color: nb-theme(text-control-color);
-  text-align: center;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+    max-width: none;
+    background: nb-theme(color-primary-default);
+    color: nb-theme(text-control-color);
+    text-align: center;
 
-  @media (max-width: 767.98px) {
-    grid-template-columns: repeat(2, 1fr);
-  }
+    @media (width <= 767.98px) {
+        grid-template-columns: repeat(2, 1fr);
+    }
 
-  p {
-    margin: 0;
-    color: inherit;
-  }
+    p {
+        margin: 0;
+        color: inherit;
+    }
 }
 
 .stat {
-  margin-bottom: 0.25rem !important;
-  line-height: 1.2;
-  font-family: nb-theme(text-heading-1-font-family);
-  font-size: 2.25rem;
-  font-weight: 700;
+    margin-bottom: 0.25rem !important;
+    line-height: 1.2;
+    font-family: nb-theme(text-heading-1-font-family);
+    font-size: 2.25rem;
+    font-weight: 700;
 }
 
 .quotes,
 .plans {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
-  gap: 1.5rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+    gap: 1.5rem;
 
-  nb-card {
-    margin: 0;
-  }
+    nb-card {
+        margin: 0;
+    }
 }
 
 .quote {
-  margin: 0;
-  font-size: 1.0625rem;
-  line-height: 1.6;
+    margin: 0;
+    font-size: 1.0625rem;
+    line-height: 1.6;
 }
 
 .plans {
-  align-items: start;
+    align-items: start;
 
-  nb-card-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
+    nb-card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
 
-  .featured {
-    box-shadow: 0 1.5rem 3rem -1.5rem rgb(0 0 0 / 30%);
-  }
+    .featured {
+        box-shadow: 0 1.5rem 3rem -1.5rem rgb(0, 0, 0, 0.3);
+    }
 }
 
 .price {
-  margin: 1rem 0 1.5rem;
-  color: nb-theme(text-hint-color);
+    margin: 1rem 0 1.5rem;
+    color: nb-theme(text-hint-color);
 
-  span {
-    color: nb-theme(text-basic-color);
-    font-family: nb-theme(text-heading-1-font-family);
-    font-size: 2.5rem;
-    font-weight: 700;
-  }
+    span {
+        color: nb-theme(text-basic-color);
+        font-family: nb-theme(text-heading-1-font-family);
+        font-size: 2.5rem;
+        font-weight: 700;
+    }
 }
 
 .faq nb-accordion {
-  max-width: 48rem;
-  margin: 0 auto;
+    max-width: 48rem;
+    margin: 0 auto;
 }
 
 // A closing call to action, in the primary colours.
 .cta {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1rem;
-  margin: 2rem auto 4rem;
-  max-width: 72rem;
-  padding: 3.5rem 1.5rem;
-  border-radius: calc(#{nb-theme(border-radius)} * 4);
-  background: linear-gradient(135deg, nb-theme(color-primary-default), nb-theme(color-info-default));
-  color: nb-theme(text-control-color);
-  text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    margin: 2rem auto 4rem;
+    max-width: 72rem;
+    padding: 3.5rem 1.5rem;
+    border-radius: calc(#{nb-theme(border-radius)} * 4);
+    background: linear-gradient(135deg, nb-theme(color-primary-default), nb-theme(color-info-default));
+    color: nb-theme(text-control-color);
+    text-align: center;
 
-  @media (max-width: 1199.98px) {
-    margin-inline: 1rem;
-  }
+    @media (width <= 1199.98px) {
+        margin-inline: 1rem;
+    }
 
-  h2,
-  p {
-    margin: 0;
-    color: inherit;
-  }
+    h2,
+    p {
+        margin: 0;
+        color: inherit;
+    }
 }

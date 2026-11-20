@@ -1,251 +1,250 @@
-@use '../../styles/global/breakpoints' as *;
-@use '../../styles/theming' as *;
+@use "../../styles/global/breakpoints" as *;
+@use "../../styles/theming" as *;
 
 @mixin window-mode($padding-top) {
-  padding-top: $padding-top;
+    padding-top: $padding-top;
 
-  nb-layout-header.fixed {
-    top: $padding-top;
-  }
-
-  nb-layout-header.fixed ~ .layout-container > nb-sidebar .main-container-fixed {
-    height: calc(100dvh - #{$padding-top} - #{nb-theme(header-height)});
-    top: calc(#{$padding-top} + #{nb-theme(header-height)});
-  }
-
-  nb-sidebar.fixed {
-    left: calc((100vw - #{$layout-window-mode-max-width}) / 2);
-  }
-
-  .layout > .layout-container {
-    nb-sidebar.fixed.right {
-      left: auto;
-      right: calc((100vw - #{$layout-window-mode-max-width}) / 2);
+    nb-layout-header.fixed {
+        top: $padding-top;
     }
 
-    nb-sidebar.fixed.start {
-      @include nb-ltr(left, calc((100vw - #{$layout-window-mode-max-width}) / 2));
-      @include nb-rtl() {
-        left: auto;
-        right: calc((100vw - #{$layout-window-mode-max-width}) / 2);
-      }
-    }
-
-    nb-sidebar.fixed.end {
-      @include nb-ltr() {
-        left: auto;
-        right: calc((100vw - #{$layout-window-mode-max-width}) / 2);
-      }
-      @include nb-rtl(left, calc((100vw - #{$layout-window-mode-max-width}) / 2));
+    nb-layout-header.fixed ~ .layout-container > nb-sidebar .main-container-fixed {
+        height: calc(100dvh - #{$padding-top} - #{nb-theme(header-height)});
+        top: calc(#{$padding-top} + #{nb-theme(header-height)});
     }
 
     nb-sidebar.fixed {
-      top: calc(#{nb-theme(header-height)} + #{$padding-top});
+        left: calc((100vw - #{$layout-window-mode-max-width}) / 2);
     }
-  }
 
-  .scrollable-container {
-    height: calc(100dvh - #{$padding-top});
-    box-shadow: nb-theme(layout-window-shadow);
-  }
+    .layout > .layout-container {
+        nb-sidebar.fixed.right {
+            left: auto;
+            right: calc((100vw - #{$layout-window-mode-max-width}) / 2);
+        }
+
+        nb-sidebar.fixed.start {
+            @include nb-ltr(left, calc((100vw - #{$layout-window-mode-max-width}) / 2));
+            @include nb-rtl {
+                left: auto;
+                right: calc((100vw - #{$layout-window-mode-max-width}) / 2);
+            }
+        }
+
+        nb-sidebar.fixed.end {
+            @include nb-ltr {
+                left: auto;
+                right: calc((100vw - #{$layout-window-mode-max-width}) / 2);
+            }
+            @include nb-rtl(left, calc((100vw - #{$layout-window-mode-max-width}) / 2));
+        }
+
+        nb-sidebar.fixed {
+            top: calc(#{nb-theme(header-height)} + #{$padding-top});
+        }
+    }
+
+    .scrollable-container {
+        height: calc(100dvh - #{$padding-top});
+        box-shadow: nb-theme(layout-window-shadow);
+    }
 }
 
 @mixin nb-layout-theme() {
-  nb-layout > .scrollable-container {
-    @include nb-scrollbars(
-      nb-theme(layout-scrollbar-color),
-      nb-theme(layout-scrollbar-background-color),
-      nb-theme(layout-scrollbar-width)
-    );
-  }
-
-  // The layout scrolls its own container, so the page doesn't. At the root, as the theme class is on the body; works
-  // on the server and on the first paint.
-  @at-root body:has(nb-layout.with-scroll) {
-    overflow: hidden;
-  }
-
-  nb-layout.with-scroll > .scrollable-container {
-    overflow: auto;
-    height: 100dvh;
-    display: block;
-
-    @include media-breakpoint-down(sm) {
-      overflow-y: scroll;
-    }
-  }
-
-  // The layout's own elements, by the path its template gives them, so an app's elements with the same class names
-  // inside it, e.g. a page's own `.layout` or `.columns`, keep their own styles.
-  nb-layout > .scrollable-container > .layout {
-    min-width: nb-theme(layout-window-mode-min-width);
-  }
-
-  nb-layout.window-mode {
-    background: nb-theme(layout-window-mode-background-color);
-    display: block;
-
-    > .scrollable-container {
-      max-width: $layout-window-mode-max-width;
-      margin: 0 auto;
+    nb-layout > .scrollable-container {
+        @include nb-scrollbars(
+            nb-theme(layout-scrollbar-color),
+            nb-theme(layout-scrollbar-background-color),
+            nb-theme(layout-scrollbar-width)
+        );
     }
 
-    .layout > nb-layout-header {
-      max-width: $layout-window-mode-max-width;
-      margin-left: auto;
-      margin-right: auto;
-      width: 100%;
-
-      > nav {
-        max-width: $layout-window-mode-max-width;
-        margin: 0 auto;
-      }
+    // The layout scrolls its own container, so the page doesn't. At the root, as the theme class is on the body; works
+    // on the server and on the first paint.
+    @at-root body:has(nb-layout.with-scroll) {
+        overflow: hidden;
     }
 
-    @media screen and (min-width: $layout-window-mode-max-width + 20px) {
-      $padding-top: calc(#{nb-theme(layout-window-mode-padding-top)} * 0.25);
+    nb-layout.with-scroll > .scrollable-container {
+        overflow: auto;
+        height: 100dvh;
+        display: block;
 
-      @include window-mode($padding-top);
-
-      nb-layout.with-scroll {
-        .scrollable-container {
-          height: calc(100dvh - #{$padding-top});
+        @include media-breakpoint-down(sm) {
+            overflow-y: scroll;
         }
-      }
     }
 
-    @media screen and (min-width: $layout-window-mode-max-width + 150px) {
-      $padding-top: calc(#{nb-theme(layout-window-mode-padding-top)} * 0.5);
+    // The layout's own elements, by the path its template gives them, so an app's elements with the same class names
+    // inside it, e.g. a page's own `.layout` or `.columns`, keep their own styles.
+    nb-layout > .scrollable-container > .layout {
+        min-width: nb-theme(layout-window-mode-min-width);
+    }
 
-      @include window-mode($padding-top);
+    nb-layout.window-mode {
+        background: nb-theme(layout-window-mode-background-color);
+        display: block;
 
-      nb-layout.with-scroll {
-        .scrollable-container {
-          height: calc(100dvh - #{$padding-top});
+        > .scrollable-container {
+            max-width: $layout-window-mode-max-width;
+            margin: 0 auto;
         }
-      }
-    }
 
-    @media screen and (min-width: $layout-window-mode-max-width + 300px) {
-      $padding-top: nb-theme(layout-window-mode-padding-top);
+        .layout > nb-layout-header {
+            max-width: $layout-window-mode-max-width;
+            margin-left: auto;
+            margin-right: auto;
+            width: 100%;
 
-      @include window-mode($padding-top);
-
-      nb-layout.with-scroll {
-        .scrollable-container {
-          height: calc(100dvh - #{$padding-top});
+            > nav {
+                max-width: $layout-window-mode-max-width;
+                margin: 0 auto;
+            }
         }
-      }
-    }
-  }
 
-  nb-layout > .scrollable-container > .layout {
-    background-color: nb-theme(layout-background-color);
-    color: nb-theme(layout-text-color);
-    font-family: nb-theme(layout-text-font-family);
-    font-size: nb-theme(layout-text-font-size);
-    font-weight: nb-theme(layout-text-font-weight);
-    line-height: nb-theme(layout-text-line-height);
-    min-height: nb-theme(layout-min-height);
+        @media screen and (min-width: $layout-window-mode-max-width + 20px) {
+            $padding-top: calc(#{nb-theme(layout-window-mode-padding-top)} * 0.25);
 
-    // A subheader is in the content column, next to the sidebar, so only a top header moves the sidebar down.
-    > nb-layout-header ~ .layout-container {
-      > nb-sidebar {
-        &.fixed,
-        .main-container-fixed {
-          top: nb-theme(header-height);
+            @include window-mode($padding-top);
+
+            nb-layout.with-scroll {
+                .scrollable-container {
+                    height: calc(100dvh - #{$padding-top});
+                }
+            }
         }
-      }
+
+        @media screen and (min-width: $layout-window-mode-max-width + 150px) {
+            $padding-top: calc(#{nb-theme(layout-window-mode-padding-top)} * 0.5);
+
+            @include window-mode($padding-top);
+
+            nb-layout.with-scroll {
+                .scrollable-container {
+                    height: calc(100dvh - #{$padding-top});
+                }
+            }
+        }
+
+        @media screen and (min-width: $layout-window-mode-max-width + 300px) {
+            $padding-top: nb-theme(layout-window-mode-padding-top);
+
+            @include window-mode($padding-top);
+
+            nb-layout.with-scroll {
+                .scrollable-container {
+                    height: calc(100dvh - #{$padding-top});
+                }
+            }
+        }
     }
 
-    > .layout-container {
+    nb-layout > .scrollable-container > .layout {
+        background-color: nb-theme(layout-background-color);
+        color: nb-theme(layout-text-color);
+        font-family: nb-theme(layout-text-font-family);
+        font-size: nb-theme(layout-text-font-size);
+        font-weight: nb-theme(layout-text-font-weight);
+        line-height: nb-theme(layout-text-line-height);
+        min-height: nb-theme(layout-min-height);
 
-      > .content {
-        > nb-layout-footer {
-          box-shadow: nb-theme(footer-shadow);
+        // A subheader is in the content column, next to the sidebar, so only a top header moves the sidebar down.
+        > nb-layout-header ~ .layout-container {
+            > nb-sidebar {
+                &.fixed,
+                .main-container-fixed {
+                    top: nb-theme(header-height);
+                }
+            }
+        }
 
-          > nav {
-            background-color: nb-theme(footer-background-color);
-            border-top: nb-theme(footer-divider-width) nb-theme(footer-divider-style) nb-theme(footer-divider-color);
-            color: nb-theme(footer-text-color);
-            font-family: nb-theme(footer-text-font-family);
-            font-size: nb-theme(footer-text-font-size);
-            font-weight: nb-theme(footer-text-font-weight);
-            line-height: nb-theme(footer-text-line-height);
-            padding: nb-theme(footer-padding);
+        > .layout-container {
+            > .content {
+                > nb-layout-footer {
+                    box-shadow: nb-theme(footer-shadow);
+
+                    > nav {
+                        background-color: nb-theme(footer-background-color);
+                        border-top: nb-theme(footer-divider-width) nb-theme(footer-divider-style) nb-theme(footer-divider-color);
+                        color: nb-theme(footer-text-color);
+                        font-family: nb-theme(footer-text-font-family);
+                        font-size: nb-theme(footer-text-font-size);
+                        font-weight: nb-theme(footer-text-font-weight);
+                        line-height: nb-theme(footer-text-line-height);
+                        padding: nb-theme(footer-padding);
+
+                        a {
+                            color: nb-theme(footer-text-highlight-color);
+
+                            @include hover-focus-active {
+                                color: nb-theme(footer-text-highlight-color);
+                            }
+                        }
+                    }
+                }
+
+                &.center {
+                    width: nb-theme(layout-content-width);
+                    flex: 0 100 nb-theme(layout-content-width) !important;
+                }
+
+                > .columns > nb-layout-column {
+                    padding: nb-theme(layout-padding);
+
+                    @include media-breakpoint-down(md) {
+                        padding: nb-theme(layout-medium-padding);
+                    }
+
+                    @include media-breakpoint-down(sm) {
+                        padding: nb-theme(layout-small-padding);
+                    }
+                }
+            }
+        }
+    }
+
+    nb-layout-header {
+        background-color: nb-theme(header-background-color);
+        color: nb-theme(header-text-color);
+        font-family: nb-theme(header-text-font-family);
+        font-size: nb-theme(header-text-font-size);
+        font-weight: nb-theme(header-text-font-weight);
+        line-height: nb-theme(header-text-line-height);
+
+        // Its own bar; the links in what it holds take its colour.
+        > nav {
+            color: nb-theme(header-text-color);
+            box-shadow: nb-theme(header-shadow);
+            height: nb-theme(header-height);
+            padding: nb-theme(header-padding);
 
             a {
-              color: nb-theme(footer-text-highlight-color);
+                color: nb-theme(header-text-color);
 
-              @include hover-focus-active() {
-                color: nb-theme(footer-text-highlight-color);
-              }
+                @include hover-focus-active {
+                    color: nb-theme(header-text-color);
+                }
             }
-          }
         }
 
-        &.center {
-          width: nb-theme(layout-content-width);
-          flex: 0 100 nb-theme(layout-content-width) !important;
+        & ~ .layout-container {
+            min-height: calc(#{nb-theme(layout-min-height)} - #{nb-theme(header-height)});
         }
 
-        > .columns > nb-layout-column {
-          padding: nb-theme(layout-padding);
-
-          @include media-breakpoint-down(md) {
-            padding: nb-theme(layout-medium-padding);
-          }
-
-          @include media-breakpoint-down(sm) {
-            padding: nb-theme(layout-small-padding);
-          }
+        &.fixed ~ .layout-container {
+            padding-top: nb-theme(header-height);
+            min-height: nb-theme(layout-min-height);
         }
-      }
-    }
-  }
 
-  nb-layout-header {
-    background-color: nb-theme(header-background-color);
-    color: nb-theme(header-text-color);
-    font-family: nb-theme(header-text-font-family);
-    font-size: nb-theme(header-text-font-size);
-    font-weight: nb-theme(header-text-font-weight);
-    line-height: nb-theme(header-text-line-height);
-
-    // Its own bar; the links in what it holds take its colour.
-    > nav {
-      color: nb-theme(header-text-color);
-      box-shadow: nb-theme(header-shadow);
-      height: nb-theme(header-height);
-      padding: nb-theme(header-padding);
-
-      a {
-        color: nb-theme(header-text-color);
-
-        @include hover-focus-active() {
-          color: nb-theme(header-text-color);
+        // The sidebar container stays fixed below the header, fixed or not, so it is shorter by the header height.
+        & ~ .layout-container nb-sidebar .main-container {
+            height: calc(#{nb-theme(sidebar-height)} - #{nb-theme(header-height)});
         }
-      }
     }
 
-    & ~ .layout-container {
-      min-height: calc(#{nb-theme(layout-min-height)} - #{nb-theme(header-height)});
+    nb-layout.with-subheader {
+        nb-sidebar .main-container {
+            box-shadow: none; // so that we don't have a shadow over the header in this mode
+        }
     }
-
-    &.fixed ~ .layout-container {
-      padding-top: nb-theme(header-height);
-      min-height: nb-theme(layout-min-height);
-    }
-
-    // The sidebar container stays fixed below the header, fixed or not, so it is shorter by the header height.
-    & ~ .layout-container nb-sidebar .main-container {
-      height: calc(#{nb-theme(sidebar-height)} - #{nb-theme(header-height)});
-    }
-  }
-
-  nb-layout.with-subheader {
-    nb-sidebar .main-container {
-      box-shadow: none; // so that we don't have a shadow over the header in this mode
-    }
-  }
 }

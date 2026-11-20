@@ -1,21 +1,22 @@
-@use '../../../styles/theming' as *;
+@use "../../../styles/theming" as *;
 
 @mixin nd-reveal-card-theme {
-  nb-reveal-card {
-    box-shadow: nb-theme(card-shadow);
-    margin-bottom: nb-theme(card-margin-bottom);
-  }
+    nb-reveal-card {
+        box-shadow: nb-theme(card-shadow);
+        margin-bottom: nb-theme(card-margin-bottom);
+    }
 
-  .second-card-container {
-    height: 100%;
-    border-radius: nb-theme(card-border-radius);
-  }
+    .second-card-container {
+        height: 100%;
+        border-radius: nb-theme(card-border-radius);
+    }
 
-  .reveal-button {
-    line-height: nb-theme(card-text-line-height);
-    // Inside the card's border, so the chevron ends where the card's text does, on its last line.
-    margin-inline-end: nb-theme(card-border-width);
-    margin-bottom: nb-theme(card-border-width);
-    padding: nb-theme(card-padding);
-  }
+    .reveal-button {
+        line-height: nb-theme(card-text-line-height);
+
+        // Inside the card's border, so the chevron ends where the card's text does, on its last line.
+        margin-inline-end: nb-theme(card-border-width);
+        margin-bottom: nb-theme(card-border-width);
+        padding: nb-theme(card-padding);
+    }
 }

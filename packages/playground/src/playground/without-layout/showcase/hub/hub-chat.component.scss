@@ -1,84 +1,85 @@
-@use '../../../styles/themes' as *;
+@use "../../../styles/themes" as *;
 
 :host {
-  display: block;
-  max-width: 76rem;
-  margin: 0 auto;
+    display: block;
+    max-width: 76rem;
+    margin: 0 auto;
 }
 
 .grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 1.5rem;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.5rem;
 
-  @media (min-width: 992px) {
-    grid-template-columns: 16rem minmax(0, 1fr);
-    // The conversation fills the window, under the header and the layout's padding.
-    height: calc(100vh - 3.5rem - 3rem);
-    min-height: 28rem;
-  }
+    @media (width >= 992px) {
+        grid-template-columns: 16rem minmax(0, 1fr);
+
+        // The conversation fills the window, under the header and the layout's padding.
+        height: calc(100vh - 3.5rem - 3rem);
+        min-height: 28rem;
+    }
 }
 
 .hint {
-  color: nb-theme(text-hint-color);
+    color: nb-theme(text-hint-color);
 }
 
 nb-card,
 nb-chat {
-  margin: 0;
+    margin: 0;
 }
 
 .channels {
-  overflow: auto;
+    overflow: auto;
 
-  nb-list {
-    margin-bottom: 0.75rem;
-  }
+    nb-list {
+        margin-bottom: 0.75rem;
+    }
 }
 
 .channels-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
 
 .group {
-  margin: 0.75rem 1rem 0.25rem;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+    margin: 0.75rem 1rem 0.25rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
 }
 
 // A channel is a row of the list, like a menu's item; the open one is marked in the brand's colour.
 .channel {
-  justify-content: space-between;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  border: 0;
-  cursor: pointer;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border: 0;
+    cursor: pointer;
 
-  &.open {
-    background: nb-theme(color-primary-transparent-100);
-    color: nb-theme(text-primary-color);
-    font-weight: 600;
-  }
+    &.open {
+        background: nb-theme(color-primary-transparent-100);
+        color: nb-theme(text-primary-color);
+        font-weight: 600;
+    }
 
-  &:focus-visible {
-    outline: 2px solid nb-theme(outline-color);
-    outline-offset: -2px;
-  }
+    &:focus-visible {
+        outline: 2px solid nb-theme(outline-color);
+        outline-offset: -2px;
+    }
 }
 
 .hash {
-  margin-inline-end: 0.125rem;
-  color: nb-theme(text-hint-color);
+    margin-inline-end: 0.125rem;
+    color: nb-theme(text-hint-color);
 }
 
 .unread {
-  position: static;
-  flex: none;
+    position: static;
+    flex: none;
 }
 
 .conversation {
-  height: 100%;
-  min-height: 28rem;
+    height: 100%;
+    min-height: 28rem;
 }

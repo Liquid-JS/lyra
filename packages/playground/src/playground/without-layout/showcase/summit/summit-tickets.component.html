@@ -1,280 +1,280 @@
 <header class="page-header">
-  <p class="eyebrow">{{ summit.dates }} · {{ summit.city }}</p>
-  <h1>Tickets</h1>
-  <p class="lead">One ticket covers both days, every talk and workshop, lunch and the welcome party. Prices are in US
-    dollars, before tax.</p>
+    <p class="eyebrow">{{ summit.dates }} · {{ summit.city }}</p>
+    <h1>Tickets</h1>
+    <p class="lead">One ticket covers both days, every talk and workshop, lunch and the welcome party. Prices are in US
+        dollars, before tax.</p>
 </header>
 
 <div class="tiers">
-  @for (tier of tiers; track tier.id) {
-  <nb-card class="tier"
-    [class.highlighted]="tier.highlighted"
-    [accent]="tier.highlighted ? 'primary' : ''">
-    <nb-card-header>
-      <span class="tier-name">{{ tier.name }}</span>
-      @if (tier.soldOut) {
-      <nb-tag size="tiny"
-        status="basic"
-        text="Sold out" />
-      } @else if (tier.highlighted) {
-      <nb-tag size="tiny"
-        status="primary"
-        text="Most popular" />
-      }
-    </nb-card-header>
-    <nb-card-body>
-      <p class="price"><span class="amount">{{ tier.price | currency: 'USD' : 'symbol' : '1.0-0' }}</span> <span class="caption">{{ tier.note }}</span></p>
-      <ul class="perks">
-        @for (perk of tier.perks; track perk) {
-        <li><nb-icon icon="checkmark-outline" /> {{ perk }}</li>
-        }
-      </ul>
-    </nb-card-body>
-    <nb-card-footer>
-      @if (tier.soldOut) {
-      <button nbButton
-        fullWidth
-        appearance="outline"
-        status="basic"
-        type="button"
-        disabled>Sold out</button>
-      } @else {
-      <div class="quantity"
-        role="group"
-        [attr.aria-label]="tier.name + ' tickets'">
-        <button nbButton
-          appearance="outline"
-          status="basic"
-          type="button"
-          aria-label="One fewer"
-          [disabled]="quantity(tier) === 0"
-          (click)="add(tier, -1)">
-          <nb-icon icon="minus-outline" />
-        </button>
-        <output aria-live="polite">{{ quantity(tier) }}</output>
-        <button nbButton
-          appearance="outline"
-          status="basic"
-          type="button"
-          aria-label="One more"
-          (click)="add(tier, 1)">
-          <nb-icon icon="plus-outline" />
-        </button>
-      </div>
-      }
-    </nb-card-footer>
-  </nb-card>
-  }
+    @for (tier of tiers; track tier.id) {
+    <nb-card class="tier"
+        [class.highlighted]="tier.highlighted"
+        [accent]="tier.highlighted ? 'primary' : ''">
+        <nb-card-header>
+            <span class="tier-name">{{ tier.name }}</span>
+            @if (tier.soldOut) {
+            <nb-tag size="tiny"
+                status="basic"
+                text="Sold out" />
+            } @else if (tier.highlighted) {
+            <nb-tag size="tiny"
+                status="primary"
+                text="Most popular" />
+            }
+        </nb-card-header>
+        <nb-card-body>
+            <p class="price"><span class="amount">{{ tier.price | currency: 'USD' : 'symbol' : '1.0-0' }}</span> <span class="caption">{{ tier.note }}</span></p>
+            <ul class="perks">
+                @for (perk of tier.perks; track perk) {
+                <li><nb-icon icon="checkmark-outline" /> {{ perk }}</li>
+                }
+            </ul>
+        </nb-card-body>
+        <nb-card-footer>
+            @if (tier.soldOut) {
+            <button nbButton
+                fullWidth
+                appearance="outline"
+                status="basic"
+                type="button"
+                disabled>Sold out</button>
+            } @else {
+            <div class="quantity"
+                role="group"
+                [attr.aria-label]="tier.name + ' tickets'">
+                <button nbButton
+                    appearance="outline"
+                    status="basic"
+                    type="button"
+                    aria-label="One fewer"
+                    [disabled]="quantity(tier) === 0"
+                    (click)="add(tier, -1)">
+                    <nb-icon icon="minus-outline" />
+                </button>
+                <output aria-live="polite">{{ quantity(tier) }}</output>
+                <button nbButton
+                    appearance="outline"
+                    status="basic"
+                    type="button"
+                    aria-label="One more"
+                    (click)="add(tier, 1)">
+                    <nb-icon icon="plus-outline" />
+                </button>
+            </div>
+            }
+        </nb-card-footer>
+    </nb-card>
+    }
 </div>
 
 @if (paid()) {
 <section class="done">
-  <nb-icon icon="checkmark-circle-2-outline" />
-  <h2>You’re in.</h2>
-  <p class="lead">{{ count() }} {{ count() === 1 ? 'ticket' : 'tickets' }} for {{ total() | currency: 'USD' }}. Each
-    attendee gets their ticket by email; the receipt goes to {{ payment.controls.holder.value }}.</p>
-  <div class="done-buttons">
-    <a nbButton
-      status="primary"
-      routerLink="../agenda">Plan your agenda</a>
-    <button nbButton
-      ghost
-      type="button"
-      (click)="again()">Buy more</button>
-  </div>
+    <nb-icon icon="checkmark-circle-2-outline" />
+    <h2>You’re in.</h2>
+    <p class="lead">{{ count() }} {{ count() === 1 ? 'ticket' : 'tickets' }} for {{ total() | currency: 'USD' }}. Each
+        attendee gets their ticket by email; the receipt goes to {{ payment.controls.holder.value }}.</p>
+    <div class="done-buttons">
+        <a nbButton
+            status="primary"
+            routerLink="../agenda">Plan your agenda</a>
+        <button nbButton
+            ghost
+            type="button"
+            (click)="again()">Buy more</button>
+    </div>
 </section>
 } @else if (count()) {
 <section class="checkout">
-  <nb-stepper #stepper
-    class="steps">
-    <nb-step label="Attendees"
-      [stepControl]="attendeesForm">
-      <form class="form"
-        [formGroup]="attendeesForm">
-        <p class="hint">A ticket is personal: each attendee gets their own by email, with the agenda and the venue map.
-        </p>
-        <div class="attendees"
-          formArrayName="attendees">
-          @for (attendee of attendees.controls; track $index) {
-          <fieldset class="attendee"
-            [formGroupName]="$index">
-            <legend class="label">Ticket {{ $index + 1 }}</legend>
-            <div class="fields">
-              <div class="field">
-                <label class="label"
-                  [for]="'attendee-name-' + $index">Name</label>
-                <input nbInput
-                  fullWidth
-                  autocomplete="name"
-                  formControlName="name"
-                  nbValidation
-                  #name="nbValidation"
-                  [id]="'attendee-name-' + $index" />
-                <nb-validation-errors [for]="name" />
-              </div>
-              <div class="field">
-                <label class="label"
-                  [for]="'attendee-email-' + $index">Email</label>
-                <input nbInput
-                  fullWidth
-                  type="email"
-                  autocomplete="email"
-                  formControlName="email"
-                  nbValidation
-                  #email="nbValidation"
-                  [id]="'attendee-email-' + $index" />
-                <nb-validation-errors [for]="email" />
-              </div>
+    <nb-stepper #stepper
+        class="steps">
+        <nb-step label="Attendees"
+            [stepControl]="attendeesForm">
+            <form class="form"
+                [formGroup]="attendeesForm">
+                <p class="hint">A ticket is personal: each attendee gets their own by email, with the agenda and the venue map.
+                </p>
+                <div class="attendees"
+                    formArrayName="attendees">
+                    @for (attendee of attendees.controls; track $index) {
+                    <fieldset class="attendee"
+                        [formGroupName]="$index">
+                        <legend class="label">Ticket {{ $index + 1 }}</legend>
+                        <div class="fields">
+                            <div class="field">
+                                <label class="label"
+                                    [for]="'attendee-name-' + $index">Name</label>
+                                <input nbInput
+                                    fullWidth
+                                    autocomplete="name"
+                                    formControlName="name"
+                                    nbValidation
+                                    #name="nbValidation"
+                                    [id]="'attendee-name-' + $index" />
+                                <nb-validation-errors [for]="name" />
+                            </div>
+                            <div class="field">
+                                <label class="label"
+                                    [for]="'attendee-email-' + $index">Email</label>
+                                <input nbInput
+                                    fullWidth
+                                    type="email"
+                                    autocomplete="email"
+                                    formControlName="email"
+                                    nbValidation
+                                    #email="nbValidation"
+                                    [id]="'attendee-email-' + $index" />
+                                <nb-validation-errors [for]="email" />
+                            </div>
+                        </div>
+                    </fieldset>
+                    }
+                </div>
+                <div class="step-buttons">
+                    <button nbButton
+                        status="primary"
+                        type="button"
+                        nbStepperNext>Payment</button>
+                </div>
+            </form>
+        </nb-step>
+
+        <nb-step label="Payment"
+            [stepControl]="payment">
+            <form class="form"
+                [formGroup]="payment">
+                <div class="fields">
+                    <div class="field wide">
+                        <label class="label"
+                            for="pay-holder">Name on card</label>
+                        <input nbInput
+                            fullWidth
+                            id="pay-holder"
+                            autocomplete="cc-name"
+                            formControlName="holder"
+                            nbValidation
+                            #holder="nbValidation" />
+                        <nb-validation-errors [for]="holder" />
+                    </div>
+                    <div class="field wide">
+                        <label class="label"
+                            for="pay-number">Card number</label>
+                        <input nbInput
+                            fullWidth
+                            id="pay-number"
+                            inputmode="numeric"
+                            autocomplete="cc-number"
+                            nbMask="#### #### #### ####"
+                            formControlName="number"
+                            nbValidation
+                            #number="nbValidation" />
+                        <nb-validation-errors [for]="number" />
+                    </div>
+                    <div class="field">
+                        <label class="label"
+                            for="pay-expiry">Expiry (MM/YY)</label>
+                        <input nbInput
+                            fullWidth
+                            id="pay-expiry"
+                            inputmode="numeric"
+                            autocomplete="cc-exp"
+                            nbMask="##/##"
+                            formControlName="expiry"
+                            nbValidation
+                            #expiry="nbValidation" />
+                        <nb-validation-errors [for]="expiry" />
+                    </div>
+                    <div class="field">
+                        <label class="label"
+                            for="pay-cvc">Security code</label>
+                        <input nbInput
+                            fullWidth
+                            id="pay-cvc"
+                            inputmode="numeric"
+                            autocomplete="cc-csc"
+                            nbMask="###"
+                            formControlName="cvc"
+                            nbValidation
+                            #cvc="nbValidation" />
+                        <nb-validation-errors [for]="cvc" />
+                    </div>
+                    <div class="field wide">
+                        <label class="label"
+                            for="pay-company">Company on the receipt <span class="hint">(optional)</span></label>
+                        <input nbInput
+                            fullWidth
+                            id="pay-company"
+                            autocomplete="organization"
+                            formControlName="company" />
+                    </div>
+                </div>
+                <div class="step-buttons">
+                    <button nbButton
+                        ghost
+                        type="button"
+                        nbStepperPrevious>
+                        <nb-icon icon="arrow-back-outline" />
+                        Back
+                    </button>
+                    <button nbButton
+                        status="primary"
+                        type="button"
+                        nbStepperNext>Review</button>
+                </div>
+            </form>
+        </nb-step>
+
+        <nb-step label="Review">
+            <div class="review">
+                <h2 class="h5">Attendees</h2>
+                <ul class="review-list">
+                    @for (attendee of attendees.controls; track $index) {
+                    <li><strong>{{ attendee.controls.name.value }}</strong> <span class="hint">{{ attendee.controls.email.value
+                            }}</span></li>
+                    }
+                </ul>
+                <h2 class="h5">Payment</h2>
+                <p>Card ending {{ payment.controls.number.value.slice(-4) }}, {{ payment.controls.holder.value }}@if
+                    (payment.controls.company.value) {, for {{ payment.controls.company.value }}}.</p>
+                <p class="hint">Full refunds until 31 March 2027; transfers to someone else at any time.</p>
+                <div class="step-buttons">
+                    <button nbButton
+                        ghost
+                        type="button"
+                        nbStepperPrevious>
+                        <nb-icon icon="arrow-back-outline" />
+                        Back
+                    </button>
+                    <button nbButton
+                        status="primary"
+                        size="large"
+                        type="button"
+                        (click)="pay()">Pay {{ total() | currency: 'USD' }}</button>
+                </div>
             </div>
-          </fieldset>
-          }
-        </div>
-        <div class="step-buttons">
-          <button nbButton
-            status="primary"
-            type="button"
-            nbStepperNext>Payment</button>
-        </div>
-      </form>
-    </nb-step>
+        </nb-step>
+    </nb-stepper>
 
-    <nb-step label="Payment"
-      [stepControl]="payment">
-      <form class="form"
-        [formGroup]="payment">
-        <div class="fields">
-          <div class="field wide">
-            <label class="label"
-              for="pay-holder">Name on card</label>
-            <input nbInput
-              fullWidth
-              id="pay-holder"
-              autocomplete="cc-name"
-              formControlName="holder"
-              nbValidation
-              #holder="nbValidation" />
-            <nb-validation-errors [for]="holder" />
-          </div>
-          <div class="field wide">
-            <label class="label"
-              for="pay-number">Card number</label>
-            <input nbInput
-              fullWidth
-              id="pay-number"
-              inputmode="numeric"
-              autocomplete="cc-number"
-              nbMask="#### #### #### ####"
-              formControlName="number"
-              nbValidation
-              #number="nbValidation" />
-            <nb-validation-errors [for]="number" />
-          </div>
-          <div class="field">
-            <label class="label"
-              for="pay-expiry">Expiry (MM/YY)</label>
-            <input nbInput
-              fullWidth
-              id="pay-expiry"
-              inputmode="numeric"
-              autocomplete="cc-exp"
-              nbMask="##/##"
-              formControlName="expiry"
-              nbValidation
-              #expiry="nbValidation" />
-            <nb-validation-errors [for]="expiry" />
-          </div>
-          <div class="field">
-            <label class="label"
-              for="pay-cvc">Security code</label>
-            <input nbInput
-              fullWidth
-              id="pay-cvc"
-              inputmode="numeric"
-              autocomplete="cc-csc"
-              nbMask="###"
-              formControlName="cvc"
-              nbValidation
-              #cvc="nbValidation" />
-            <nb-validation-errors [for]="cvc" />
-          </div>
-          <div class="field wide">
-            <label class="label"
-              for="pay-company">Company on the receipt <span class="hint">(optional)</span></label>
-            <input nbInput
-              fullWidth
-              id="pay-company"
-              autocomplete="organization"
-              formControlName="company" />
-          </div>
-        </div>
-        <div class="step-buttons">
-          <button nbButton
-            ghost
-            type="button"
-            nbStepperPrevious>
-            <nb-icon icon="arrow-back-outline" />
-            Back
-          </button>
-          <button nbButton
-            status="primary"
-            type="button"
-            nbStepperNext>Review</button>
-        </div>
-      </form>
-    </nb-step>
-
-    <nb-step label="Review">
-      <div class="review">
-        <h2 class="h5">Attendees</h2>
-        <ul class="review-list">
-          @for (attendee of attendees.controls; track $index) {
-          <li><strong>{{ attendee.controls.name.value }}</strong> <span class="hint">{{ attendee.controls.email.value
-              }}</span></li>
-          }
-        </ul>
-        <h2 class="h5">Payment</h2>
-        <p>Card ending {{ payment.controls.number.value.slice(-4) }}, {{ payment.controls.holder.value }}@if
-          (payment.controls.company.value) {, for {{ payment.controls.company.value }}}.</p>
-        <p class="hint">Full refunds until 31 March 2027; transfers to someone else at any time.</p>
-        <div class="step-buttons">
-          <button nbButton
-            ghost
-            type="button"
-            nbStepperPrevious>
-            <nb-icon icon="arrow-back-outline" />
-            Back
-          </button>
-          <button nbButton
-            status="primary"
-            size="large"
-            type="button"
-            (click)="pay()">Pay {{ total() | currency: 'USD' }}</button>
-        </div>
-      </div>
-    </nb-step>
-  </nb-stepper>
-
-  <nb-card class="summary">
-    <nb-card-header>Your order</nb-card-header>
-    <nb-card-body>
-      <ul class="order">
-        @for (line of lines(); track line.tier.id) {
-        <li>
-          <span>{{ line.count }} × {{ line.tier.name }}</span>
-          <span>{{ line.total | currency: 'USD' : 'symbol' : '1.0-0' }}</span>
-        </li>
-        }
-      </ul>
-      <dl class="totals">
-        <dt>Subtotal</dt>
-        <dd>{{ subtotal() | currency: 'USD' : 'symbol' : '1.0-0' }}</dd>
-        <dt>Sales tax (8.25%)</dt>
-        <dd>{{ tax() | currency: 'USD' }}</dd>
-        <dt class="total">Total</dt>
-        <dd class="total">{{ total() | currency: 'USD' }}</dd>
-      </dl>
-    </nb-card-body>
-  </nb-card>
+    <nb-card class="summary">
+        <nb-card-header>Your order</nb-card-header>
+        <nb-card-body>
+            <ul class="order">
+                @for (line of lines(); track line.tier.id) {
+                <li>
+                    <span>{{ line.count }} × {{ line.tier.name }}</span>
+                    <span>{{ line.total | currency: 'USD' : 'symbol' : '1.0-0' }}</span>
+                </li>
+                }
+            </ul>
+            <dl class="totals">
+                <dt>Subtotal</dt>
+                <dd>{{ subtotal() | currency: 'USD' : 'symbol' : '1.0-0' }}</dd>
+                <dt>Sales tax (8.25%)</dt>
+                <dd>{{ tax() | currency: 'USD' }}</dd>
+                <dt class="total">Total</dt>
+                <dd class="total">{{ total() | currency: 'USD' }}</dd>
+            </dl>
+        </nb-card-body>
+    </nb-card>
 </section>
 } @else {
 <p class="empty">Choose how many tickets you need to start the checkout.</p>

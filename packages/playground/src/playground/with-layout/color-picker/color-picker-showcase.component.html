@@ -1,12 +1,12 @@
 <nb-card>
-  <nb-card-body class="form">
-    <label id="brand-color-label"
-      class="label">Brand color</label>
-    <nb-color-picker aria-labelledby="brand-color-label"
-      [formControl]="color"
-      [presets]="presets"
-      outputFormat="hex"
-      clearable />
-    <p class="value">Value: {{ color.value ?? 'none' }}</p>
-  </nb-card-body>
+    <nb-card-body class="form">
+        <label id="brand-color-label"
+            class="label">Brand color</label>
+        <nb-color-picker aria-labelledby="brand-color-label"
+            [formControl]="color"
+            [presets]="presets"
+            outputFormat="hex"
+            clearable />
+        <p class="value">Value: {{ color.value ?? 'none' }}</p>
+    </nb-card-body>
 </nb-card>

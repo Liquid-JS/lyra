@@ -1,79 +1,79 @@
 <nb-form-field class="nb-phone-input-number"
-  [style.display]="picking() ? 'none' : null">
-  <button nbPrefix
-    nbButton
-    ghost
-    type="button"
-    class="nb-phone-input-country"
-    [size]="size()"
-    [status]="buttonStatus()"
-    [disabled]="isDisabled() || readonly()"
-    [attr.aria-label]="countryLabel()"
-    (click)="pick()">
-    <nxt-flag [country]="flag(selectedCountry())"
-      size="s" />
-    <nb-icon icon="chevron-down-outline"
-      pack="essentials"
-      aria-hidden="true" />
-  </button>
-  <input #number
-    nbInput
-    type="tel"
-    autocomplete="tel"
-    [fieldSize]="size()"
-    [status]="resolvedStatus()"
-    [shape]="shape()"
-    [fullWidth]="fullWidth()"
-    [ghost]="ghost()"
-    [disabled]="isDisabled()"
-    [readOnly]="readonly()"
-    [value]="text()"
-    [placeholder]="placeholder() ?? example()"
-    [attr.aria-label]="fieldLabelledBy() ? null : (ariaLabel() ?? texts().number)"
-    [attr.aria-labelledby]="fieldLabelledBy()"
-    [attr.aria-required]="validation?.ariaRequired()"
-    [attr.aria-invalid]="validation?.ariaInvalid()"
-    [attr.aria-describedby]="validation?.describedBy()"
-    (input)="typed($event)"
-    (blur)="left()" />
+    [style.display]="picking() ? 'none' : null">
+    <button nbPrefix
+        nbButton
+        ghost
+        type="button"
+        class="nb-phone-input-country"
+        [size]="size()"
+        [status]="buttonStatus()"
+        [disabled]="isDisabled() || readonly()"
+        [attr.aria-label]="countryLabel()"
+        (click)="pick()">
+        <nxt-flag [country]="flag(selectedCountry())"
+            size="s" />
+        <nb-icon icon="chevron-down-outline"
+            pack="essentials"
+            aria-hidden="true" />
+    </button>
+    <input #number
+        nbInput
+        type="tel"
+        autocomplete="tel"
+        [fieldSize]="size()"
+        [status]="resolvedStatus()"
+        [shape]="shape()"
+        [fullWidth]="fullWidth()"
+        [ghost]="ghost()"
+        [disabled]="isDisabled()"
+        [readOnly]="readonly()"
+        [value]="text()"
+        [placeholder]="placeholder() ?? example()"
+        [attr.aria-label]="fieldLabelledBy() ? null : (ariaLabel() ?? texts().number)"
+        [attr.aria-labelledby]="fieldLabelledBy()"
+        [attr.aria-required]="validation?.ariaRequired()"
+        [attr.aria-invalid]="validation?.ariaInvalid()"
+        [attr.aria-describedby]="validation?.describedBy()"
+        (input)="typed($event)"
+        (blur)="left()" />
 </nb-form-field>
 
 <!-- Stays in the page while it's hidden, so the list it opens still takes a click after it loses focus. -->
 <nb-form-field class="nb-phone-input-search"
-  [style.display]="picking() ? null : 'none'">
-  <nb-icon nbPrefix
-    icon="search-outline"
-    pack="essentials"
-    aria-hidden="true" />
-  <input #search
-    nbInput
-    type="text"
-    autocomplete="off"
-    [fieldSize]="size()"
-    [status]="resolvedStatus()"
-    [shape]="shape()"
-    [fullWidth]="fullWidth()"
-    [ghost]="ghost()"
-    [placeholder]="texts().search"
-    [attr.aria-label]="texts().search"
-    [nbAutocomplete]="countryList"
-    [overlayOffset]="overlayOffset()"
-    (input)="searched($event)"
-    (keydown.escape)="searchEscaped($event)"
-    (blur)="searchLeft()" />
+    [style.display]="picking() ? null : 'none'">
+    <nb-icon nbPrefix
+        icon="search-outline"
+        pack="essentials"
+        aria-hidden="true" />
+    <input #search
+        nbInput
+        type="text"
+        autocomplete="off"
+        [fieldSize]="size()"
+        [status]="resolvedStatus()"
+        [shape]="shape()"
+        [fullWidth]="fullWidth()"
+        [ghost]="ghost()"
+        [placeholder]="texts().search"
+        [attr.aria-label]="texts().search"
+        [nbAutocomplete]="countryList"
+        [overlayOffset]="overlayOffset()"
+        (input)="searched($event)"
+        (keydown.escape)="searchEscaped($event)"
+        (blur)="searchLeft()" />
 </nb-form-field>
 
 <nb-autocomplete #countryList
-  [size]="size()"
-  [handleDisplayFn]="displayCountry"
-  (selectedChange)="chose($event)">
-  @for (country of shown(); track country.code) {
-  <nb-option class="nb-phone-input-option"
-    [value]="country">
-    <nxt-flag [country]="flag(country.code)"
-      size="s" />
-    <span class="nb-phone-input-name">{{ country.name }}</span>
-    <span class="nb-phone-input-calling-code">+{{ country.callingCode }}</span>
-  </nb-option>
-  }
+    [size]="size()"
+    [handleDisplayFn]="displayCountry"
+    (selectedChange)="chose($event)">
+    @for (country of shown(); track country.code) {
+    <nb-option class="nb-phone-input-option"
+        [value]="country">
+        <nxt-flag [country]="flag(country.code)"
+            size="s" />
+        <span class="nb-phone-input-name">{{ country.name }}</span>
+        <span class="nb-phone-input-calling-code">+{{ country.callingCode }}</span>
+    </nb-option>
+    }
 </nb-autocomplete>

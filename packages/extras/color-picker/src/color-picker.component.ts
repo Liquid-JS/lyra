@@ -1,84 +1,84 @@
 import {
-  afterNextRender,
-  AfterViewInit,
-  booleanAttribute,
-  Component,
-  computed,
-  DestroyRef,
-  effect,
-  ElementRef,
-  forwardRef,
-  inject,
-  Injector,
-  input,
-  linkedSignal,
-  OnDestroy,
-  signal,
-  TemplateRef,
-  untracked,
-  viewChild,
-  ViewEncapsulation,
-} from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ControlValueAccessor, NG_VALIDATORS, NG_VALUE_ACCESSOR, ValidationErrors, Validator } from '@angular/forms';
+    afterNextRender,
+    AfterViewInit,
+    booleanAttribute,
+    Component,
+    computed,
+    DestroyRef,
+    effect,
+    ElementRef,
+    forwardRef,
+    inject,
+    Injector,
+    input,
+    linkedSignal,
+    OnDestroy,
+    signal,
+    TemplateRef,
+    untracked,
+    viewChild,
+    ViewEncapsulation
+} from '@angular/core'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
+import { ControlValueAccessor, NG_VALIDATORS, NG_VALUE_ACCESSOR, ValidationErrors, Validator } from '@angular/forms'
 import {
-  injectNbDefaults,
-  injectNbValidationMessage,
-  NbAdjustment,
-  NbButtonComponent,
-  NbComponentOrCustomStatus,
-  NbComponentShape,
-  NbComponentSize,
-  nbCreateDynamicOverlayHandler,
-  NbDynamicOverlay,
-  NbFormFieldModule,
-  NbIconComponent,
-  NbInputDirective,
-  NbPosition,
-  NbTrigger,
-  NbValidationDirective,
-} from '@liquid-js/lyr-core';
+    injectNbDefaults,
+    injectNbValidationMessage,
+    NbAdjustment,
+    NbButtonComponent,
+    NbComponentOrCustomStatus,
+    NbComponentShape,
+    NbComponentSize,
+    nbCreateDynamicOverlayHandler,
+    NbDynamicOverlay,
+    NbFormFieldModule,
+    NbIconComponent,
+    NbInputDirective,
+    NbPosition,
+    NbTrigger,
+    NbValidationDirective
+} from '@liquid-js/lyr-core'
 import {
-  AlphaChannel,
-  cmykToRgb,
-  ColorPickerDirective,
-  formatCmyk,
-  formatOutput,
-  hsvaToRgba,
-  NXT_COLOR_PICKER_TEXTS,
-  OutputFormat,
-  rgbaToCmyk,
-  rgbaToHsva,
-  stringToCmyk,
-  stringToHsva,
-} from 'nxt-color-picker';
-import { skip } from 'rxjs';
+    AlphaChannel,
+    cmykToRgb,
+    ColorPickerDirective,
+    formatCmyk,
+    formatOutput,
+    hsvaToRgba,
+    NXT_COLOR_PICKER_TEXTS,
+    OutputFormat,
+    rgbaToCmyk,
+    rgbaToHsva,
+    stringToCmyk,
+    stringToHsva
+} from 'nxt-color-picker'
+import { skip } from 'rxjs'
 
-import { NbColorPickerDialogComponent } from './color-picker-dialog.component';
-import { injectNbColorPickerTexts } from './texts';
+import { NbColorPickerDialogComponent } from './color-picker-dialog.component'
+import { injectNbColorPickerTexts } from './texts'
 
-let nextDialogId = 0;
+let nextDialogId = 0
 
 /** What the dialog's buttons, sliders, presets and inputs match, to move focus into it. */
-const DIALOG_FOCUSABLE = '[tabindex="0"], input, button';
+const DIALOG_FOCUSABLE = '[tabindex="0"], input, button'
 
 /** The error kind of text that isn't a colour. */
-export const NB_COLOR_PICKER_ERROR = 'nbColorPicker' as const;
+export const NB_COLOR_PICKER_ERROR = 'nbColorPicker' as const
 
 /** The `nbColorPicker` error, as Angular gives parse errors: its kind and its message. */
 export interface NbColorPickerError {
-  kind: typeof NB_COLOR_PICKER_ERROR;
-  message: string;
+    kind: typeof NB_COLOR_PICKER_ERROR
+    message: string
 }
 
 /** The colour of a text as CSS, e.g. for the swatch: from a CSS colour or a `cmyk()` one, if it's one. */
 function cssColor(text: string | null): string | undefined {
-  if (!text) {
-    return undefined;
-  }
-  const cmyk = stringToCmyk(text, true);
-  const hsva = stringToHsva(text, true) ?? (cmyk ? rgbaToHsva(cmykToRgb(cmyk)) : undefined);
-  return hsva ? formatOutput(hsva, 'rgba', 'enabled') : undefined;
+    if (!text) {
+        return undefined
+    }
+    const cmyk = stringToCmyk(text, true)
+    const hsva = stringToHsva(text, true) ?? (cmyk ? rgbaToHsva(cmykToRgb(cmyk)) : undefined)
+    return hsva ? formatOutput(hsva, 'rgba', 'enabled') : undefined
 }
 
 /**
@@ -130,7 +130,6 @@ function cssColor(text: string | null): string | undefined {
  * ```ts
  * provideNbTexts({ colorPicker: { clear: 'Remove the color', ok: 'Apply' } })
  * ```
- *
  * @styles
  *
  * color-picker-background-color:
@@ -146,11 +145,11 @@ function cssColor(text: string | null): string | undefined {
  * color-picker-format-arrow-color:
  */
 @Component({
-  selector: 'nb-color-picker',
-  templateUrl: './color-picker.component.html',
-  // The dialog is in the overlay container, outside the component, so its styles are global.
-  encapsulation: ViewEncapsulation.None,
-  styles: `
+    selector: 'nb-color-picker',
+    templateUrl: './color-picker.component.html',
+    // The dialog is in the overlay container, outside the component, so its styles are global.
+    encapsulation: ViewEncapsulation.None,
+    styles: `
     nb-color-picker {
       display: inline-block;
       /* Lines up with fields and buttons of its size by its middle, as they do. */
@@ -229,364 +228,367 @@ function cssColor(text: string | null): string | undefined {
       --nxt-color-picker-button-font-weight: var(--button-text-font-weight);
     }
   `,
-  imports: [ColorPickerDirective, NbButtonComponent, NbFormFieldModule, NbIconComponent, NbInputDirective],
-  providers: [
-    { provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => NbColorPickerComponent), multi: true },
-    { provide: NG_VALIDATORS, useExisting: forwardRef(() => NbColorPickerComponent), multi: true },
-    // The dialog's texts follow Lyra's.
-    { provide: NXT_COLOR_PICKER_TEXTS, useFactory: injectNbColorPickerTexts },
-  ],
-  host: {
-    '[class.full-width]': 'fullWidth()',
-  },
+    imports: [ColorPickerDirective, NbButtonComponent, NbFormFieldModule, NbIconComponent, NbInputDirective],
+    providers: [
+        { provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => NbColorPickerComponent), multi: true },
+        { provide: NG_VALIDATORS, useExisting: forwardRef(() => NbColorPickerComponent), multi: true },
+        // The dialog's texts follow Lyra's.
+        { provide: NXT_COLOR_PICKER_TEXTS, useFactory: injectNbColorPickerTexts }
+    ],
+    host: {
+        '[class.full-width]': 'fullWidth()'
+    }
 })
 export class NbColorPickerComponent implements ControlValueAccessor, Validator, AfterViewInit, OnDestroy {
-  // The app's defaults for fields, which the inputs below start from.
-  protected readonly nbDefaults = injectNbDefaults('input');
+    // The app's defaults for fields, which the inputs below start from.
+    protected readonly nbDefaults = injectNbDefaults('input')
 
-  protected readonly texts = injectNbColorPickerTexts();
-  protected readonly message = injectNbValidationMessage();
-  protected readonly validation = inject(NbValidationDirective, { self: true, optional: true });
+    protected readonly texts = injectNbColorPickerTexts()
+    protected readonly message = injectNbValidationMessage()
+    protected readonly validation = inject(NbValidationDirective, { self: true, optional: true })
 
-  /** Field size: `tiny`, `small`, `medium` (default), `large` or `giant`. */
-  readonly sizeInput = input<NbComponentSize | undefined>(undefined, { alias: 'size' });
-  /** The size in use: the input's, the app's default, or 'medium'. */
-  readonly size = linkedSignal<NbComponentSize>(() => this.sizeInput() ?? this.nbDefaults().size ?? 'medium');
-  /** Field status: `basic` (default), `primary`, `info`, `success`, `warning`, `danger` or `control`. */
-  readonly status = input<NbComponentOrCustomStatus>('basic');
-  /** Field shape: `rectangle` (default), `semi-round` or `round`. */
-  readonly shapeInput = input<NbComponentShape | undefined>(undefined, { alias: 'shape' });
-  /** The shape in use: the input's, the app's default, or 'rectangle'. */
-  readonly shape = linkedSignal<NbComponentShape>(() => this.shapeInput() ?? this.nbDefaults().shape ?? 'rectangle');
-  /** Makes the field as wide as its container. */
-  readonly fullWidth = input(false, { transform: booleanAttribute });
-  /** Shows the field without its background and border, as `nbInput`'s `ghost` does. */
-  readonly ghost = input(false, { transform: booleanAttribute });
-  readonly placeholder = input('');
-  /** Lets the user read and select the colour, but not change it, as a read-only field; its dialog doesn't open. */
-  readonly readonly = input(false, { transform: booleanAttribute });
-  /** Names the field when there's no `aria-labelledby`; "Color" by default. */
-  readonly ariaLabel = input<string | undefined>(undefined, { alias: 'aria-label' });
-  /** The id of the element that names the field, e.g. a `label`. */
-  readonly ariaLabelledBy = input<string | undefined>(undefined, { alias: 'aria-labelledby' });
+    /** Field size: `tiny`, `small`, `medium` (default), `large` or `giant`. */
+    readonly sizeInput = input<NbComponentSize | undefined>(undefined, { alias: 'size' })
+    /** The size in use: the input's, the app's default, or 'medium'. */
+    readonly size = linkedSignal<NbComponentSize>(() => this.sizeInput() ?? this.nbDefaults().size ?? 'medium')
+    /** Field status: `basic` (default), `primary`, `info`, `success`, `warning`, `danger` or `control`. */
+    readonly status = input<NbComponentOrCustomStatus>('basic')
+    /** Field shape: `rectangle` (default), `semi-round` or `round`. */
+    readonly shapeInput = input<NbComponentShape | undefined>(undefined, { alias: 'shape' })
+    /** The shape in use: the input's, the app's default, or 'rectangle'. */
+    readonly shape = linkedSignal<NbComponentShape>(() => this.shapeInput() ?? this.nbDefaults().shape ?? 'rectangle')
+    /** Makes the field as wide as its container. */
+    readonly fullWidth = input(false, { transform: booleanAttribute })
+    /** Shows the field without its background and border, as `nbInput`'s `ghost` does. */
+    readonly ghost = input(false, { transform: booleanAttribute })
+    readonly placeholder = input('')
+    /** Lets the user read and select the colour, but not change it, as a read-only field; its dialog doesn't open. */
+    readonly readonly = input(false, { transform: booleanAttribute })
+    /** Names the field when there's no `aria-labelledby`; "Color" by default. */
+    readonly ariaLabel = input<string | undefined>(undefined, { alias: 'aria-label' })
+    /** The id of the element that names the field, e.g. a `label`. */
+    readonly ariaLabelledBy = input<string | undefined>(undefined, { alias: 'aria-labelledby' })
 
-  /** What labels the field: its own `aria-labelledby` and an `nbLabel` of its `nbValidation`. */
-  protected readonly fieldLabelledBy = computed(
-    () => [this.ariaLabelledBy(), this.validation?.labelledBy()].filter(Boolean).join(' ') || null,
-  );
+    /** What labels the field: its own `aria-labelledby` and an `nbLabel` of its `nbValidation`. */
+    protected readonly fieldLabelledBy = computed(
+        () => [this.ariaLabelledBy(), this.validation?.labelledBy()].filter(Boolean).join(' ') || null
+    )
 
-  /** The text of the value: `hex`, `rgba`, `hsla` or `auto`, which keeps the format a colour is typed in. */
-  readonly outputFormat = input<OutputFormat>('auto');
-  /** Whether the colour can be transparent. */
-  readonly alphaChannel = input<AlphaChannel>('enabled');
-  /** Adds a CMYK input to the dialog and makes the value a `cmyk()` colour. */
-  readonly cmyk = input(false, { transform: booleanAttribute });
-  /** Colours to pick from in the dialog. */
-  readonly presets = input<string[]>();
-  /** The dialog's distance from the field, in pixels. */
-  readonly overlayOffset = input(8);
-  /** Shows a button that clears the colour, and lets emptying the text clear it. */
-  readonly clearable = input(false, { transform: booleanAttribute });
-  readonly disabled = input(false, { transform: booleanAttribute });
+    /** The text of the value: `hex`, `rgba`, `hsla` or `auto`, which keeps the format a colour is typed in. */
+    readonly outputFormat = input<OutputFormat>('auto')
+    /** Whether the colour can be transparent. */
+    readonly alphaChannel = input<AlphaChannel>('enabled')
+    /** Adds a CMYK input to the dialog and makes the value a `cmyk()` colour. */
+    readonly cmyk = input(false, { transform: booleanAttribute })
+    /** Colours to pick from in the dialog. */
+    readonly presets = input<string[]>()
+    /** The dialog's distance from the field, in pixels. */
+    readonly overlayOffset = input(8)
+    /** Shows a button that clears the colour, and lets emptying the text clear it. */
+    readonly clearable = input(false, { transform: booleanAttribute })
+    readonly disabled = input(false, { transform: booleanAttribute })
 
-  /** The colour, as text: the form value, `null` without one. */
-  protected readonly value = signal<string | null>(null);
-  /** The text the field shows; typing doesn't change it, so it doesn't replace what's typed. */
-  protected readonly text = signal('');
-  protected readonly swatch = computed(() => cssColor(this.value()));
-  protected readonly isDisabled = linkedSignal(() => this.disabled());
-  protected readonly resolvedStatus = computed(() => this.validation?.status() ?? this.status());
-  /** The field's buttons are white on colour, with the `control` status, and grey otherwise. */
-  protected readonly buttonStatus = computed(() => (this.resolvedStatus() === 'control' ? 'control' : 'basic'));
-  /** Whether the text isn't a colour. */
-  protected readonly parseError = signal(false);
-  protected readonly open = signal(false);
+    /** The colour, as text: the form value, `null` without one. */
+    protected readonly value = signal<string | null>(null)
+    /** The text the field shows; typing doesn't change it, so it doesn't replace what's typed. */
+    protected readonly text = signal('')
+    protected readonly swatch = computed(() => cssColor(this.value()))
+    protected readonly isDisabled = linkedSignal(() => this.disabled())
+    protected readonly resolvedStatus = computed(() => this.validation?.status() ?? this.status())
+    /** The field's buttons are white on colour, with the `control` status, and grey otherwise. */
+    protected readonly buttonStatus = computed(() => (this.resolvedStatus() === 'control' ? 'control' : 'basic'))
+    /** Whether the text isn't a colour. */
+    protected readonly parseError = signal(false)
+    protected readonly open = signal(false)
 
-  protected readonly field = viewChild<ElementRef<HTMLInputElement>>('field');
-  protected readonly dialog = viewChild.required<TemplateRef<unknown>>('dialog');
+    protected readonly field = viewChild<ElementRef<HTMLInputElement>>('field')
+    protected readonly dialog = viewChild.required<TemplateRef<unknown>>('dialog')
 
-  // The dialog opens in an overlay by the field, on focus, and closes when focus and clicks go elsewhere, as the date
-  // picker's does.
-  private readonly overlayHandler = nbCreateDynamicOverlayHandler();
-  private overlay?: NbDynamicOverlay;
-  private readonly injector = inject(Injector);
-  private readonly destroyRef = inject(DestroyRef);
-  /** The id of the dialog, which the field controls while it's open. */
-  protected readonly dialogId = `nb-color-picker-dialog-${nextDialogId++}`;
-  /** Whether Enter went down in the dialog, so it closes the dialog when it comes up there. */
-  private enterInDialog = false;
+    // The dialog opens in an overlay by the field, on focus, and closes when focus and clicks go elsewhere, as the date
+    // picker's does.
+    private readonly overlayHandler = nbCreateDynamicOverlayHandler()
+    private overlay?: NbDynamicOverlay
+    private readonly injector = inject(Injector)
+    private readonly destroyRef = inject(DestroyRef)
+    /** The id of the dialog, which the field controls while it's open. */
+    protected readonly dialogId = `nb-color-picker-dialog-${nextDialogId++}`
+    /** Whether Enter went down in the dialog, so it closes the dialog when it comes up there. */
+    private enterInDialog = false
 
-  protected onChange: (value: string | null) => void = () => {};
-  protected onTouched: () => void = () => {};
-  protected onValidatorChange: () => void = () => {};
+    protected onChange: (value: string | null) => void = () => {}
+    protected onTouched: () => void = () => {}
+    protected onValidatorChange: () => void = () => {}
 
-  constructor() {
+    constructor() {
     // The field is the control: it gets the validation's ARIA, not the host.
-    this.validation?.delegateAria();
+        this.validation?.delegateAria()
 
-    // Before the overlay is built, rebuilding it does nothing.
-    effect(() => {
-      this.overlayHandler.offset(this.overlayOffset()).disabled(this.isDisabled() || this.readonly());
-      untracked(() => this.overlayHandler.rebuild());
-    });
-  }
-
-  ngAfterViewInit() {
-    const field = this.field();
-    if (!field) {
-      return;
+        // Before the overlay is built, rebuilding it does nothing.
+        effect(() => {
+            this.overlayHandler.offset(this.overlayOffset()).disabled(this.isDisabled() || this.readonly())
+            untracked(() => this.overlayHandler.rebuild())
+        })
     }
-    const overlay = this.overlayHandler
-      .host(field)
-      .componentType(NbColorPickerDialogComponent)
-      .trigger(NbTrigger.FOCUS)
-      // Below the field, or where there's room, as the pickers' overlays are.
-      .position(NbPosition.BOTTOM)
-      .adjustment(NbAdjustment.COUNTERCLOCKWISE)
-      .offset(this.overlayOffset())
-      .content(this.dialog())
-      .disabled(this.isDisabled() || this.readonly())
-      .build();
-    this.overlay = overlay;
-    overlay.isShown.pipe(skip(1), takeUntilDestroyed(this.destroyRef)).subscribe((shown) => {
-      if (shown) {
-        this.open.set(true);
-      } else {
-        this.onClose();
-      }
-    });
-  }
 
-  ngOnDestroy() {
-    this.overlayHandler.destroy();
-  }
-
-  writeValue(value?: string | null) {
-    this.value.set(value || null);
-    this.setParseError(false);
-    this.show(value || '');
-  }
-
-  registerOnChange(fn: (value: string | null) => void) {
-    this.onChange = fn;
-  }
-
-  registerOnTouched(fn: () => void) {
-    this.onTouched = fn;
-  }
-
-  registerOnValidatorChange(fn: () => void) {
-    this.onValidatorChange = fn;
-  }
-
-  setDisabledState(disabled: boolean) {
-    this.isDisabled.set(disabled);
-  }
-
-  /** The parse error of text that isn't a colour. */
-  validate(): ValidationErrors | null {
-    if (!this.parseError()) {
-      return null;
+    ngAfterViewInit() {
+        const field = this.field()
+        if (!field) {
+            return
+        }
+        const overlay = this.overlayHandler
+            .host(field)
+            .componentType(NbColorPickerDialogComponent)
+            .trigger(NbTrigger.FOCUS)
+        // Below the field, or where there's room, as the pickers' overlays are.
+            .position(NbPosition.BOTTOM)
+            .adjustment(NbAdjustment.COUNTERCLOCKWISE)
+            .offset(this.overlayOffset())
+            .content(this.dialog())
+            .disabled(this.isDisabled() || this.readonly())
+            .build()
+        this.overlay = overlay
+        overlay.isShown.pipe(skip(1), takeUntilDestroyed(this.destroyRef)).subscribe((shown) => {
+            if (shown) {
+                this.open.set(true)
+            } else {
+                this.onClose()
+            }
+        })
     }
-    // The app's message for the kind, or the colour picker's text.
-    const error: NbColorPickerError = { kind: NB_COLOR_PICKER_ERROR, message: this.texts().invalid };
-    const message = this.message({ kind: NB_COLOR_PICKER_ERROR, params: error });
-    return { [NB_COLOR_PICKER_ERROR]: { ...error, message } };
-  }
 
-  /**
-   * Clears the colour. The button goes away with it, so focus goes from the button to the field when it was there by
-   * keyboard.
-   */
-  clear(event?: Event) {
-    this.setParseError(false);
-    this.update(null);
-    this.show('');
-    this.onTouched();
-    if ((event?.currentTarget as HTMLElement | undefined)?.matches(':focus-visible')) {
-      this.field()?.nativeElement.focus();
+    ngOnDestroy() {
+        this.overlayHandler.destroy()
     }
-  }
 
-  /** @internal */
-  onColorChange(color: string) {
-    if (!this.cmyk()) {
-      this.changed(color);
+    writeValue(value?: string | null) {
+        this.value.set(value || null)
+        this.setParseError(false)
+        this.show(value || '')
     }
-  }
 
-  /** @internal */
-  onCmykChange(color: string) {
-    if (this.cmyk()) {
-      this.changed(color);
+    registerOnChange(fn: (value: string | null) => void) {
+        this.onChange = fn
     }
-  }
 
-  /** @internal */
-  onInput(event: Event) {
-    const text = (event.target as HTMLInputElement).value.trim();
-    if (!text && this.clearable()) {
-      this.setParseError(false);
-      this.update(null);
-    } else {
-      // Text that is a colour is the value, in the value's format; the field keeps the text while it's typed in.
-      const color = this.typedColor(text);
-      this.setParseError(!color);
-      if (color) {
-        this.update(color);
-      }
+    registerOnTouched(fn: () => void) {
+        this.onTouched = fn
     }
-    // Signal forms only check a value accessor's validators again when they're told to.
-    this.onValidatorChange();
-  }
 
-  /**
-   * Arrow Down moves into the dialog, opening it if needed, and Escape closes it.
-   * @internal
-   */
-  onFieldKeydown(event: KeyboardEvent) {
-    if (event.ctrlKey || event.metaKey || event.altKey || event.shiftKey) {
-      return;
+    registerOnValidatorChange(fn: () => void) {
+        this.onValidatorChange = fn
     }
-    if (event.key === 'ArrowDown' && !this.isDisabled() && !this.readonly()) {
-      event.preventDefault();
-      this.focusDialog();
-    } else if (event.key === 'Escape' && this.open()) {
-      // Only the colour picker closes, not a dialog or window the field is in.
-      event.preventDefault();
-      event.stopPropagation();
-      this.overlay?.hide();
-    }
-  }
 
-  /**
-   * Enter and Escape close the dialog, keeping the colour, and return to the field.
-   * @internal
-   */
-  onDialogKeydown(event: KeyboardEvent) {
-    if (event.key === 'Escape') {
-      // Only the colour picker closes, not a dialog or window the field is in.
-      event.preventDefault();
-      event.stopPropagation();
-      this.closeDialog();
-    } else if (event.key === 'Enter') {
-      this.enterInDialog = true;
+    setDisabledState(disabled: boolean) {
+        this.isDisabled.set(disabled)
     }
-  }
 
-  /**
-   * Enter closes the dialog when it comes up, once the dialog's inputs have taken what was typed in them.
-   * @internal
-   */
-  onDialogKeyup(event: KeyboardEvent) {
-    if (event.key === 'Enter' && this.enterInDialog) {
-      this.enterInDialog = false;
-      event.preventDefault();
-      this.closeDialog();
+    /** The parse error of text that isn't a colour. */
+    validate(): ValidationErrors | null {
+        if (!this.parseError()) {
+            return null
+        }
+        // The app's message for the kind, or the colour picker's text.
+        const error: NbColorPickerError = { kind: NB_COLOR_PICKER_ERROR, message: this.texts().invalid }
+        const message = this.message({ kind: NB_COLOR_PICKER_ERROR, params: error })
+        return { [NB_COLOR_PICKER_ERROR]: { ...error, message } }
     }
-  }
 
-  /** @internal */
-  onBlur() {
-    if (!this.open()) {
-      this.leave();
+    /**
+     * Clears the colour. The button goes away with it, so focus goes from the button to the field when it was there by
+     * keyboard.
+     */
+    clear(event?: Event) {
+        this.setParseError(false)
+        this.update(null)
+        this.show('')
+        this.onTouched()
+        if ((event?.currentTarget as HTMLElement | undefined)?.matches(':focus-visible')) {
+            this.field()?.nativeElement.focus()
+        }
     }
-  }
 
-  /** The dialog closed: the field is touched once focus is elsewhere. */
-  protected onClose() {
-    this.open.set(false);
-    this.enterInDialog = false;
-    if (!this.focused()) {
-      this.leave();
+    /** @internal */
+    onColorChange(color: string) {
+        if (!this.cmyk()) {
+            this.changed(color)
+        }
     }
-  }
 
-  /** Opens the dialog if needed, and moves focus to its first control. */
-  protected focusDialog() {
-    if (!this.open()) {
-      this.overlay?.show();
+    /** @internal */
+    onCmykChange(color: string) {
+        if (this.cmyk()) {
+            this.changed(color)
+        }
     }
-    afterNextRender(() => this.overlay?.containerElement?.querySelector<HTMLElement>(DIALOG_FOCUSABLE)?.focus(), {
-      injector: this.injector,
-    });
-  }
 
-  /** Closes the dialog, with focus back in the field. */
-  protected closeDialog() {
+    /** @internal */
+    onInput(event: Event) {
+        const text = (event.target as HTMLInputElement).value.trim()
+        if (!text && this.clearable()) {
+            this.setParseError(false)
+            this.update(null)
+        } else {
+            // Text that is a colour is the value, in the value's format; the field keeps the text while it's typed in.
+            const color = this.typedColor(text)
+            this.setParseError(!color)
+            if (color) {
+                this.update(color)
+            }
+        }
+        // Signal forms only check a value accessor's validators again when they're told to.
+        this.onValidatorChange()
+    }
+
+    /**
+     * Arrow Down moves into the dialog, opening it if needed, and Escape closes it.
+     *
+     * @internal
+     */
+    onFieldKeydown(event: KeyboardEvent) {
+        if (event.ctrlKey || event.metaKey || event.altKey || event.shiftKey) {
+            return
+        }
+        if (event.key === 'ArrowDown' && !this.isDisabled() && !this.readonly()) {
+            event.preventDefault()
+            this.focusDialog()
+        } else if (event.key === 'Escape' && this.open()) {
+            // Only the colour picker closes, not a dialog or window the field is in.
+            event.preventDefault()
+            event.stopPropagation()
+            this.overlay?.hide()
+        }
+    }
+
+    /**
+     * Enter and Escape close the dialog, keeping the colour, and return to the field.
+     *
+     * @internal
+     */
+    onDialogKeydown(event: KeyboardEvent) {
+        if (event.key === 'Escape') {
+            // Only the colour picker closes, not a dialog or window the field is in.
+            event.preventDefault()
+            event.stopPropagation()
+            this.closeDialog()
+        } else if (event.key === 'Enter') {
+            this.enterInDialog = true
+        }
+    }
+
+    /**
+     * Enter closes the dialog when it comes up, once the dialog's inputs have taken what was typed in them.
+     *
+     * @internal
+     */
+    onDialogKeyup(event: KeyboardEvent) {
+        if (event.key === 'Enter' && this.enterInDialog) {
+            this.enterInDialog = false
+            event.preventDefault()
+            this.closeDialog()
+        }
+    }
+
+    /** @internal */
+    onBlur() {
+        if (!this.open()) {
+            this.leave()
+        }
+    }
+
+    /** The dialog closed: the field is touched once focus is elsewhere. */
+    protected onClose() {
+        this.open.set(false)
+        this.enterInDialog = false
+        if (!this.focused()) {
+            this.leave()
+        }
+    }
+
+    /** Opens the dialog if needed, and moves focus to its first control. */
+    protected focusDialog() {
+        if (!this.open()) {
+            this.overlay?.show()
+        }
+        afterNextRender(() => this.overlay?.containerElement?.querySelector<HTMLElement>(DIALOG_FOCUSABLE)?.focus(), {
+            injector: this.injector
+        })
+    }
+
+    /** Closes the dialog, with focus back in the field. */
+    protected closeDialog() {
     // Focus first: the field opens the dialog on focus, unless it's open.
-    this.field()?.nativeElement.focus();
-    this.overlay?.hide();
-  }
-
-  /**
-   * The value for typed text that is a colour, in the value's format, as the dialog gives it for a colour picked in
-   * it: without transparency where the format has none, and as `cmyk()` with `cmyk`.
-   */
-  protected typedColor(text: string): string | undefined {
-    const hsva = stringToHsva(text, true);
-    const cmyk = stringToCmyk(text, true);
-    const format = this.outputFormat();
-    const alpha = this.alphaChannel();
-    const alphaChannel = format === 'hex' && alpha !== 'always' && alpha !== 'forced' ? 'disabled' : alpha;
-    if (alphaChannel === 'disabled') {
-      if (hsva) {
-        hsva.a = 1;
-      }
-      if (cmyk) {
-        cmyk.a = 1;
-      }
+        this.field()?.nativeElement.focus()
+        this.overlay?.hide()
     }
-    if (this.cmyk()) {
-      const color = cmyk ?? (hsva && rgbaToCmyk(hsvaToRgba(hsva)));
-      return color ? formatCmyk(color, alphaChannel) : undefined;
+
+    /**
+     * The value for typed text that is a colour, in the value's format, as the dialog gives it for a colour picked in
+     * it: without transparency where the format has none, and as `cmyk()` with `cmyk`.
+     */
+    protected typedColor(text: string): string | undefined {
+        const hsva = stringToHsva(text, true)
+        const cmyk = stringToCmyk(text, true)
+        const format = this.outputFormat()
+        const alpha = this.alphaChannel()
+        const alphaChannel = format === 'hex' && alpha !== 'always' && alpha !== 'forced' ? 'disabled' : alpha
+        if (alphaChannel === 'disabled') {
+            if (hsva) {
+                hsva.a = 1
+            }
+            if (cmyk) {
+                cmyk.a = 1
+            }
+        }
+        if (this.cmyk()) {
+            const value = cmyk ?? (hsva && rgbaToCmyk(hsvaToRgba(hsva)))
+            return value ? formatCmyk(value, alphaChannel) : undefined
+        }
+        const color = hsva ?? (cmyk && rgbaToHsva(cmykToRgb(cmyk)))
+        return color ? formatOutput(color, format, alphaChannel) : undefined
     }
-    const color = hsva ?? (cmyk && rgbaToHsva(cmykToRgb(cmyk)));
-    return color ? formatOutput(color, format, alphaChannel) : undefined;
-  }
 
-  /** The field shows the colour, as the value has it, unless the text isn't one, and the field is touched. */
-  protected leave() {
-    if (!this.parseError()) {
-      this.show(this.value() ?? '');
+    /** The field shows the colour, as the value has it, unless the text isn't one, and the field is touched. */
+    protected leave() {
+        if (!this.parseError()) {
+            this.show(this.value() ?? '')
+        }
+        this.onTouched()
     }
-    this.onTouched();
-  }
 
-  /** A colour picked in the dialog, which the field shows, also while it has focus, e.g. as the colours are dragged. */
-  protected changed(color: string) {
-    this.setParseError(false);
-    this.update(color);
-    this.show(color);
-  }
-
-  protected update(color: string | null) {
-    const value = color || null;
-    if (value !== this.value()) {
-      this.value.set(value);
-      this.onChange(value);
+    /** A colour picked in the dialog, which the field shows, also while it has focus, e.g. as the colours are dragged. */
+    protected changed(color: string) {
+        this.setParseError(false)
+        this.update(color)
+        this.show(color)
     }
-  }
 
-  /** Whether the field has focus, e.g. while the user types. */
-  protected focused() {
-    const field = this.field()?.nativeElement;
-    return !!field && field.ownerDocument.activeElement === field;
-  }
-
-  /** Shows a text in the field. */
-  protected show(text: string) {
-    this.text.set(text);
-    const field = this.field()?.nativeElement;
-    if (field && field.value !== text) {
-      field.value = text;
+    protected update(color: string | null) {
+        const value = color || null
+        if (value !== this.value()) {
+            this.value.set(value)
+            this.onChange(value)
+        }
     }
-  }
 
-  protected setParseError(parseError: boolean) {
-    if (parseError !== this.parseError()) {
-      this.parseError.set(parseError);
-      this.onValidatorChange();
+    /** Whether the field has focus, e.g. while the user types. */
+    protected focused() {
+        const field = this.field()?.nativeElement
+        return !!field && field.ownerDocument.activeElement === field
     }
-  }
+
+    /** Shows a text in the field. */
+    protected show(text: string) {
+        this.text.set(text)
+        const field = this.field()?.nativeElement
+        if (field && field.value !== text) {
+            field.value = text
+        }
+    }
+
+    protected setParseError(parseError: boolean) {
+        if (parseError !== this.parseError()) {
+            this.parseError.set(parseError)
+            this.onValidatorChange()
+        }
+    }
 }

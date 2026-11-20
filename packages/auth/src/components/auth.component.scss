@@ -1,53 +1,54 @@
-@use '@liquid-js/lyr-core/styles/globals' as *;
-@use '@liquid-js/lyr-core/styles/theming' as *;
+@use "@liquid-js/lyr-core/styles/globals" as *;
+@use "@liquid-js/lyr-core/styles/theming" as *;
 
 :host {
-  $auth-layout-padding: 2.5rem;
+    $auth-layout-padding: 2.5rem;
 
-  nb-card {
-    margin: 0;
-    height: calc(100dvh - 2 * #{$auth-layout-padding});
-  }
-
-  .navigation .link {
-    display: inline-block;
-    text-decoration: none;
-
-    nb-icon {
-      font-size: 2rem;
-      vertical-align: middle;
-      // The arrow points back, to the start.
-      @include nb-rtl(transform, scaleX(-1));
-    }
-  }
-
-  .links nb-icon {
-    font-size: 2.5rem;
-  }
-
-  nb-card-body {
-    display: flex;
-    width: 100%;
-  }
-
-  nb-auth-block {
-    margin: auto;
-  }
-
-  @include media-breakpoint-down(sm) {
     nb-card {
-      border-radius: 0;
-      height: 100dvh;
+        margin: 0;
+        height: calc(100dvh - 2 * #{$auth-layout-padding});
     }
-  }
 
-  ::ng-deep {
-    nb-layout .layout .layout-container .content .columns nb-layout-column {
-      padding: $auth-layout-padding;
+    .navigation .link {
+        display: inline-block;
+        text-decoration: none;
 
-      @include media-breakpoint-down(sm) {
-        padding: 0;
-      }
+        nb-icon {
+            font-size: 2rem;
+            vertical-align: middle;
+
+            // The arrow points back, to the start.
+            @include nb-rtl(transform, scaleX(-1));
+        }
     }
-  }
+
+    .links nb-icon {
+        font-size: 2.5rem;
+    }
+
+    nb-card-body {
+        display: flex;
+        width: 100%;
+    }
+
+    nb-auth-block {
+        margin: auto;
+    }
+
+    @include media-breakpoint-down(sm) {
+        nb-card {
+            border-radius: 0;
+            height: 100dvh;
+        }
+    }
+
+    ::ng-deep {
+        nb-layout .layout .layout-container .content .columns nb-layout-column {
+            padding: $auth-layout-padding;
+
+            @include media-breakpoint-down(sm) {
+                padding: 0;
+            }
+        }
+    }
 }

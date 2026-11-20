@@ -1,10 +1,10 @@
-import { Component } from '@angular/core';
-import { NbCardComponent, NbCardHeaderComponent, NbCardBodyComponent, NbButtonComponent } from '@liquid-js/lyr-core';
+import { Component } from '@angular/core'
+import { NbCardComponent, NbCardHeaderComponent, NbCardBodyComponent, NbButtonComponent } from '@liquid-js/lyr-core'
 
 @Component({
-  selector: 'nb-button-full-width',
-  templateUrl: './button-full-width.component.html',
-  imports: [NbCardComponent, NbCardHeaderComponent, NbCardBodyComponent, NbButtonComponent],
+    selector: 'nb-button-full-width',
+    templateUrl: './button-full-width.component.html',
+    imports: [NbCardComponent, NbCardHeaderComponent, NbCardBodyComponent, NbButtonComponent]
 })
 export class ButtonFullWidthComponent {
 }

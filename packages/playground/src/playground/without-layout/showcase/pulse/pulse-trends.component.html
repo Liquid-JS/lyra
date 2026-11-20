@@ -1,71 +1,71 @@
 <nb-button-group fullWidth
-  filled
-  status="primary"
-  aria-label="Period"
-  (valueChange)="pick($event)">
-  @for (name of periods; track name) {
-  <button nbButtonToggle
-    [value]="name"
-    [pressed]="period() === name">This {{ name }}</button>
-  }
+    filled
+    status="primary"
+    aria-label="Period"
+    (valueChange)="pick($event)">
+    @for (name of periods; track name) {
+    <button nbButtonToggle
+        [value]="name"
+        [pressed]="period() === name">This {{ name }}</button>
+    }
 </nb-button-group>
 
 <section class="stats"
-  aria-label="Figures">
-  @for (stat of data().stats; track stat.label) {
-  <div class="stat">
-    <span class="tile"
-      [class]="'tile status-' + stat.status"><nb-icon [icon]="stat.icon" /></span>
-    <span class="figure">{{ stat.value }}<small>{{ stat.unit }}</small></span>
-    <span class="hint">{{ stat.label }}</span>
-    <!-- The figure in a readable colour, the arrow in a bright one, so the direction is seen before it's read. -->
-    <span class="change"
-      [class.up]="stat.change > 0">
-      <nb-icon [icon]="stat.change > 0 ? 'trending-up-outline' : 'trending-down-outline'" />
-      {{ stat.change > 0 ? '+' : '' }}{{ stat.change }}%
-    </span>
-  </div>
-  }
+    aria-label="Figures">
+    @for (stat of data().stats; track stat.label) {
+    <div class="stat">
+        <span class="tile"
+            [class]="'tile status-' + stat.status"><nb-icon [icon]="stat.icon" /></span>
+        <span class="figure">{{ stat.value }}<small>{{ stat.unit }}</small></span>
+        <span class="hint">{{ stat.label }}</span>
+        <!-- The figure in a readable colour, the arrow in a bright one, so the direction is seen before it's read. -->
+        <span class="change"
+            [class.up]="stat.change > 0">
+            <nb-icon [icon]="stat.change > 0 ? 'trending-up-outline' : 'trending-down-outline'" />
+            {{ stat.change > 0 ? '+' : '' }}{{ stat.change }}%
+        </span>
+    </div>
+    }
 </section>
 
 <nb-card>
-  <nb-card-header class="row">
-    Steps
-    <span class="count">{{ period() === 'week' ? 'a day' : 'a week' }}</span>
-  </nb-card-header>
-  <nb-card-body>
-    <nb-bar-chart [labels]="data().stepLabels"
-      [series]="steps()"
-      aria-label="Steps per day" />
-  </nb-card-body>
+    <nb-card-header class="row">
+        Steps
+        <span class="count">{{ period() === 'week' ? 'a day' : 'a week' }}</span>
+    </nb-card-header>
+    <nb-card-body>
+        <nb-bar-chart [labels]="data().stepLabels"
+            [series]="steps()"
+            aria-label="Steps per day" />
+    </nb-card-body>
 </nb-card>
 
 <nb-card>
-  <nb-card-header class="row">
-    Resting heart rate
-    <span class="count">bpm</span>
-  </nb-card-header>
-  <nb-card-body>
-    <nb-line-chart area
-      smooth
-      [labels]="data().heartRateLabels"
-      [series]="heartRate()"
-      aria-label="Resting heart rate" />
-  </nb-card-body>
+    <nb-card-header class="row">
+        Resting heart rate
+        <span class="count">bpm</span>
+    </nb-card-header>
+    <nb-card-body>
+        <nb-line-chart area
+            smooth
+            [labels]="data().heartRateLabels"
+            [series]="heartRate()"
+            aria-label="Resting heart rate" />
+    </nb-card-body>
 </nb-card>
 
 <nb-card>
-  <nb-card-header>Personal bests</nb-card-header>
-  <nb-list>
-    @for (best of bests; track best.title) {
-    <nb-list-item class="best">
-      <span class="tile status-warning"><nb-icon [icon]="best.icon" /></span>
-      <span class="best-text">
-        <span class="best-title">{{ best.title }}</span>
-        <span class="hint">{{ best.when }}</span>
-      </span>
-      <span class="best-value">{{ best.value }}</span>
-    </nb-list-item>
-    }
-  </nb-list>
+    <nb-card-header>Personal bests</nb-card-header>
+    <nb-list>
+        @for (best of bests; track best.title) {
+        <nb-list-item class="best">
+            <span class="tile status-warning"><nb-icon [icon]="best.icon" /></span>
+            <span class="best-text">
+                <span class="best-title">{{ best.title }}</span>
+                <span class="hint">{{ best.when }}</span>
+            </span>
+            <span class="best-value">{{ best.value }}</span>
+        </nb-list-item>
+        }
+    </nb-list>
 </nb-card>

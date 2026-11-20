@@ -1,17 +1,17 @@
 <nb-card>
-  <nb-card-body>
-    <div class="container">
-      <nb-actions size="medium">
-        <nb-action icon="minus-outline"
-          (click)="setValue(value - 25)" />
-      </nb-actions>
-      <nb-progress-bar [value]="value"
-        [status]="status"
-        [displayValue]="true" />
-      <nb-actions size="medium">
-        <nb-action icon="plus-outline"
-          (click)="setValue(value + 25)" />
-      </nb-actions>
-    </div>
-  </nb-card-body>
+    <nb-card-body>
+        <div class="container">
+            <nb-actions size="medium">
+                <nb-action icon="minus-outline"
+                    (click)="setValue(value - 25)" />
+            </nb-actions>
+            <nb-progress-bar [value]="value"
+                [status]="status"
+                [displayValue]="true" />
+            <nb-actions size="medium">
+                <nb-action icon="plus-outline"
+                    (click)="setValue(value + 25)" />
+            </nb-actions>
+        </div>
+    </nb-card-body>
 </nb-card>

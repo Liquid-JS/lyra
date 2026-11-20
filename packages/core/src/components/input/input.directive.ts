@@ -1,28 +1,22 @@
 import {
-  computed,
-  DestroyRef,
-  Directive,
-  DoCheck,
-  ElementRef,
-  inject,
-  input,
-  linkedSignal,
-  signal,
-  untracked,
-} from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { map } from 'rxjs/operators';
+    computed,
+    DestroyRef,
+    Directive,
+    DoCheck,
+    ElementRef,
+    inject,
+    input,
+    linkedSignal,
+    signal,
+    untracked
+} from '@angular/core'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
+import { map } from 'rxjs/operators'
 
-import { injectNbDefaults } from '@liquid-js/lyr-core/base';
-import { NbStatusService } from '@liquid-js/lyr-core/base';
-import { ɵconvertToBoolProperty as convertToBoolProperty, NbBooleanInput } from '@liquid-js/lyr-core/base';
-import { NbComponentSize } from '@liquid-js/lyr-core/base';
-import { NbComponentShape } from '@liquid-js/lyr-core/base';
-import { NbComponentOrCustomStatus } from '@liquid-js/lyr-core/base';
-import { NbFormFieldControl } from '@liquid-js/lyr-core/form-field';
-import { NbValidationDirective } from '@liquid-js/lyr-core/validation';
-import { NbFocusMonitor } from '@liquid-js/lyr-core/cdk';
-import { ɵenableTransitionsAfterRender as enableTransitionsAfterRender } from '@liquid-js/lyr-core/base';
+import { injectNbDefaults, NbStatusService, ɵconvertToBoolProperty as convertToBoolProperty, NbBooleanInput, NbComponentSize, NbComponentShape, NbComponentOrCustomStatus, ɵenableTransitionsAfterRender as enableTransitionsAfterRender } from '@liquid-js/lyr-core/base'
+import { NbFormFieldControl } from '@liquid-js/lyr-core/form-field'
+import { NbValidationDirective } from '@liquid-js/lyr-core/validation'
+import { NbFocusMonitor } from '@liquid-js/lyr-core/cdk'
 
 /**
  * Styles an `<input>` or `<textarea>` as a field of the design system.
@@ -63,7 +57,6 @@ import { ɵenableTransitionsAfterRender as enableTransitionsAfterRender } from '
  * Inputs come in five sizes, `tiny`, `small`, `medium` (default), `large` and `giant`, set with `fieldSize`: on an
  * `<input>`, `size` is already the HTML attribute for its width in characters. Components that aren't a native field,
  * such as `nb-select`, the phone input and the colour picker, take `size`.
- *
  * @stacked-example(Input Sizes, input/input-sizes.component)
  *
  * `shape` rounds the corners:
@@ -84,14 +77,12 @@ import { ɵenableTransitionsAfterRender as enableTransitionsAfterRender } from '
  * Add `nbValidation` to show the control's validation errors and status, see [Validation](components/forms/validation).
  *
  * `<nb-form-field>` adds content before (`nbPrefix`) or after (`nbSuffix`) the field, such as an icon or a button.
- *
  * @stacked-example(Prefix and suffix, form-field/form-field-showcase.component)
  * @stacked-example(Input with icon, form-field/form-field-input.component)
  * @stacked-example(Input with button, form-field/form-field-password.component)
  *
  * Addons grow to fit text, e.g. a unit or a URL scheme, and the input's padding follows their width:
  * @stacked-example(Input with text, form-field/form-field-text.component)
- *
  * @styles
  *
  * input-ghost-background-color:
@@ -249,89 +240,89 @@ import { ɵenableTransitionsAfterRender as enableTransitionsAfterRender } from '
  * input-giant-max-width:
  */
 @Directive({
-  selector: 'input[nbInput],textarea[nbInput]',
-  providers: [
-    { provide: NbFormFieldControl, useExisting: NbInputDirective },
-  ],
-  host: {
-    '[class]': 'hostClasses()',
-    '[class.input-full-width]': 'fullWidth()',
-    '[class.input-ghost]': 'ghost()',
-  },
+    selector: 'input[nbInput],textarea[nbInput]',
+    providers: [
+        { provide: NbFormFieldControl, useExisting: NbInputDirective }
+    ],
+    host: {
+        '[class]': 'hostClasses()',
+        '[class.input-full-width]': 'fullWidth()',
+        '[class.input-ghost]': 'ghost()'
+    }
 })
 export class NbInputDirective implements DoCheck, NbFormFieldControl {
-  // The app's defaults for this type, which the inputs below start from.
-  protected readonly nbDefaults = injectNbDefaults('input');
+    // The app's defaults for this type, which the inputs below start from.
+    protected readonly nbDefaults = injectNbDefaults('input')
 
-  protected readonly elementRef = inject<ElementRef<HTMLInputElement | HTMLTextAreaElement>>(ElementRef);
-  protected readonly focusMonitor = inject(NbFocusMonitor);
-  protected readonly statusService = inject(NbStatusService);
-  protected readonly validation = inject(NbValidationDirective, { self: true, optional: true });
+    protected readonly elementRef = inject<ElementRef<HTMLInputElement | HTMLTextAreaElement>>(ElementRef)
+    protected readonly focusMonitor = inject(NbFocusMonitor)
+    protected readonly statusService = inject(NbStatusService)
+    protected readonly validation = inject(NbValidationDirective, { self: true, optional: true })
 
-  /**
-   * Field size: `tiny`, `small`, `medium` (default), `large` or `giant`. Not `size`, which on an `<input>` is the
-   * HTML attribute for its width in characters.
-   */
-  readonly fieldSizeInput = input<NbComponentSize | undefined>(undefined, { alias: 'fieldSize' });
-  /** The fieldSize in use: the input's, the app's default, or 'medium'. */
-  readonly fieldSize = linkedSignal<NbComponentSize>(() => this.fieldSizeInput() ?? this.nbDefaults().size ?? 'medium');
+    /**
+     * Field size: `tiny`, `small`, `medium` (default), `large` or `giant`. Not `size`, which on an `<input>` is the
+     * HTML attribute for its width in characters.
+     */
+    readonly fieldSizeInput = input<NbComponentSize | undefined>(undefined, { alias: 'fieldSize' })
+    /** The fieldSize in use: the input's, the app's default, or 'medium'. */
+    readonly fieldSize = linkedSignal<NbComponentSize>(() => this.fieldSizeInput() ?? this.nbDefaults().size ?? 'medium')
 
-  /**
-   * Colours the field: `basic` (default), `primary`, `info`, `success`, `warning`, `danger` or `control`. With
-   * `nbValidation`, the validation status takes over while the control shows errors or success.
-   */
-  readonly status = input<NbComponentOrCustomStatus>('basic');
+    /**
+     * Colours the field: `basic` (default), `primary`, `info`, `success`, `warning`, `danger` or `control`. With
+     * `nbValidation`, the validation status takes over while the control shows errors or success.
+     */
+    readonly status = input<NbComponentOrCustomStatus>('basic')
 
-  // With `nbValidation`, the status it gives while the control shows errors or success.
-  protected readonly resolvedStatus = computed(() => this.validation?.status() ?? this.status());
+    // With `nbValidation`, the status it gives while the control shows errors or success.
+    protected readonly resolvedStatus = computed(() => this.validation?.status() ?? this.status())
 
-  /** `rectangle` (default), `semi-round` or `round`. */
-  readonly shapeInput = input<NbComponentShape | undefined>(undefined, { alias: 'shape' });
-  /** The shape in use: the input's, the app's default, or 'rectangle'. */
-  readonly shape = linkedSignal<NbComponentShape>(() => this.shapeInput() ?? this.nbDefaults().shape ?? 'rectangle');
+    /** `rectangle` (default), `semi-round` or `round`. */
+    readonly shapeInput = input<NbComponentShape | undefined>(undefined, { alias: 'shape' })
+    /** The shape in use: the input's, the app's default, or 'rectangle'. */
+    readonly shape = linkedSignal<NbComponentShape>(() => this.shapeInput() ?? this.nbDefaults().shape ?? 'rectangle')
 
-  /** Fills the container's width. */
-  readonly fullWidth = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
+    /** Fills the container's width. */
+    readonly fullWidth = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty })
 
-  /**
-   * Shows no background or border at rest; under the pointer and with focus the input looks as usual.
-   * Fits fields edited in place, e.g. a title.
-   */
-  readonly ghost = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
+    /**
+     * Shows no background or border at rest; under the pointer and with focus the input looks as usual.
+     * Fits fields edited in place, e.g. a title.
+     */
+    readonly ghost = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty })
 
-  /** Whether the field has focus, for the form field around it. */
-  readonly focused = signal(false);
+    /** Whether the field has focus, for the form field around it. */
+    readonly focused = signal(false)
 
-  // The element's disabled property, which forms and bindings set directly, read on every check.
-  protected readonly disabled = signal(false);
+    // The element's disabled property, which forms and bindings set directly, read on every check.
+    protected readonly disabled = signal(false)
 
-  readonly controlState = computed(() => ({
-    status: this.resolvedStatus(),
-    size: this.fieldSize(),
-    fullWidth: this.fullWidth(),
-    focused: this.focused(),
-    disabled: this.disabled(),
-  }));
+    readonly controlState = computed(() => ({
+        status: this.resolvedStatus(),
+        size: this.fieldSize(),
+        fullWidth: this.fullWidth(),
+        focused: this.focused(),
+        disabled: this.disabled()
+    }))
 
-  protected readonly hostClasses = computed(() => [
-    `size-${this.fieldSize()}`,
-    this.statusService.getStatusClass(this.resolvedStatus()),
-    `shape-${this.shape()}`,
-  ]);
+    protected readonly hostClasses = computed(() => [
+        `size-${this.fieldSize()}`,
+        this.statusService.getStatusClass(this.resolvedStatus()),
+        `shape-${this.shape()}`
+    ])
 
-  constructor() {
-    enableTransitionsAfterRender(this.elementRef.nativeElement);
+    constructor() {
+        enableTransitionsAfterRender(this.elementRef.nativeElement)
 
-    this.focusMonitor
-      .monitor(this.elementRef)
-      .pipe(map((origin) => !!origin), takeUntilDestroyed())
-      // Focus can change while a view renders, e.g. when hiding a focused element makes the browser blur it.
-      .subscribe((focused) => untracked(() => this.focused.set(focused)));
-    inject(DestroyRef).onDestroy(() => this.focusMonitor.stopMonitoring(this.elementRef));
-  }
+        this.focusMonitor
+            .monitor(this.elementRef)
+            .pipe(map((origin) => !!origin), takeUntilDestroyed())
+        // Focus can change while a view renders, e.g. when hiding a focused element makes the browser blur it.
+            .subscribe((focused) => untracked(() => this.focused.set(focused)))
+        inject(DestroyRef).onDestroy(() => this.focusMonitor.stopMonitoring(this.elementRef))
+    }
 
-  ngDoCheck() {
-    this.disabled.set(this.elementRef.nativeElement.disabled);
-  }
+    ngDoCheck() {
+        this.disabled.set(this.elementRef.nativeElement.disabled)
+    }
 
 }

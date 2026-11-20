@@ -1,183 +1,184 @@
 <div #frame
-  class="frame"
-  nbOverlayHost
-  [attr.role]="controls() ? 'group' : null"
-  [attr.tabindex]="controls() ? 0 : null"
-  [attr.aria-label]="controls() ? ariaLabel() : null"
-  [class.bare]="!controls()"
-  [class.paused]="paused()"
-  [class.idle]="controls() && state().controlsVisible === false"
-  (keydown)="onKeydown($event)">
-  <div #media
-    class="media"
-    (click)="controls() && togglePlay()"
-    (dblclick)="controls() && toggleFullscreen()">
-    <canvas #still
-      class="still"></canvas>
-  </div>
-
-  <!-- The captions, above the controls. Assistive technologies read the media's own. -->
-  @if (cue()) {
-  <div class="cue"
-    aria-hidden="true">
-    <span>{{ cue() }}</span>
-  </div>
-  }
-
-  <!-- Without controls, it's just the media. -->
-  @if (controls()) {
-  @if (failed()) {
-  <div class="message"
-    role="alert">
-    <nb-icon icon="alert-circle-outline"
-      pack="essentials" />
-    {{ texts().error }}
-  </div>
-  } @else if (waiting()) {
-  <nb-spinner class="waiting"
-    status="control"
-    size="giant" />
-  } @else if (paused()) {
-  <button class="big-play"
-    type="button"
-    tabindex="-1"
-    [attr.aria-label]="texts().play"
-    (click)="togglePlay()">
-    <nb-icon icon="play"
-      pack="essentials" />
-  </button>
-  }
-
-  <div class="controls">
-    <button nbButton
-      ghost
-      status="control"
-      size="small"
-      type="button"
-      [attr.aria-label]="paused() ? texts().play : texts().pause"
-      (click)="togglePlay()">
-      <nb-icon [icon]="paused() ? 'play' : 'pause'"
-        pack="essentials" />
-    </button>
-
-    <!-- The volume opens beside the mute button while it's pointed at or has the focus. -->
-    <div class="volume">
-      <button nbButton
-        ghost
-        status="control"
-        size="small"
-        type="button"
-        [attr.aria-label]="volume() === 0 ? texts().unmute : texts().mute"
-        (click)="toggleMuted()">
-        <nb-icon [icon]="volumeIcon()"
-          pack="essentials" />
-      </button>
-      <nb-slider status="control"
-        size="medium"
-        [min]="0"
-        [max]="1"
-        [step]="0.05"
-        [labels]="false"
-        [showValue]="false"
-        [formatValue]="formatVolume"
-        [value]="volume()"
-        (valueChange)="onVolume($event)"
-        [aria-label]="texts().volume" />
+    class="frame"
+    nbOverlayHost
+    [attr.role]="controls() ? 'group' : null"
+    [attr.tabindex]="controls() ? 0 : null"
+    [attr.aria-label]="controls() ? ariaLabel() : null"
+    [class.bare]="!controls()"
+    [class.paused]="paused()"
+    [class.idle]="controls() && state().controlsVisible === false"
+    (keydown)="onKeydown($event)">
+    <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -- Pointer shortcuts; the player's keys and controls do the same. -->
+    <div #media
+        class="media"
+        (click)="controls() && togglePlay()"
+        (dblclick)="controls() && toggleFullscreen()">
+        <canvas #still
+            class="still"></canvas>
     </div>
 
-    @if (live()) {
-    <span class="live">{{ texts().live }}</span>
-    } @else {
-    <nb-slider class="position"
-      size="medium"
-      status="control"
-      [min]="0"
-      [max]="seekable() ? duration() : 1"
-      [step]="0.1"
-      [labels]="false"
-      [showValue]="false"
-      [disabled]="!seekable()"
-      [formatValue]="formatPosition"
-      [value]="currentTime()"
-      (valueChange)="onPosition($event)"
-      [aria-label]="texts().position" />
-    <span class="time"
-      dir="ltr"
-      aria-hidden="true">{{ elapsed() }} / {{ length() }}</span>
+    <!-- The captions, above the controls. Assistive technologies read the media's own. -->
+    @if (cue()) {
+    <div class="cue"
+        aria-hidden="true">
+        <span>{{ cue() }}</span>
+    </div>
     }
 
-    @if (!live() && state().playbackRateAvailability !== 'unsupported') {
-    <span hidden
-      [id]="id + '-speed'">{{ texts().speed }}</span>
-    <nb-select class="speed"
-      status="control"
-      appearance="ghost"
-      size="small"
-      [aria-labelledby]="id + '-speed'"
-      [selected]="state().playbackRate ?? 1"
-      (selectedChange)="setRate($event)">
-      @for (rate of playbackRates(); track rate) {
-      <nb-option [value]="rate">{{ formatRate(rate) }}</nb-option>
-      }
-    </nb-select>
-    }
-
-    @if (qualities().length > 1) {
-    <span hidden
-      [id]="id + '-quality'">{{ texts().quality }}</span>
-    <nb-select class="quality"
-      status="control"
-      appearance="ghost"
-      size="small"
-      [aria-labelledby]="id + '-quality'"
-      [selected]="quality()"
-      (selectedChange)="setQuality($event)">
-      <nb-option value="auto">{{ texts().qualityAuto }}</nb-option>
-      @for (rendition of qualities(); track rendition.id) {
-      <nb-option [value]="rendition.id">{{ rendition.label }}</nb-option>
-      }
-    </nb-select>
-    }
-
-    @if (hasCaptions()) {
-    <button nbButton
-      ghost
-      status="control"
-      size="small"
-      type="button"
-      [attr.aria-label]="state().subtitlesShowing ? texts().captionsOff : texts().captions"
-      [attr.aria-pressed]="!!state().subtitlesShowing"
-      (click)="toggleCaptions()">
-      <nb-icon [icon]="state().subtitlesShowing ? 'closed-captions' : 'closed-captions-outline'"
-        pack="essentials" />
+    <!-- Without controls, it's just the media. -->
+    @if (controls()) {
+    @if (failed()) {
+    <div class="message"
+        role="alert">
+        <nb-icon icon="alert-circle-outline"
+            pack="essentials" />
+        {{ texts().error }}
+    </div>
+    } @else if (waiting()) {
+    <nb-spinner class="waiting"
+        status="control"
+        size="giant" />
+    } @else if (paused()) {
+    <button class="big-play"
+        type="button"
+        tabindex="-1"
+        [attr.aria-label]="texts().play"
+        (click)="togglePlay()">
+        <nb-icon icon="play"
+            pack="essentials" />
     </button>
     }
 
-    @if (state().pictureInPictureAvailability === 'available') {
-    <button nbButton
-      ghost
-      status="control"
-      size="small"
-      type="button"
-      [attr.aria-label]="state().isPictureInPicture ? texts().exitPictureInPicture : texts().pictureInPicture"
-      (click)="togglePictureInPicture()">
-      <nb-icon [icon]="state().isPictureInPicture ? 'picture-in-picture' : 'picture-in-picture-outline'"
-        pack="essentials" />
-    </button>
-    }
+    <div class="controls">
+        <button nbButton
+            ghost
+            status="control"
+            size="small"
+            type="button"
+            [attr.aria-label]="paused() ? texts().play : texts().pause"
+            (click)="togglePlay()">
+            <nb-icon [icon]="paused() ? 'play' : 'pause'"
+                pack="essentials" />
+        </button>
 
-    @if (state().fullscreenAvailability === 'available') {
-    <button nbButton
-      ghost
-      status="control"
-      size="small"
-      type="button"
-      [attr.aria-label]="state().isFullscreen ? texts().exitFullscreen : texts().fullscreen"
-      (click)="toggleFullscreen()">
-      <nb-icon [icon]="state().isFullscreen ? 'collapse-outline' : 'expand-outline'"
-        pack="essentials" />
-    </button>
+        <!-- The volume opens beside the mute button while it's pointed at or has the focus. -->
+        <div class="volume">
+            <button nbButton
+                ghost
+                status="control"
+                size="small"
+                type="button"
+                [attr.aria-label]="volume() === 0 ? texts().unmute : texts().mute"
+                (click)="toggleMuted()">
+                <nb-icon [icon]="volumeIcon()"
+                    pack="essentials" />
+            </button>
+            <nb-slider status="control"
+                size="medium"
+                [min]="0"
+                [max]="1"
+                [step]="0.05"
+                [labels]="false"
+                [showValue]="false"
+                [formatValue]="formatVolume"
+                [value]="volume()"
+                (valueChange)="onVolume($event)"
+                [aria-label]="texts().volume" />
+        </div>
+
+        @if (live()) {
+        <span class="live">{{ texts().live }}</span>
+        } @else {
+        <nb-slider class="position"
+            size="medium"
+            status="control"
+            [min]="0"
+            [max]="seekable() ? duration() : 1"
+            [step]="0.1"
+            [labels]="false"
+            [showValue]="false"
+            [disabled]="!seekable()"
+            [formatValue]="formatPosition"
+            [value]="currentTime()"
+            (valueChange)="onPosition($event)"
+            [aria-label]="texts().position" />
+        <span class="time"
+            dir="ltr"
+            aria-hidden="true">{{ elapsed() }} / {{ length() }}</span>
+        }
+
+        @if (!live() && state().playbackRateAvailability !== 'unsupported') {
+        <span hidden
+            [id]="id + '-speed'">{{ texts().speed }}</span>
+        <nb-select class="speed"
+            status="control"
+            appearance="ghost"
+            size="small"
+            [aria-labelledby]="id + '-speed'"
+            [selected]="state().playbackRate ?? 1"
+            (selectedChange)="setRate($event)">
+            @for (rate of playbackRates(); track rate) {
+            <nb-option [value]="rate">{{ formatRate(rate) }}</nb-option>
+            }
+        </nb-select>
+        }
+
+        @if (qualities().length > 1) {
+        <span hidden
+            [id]="id + '-quality'">{{ texts().quality }}</span>
+        <nb-select class="quality"
+            status="control"
+            appearance="ghost"
+            size="small"
+            [aria-labelledby]="id + '-quality'"
+            [selected]="quality()"
+            (selectedChange)="setQuality($event)">
+            <nb-option value="auto">{{ texts().qualityAuto }}</nb-option>
+            @for (rendition of qualities(); track rendition.id) {
+            <nb-option [value]="rendition.id">{{ rendition.label }}</nb-option>
+            }
+        </nb-select>
+        }
+
+        @if (hasCaptions()) {
+        <button nbButton
+            ghost
+            status="control"
+            size="small"
+            type="button"
+            [attr.aria-label]="state().subtitlesShowing ? texts().captionsOff : texts().captions"
+            [attr.aria-pressed]="!!state().subtitlesShowing"
+            (click)="toggleCaptions()">
+            <nb-icon [icon]="state().subtitlesShowing ? 'closed-captions' : 'closed-captions-outline'"
+                pack="essentials" />
+        </button>
+        }
+
+        @if (state().pictureInPictureAvailability === 'available') {
+        <button nbButton
+            ghost
+            status="control"
+            size="small"
+            type="button"
+            [attr.aria-label]="state().isPictureInPicture ? texts().exitPictureInPicture : texts().pictureInPicture"
+            (click)="togglePictureInPicture()">
+            <nb-icon [icon]="state().isPictureInPicture ? 'picture-in-picture' : 'picture-in-picture-outline'"
+                pack="essentials" />
+        </button>
+        }
+
+        @if (state().fullscreenAvailability === 'available') {
+        <button nbButton
+            ghost
+            status="control"
+            size="small"
+            type="button"
+            [attr.aria-label]="state().isFullscreen ? texts().exitFullscreen : texts().fullscreen"
+            (click)="toggleFullscreen()">
+            <nb-icon [icon]="state().isFullscreen ? 'collapse-outline' : 'expand-outline'"
+                pack="essentials" />
+        </button>
+        }
+    </div>
     }
-  </div>
-  }
 </div>

@@ -1,10 +1,10 @@
-import { Component } from '@angular/core';
-import { NbCardComponent, NbCardBodyComponent, NbAlertComponent } from '@liquid-js/lyr-core';
+import { Component } from '@angular/core'
+import { NbCardComponent, NbCardBodyComponent, NbAlertComponent } from '@liquid-js/lyr-core'
 
 @Component({
-  selector: 'nb-alert-sizes',
-  templateUrl: './alert-sizes.component.html',
-  imports: [NbCardComponent, NbCardBodyComponent, NbAlertComponent],
+    selector: 'nb-alert-sizes',
+    templateUrl: './alert-sizes.component.html',
+    imports: [NbCardComponent, NbCardBodyComponent, NbAlertComponent]
 })
 export class AlertSizesComponent {
 }

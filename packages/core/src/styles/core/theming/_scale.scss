@@ -1,20 +1,20 @@
-@use 'sass:map';
-@use 'sass:meta';
+@use "sass:map";
+@use "sass:meta";
 
 /// A theme value that's another one times a factor, e.g. `nb-scale(border-radius, 3)`: it follows that value, as
 /// `calc(var(--border-radius) * 3)`, and `nb-process-theme` resolves it to a number.
 @function nb-scale($key, $factor) {
-  @return (nb-scale: $key, factor: $factor);
+    @return (nb-scale: $key, factor: $factor);
 }
 
 /// Whether a theme value is one `nb-scale` made.
 @function nb-is-scaled($value) {
-  @return meta.type-of($value) == 'map' and map.has-key($value, nb-scale);
+    @return meta.type-of($value) == "map" and map.has-key($value, nb-scale);
 }
 
 /// A scaled value's `calc()`, over its key's custom property.
 @function nb-scaled-css-property($value) {
-  @return calc(var(--#{map.get($value, nb-scale)}) * #{map.get($value, factor)});
+    @return calc(var(--#{map.get($value, nb-scale)}) * #{map.get($value, factor)});
 }
 
 /// A theme value that's other values added up, e.g.
@@ -22,29 +22,29 @@
 /// name, a length, or an `nb-scale`. It follows the variables, as a `calc()` over their custom properties, and
 /// `nb-process-theme` resolves it, to a length where the terms are lengths of one unit.
 @function nb-sum($terms...) {
-  @return (nb-sum: $terms);
+    @return (nb-sum: $terms);
 }
 
 /// Whether a theme value is one `nb-sum` made.
 @function nb-is-sum($value) {
-  @return meta.type-of($value) == 'map' and map.has-key($value, nb-sum);
+    @return meta.type-of($value) == "map" and map.has-key($value, nb-sum);
 }
 
 /// A sum's `calc()`, over its variables' custom properties.
 @function nb-sum-css-property($value, $theme) {
-  $css: '';
-  @each $term in map.get($value, nb-sum) {
-    $part: $term;
-    @if (nb-is-scaled($term)) {
-      $part: nb-scaled-css-property($term);
-    } @else if (meta.type-of($term) == 'string' and map.has-key($theme, $term)) {
-      $part: var(--#{$term});
+    $css: "";
+    @each $term in map.get($value, nb-sum) {
+        $part: $term;
+        @if nb-is-scaled($term) {
+            $part: nb-scaled-css-property($term);
+        } @else if meta.type-of($term) == "string" and map.has-key($theme, $term) {
+            $part: var(--#{$term});
+        }
+        @if $css == "" {
+            $css: "#{$part}";
+        } @else {
+            $css: "#{$css} + #{$part}";
+        }
     }
-    @if ($css == '') {
-      $css: '#{$part}';
-    } @else {
-      $css: '#{$css} + #{$part}';
-    }
-  }
-  @return calc(#{$css});
+    @return calc(#{$css});
 }

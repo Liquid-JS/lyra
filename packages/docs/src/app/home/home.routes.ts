@@ -1,8 +1,8 @@
-import { Routes } from '@angular/router';
+import { Routes } from '@angular/router'
 
 export const HOME_ROUTES: Routes = [
-  {
-    path: '',
-    loadComponent: () => import('./home.component').then((m) => m.NgdHomeComponent),
-  },
-];
+    {
+        path: '',
+        loadComponent: () => import('./home.component').then((m) => m.NgdHomeComponent)
+    }
+]

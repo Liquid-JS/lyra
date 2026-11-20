@@ -1,188 +1,188 @@
 <header class="band">
-  <div class="wrap columns">
-    <div class="intro">
-      <nav class="crumbs caption"
-        aria-label="Breadcrumb">
-        <a routerLink="../catalogue">Catalogue</a>
-        <nb-icon icon="chevron-right-outline" />
-        <span>{{ course.category }}</span>
-      </nav>
-      <div class="tags">
-        <nb-tag size="tiny"
-          appearance="filled"
-          [status]="levelStatus[course.level]"
-          [text]="course.level" />
-        <nb-tag size="tiny"
-          appearance="outline"
-          text="Updated Oct 2026" />
-      </div>
-      <h1>{{ course.title }}</h1>
-      <p class="lead">{{ course.subtitle }}</p>
-      <div class="facts">
-        <nb-user [name]="course.instructor"
-          title="Instructor"
-          size="medium"
-          [picture]="instructorPhoto" />
-        <npg-learn-stars [rating]="course.rating"
-          [reviews]="course.reviews" />
-        <span class="fact"><nb-icon icon="book-open-outline" /> {{ lessons.length }} lessons</span>
-        <span class="fact"><nb-icon icon="clock-outline" /> {{ course.hours }} hours</span>
-        <span class="fact"><nb-icon icon="people-outline" /> {{ 12400 | number }} learners</span>
-      </div>
+    <div class="wrap columns">
+        <div class="intro">
+            <nav class="crumbs caption"
+                aria-label="Breadcrumb">
+                <a routerLink="../catalogue">Catalogue</a>
+                <nb-icon icon="chevron-right-outline" />
+                <span>{{ course.category }}</span>
+            </nav>
+            <div class="tags">
+                <nb-tag size="tiny"
+                    appearance="filled"
+                    [status]="levelStatus[course.level]"
+                    [text]="course.level" />
+                <nb-tag size="tiny"
+                    appearance="outline"
+                    text="Updated Oct 2026" />
+            </div>
+            <h1>{{ course.title }}</h1>
+            <p class="lead">{{ course.subtitle }}</p>
+            <div class="facts">
+                <nb-user [name]="course.instructor"
+                    title="Instructor"
+                    size="medium"
+                    [picture]="instructorPhoto" />
+                <npg-learn-stars [rating]="course.rating"
+                    [reviews]="course.reviews" />
+                <span class="fact"><nb-icon icon="book-open-outline" /> {{ lessons.length }} lessons</span>
+                <span class="fact"><nb-icon icon="clock-outline" /> {{ course.hours }} hours</span>
+                <span class="fact"><nb-icon icon="people-outline" /> {{ 12400 | number }} learners</span>
+            </div>
+        </div>
     </div>
-  </div>
 </header>
 
 <div class="wrap columns body">
-  <div class="main">
-    <section aria-labelledby="outcomes-title">
-      <h2 id="outcomes-title"
-        class="h3">What you'll learn</h2>
-      <nb-card>
-        <nb-card-body>
-          <ul class="outcomes">
-            @for (outcome of outcomes; track outcome) {
-            <li><nb-icon icon="checkmark-circle-2"
-                status="success" /> {{ outcome }}</li>
-            }
-          </ul>
-        </nb-card-body>
-      </nb-card>
-    </section>
+    <div class="main">
+        <section aria-labelledby="outcomes-title">
+            <h2 id="outcomes-title"
+                class="h3">What you'll learn</h2>
+            <nb-card>
+                <nb-card-body>
+                    <ul class="outcomes">
+                        @for (outcome of outcomes; track outcome) {
+                        <li><nb-icon icon="checkmark-circle-2"
+                                status="success" /> {{ outcome }}</li>
+                        }
+                    </ul>
+                </nb-card-body>
+            </nb-card>
+        </section>
 
-    <section aria-labelledby="content-title">
-      <div class="section-head">
-        <h2 id="content-title"
-          class="h3">Course content</h2>
-        <span class="caption">{{ chapters.length }} chapters · {{ lessons.length }} lessons · {{ course.hours }} hours</span>
-      </div>
-      <nb-accordion multi>
-        @for (chapter of chapters; track chapter.title; let i = $index) {
-        <nb-accordion-item [expanded]="i === currentChapter">
-          <nb-accordion-item-header>
-            <span class="chapter-head">
-              <span class="chapter-title">{{ i + 1 }}. {{ chapter.title }}</span>
-              <span class="caption">{{ doneIn(chapter) }} of {{ chapter.lessons.length }} done · {{ minutes(chapter) }} min</span>
-            </span>
-          </nb-accordion-item-header>
-          <nb-accordion-item-body>
-            <ul class="lessons">
-              @for (lesson of chapter.lessons; track lesson.id) {
-              <li [class.done]="lesson.done">
-                <nb-icon [icon]="lesson.done ? 'checkmark-circle-2' : 'play-circle-outline'"
-                  [status]="lesson.done ? 'success' : 'basic'" />
-                <a routerLink="../lesson">{{ lesson.title }}</a>
-                <span class="caption">{{ lesson.minutes }} min</span>
-              </li>
-              }
-              <li class="quiz-row">
-                <nb-icon icon="checkmark-square-2-outline"
-                  status="primary" />
-                <a routerLink="../quiz">Chapter quiz</a>
-                <span class="caption">8 questions</span>
-              </li>
-            </ul>
-          </nb-accordion-item-body>
-        </nb-accordion-item>
-        }
-      </nb-accordion>
-    </section>
+        <section aria-labelledby="content-title">
+            <div class="section-head">
+                <h2 id="content-title"
+                    class="h3">Course content</h2>
+                <span class="caption">{{ chapters.length }} chapters · {{ lessons.length }} lessons · {{ course.hours }} hours</span>
+            </div>
+            <nb-accordion multi>
+                @for (chapter of chapters; track chapter.title; let i = $index) {
+                <nb-accordion-item [expanded]="i === currentChapter">
+                    <nb-accordion-item-header>
+                        <span class="chapter-head">
+                            <span class="chapter-title">{{ i + 1 }}. {{ chapter.title }}</span>
+                            <span class="caption">{{ doneIn(chapter) }} of {{ chapter.lessons.length }} done · {{ minutes(chapter) }} min</span>
+                        </span>
+                    </nb-accordion-item-header>
+                    <nb-accordion-item-body>
+                        <ul class="lessons">
+                            @for (lesson of chapter.lessons; track lesson.id) {
+                            <li [class.done]="lesson.done">
+                                <nb-icon [icon]="lesson.done ? 'checkmark-circle-2' : 'play-circle-outline'"
+                                    [status]="lesson.done ? 'success' : 'basic'" />
+                                <a routerLink="../lesson">{{ lesson.title }}</a>
+                                <span class="caption">{{ lesson.minutes }} min</span>
+                            </li>
+                            }
+                            <li class="quiz-row">
+                                <nb-icon icon="checkmark-square-2-outline"
+                                    status="primary" />
+                                <a routerLink="../quiz">Chapter quiz</a>
+                                <span class="caption">8 questions</span>
+                            </li>
+                        </ul>
+                    </nb-accordion-item-body>
+                </nb-accordion-item>
+                }
+            </nb-accordion>
+        </section>
 
-    <section aria-labelledby="instructor-title">
-      <h2 id="instructor-title"
-        class="h3">Your instructor</h2>
-      <nb-card>
-        <nb-card-body class="instructor">
-          <nb-user [name]="course.instructor"
-            title="Design systems lead, formerly at two scale-ups"
-            size="giant"
-            [picture]="instructorPhoto" />
-          <p>Emma has built and run design systems for products with a handful of designers and with hundreds. She
-            writes about the unglamorous parts: adoption, governance and the meetings in between. Three courses on
-            Learn, 12,400 learners, 4.8 average rating.</p>
-        </nb-card-body>
-      </nb-card>
-    </section>
+        <section aria-labelledby="instructor-title">
+            <h2 id="instructor-title"
+                class="h3">Your instructor</h2>
+            <nb-card>
+                <nb-card-body class="instructor">
+                    <nb-user [name]="course.instructor"
+                        title="Design systems lead, formerly at two scale-ups"
+                        size="giant"
+                        [picture]="instructorPhoto" />
+                    <p>Emma has built and run design systems for products with a handful of designers and with hundreds. She
+                        writes about the unglamorous parts: adoption, governance and the meetings in between. Three courses on
+                        Learn, 12,400 learners, 4.8 average rating.</p>
+                </nb-card-body>
+            </nb-card>
+        </section>
 
-    <section aria-labelledby="reviews-title">
-      <div class="section-head">
-        <h2 id="reviews-title"
-          class="h3">Reviews</h2>
-        <npg-learn-stars [rating]="course.rating"
-          [reviews]="course.reviews" />
-      </div>
-      <div class="reviews">
-        @for (review of reviews; track review.name) {
+        <section aria-labelledby="reviews-title">
+            <div class="section-head">
+                <h2 id="reviews-title"
+                    class="h3">Reviews</h2>
+                <npg-learn-stars [rating]="course.rating"
+                    [reviews]="course.reviews" />
+            </div>
+            <div class="reviews">
+                @for (review of reviews; track review.name) {
+                <nb-card>
+                    <nb-card-header>
+                        <nb-user [name]="review.name"
+                            [title]="review.role"
+                            [picture]="illustration(review.name, 'open-peeps')" />
+                        <span class="caption">{{ review.date }}</span>
+                    </nb-card-header>
+                    <nb-card-body>
+                        <npg-learn-stars [rating]="review.rating" />
+                        <p>{{ review.text }}</p>
+                    </nb-card-body>
+                </nb-card>
+                }
+            </div>
+        </section>
+    </div>
+
+    <!-- Reaches up into the band, and stays beside the content as it scrolls: the way in, and what's included. -->
+    <aside class="enrol"
+        aria-label="Enrol">
         <nb-card>
-          <nb-card-header>
-            <nb-user [name]="review.name"
-              [title]="review.role"
-              [picture]="illustration(review.name, 'open-peeps')" />
-            <span class="caption">{{ review.date }}</span>
-          </nb-card-header>
-          <nb-card-body>
-            <npg-learn-stars [rating]="review.rating" />
-            <p>{{ review.text }}</p>
-          </nb-card-body>
+            <div nbCardMedia
+                class="cover">
+                <img [src]="cover"
+                    alt=""
+                    width="800"
+                    height="500" />
+            </div>
+            <nb-card-body>
+                <div class="price-row">
+                    <span class="price h3">{{ course.price | currency: 'USD' : 'symbol' : '1.0-0' }}</span>
+                    <span class="caption">one-time</span>
+                </div>
+                <a nbButton
+                    status="primary"
+                    size="large"
+                    fullWidth
+                    routerLink="../lesson">
+                    Continue learning
+                    <nb-icon icon="arrow-forward-outline" />
+                </a>
+                <div class="progress">
+                    <nb-progress-bar size="tiny"
+                        status="primary"
+                        [value]="progress"
+                        aria-label="Course progress" />
+                    <span class="caption">{{ done }} of {{ lessons.length }} lessons · {{ progress }}%</span>
+                </div>
+                <ul class="includes">
+                    @for (item of includes; track item.text) {
+                    <li><nb-icon [icon]="item.icon" /> {{ item.text }}</li>
+                    }
+                </ul>
+                <div class="secondary">
+                    <button nbButton
+                        edge="start"
+                        ghost
+                        size="small"
+                        type="button">
+                        <nb-icon icon="share-outline" /> Share
+                    </button>
+                    <button nbButton
+                        edge="end"
+                        ghost
+                        size="small"
+                        type="button">
+                        <nb-icon icon="gift-outline" /> Gift this course
+                    </button>
+                </div>
+            </nb-card-body>
         </nb-card>
-        }
-      </div>
-    </section>
-  </div>
-
-  <!-- Reaches up into the band, and stays beside the content as it scrolls: the way in, and what's included. -->
-  <aside class="enrol"
-    aria-label="Enrol">
-    <nb-card>
-      <div nbCardMedia
-        class="cover">
-        <img [src]="cover"
-          alt=""
-          width="800"
-          height="500" />
-      </div>
-      <nb-card-body>
-        <div class="price-row">
-          <span class="price h3">{{ course.price | currency: 'USD' : 'symbol' : '1.0-0' }}</span>
-          <span class="caption">one-time</span>
-        </div>
-        <a nbButton
-          status="primary"
-          size="large"
-          fullWidth
-          routerLink="../lesson">
-          Continue learning
-          <nb-icon icon="arrow-forward-outline" />
-        </a>
-        <div class="progress">
-          <nb-progress-bar size="tiny"
-            status="primary"
-            [value]="progress"
-            aria-label="Course progress" />
-          <span class="caption">{{ done }} of {{ lessons.length }} lessons · {{ progress }}%</span>
-        </div>
-        <ul class="includes">
-          @for (item of includes; track item.text) {
-          <li><nb-icon [icon]="item.icon" /> {{ item.text }}</li>
-          }
-        </ul>
-        <div class="secondary">
-          <button nbButton
-            edge="start"
-            ghost
-            size="small"
-            type="button">
-            <nb-icon icon="share-outline" /> Share
-          </button>
-          <button nbButton
-            edge="end"
-            ghost
-            size="small"
-            type="button">
-            <nb-icon icon="gift-outline" /> Gift this course
-          </button>
-        </div>
-      </nb-card-body>
-    </nb-card>
-  </aside>
+    </aside>
 </div>

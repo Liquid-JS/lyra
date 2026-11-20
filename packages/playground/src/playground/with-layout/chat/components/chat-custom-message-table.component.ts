@@ -1,15 +1,15 @@
-import { Component, input } from '@angular/core';
+import { Component, input } from '@angular/core'
 
 @Component({
-  selector: 'nb-custom-message-table',
-  templateUrl: './chat-custom-message-table.component.html',
-  styleUrls: ['./chat-custom-message-table.component.scss'],
-  host: { '[class.reply]': 'isReply()' },
+    selector: 'nb-custom-message-table',
+    templateUrl: './chat-custom-message-table.component.html',
+    styleUrls: ['./chat-custom-message-table.component.scss'],
+    host: { '[class.reply]': 'isReply()' }
 })
 export class ChatCustomMessageTableComponent {
-  readonly columns = input<string[]>([]);
+    readonly columns = input<string[]>([])
 
-  readonly rows = input<{ firstName: string; lastName: string; age: number }[]>([]);
+    readonly rows = input<Array<{ firstName: string, lastName: string, age: number }>>([])
 
-  readonly isReply = input<boolean>();
+    readonly isReply = input<boolean>()
 }

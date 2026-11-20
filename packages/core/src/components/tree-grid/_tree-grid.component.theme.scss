@@ -1,184 +1,187 @@
-@use 'tree-grid-sort.component.theme' as tree-grid-sort-theme;
-@use '../../styles/theming' as *;
+@use "tree-grid-sort.component.theme" as tree-grid-sort-theme;
+@use "../../styles/theming" as *;
 
 @mixin nb-tree-grid-theme() {
-  $border-width: nb-theme(tree-grid-cell-border-width);
-  $border-style: nb-theme(tree-grid-cell-border-style);
-  $border-color: nb-theme(tree-grid-cell-border-color);
+    $border-width: nb-theme(tree-grid-cell-border-width);
+    $border-style: nb-theme(tree-grid-cell-border-style);
+    $border-color: nb-theme(tree-grid-cell-border-color);
 
-  .nb-tree-grid-header-cell,
-  .nb-tree-grid-cell,
-  .nb-tree-grid-footer-cell {
-    height: nb-theme(tree-grid-row-min-height);
-    padding: nb-theme(tree-grid-cell-padding);
-    border: $border-width $border-style $border-color;
-  }
-
-  // Headers start where their column's text does, as a data table's do; not centred, as a browser's `th` is.
-  .nb-tree-grid-header-cell {
-    text-align: start;
-  }
-
-  .nb-tree-grid-header-row {
-    background: nb-theme(tree-grid-header-background-color);
-    color: nb-theme(tree-grid-header-text-color);
-    font-family: nb-theme(tree-grid-header-text-font-family);
-    font-size: nb-theme(tree-grid-header-text-font-size);
-    font-weight: nb-theme(tree-grid-header-text-font-weight);
-    line-height: nb-theme(tree-grid-header-text-line-height);
-  }
-
-  .nb-tree-grid-footer-row {
-    background: nb-theme(tree-grid-footer-background-color);
-    color: nb-theme(tree-grid-footer-text-color);
-    font-family: nb-theme(tree-grid-footer-text-font-family);
-    font-size: nb-theme(tree-grid-footer-text-font-size);
-    font-weight: nb-theme(tree-grid-footer-text-font-weight);
-    line-height: nb-theme(tree-grid-footer-text-line-height);
-  }
-
-  .nb-tree-grid-row {
-    background: nb-theme(tree-grid-row-background-color);
-    color: nb-theme(tree-grid-row-text-color);
-    font-family: nb-theme(tree-grid-row-text-font-family);
-    font-size: nb-theme(tree-grid-row-text-font-size);
-    font-weight: nb-theme(tree-grid-row-text-font-weight);
-    line-height: nb-theme(tree-grid-row-text-line-height);
-    &:hover {
-      background: nb-theme(tree-grid-row-hover-background-color);
-    }
-    &:nth-child(2n):not(:hover) {
-      background-color: nb-theme(tree-grid-row-even-background-color);
-    }
-  }
-
-  .nb-tree-grid-compact {
     .nb-tree-grid-header-cell,
     .nb-tree-grid-cell,
     .nb-tree-grid-footer-cell {
-      padding: nb-theme(tree-grid-compact-cell-padding);
-    }
-  }
-
-  .nb-tree-grid-striped .nb-tree-grid-row:nth-child(2n):not(:hover) {
-    background-color: nb-theme(tree-grid-striped-row-background-color);
-  }
-
-  // Not a row of data, so not highlighted under the pointer.
-  .nb-tree-grid-no-data-row,
-  .nb-tree-grid-no-data-row:hover {
-    background: nb-theme(tree-grid-row-background-color);
-  }
-
-  .nb-tree-grid .nb-tree-grid-no-data-cell {
-    padding: nb-theme(tree-grid-no-data-padding);
-    color: nb-theme(tree-grid-no-data-text-color);
-    text-align: center;
-  }
-
-  // On its own, the outer cells start their text as a list's items do, where a field's does; in a card, where the
-  // card's does: tables, lists and cards in a page line up.
-  .nb-tree-grid > tr > :is(.nb-tree-grid-header-cell, .nb-tree-grid-cell, .nb-tree-grid-footer-cell) {
-    &:first-child {
-      padding-inline-start: nb-theme(tree-grid-edge-padding);
+        height: nb-theme(tree-grid-row-min-height);
+        padding: nb-theme(tree-grid-cell-padding);
+        border: $border-width $border-style $border-color;
     }
 
-    &:last-child {
-      padding-inline-end: nb-theme(tree-grid-edge-padding);
-    }
-  }
-
-  nb-card > .nb-tree-grid > tr > :is(.nb-tree-grid-header-cell, .nb-tree-grid-cell, .nb-tree-grid-footer-cell) {
-    &:first-child {
-      padding-inline-start: nb-theme(tree-grid-card-edge-padding);
+    // Headers start where their column's text does, as a data table's do; not centred, as a browser's `th` is.
+    .nb-tree-grid-header-cell {
+        text-align: start;
     }
 
-    &:last-child {
-      padding-inline-end: nb-theme(tree-grid-card-edge-padding);
-    }
-  }
-
-  // On its own, a floating grid has a shadow in place of its outer borders, over the page; in a card, it has
-  // the card's appearance.
-  .nb-tree-grid.appearance-floating:not(nb-card > .nb-tree-grid) {
-    box-shadow: nb-theme(tree-grid-floating-shadow);
-
-    > tr:first-child > * {
-      border-top-color: transparent;
+    .nb-tree-grid-header-row {
+        background: nb-theme(tree-grid-header-background-color);
+        color: nb-theme(tree-grid-header-text-color);
+        font-family: nb-theme(tree-grid-header-text-font-family);
+        font-size: nb-theme(tree-grid-header-text-font-size);
+        font-weight: nb-theme(tree-grid-header-text-font-weight);
+        line-height: nb-theme(tree-grid-header-text-line-height);
     }
 
-    > tr:last-child > * {
-      border-bottom-color: transparent;
+    .nb-tree-grid-footer-row {
+        background: nb-theme(tree-grid-footer-background-color);
+        color: nb-theme(tree-grid-footer-text-color);
+        font-family: nb-theme(tree-grid-footer-text-font-family);
+        font-size: nb-theme(tree-grid-footer-text-font-size);
+        font-weight: nb-theme(tree-grid-footer-text-font-weight);
+        line-height: nb-theme(tree-grid-footer-text-line-height);
     }
 
-    > tr > :is(.nb-tree-grid-header-cell, .nb-tree-grid-cell, .nb-tree-grid-footer-cell) {
-      &:first-child {
-        border-inline-start-color: transparent;
-      }
+    .nb-tree-grid-row {
+        background: nb-theme(tree-grid-row-background-color);
+        color: nb-theme(tree-grid-row-text-color);
+        font-family: nb-theme(tree-grid-row-text-font-family);
+        font-size: nb-theme(tree-grid-row-text-font-size);
+        font-weight: nb-theme(tree-grid-row-text-font-weight);
+        line-height: nb-theme(tree-grid-row-text-line-height);
 
-      &:last-child {
-        border-inline-end-color: transparent;
-      }
-    }
-  }
+        &:hover {
+            background: nb-theme(tree-grid-row-hover-background-color);
+        }
 
-  // A grid placed directly in a card lines up with the card's header and footer, inside its border. Its borders
-  // are kept apart, so the cells at the card's corners can be rounded with it.
-  nb-card > .nb-tree-grid {
-    $divider: nb-theme(card-divider-width) nb-theme(card-divider-style) nb-theme(card-divider-color);
-    $inner-radius: max(0px, calc(#{nb-theme(card-border-radius)} - #{nb-theme(card-border-width)}));
-    border-collapse: separate;
-    border-spacing: 0;
-
-    // Named cells, to win over the cells' own border.
-    > tr > :is(.nb-tree-grid-header-cell, .nb-tree-grid-cell, .nb-tree-grid-footer-cell) {
-      border: none;
-      border-top: $divider;
+        &:nth-child(2n):not(:hover) {
+            background-color: nb-theme(tree-grid-row-even-background-color);
+        }
     }
 
-    &:first-child > tr:first-child > {
-      :first-child {
-        border-start-start-radius: $inner-radius;
-      }
-
-      :last-child {
-        border-start-end-radius: $inner-radius;
-      }
+    .nb-tree-grid-compact {
+        .nb-tree-grid-header-cell,
+        .nb-tree-grid-cell,
+        .nb-tree-grid-footer-cell {
+            padding: nb-theme(tree-grid-compact-cell-padding);
+        }
     }
 
-    &:last-child > tr:last-child > {
-      :first-child {
-        border-end-start-radius: $inner-radius;
-      }
-
-      :last-child {
-        border-end-end-radius: $inner-radius;
-      }
+    .nb-tree-grid-striped .nb-tree-grid-row:nth-child(2n):not(:hover) {
+        background-color: nb-theme(tree-grid-striped-row-background-color);
     }
-  }
 
-  // The first row has the card's edge or its header's divider above it.
-  nb-card > .nb-tree-grid:first-child,
-  nb-card > nb-card-header + .nb-tree-grid {
-    > tr:first-of-type > * {
-      border-top: none;
+    // Not a row of data, so not highlighted under the pointer.
+    .nb-tree-grid-no-data-row,
+    .nb-tree-grid-no-data-row:hover {
+        background: nb-theme(tree-grid-row-background-color);
     }
-  }
 
-  .nb-tree-grid-header-cell {
-    button {
-      vertical-align: middle;
+    .nb-tree-grid .nb-tree-grid-no-data-cell {
+        padding: nb-theme(tree-grid-no-data-padding);
+        color: nb-theme(tree-grid-no-data-text-color);
+        text-align: center;
     }
-  }
 
-  nb-tree-grid-row-toggle,
-  nb-sort-icon {
-    nb-icon {
-      font-size: inherit;
-      vertical-align: middle;
-      color: currentColor;
+    // On its own, the outer cells start their text as a list's items do, where a field's does; in a card, where the
+    // card's does: tables, lists and cards in a page line up.
+    .nb-tree-grid > tr > :is(.nb-tree-grid-header-cell, .nb-tree-grid-cell, .nb-tree-grid-footer-cell) {
+        &:first-child {
+            padding-inline-start: nb-theme(tree-grid-edge-padding);
+        }
+
+        &:last-child {
+            padding-inline-end: nb-theme(tree-grid-edge-padding);
+        }
     }
-  }
 
-  @include tree-grid-sort-theme.nb-tree-grid-sort-header-theme();
+    nb-card > .nb-tree-grid > tr > :is(.nb-tree-grid-header-cell, .nb-tree-grid-cell, .nb-tree-grid-footer-cell) {
+        &:first-child {
+            padding-inline-start: nb-theme(tree-grid-card-edge-padding);
+        }
+
+        &:last-child {
+            padding-inline-end: nb-theme(tree-grid-card-edge-padding);
+        }
+    }
+
+    // On its own, a floating grid has a shadow in place of its outer borders, over the page; in a card, it has
+    // the card's appearance.
+    .nb-tree-grid.appearance-floating:not(nb-card > .nb-tree-grid) {
+        box-shadow: nb-theme(tree-grid-floating-shadow);
+
+        > tr:first-child > * {
+            border-top-color: transparent;
+        }
+
+        > tr:last-child > * {
+            border-bottom-color: transparent;
+        }
+
+        > tr > :is(.nb-tree-grid-header-cell, .nb-tree-grid-cell, .nb-tree-grid-footer-cell) {
+            &:first-child {
+                border-inline-start-color: transparent;
+            }
+
+            &:last-child {
+                border-inline-end-color: transparent;
+            }
+        }
+    }
+
+    // A grid placed directly in a card lines up with the card's header and footer, inside its border. Its borders
+    // are kept apart, so the cells at the card's corners can be rounded with it.
+    nb-card > .nb-tree-grid {
+        $divider: nb-theme(card-divider-width) nb-theme(card-divider-style) nb-theme(card-divider-color);
+        $inner-radius: max(0px, calc(#{nb-theme(card-border-radius)} - #{nb-theme(card-border-width)}));
+
+        border-collapse: separate;
+        border-spacing: 0;
+
+        // Named cells, to win over the cells' own border.
+        > tr > :is(.nb-tree-grid-header-cell, .nb-tree-grid-cell, .nb-tree-grid-footer-cell) {
+            border: none;
+            border-top: $divider;
+        }
+
+        &:first-child > tr:first-child > {
+            :first-child {
+                border-start-start-radius: $inner-radius;
+            }
+
+            :last-child {
+                border-start-end-radius: $inner-radius;
+            }
+        }
+
+        &:last-child > tr:last-child > {
+            :first-child {
+                border-end-start-radius: $inner-radius;
+            }
+
+            :last-child {
+                border-end-end-radius: $inner-radius;
+            }
+        }
+    }
+
+    // The first row has the card's edge or its header's divider above it.
+    nb-card > .nb-tree-grid:first-child,
+    nb-card > nb-card-header + .nb-tree-grid {
+        > tr:first-of-type > * {
+            border-top: none;
+        }
+    }
+
+    .nb-tree-grid-header-cell {
+        button {
+            vertical-align: middle;
+        }
+    }
+
+    nb-tree-grid-row-toggle,
+    nb-sort-icon {
+        nb-icon {
+            font-size: inherit;
+            vertical-align: middle;
+            color: currentcolor;
+        }
+    }
+
+    @include tree-grid-sort-theme.nb-tree-grid-sort-header-theme;
 }

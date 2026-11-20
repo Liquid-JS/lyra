@@ -1,16 +1,16 @@
-import { Component, OnInit, inject } from '@angular/core';
-import { NgdAnalytics } from './@theme/services/analytics.service';
-import { RouterOutlet } from '@angular/router';
+import { Component, OnInit, inject } from '@angular/core'
+import { RouterOutlet } from '@angular/router'
+import { NgdAnalytics } from './@theme/services/analytics.service'
 
 @Component({
-  selector: 'ngd-app-root',
-  template: ` <router-outlet /> `,
-  imports: [RouterOutlet],
+    selector: 'ngd-app-root',
+    template: ' <router-outlet /> ',
+    imports: [RouterOutlet]
 })
 export class NgdAppComponent implements OnInit {
-  private readonly analytics = inject(NgdAnalytics);
+    private readonly analytics = inject(NgdAnalytics)
 
-  ngOnInit() {
-    this.analytics.trackPageViews();
-  }
+    ngOnInit() {
+        this.analytics.trackPageViews()
+    }
 }

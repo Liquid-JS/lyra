@@ -1,12 +1,12 @@
 // The default theme's card and time picker styles, which specs don't load otherwise.
-@use '@liquid-js/lyr-core/styles/all' as *;
-@use '../card/card.component.theme' as card;
-@use 'timepicker.component.theme' as timepicker;
+@use "@liquid-js/lyr-core/styles/all" as *;
+@use "../card/card.component.theme" as card;
+@use "timepicker.component.theme" as timepicker;
 
 $nb-enabled-themes: (default);
 
-@include nb-install() {
-  @include nb-theme-base();
-  @include card.nb-card-theme();
-  @include timepicker.nb-timepicker-theme();
+@include nb-install {
+    @include nb-theme-base;
+    @include card.nb-card-theme;
+    @include timepicker.nb-timepicker-theme;
 }

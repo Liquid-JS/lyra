@@ -1,34 +1,34 @@
 <nb-card>
-  <nb-card-body>
-    <form [formRoot]="form">
-      <div class="field">
-        <label class="label"
-          for="validation-sf-name">Name</label>
-        <input nbInput
-          fullWidth
-          id="validation-sf-name"
-          [formField]="form.name"
-          nbValidation
-          #nameValidation="nbValidation" />
-        <nb-validation-errors [for]="nameValidation" />
-      </div>
+    <nb-card-body>
+        <form [formRoot]="form">
+            <div class="field">
+                <label class="label"
+                    for="validation-sf-name">Name</label>
+                <input nbInput
+                    fullWidth
+                    id="validation-sf-name"
+                    [formField]="form.name"
+                    nbValidation
+                    #nameValidation="nbValidation" />
+                <nb-validation-errors [for]="nameValidation" />
+            </div>
 
-      <div class="field">
-        <label class="label"
-          for="validation-sf-email">Email</label>
-        <input nbInput
-          fullWidth
-          id="validation-sf-email"
-          type="email"
-          [formField]="form.email"
-          nbValidation
-          #emailValidation="nbValidation" />
-        <nb-validation-errors [for]="emailValidation" />
-      </div>
+            <div class="field">
+                <label class="label"
+                    for="validation-sf-email">Email</label>
+                <input nbInput
+                    fullWidth
+                    id="validation-sf-email"
+                    type="email"
+                    [formField]="form.email"
+                    nbValidation
+                    #emailValidation="nbValidation" />
+                <nb-validation-errors [for]="emailValidation" />
+            </div>
 
-      <button nbButton
-        status="primary"
-        type="submit">Save</button>
-    </form>
-  </nb-card-body>
+            <button nbButton
+                status="primary"
+                type="submit">Save</button>
+        </form>
+    </nb-card-body>
 </nb-card>

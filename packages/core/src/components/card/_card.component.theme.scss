@@ -1,277 +1,276 @@
-@use '../../styles/theming' as *;
+@use "../../styles/theming" as *;
 
 @mixin nb-card-header() {
-  padding: nb-theme(card-padding);
-  border-bottom: nb-theme(card-divider-width) nb-theme(card-divider-style) nb-theme(card-divider-color);
-  border-top-left-radius: nb-theme(card-border-radius);
-  border-top-right-radius: nb-theme(card-border-radius);
+    padding: nb-theme(card-padding);
+    border-bottom: nb-theme(card-divider-width) nb-theme(card-divider-style) nb-theme(card-divider-color);
+    border-top-left-radius: nb-theme(card-border-radius);
+    border-top-right-radius: nb-theme(card-border-radius);
+    color: nb-theme(card-header-text-color);
+    font-family: nb-theme(card-header-text-font-family);
+    font-size: nb-theme(card-header-text-font-size);
+    font-weight: nb-theme(card-header-text-font-weight);
+    line-height: nb-theme(card-header-text-line-height);
 
-  color: nb-theme(card-header-text-color);
-  font-family: nb-theme(card-header-text-font-family);
-  font-size: nb-theme(card-header-text-font-size);
-  font-weight: nb-theme(card-header-text-font-weight);
-  line-height: nb-theme(card-header-text-line-height);
-
-  @include nb-headings();
+    @include nb-headings;
 }
 
 @mixin nb-card-theme() {
-  nb-card {
-    background-color: nb-theme(card-background-color);
-    border: nb-theme(card-border-width) nb-theme(card-border-style) nb-theme(card-border-color);
-    border-radius: nb-theme(card-border-radius);
-    box-shadow: nb-theme(card-shadow);
+    nb-card {
+        background-color: nb-theme(card-background-color);
+        border: nb-theme(card-border-width) nb-theme(card-border-style) nb-theme(card-border-color);
+        border-radius: nb-theme(card-border-radius);
+        box-shadow: nb-theme(card-shadow);
+        color: nb-theme(card-text-color);
+        font-family: nb-theme(card-text-font-family);
+        font-size: nb-theme(card-text-font-size);
+        font-weight: nb-theme(card-text-font-weight);
+        line-height: nb-theme(card-text-line-height);
+        margin-bottom: nb-theme(card-margin-bottom);
 
-    color: nb-theme(card-text-color);
-    font-family: nb-theme(card-text-font-family);
-    font-size: nb-theme(card-text-font-size);
-    font-weight: nb-theme(card-text-font-weight);
-    line-height: nb-theme(card-text-line-height);
+        @include nb-scrollbars(
+            nb-theme(card-scrollbar-color),
+            nb-theme(card-scrollbar-background-color),
+            nb-theme(card-scrollbar-width)
+        );
 
-    margin-bottom: nb-theme(card-margin-bottom);
+        @each $size in nb-get-sizes() {
+            &.size-#{$size} {
+                height: nb-theme(card-height-#{$size});
+            }
+        }
 
-    @include nb-scrollbars(
-      nb-theme(card-scrollbar-color),
-      nb-theme(card-scrollbar-background-color),
-      nb-theme(card-scrollbar-width)
-    );
+        // Over the page, a shadow stands for the border; the border stays, unseen, so the content sits as in an outline card.
+        &.appearance-floating {
+            border-color: transparent;
+            box-shadow: nb-theme(card-floating-shadow);
+        }
+
+        // Before the status headers and accents, which keep their own border colours.
+        &.appearance-filled {
+            background-color: nb-theme(card-filled-background-color);
+            border-color: transparent;
+
+            > nb-card-header,
+            > nb-card-footer {
+                border-color: nb-theme(card-filled-divider-color);
+            }
+        }
+
+        @each $status in nb-get-statuses() {
+            &.status-#{$status} {
+                nb-card-header {
+                    background-color: nb-theme(card-header-#{$status}-background-color);
+                    border-bottom-width: 0;
+                    color: nb-theme(card-header-#{$status}-text-color);
+
+                    a,
+                    a:hover {
+                        color: nb-theme(card-header-#{$status}-text-color);
+                    }
+                }
+            }
+        }
+
+        @each $status in nb-get-core-statuses() {
+            &.accent-#{$status} {
+                --nb-card-accent-color: #{nb-theme(card-header-#{$status}-background-color)};
+            }
+        }
+
+        // The accent is a band along the card's top, over its border: drawn on a layer shaped like the card, so it follows
+        // the rounded corners, and keeps its colour when the border changes, e.g. on hover.
+        &.accent {
+            position: relative;
+            padding-top: max(0px, calc(#{nb-theme(card-accent-height)} - #{nb-theme(card-border-width)}));
+
+            &:before {
+                content: "";
+                position: absolute;
+                inset: calc(-1 * #{nb-theme(card-border-width)});
+                z-index: 2;
+                border-radius: nb-theme(card-border-radius);
+                background:
+                    linear-gradient(
+                        to bottom,
+                        var(--nb-card-accent-color) nb-theme(card-accent-height),
+                        transparent nb-theme(card-accent-height)
+                    );
+                pointer-events: none;
+            }
+
+            & nb-card-header {
+                border-radius: 0;
+            }
+        }
+    }
+
+    // Whatever fills a card's first or last row, e.g. a body with an image or a background, keeps to its rounded
+    // corners: those rows take the card's radius inside its border. A body clips its content to it.
+    nb-card {
+        $inner-radius: max(0px, calc(#{nb-theme(card-border-radius)} - #{nb-theme(card-border-width)}));
+
+        &:not(.accent) > :first-child {
+            border-start-start-radius: $inner-radius;
+            border-start-end-radius: $inner-radius;
+        }
+
+        > :last-child {
+            border-end-start-radius: $inner-radius;
+            border-end-end-radius: $inner-radius;
+        }
+
+        // Media and a coloured header reach the card's edges, over its border, which stays behind them: no border shows
+        // around them, or between them and the rest of the card.
+        $edge: calc(-1 * #{nb-theme(card-border-width)});
+
+        > .card-media {
+            display: block;
+            box-sizing: border-box;
+            width: calc(100% + 2 * #{nb-theme(card-border-width)});
+            max-width: none;
+            margin-inline: $edge;
+            overflow: hidden;
+            object-fit: cover;
+
+            // An opaque base, so a see-through tint over it doesn't show the border it covers.
+            background-color: nb-theme(card-background-color);
+
+            &:first-child {
+                margin-top: $edge;
+                border-start-start-radius: nb-theme(card-border-radius);
+                border-start-end-radius: nb-theme(card-border-radius);
+            }
+
+            &:last-child {
+                margin-bottom: $edge;
+                border-end-start-radius: nb-theme(card-border-radius);
+                border-end-end-radius: nb-theme(card-border-radius);
+            }
+        }
+
+        &[class*=status-] > nb-card-header:first-child {
+            margin-inline: $edge;
+        }
+
+        // Under an accent, the header meets the band; otherwise it reaches the card's top too.
+        &[class*=status-]:not(.accent) > nb-card-header:first-child {
+            margin-top: $edge;
+            border-start-start-radius: nb-theme(card-border-radius);
+            border-start-end-radius: nb-theme(card-border-radius);
+        }
+    }
+
+    // A card with an `nbCardLink` responds as one: the link covers it, and the card shows the link's states.
+    @include nb-stretched-link(nb-card, ".card-link");
+
+    nb-card:has(.card-link) {
+        @include nb-component-animation(background-color, border-color, box-shadow);
+
+        &:has(.card-link:hover) {
+            background-color: nb-theme(card-hover-background-color);
+            border-color: nb-theme(card-hover-border-color);
+        }
+
+        &:has(.card-link:active) {
+            background-color: nb-theme(card-active-background-color);
+            border-color: nb-theme(card-active-border-color);
+        }
+
+        // A floating card's border stays unseen; its background shows the state.
+        &.appearance-floating:is(:has(.card-link:hover), :has(.card-link:active)) {
+            border-color: transparent;
+        }
+
+        &.appearance-filled {
+            &:has(.card-link:hover) {
+                background-color: nb-theme(card-filled-hover-background-color);
+                border-color: transparent;
+            }
+
+            &:has(.card-link:active) {
+                background-color: nb-theme(card-filled-active-background-color);
+                border-color: transparent;
+            }
+        }
+
+        &:has(.card-link:focus-visible) {
+            @include nb-outline(nb-theme(card-outline-width), nb-theme(card-outline-color));
+        }
+    }
+
+    // The card is the link's containing block, so it covers the card from inside the body too.
+    nb-card-body:has(.card-link) {
+        position: static;
+    }
+
+    nb-card-body {
+        flex: 1;
+        overflow: auto;
+        padding: nb-theme(card-padding);
+        position: relative;
+        @include nb-scrollbars(
+            nb-theme(card-scrollbar-color),
+            nb-theme(card-scrollbar-background-color),
+            nb-theme(card-scrollbar-width)
+        );
+    }
+
+    nb-card-footer {
+        padding: nb-theme(card-padding);
+        border-top: nb-theme(card-divider-width) nb-theme(card-divider-style) nb-theme(card-divider-color);
+        border-bottom-left-radius: nb-theme(card-border-radius);
+        border-bottom-right-radius: nb-theme(card-border-radius);
+    }
+
+    nb-card-header {
+        @include nb-card-header;
+    }
+
+    // With actions, the header or footer is a row with them at its end.
+    nb-card-header:has(> nb-card-actions),
+    nb-card-footer:has(> nb-card-actions) {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: nb-theme(card-actions-gap);
+    }
+
+    nb-card-actions {
+        display: flex;
+        align-items: center;
+        gap: nb-theme(card-actions-gap);
+        margin-inline-start: auto;
+    }
+
+    // A line of text tall: taller buttons reach into the padding instead of making the header or footer taller.
+    nb-card-header > nb-card-actions {
+        height: nb-theme(card-header-text-line-height);
+    }
+
+    nb-card-footer > nb-card-actions {
+        height: nb-theme(card-text-line-height);
+    }
+
+    // An inline button in a header or footer sits in it as its actions do: the header or footer is a row, the button in
+    // its middle, a line of its text tall. Without specificity, so a header laid out by the app keeps its layout.
+    :where(nb-card-header:has(> [nbButton].btn-inline), nb-card-footer:has(> [nbButton].btn-inline)) {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        column-gap: nb-theme(card-actions-gap);
+    }
 
     @each $size in nb-get-sizes() {
-      &.size-#{$size} {
-        height: nb-theme(card-height-#{$size});
-      }
-    }
+        $height: nb-theme(control-#{$size}-height);
 
-    // Over the page, a shadow stands for the border; the border stays, unseen, so the content sits as in an outline card.
-    &.appearance-floating {
-      border-color: transparent;
-      box-shadow: nb-theme(card-floating-shadow);
-    }
-
-    // Before the status headers and accents, which keep their own border colours.
-    &.appearance-filled {
-      background-color: nb-theme(card-filled-background-color);
-      border-color: transparent;
-
-      > nb-card-header,
-      > nb-card-footer {
-        border-color: nb-theme(card-filled-divider-color);
-      }
-    }
-
-    @each $status in nb-get-statuses() {
-      &.status-#{$status} {
-        nb-card-header {
-          background-color: nb-theme(card-header-#{$status}-background-color);
-          border-bottom-width: 0;
-          color: nb-theme(card-header-#{$status}-text-color);
-
-          a,
-          a:hover {
-            color: nb-theme(card-header-#{$status}-text-color);
-          }
+        nb-card-header > [nbButton].btn-inline.size-#{$size},
+        nb-card-header > [nbButton].btn-inline.size-#{$size}.icon-start.icon-end {
+            margin-block: calc((#{nb-theme(card-header-text-line-height)} - #{$height}) / 2);
         }
-      }
+
+        nb-card-footer > [nbButton].btn-inline.size-#{$size},
+        nb-card-footer > [nbButton].btn-inline.size-#{$size}.icon-start.icon-end {
+            margin-block: calc((#{nb-theme(card-text-line-height)} - #{$height}) / 2);
+        }
     }
-
-    @each $status in nb-get-core-statuses() {
-      &.accent-#{$status} {
-        --nb-card-accent-color: #{nb-theme(card-header-#{$status}-background-color)};
-      }
-    }
-
-    // The accent is a band along the card's top, over its border: drawn on a layer shaped like the card, so it follows
-    // the rounded corners, and keeps its colour when the border changes, e.g. on hover.
-    &.accent {
-      position: relative;
-      padding-top: max(0px, calc(#{nb-theme(card-accent-height)} - #{nb-theme(card-border-width)}));
-
-      &::before {
-        content: '';
-        position: absolute;
-        inset: calc(-1 * #{nb-theme(card-border-width)});
-        z-index: 2;
-        border-radius: nb-theme(card-border-radius);
-        background: linear-gradient(
-          to bottom,
-          var(--nb-card-accent-color) nb-theme(card-accent-height),
-          transparent nb-theme(card-accent-height)
-        );
-        pointer-events: none;
-      }
-
-      & nb-card-header {
-        border-radius: 0;
-      }
-    }
-  }
-
-  // Whatever fills a card's first or last row, e.g. a body with an image or a background, keeps to its rounded
-  // corners: those rows take the card's radius inside its border. A body clips its content to it.
-  nb-card {
-    $inner-radius: max(0px, calc(#{nb-theme(card-border-radius)} - #{nb-theme(card-border-width)}));
-
-    &:not(.accent) > :first-child {
-      border-start-start-radius: $inner-radius;
-      border-start-end-radius: $inner-radius;
-    }
-
-    > :last-child {
-      border-end-start-radius: $inner-radius;
-      border-end-end-radius: $inner-radius;
-    }
-
-    // Media and a coloured header reach the card's edges, over its border, which stays behind them: no border shows
-    // around them, or between them and the rest of the card.
-    $edge: calc(-1 * #{nb-theme(card-border-width)});
-
-    > .card-media {
-      display: block;
-      box-sizing: border-box;
-      width: calc(100% + 2 * #{nb-theme(card-border-width)});
-      max-width: none;
-      margin-inline: $edge;
-      overflow: hidden;
-      object-fit: cover;
-      // An opaque base, so a see-through tint over it doesn't show the border it covers.
-      background-color: nb-theme(card-background-color);
-
-      &:first-child {
-        margin-top: $edge;
-        border-start-start-radius: nb-theme(card-border-radius);
-        border-start-end-radius: nb-theme(card-border-radius);
-      }
-
-      &:last-child {
-        margin-bottom: $edge;
-        border-end-start-radius: nb-theme(card-border-radius);
-        border-end-end-radius: nb-theme(card-border-radius);
-      }
-    }
-
-    &[class*='status-'] > nb-card-header:first-child {
-      margin-inline: $edge;
-    }
-
-    // Under an accent, the header meets the band; otherwise it reaches the card's top too.
-    &[class*='status-']:not(.accent) > nb-card-header:first-child {
-      margin-top: $edge;
-      border-start-start-radius: nb-theme(card-border-radius);
-      border-start-end-radius: nb-theme(card-border-radius);
-    }
-  }
-
-  // A card with an `nbCardLink` responds as one: the link covers it, and the card shows the link's states.
-  @include nb-stretched-link(nb-card, '.card-link');
-
-  nb-card:has(.card-link) {
-    @include nb-component-animation(background-color, border-color, box-shadow);
-
-    &:has(.card-link:hover) {
-      background-color: nb-theme(card-hover-background-color);
-      border-color: nb-theme(card-hover-border-color);
-    }
-
-    &:has(.card-link:active) {
-      background-color: nb-theme(card-active-background-color);
-      border-color: nb-theme(card-active-border-color);
-    }
-
-    // A floating card's border stays unseen; its background shows the state.
-    &.appearance-floating:is(:has(.card-link:hover), :has(.card-link:active)) {
-      border-color: transparent;
-    }
-
-    &.appearance-filled {
-      &:has(.card-link:hover) {
-        background-color: nb-theme(card-filled-hover-background-color);
-        border-color: transparent;
-      }
-
-      &:has(.card-link:active) {
-        background-color: nb-theme(card-filled-active-background-color);
-        border-color: transparent;
-      }
-    }
-
-    &:has(.card-link:focus-visible) {
-      @include nb-outline(nb-theme(card-outline-width), nb-theme(card-outline-color));
-    }
-  }
-
-  // The card is the link's containing block, so it covers the card from inside the body too.
-  nb-card-body:has(.card-link) {
-    position: static;
-  }
-
-  nb-card-body {
-    flex: 1;
-    overflow: auto;
-    padding: nb-theme(card-padding);
-    position: relative;
-    @include nb-scrollbars(
-      nb-theme(card-scrollbar-color),
-      nb-theme(card-scrollbar-background-color),
-      nb-theme(card-scrollbar-width)
-    );
-  }
-
-  nb-card-footer {
-    padding: nb-theme(card-padding);
-    border-top: nb-theme(card-divider-width) nb-theme(card-divider-style) nb-theme(card-divider-color);
-    border-bottom-left-radius: nb-theme(card-border-radius);
-    border-bottom-right-radius: nb-theme(card-border-radius);
-  }
-
-  nb-card-header {
-    @include nb-card-header();
-  }
-
-  // With actions, the header or footer is a row with them at its end.
-  nb-card-header:has(> nb-card-actions),
-  nb-card-footer:has(> nb-card-actions) {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: nb-theme(card-actions-gap);
-  }
-
-  nb-card-actions {
-    display: flex;
-    align-items: center;
-    gap: nb-theme(card-actions-gap);
-    margin-inline-start: auto;
-  }
-
-  // A line of text tall: taller buttons reach into the padding instead of making the header or footer taller.
-  nb-card-header > nb-card-actions {
-    height: nb-theme(card-header-text-line-height);
-  }
-
-  nb-card-footer > nb-card-actions {
-    height: nb-theme(card-text-line-height);
-  }
-
-  // An inline button in a header or footer sits in it as its actions do: the header or footer is a row, the button in
-  // its middle, a line of its text tall. Without specificity, so a header laid out by the app keeps its layout.
-  :where(nb-card-header:has(> [nbButton].btn-inline), nb-card-footer:has(> [nbButton].btn-inline)) {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    column-gap: nb-theme(card-actions-gap);
-  }
-
-  @each $size in nb-get-sizes() {
-    $height: nb-theme(control-#{$size}-height);
-
-    nb-card-header > [nbButton].btn-inline.size-#{$size},
-    nb-card-header > [nbButton].btn-inline.size-#{$size}.icon-start.icon-end {
-      margin-block: calc((#{nb-theme(card-header-text-line-height)} - #{$height}) / 2);
-    }
-
-    nb-card-footer > [nbButton].btn-inline.size-#{$size},
-    nb-card-footer > [nbButton].btn-inline.size-#{$size}.icon-start.icon-end {
-      margin-block: calc((#{nb-theme(card-text-line-height)} - #{$height}) / 2);
-    }
-  }
 }

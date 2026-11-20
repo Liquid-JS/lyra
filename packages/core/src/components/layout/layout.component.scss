@@ -1,112 +1,114 @@
-@use '../../styles/theming' as *;
+@use "../../styles/theming" as *;
 
 :host {
-  // Each element aligns to its own direction's start, so text with a direction of its own, such as `dir="auto"`, lines
-  // up with it; a physical side inherited from here wouldn't follow.
-  text-align: start;
+    // Each element aligns to its own direction's start, so text with a direction of its own, such as `dir="auto"`, lines
+    // up with it; a physical side inherited from here wouldn't follow.
+    text-align: start;
+    -webkit-font-smoothing: antialiased;
 
-  -webkit-font-smoothing: antialiased;
-
-  .layout {
-    display: flex;
-    flex-direction: column;
-  }
-
-  // The header's own bar, not any `nav` in what it holds.
-  ::ng-deep nb-layout-header {
-    display: block;
-
-    > nav {
-      align-items: center;
-      justify-content: flex-start;
-      display: flex;
+    .layout {
+        display: flex;
+        flex-direction: column;
     }
 
-    &.fixed {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      z-index: 1040;
-    }
-  }
+    // The header's own bar, not any `nav` in what it holds.
+    ::ng-deep nb-layout-header {
+        display: block;
 
-  .layout-container {
-    display: flex;
-    flex: 1;
-    flex-direction: row;
+        > nav {
+            align-items: center;
+            justify-content: flex-start;
+            display: flex;
+        }
 
-    ::ng-deep nb-sidebar {
-      &.left {
-        @include nb-ltr(order, 0);
-        @include nb-rtl(order, 2);
-      }
-      &.right {
-        @include nb-ltr(order, 2);
-        @include nb-rtl(order, 0);
-      }
-      &.end {
-        order: 2;
-      }
-
-      .fixed {
-        position: fixed;
-        width: 100%;
-        overflow-y: auto;
-        height: 100%;
-      }
+        &.fixed {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1040;
+        }
     }
 
-    .content {
-      display: flex;
-      flex: 1;
-      flex-direction: column;
-      min-width: 0;
-
-      &.center {
-        max-width: 100%;
-        position: relative;
-        margin-left: auto;
-        margin-right: auto;
-      }
-
-      .columns {
+    .layout-container {
         display: flex;
         flex: 1;
         flex-direction: row;
-        width: 100%;
 
-        ::ng-deep nb-layout-column {
-          order: 1;
-          flex: 1 0;
-          min-width: 0; // fix for flexbug https://github.com/philipwalton/flexbugs#flexbug-1
-          &.left {
-            @include nb-ltr(order, 0);
-            @include nb-rtl(order, 2);
-          }
-          &.start {
-            order: 0;
-          }
+        ::ng-deep nb-sidebar {
+            &.left {
+                @include nb-ltr(order, 0);
+                @include nb-rtl(order, 2);
+            }
+
+            &.right {
+                @include nb-ltr(order, 2);
+                @include nb-rtl(order, 0);
+            }
+
+            &.end {
+                order: 2;
+            }
+
+            .fixed {
+                position: fixed;
+                width: 100%;
+                overflow-y: auto;
+                height: 100%;
+            }
         }
-      }
 
-      ::ng-deep nb-layout-footer {
-        display: block;
-        margin-top: auto;
+        .content {
+            display: flex;
+            flex: 1;
+            flex-direction: column;
+            min-width: 0;
 
-        > nav {
-          justify-content: center;
-          display: flex;
+            &.center {
+                max-width: 100%;
+                position: relative;
+                margin-left: auto;
+                margin-right: auto;
+            }
+
+            .columns {
+                display: flex;
+                flex: 1;
+                flex-direction: row;
+                width: 100%;
+
+                ::ng-deep nb-layout-column {
+                    order: 1;
+                    flex: 1 0;
+                    min-width: 0; // fix for flexbug https://github.com/philipwalton/flexbugs#flexbug-1
+                    &.left {
+                        @include nb-ltr(order, 0);
+                        @include nb-rtl(order, 2);
+                    }
+
+                    &.start {
+                        order: 0;
+                    }
+                }
+            }
+
+            ::ng-deep nb-layout-footer {
+                display: block;
+                margin-top: auto;
+
+                > nav {
+                    justify-content: center;
+                    display: flex;
+                }
+
+                // Sticky rather than fixed: the footer stays at the bottom of the view port while it is in the content
+                // column, so it neither covers the sidebar nor hides the end of the content.
+                &.fixed {
+                    position: sticky;
+                    bottom: 0;
+                    z-index: 1;
+                }
+            }
         }
-
-        // Sticky rather than fixed: the footer stays at the bottom of the view port while it is in the content
-        // column, so it neither covers the sidebar nor hides the end of the content.
-        &.fixed {
-          position: sticky;
-          bottom: 0;
-          z-index: 1;
-        }
-      }
     }
-  }
 }

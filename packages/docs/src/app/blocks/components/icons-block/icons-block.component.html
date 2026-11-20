@@ -1,63 +1,63 @@
 <!-- A section of the page too, so the address starts at the top rather than at the first category. -->
 <nb-card ngdFragment="icons"
-  [ngdFragmentListed]="false">
-  <nb-card-header>
-    <h2 class="h4 page-heading">Icons</h2>
-  </nb-card-header>
-  <nb-card-body>
-    <p>
-      The icons of <code>&#64;liquid-js/lyr-icons</code>, by category. Search by name or by what an icon is for, and
-      pick one to see it filled or outlined, download it or copy how to use it.
-    </p>
-    <div class="controls">
-      <nb-form-field class="search">
-        <nb-icon nbPrefix
-          icon="search-outline" />
-        <input #searchInput
-          type="search"
-          nbInput
-          fullWidth
-          placeholder="Search icons, e.g. delete or language"
-          aria-label="Search icons"
-          [value]="query()"
-          (input)="query.set(searchInput.value)" />
-      </nb-form-field>
-      <nb-button-group aria-label="Icon style"
-        (valueChange)="setStyle($event)">
-        <button nbButtonToggle
-          value="outline"
-          [pressed]="style() === 'outline'">Outline</button>
-        <button nbButtonToggle
-          value="fill"
-          [pressed]="style() === 'fill'">Fill</button>
-      </nb-button-group>
-    </div>
-    <p class="status"
-      aria-live="polite">{{ found() }} of {{ total }} icons</p>
-  </nb-card-body>
+    [ngdFragmentListed]="false">
+    <nb-card-header>
+        <h2 class="h4 page-heading">Icons</h2>
+    </nb-card-header>
+    <nb-card-body>
+        <p>
+            The icons of <code>&#64;liquid-js/lyr-icons</code>, by category. Search by name or by what an icon is for, and
+            pick one to see it filled or outlined, download it or copy how to use it.
+        </p>
+        <div class="controls">
+            <nb-form-field class="search">
+                <nb-icon nbPrefix
+                    icon="search-outline" />
+                <input #searchInput
+                    type="search"
+                    nbInput
+                    fullWidth
+                    placeholder="Search icons, e.g. delete or language"
+                    aria-label="Search icons"
+                    [value]="query()"
+                    (input)="query.set(searchInput.value)" />
+            </nb-form-field>
+            <nb-button-group aria-label="Icon style"
+                (valueChange)="setStyle($event)">
+                <button nbButtonToggle
+                    value="outline"
+                    [pressed]="style() === 'outline'">Outline</button>
+                <button nbButtonToggle
+                    value="fill"
+                    [pressed]="style() === 'fill'">Fill</button>
+            </nb-button-group>
+        </div>
+        <p class="status"
+            aria-live="polite">{{ found() }} of {{ total }} icons</p>
+    </nb-card-body>
 </nb-card>
 
 @for (category of categories(); track category.name) {
 <!-- Its heading is listed in the page's table of contents; the count beside it isn't. -->
 <section class="category"
-  [ngdFragment]="category.id">
-  <div class="category-heading">
-    <h3 class="h6 category-name">{{ category.name }}</h3>
-    <span class="count">{{ category.icons.length }}</span>
-  </div>
-  <ul class="icons">
-    @for (icon of category.icons; track icon.base) {
-    <li>
-      <button type="button"
-        class="icon"
-        [attr.aria-label]="nameOf(icon.base)"
-        [nbTooltip]="nameOf(icon.base)"
-        (click)="open(icon.base)">
-        <nb-icon [icon]="nameOf(icon.base)" />
-      </button>
-    </li>
-    }
-  </ul>
+    [ngdFragment]="category.id">
+    <div class="category-heading">
+        <h3 class="h6 category-name">{{ category.name }}</h3>
+        <span class="count">{{ category.icons.length }}</span>
+    </div>
+    <ul class="icons">
+        @for (icon of category.icons; track icon.base) {
+        <li>
+            <button type="button"
+                class="icon"
+                [attr.aria-label]="nameOf(icon.base)"
+                [nbTooltip]="nameOf(icon.base)"
+                (click)="open(icon.base)">
+                <nb-icon [icon]="nameOf(icon.base)" />
+            </button>
+        </li>
+        }
+    </ul>
 </section>
 } @empty {
 <p class="none">No icon matches “{{ query() }}”.</p>

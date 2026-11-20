@@ -1,26 +1,26 @@
 // The default theme's button and icon styles, which specs don't load otherwise.
-@use '@liquid-js/lyr-core/styles/all' as *;
-@use 'button.component.theme' as button;
-@use '../icon/icon.component.theme' as icon;
+@use "@liquid-js/lyr-core/styles/all" as *;
+@use "button.component.theme" as button;
+@use "../icon/icon.component.theme" as icon;
 
 $nb-enabled-themes: (default);
 
-@include nb-install() {
-  @include nb-theme-base();
-  @include button.nb-buttons-theme();
-  @include icon.nb-icon-theme();
+@include nb-install {
+    @include nb-theme-base;
+    @include button.nb-buttons-theme;
+    @include icon.nb-icon-theme;
 }
 
 .edge-row {
-  display: flex;
-  justify-content: space-between;
-  padding: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    padding: 1.5rem;
 }
 
 // A row of a card header's text, a line of 1.5rem.
 .inline-row {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  line-height: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    line-height: 1.5rem;
 }

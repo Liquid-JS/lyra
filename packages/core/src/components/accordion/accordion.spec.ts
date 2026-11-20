@@ -1,9 +1,9 @@
-import { Component, viewChildren } from '@angular/core';
-import { TestBed } from '@angular/core/testing';
-import { NbAccordionItemComponent, NbAccordionModule, NbThemeModule } from '@liquid-js/lyr-core';
+import { Component, viewChildren } from '@angular/core'
+import { TestBed } from '@angular/core/testing'
+import { NbAccordionItemComponent, NbAccordionModule, NbThemeModule } from '@liquid-js/lyr-core'
 
 @Component({
-  template: `
+    template: `
     <nb-accordion>
       <nb-accordion-item (collapsedChange)="changes.first.push($event)">
         <nb-accordion-item-header>First</nb-accordion-item-header>
@@ -15,47 +15,47 @@ import { NbAccordionItemComponent, NbAccordionModule, NbThemeModule } from '@liq
       </nb-accordion-item>
     </nb-accordion>
   `,
-  imports: [NbAccordionModule],
+    imports: [NbAccordionModule]
 })
 class NbAccordionTestComponent {
-  readonly items = viewChildren(NbAccordionItemComponent);
-  changes = { first: [] as boolean[], second: [] as boolean[] };
+    readonly items = viewChildren(NbAccordionItemComponent)
+    changes = { first: [] as boolean[], second: [] as boolean[] }
 }
 
 describe('nb-accordion', () => {
-  it('should report each item state change once', () => {
-    TestBed.configureTestingModule({
-      imports: [NbThemeModule.forRoot(), NbAccordionModule, NbAccordionTestComponent],
-      providers: [],
-    });
-    const fixture = TestBed.createComponent(NbAccordionTestComponent);
-    fixture.detectChanges();
-    const [first, second] = fixture.componentInstance.items();
-    const { changes } = fixture.componentInstance;
+    it('should report each item state change once', () => {
+        TestBed.configureTestingModule({
+            imports: [NbThemeModule.forRoot(), NbAccordionModule, NbAccordionTestComponent],
+            providers: []
+        })
+        const fixture = TestBed.createComponent(NbAccordionTestComponent)
+        fixture.detectChanges()
+        const [first, second] = fixture.componentInstance.items()
+        const { changes } = fixture.componentInstance
 
-    first.toggle();
-    second.toggle();
-    fixture.detectChanges();
+        first.toggle()
+        second.toggle()
+        fixture.detectChanges()
 
-    expect(changes.first).toEqual([false, true]);
-    expect(changes.second).toEqual([false]);
-  });
+        expect(changes.first).toEqual([false, true])
+        expect(changes.second).toEqual([false])
+    })
 
-  it('should have buttons for headers, which Enter and Space toggle without scrolling the page', () => {
-    TestBed.configureTestingModule({ imports: [NbThemeModule.forRoot(), NbAccordionTestComponent] });
-    const fixture = TestBed.createComponent(NbAccordionTestComponent);
-    fixture.detectChanges();
-    const header = fixture.nativeElement.querySelector('nb-accordion-item-header') as HTMLElement;
-    const press = (key: string) =>
-      header.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }));
+    it('should have buttons for headers, which Enter and Space toggle without scrolling the page', () => {
+        TestBed.configureTestingModule({ imports: [NbThemeModule.forRoot(), NbAccordionTestComponent] })
+        const fixture = TestBed.createComponent(NbAccordionTestComponent)
+        fixture.detectChanges()
+        const header = fixture.nativeElement.querySelector('nb-accordion-item-header') as HTMLElement
+        const press = (key: string) =>
+            header.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }))
 
-    expect(header.getAttribute('role')).toBe('button');
-    expect(header.tabIndex).toBe(0);
-    expect(press(' ')).toBe(false);
-    fixture.detectChanges();
-    expect(header.getAttribute('aria-expanded')).toBe('true');
-    expect(press('Enter')).toBe(false);
-    fixture.detectChanges();
-    expect(header.getAttribute('aria-expanded')).toBe('false');
-  });
-});
+        expect(header.getAttribute('role')).toBe('button')
+        expect(header.tabIndex).toBe(0)
+        expect(press(' ')).toBe(false)
+        fixture.detectChanges()
+        expect(header.getAttribute('aria-expanded')).toBe('true')
+        expect(press('Enter')).toBe(false)
+        fixture.detectChanges()
+        expect(header.getAttribute('aria-expanded')).toBe('false')
+    })
+})

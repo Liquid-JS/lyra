@@ -1,26 +1,20 @@
 import {
-  Component,
-  computed,
-  ElementRef,
-  forwardRef,
-  inject,
-  input,
-  linkedSignal,
-  output,
-} from '@angular/core';
-import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
+    Component,
+    computed,
+    ElementRef,
+    forwardRef,
+    inject,
+    input,
+    linkedSignal,
+    output
+} from '@angular/core'
+import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms'
 
-import { injectNbDefaults } from '@liquid-js/lyr-core/base';
-import { NbStatusService } from '@liquid-js/lyr-core/base';
-import { NbComponentOrCustomStatus } from '@liquid-js/lyr-core/base';
-import { NbComponentSize } from '@liquid-js/lyr-core/base';
-import { ɵconvertToBoolProperty as convertToBoolProperty, NbBooleanInput } from '@liquid-js/lyr-core/base';
-import { ɵfocusOnClick as focusOnClick } from '@liquid-js/lyr-core/base';
-import { NbValidationDirective } from '@liquid-js/lyr-core/validation';
-import { NbIconComponent } from '@liquid-js/lyr-core/icon';
-import { ɵenableTransitionsAfterRender as enableTransitionsAfterRender } from '@liquid-js/lyr-core/base';
+import { injectNbDefaults, NbStatusService, NbComponentOrCustomStatus, NbComponentSize, ɵconvertToBoolProperty as convertToBoolProperty, NbBooleanInput, ɵfocusOnClick as focusOnClick, ɵenableTransitionsAfterRender as enableTransitionsAfterRender } from '@liquid-js/lyr-core/base'
+import { NbValidationDirective } from '@liquid-js/lyr-core/validation'
+import { NbIconComponent } from '@liquid-js/lyr-core/icon'
 
-let lastCheckboxId = 0;
+let lastCheckboxId = 0
 
 /**
  * A checkbox with a label, coloured by its status.
@@ -62,7 +56,6 @@ let lastCheckboxId = 0;
  *
  * `disabled` disables the checkbox, as does its form control:
  * @stacked-example(Disabled Checkbox, checkbox/checkbox-disabled.component)
- *
  * @styles
  *
  * checkbox-tiny-height:
@@ -290,126 +283,126 @@ let lastCheckboxId = 0;
  * checkbox-control-disabled-checked-border-color:
  */
 @Component({
-  selector: 'nb-checkbox',
-  templateUrl: './checkbox.component.html',
-  styleUrls: [`./checkbox.component.scss`],
-  providers: [{
-    provide: NG_VALUE_ACCESSOR,
-    useExisting: forwardRef(() => NbCheckboxComponent),
-    multi: true,
-  }],
-  imports: [NbIconComponent],
-  host: {
-    '[class]': 'hostClasses()',
-  },
+    selector: 'nb-checkbox',
+    templateUrl: './checkbox.component.html',
+    styleUrls: ['./checkbox.component.scss'],
+    providers: [{
+        provide: NG_VALUE_ACCESSOR,
+        useExisting: forwardRef(() => NbCheckboxComponent),
+        multi: true
+    }],
+    imports: [NbIconComponent],
+    host: {
+        '[class]': 'hostClasses()'
+    }
 })
 export class NbCheckboxComponent implements ControlValueAccessor {
-  // The app's defaults for this type, which the inputs below start from.
-  protected readonly nbDefaults = injectNbDefaults('checkbox');
+    // The app's defaults for this type, which the inputs below start from.
+    protected readonly nbDefaults = injectNbDefaults('checkbox')
 
-  protected readonly focusOnClick = focusOnClick;
-  private readonly hostElement = inject<ElementRef<HTMLElement>>(ElementRef);
-  private readonly statusService = inject(NbStatusService);
+    protected readonly focusOnClick = focusOnClick
+    private readonly hostElement = inject<ElementRef<HTMLElement>>(ElementRef)
+    private readonly statusService = inject(NbStatusService)
 
-  onChange: (value: boolean) => void = () => {};
-  onTouched: () => void = () => {};
+    onChange: (value: boolean) => void = () => {}
+    onTouched: () => void = () => {}
 
-  /**
-   * Whether the checkbox is checked; a user or a form control changes it from there.
-   */
-  readonly checked = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
+    /**
+     * Whether the checkbox is checked; a user or a form control changes it from there.
+     */
+    readonly checked = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty })
 
-  /**
-   * Disables the checkbox; a form control's disabled state does too.
-   */
-  readonly disabled = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
+    /**
+     * Disables the checkbox; a form control's disabled state does too.
+     */
+    readonly disabled = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty })
 
-  protected readonly validation = inject(NbValidationDirective, { self: true, optional: true });
+    protected readonly validation = inject(NbValidationDirective, { self: true, optional: true })
 
-  // The label's text, which names the checkbox after an `nbLabel` of its `nbValidation`, as a select's value follows it.
-  protected readonly textId = `nb-checkbox-text-${lastCheckboxId++}`;
-  protected readonly labelledBy = computed(() => {
-    const labels = this.validation?.labelledBy();
-    return labels ? `${labels} ${this.textId}` : null;
-  });
+    // The label's text, which names the checkbox after an `nbLabel` of its `nbValidation`, as a select's value follows it.
+    protected readonly textId = `nb-checkbox-text-${lastCheckboxId++}`
+    protected readonly labelledBy = computed(() => {
+        const labels = this.validation?.labelledBy()
+        return labels ? `${labels} ${this.textId}` : null
+    })
 
-  /**
-   * Checkbox status: `basic` (default), `primary`, `success`, `warning`, `danger`, `info`, `control` or a custom one.
-   * With `nbValidation`, its error or success status takes over.
-   */
-  readonly status = input<NbComponentOrCustomStatus>('basic');
+    /**
+     * Checkbox status: `basic` (default), `primary`, `success`, `warning`, `danger`, `info`, `control` or a custom one.
+     * With `nbValidation`, its error or success status takes over.
+     */
+    readonly status = input<NbComponentOrCustomStatus>('basic')
 
-  // With `nbValidation`, the status it gives while the control shows errors or success.
-  protected readonly resolvedStatus = computed(() => this.validation?.status() ?? this.status());
+    // With `nbValidation`, the status it gives while the control shows errors or success.
+    protected readonly resolvedStatus = computed(() => this.validation?.status() ?? this.status())
 
-  /**
-   * Checkbox size: `tiny`, `small`, `medium` (default), `large` or `giant`.
-   */
-  readonly sizeInput = input<NbComponentSize | undefined>(undefined, { alias: 'size' });
-  /** The size in use: the input's, the app's default, or 'medium'. */
-  readonly size = linkedSignal<NbComponentSize>(() => this.sizeInput() ?? this.nbDefaults().size ?? 'medium');
+    /**
+     * Checkbox size: `tiny`, `small`, `medium` (default), `large` or `giant`.
+     */
+    readonly sizeInput = input<NbComponentSize | undefined>(undefined, { alias: 'size' })
+    /** The size in use: the input's, the app's default, or 'medium'. */
+    readonly size = linkedSignal<NbComponentSize>(() => this.sizeInput() ?? this.nbDefaults().size ?? 'medium')
 
-  /**
-   * Shows the checkbox as indeterminate, neither checked nor unchecked, until a user clicks it.
-   */
-  readonly indeterminate = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
+    /**
+     * Shows the checkbox as indeterminate, neither checked nor unchecked, until a user clicks it.
+     */
+    readonly indeterminate = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty })
 
-  /**
-   * Emits when a user checks or unchecks the checkbox, not when a form control sets it.
-   */
-  readonly checkedChange = output<boolean>();
+    /**
+     * Emits when a user checks or unchecks the checkbox, not when a form control sets it.
+     */
+    readonly checkedChange = output<boolean>()
 
-  /**
-   * Whether the checkbox is checked: the `checked` input, until a user or a form changes it.
-   */
-  readonly isChecked = linkedSignal(() => this.checked());
+    /**
+     * Whether the checkbox is checked: the `checked` input, until a user or a form changes it.
+     */
+    readonly isChecked = linkedSignal(() => this.checked())
 
-  /**
-   * Whether the checkbox is disabled: the `disabled` input, until a form changes it.
-   */
-  readonly isDisabled = linkedSignal(() => this.disabled());
+    /**
+     * Whether the checkbox is disabled: the `disabled` input, until a form changes it.
+     */
+    readonly isDisabled = linkedSignal(() => this.disabled())
 
-  /**
-   * Whether the checkbox is indeterminate: the `indeterminate` input, until a user checks the checkbox.
-   */
-  readonly isIndeterminate = linkedSignal(() => this.indeterminate());
+    /**
+     * Whether the checkbox is indeterminate: the `indeterminate` input, until a user checks the checkbox.
+     */
+    readonly isIndeterminate = linkedSignal(() => this.indeterminate())
 
-  protected readonly hostClasses = computed(() => [
-    this.statusService.getStatusClass(this.resolvedStatus()),
-    `size-${this.size()}`,
-  ]);
+    protected readonly hostClasses = computed(() => [
+        this.statusService.getStatusClass(this.resolvedStatus()),
+        `size-${this.size()}`
+    ])
 
-  constructor() {
+    constructor() {
     // The focusable element is inside: the button or the native input gets aria-invalid and aria-describedby.
-    this.validation?.delegateAria();
-    enableTransitionsAfterRender(this.hostElement.nativeElement);
-  }
+        this.validation?.delegateAria()
+        enableTransitionsAfterRender(this.hostElement.nativeElement)
+    }
 
-  registerOnChange(fn: (value: boolean) => void) {
-    this.onChange = fn;
-  }
+    registerOnChange(fn: (value: boolean) => void) {
+        this.onChange = fn
+    }
 
-  registerOnTouched(fn: () => void) {
-    this.onTouched = fn;
-  }
+    registerOnTouched(fn: () => void) {
+        this.onTouched = fn
+    }
 
-  writeValue(value: boolean | null) {
-    this.isChecked.set(!!value);
-  }
+    writeValue(value: boolean | null) {
+        this.isChecked.set(!!value)
+    }
 
-  setDisabledState(val: boolean) {
-    this.isDisabled.set(convertToBoolProperty(val));
-  }
+    setDisabledState(val: boolean) {
+        this.isDisabled.set(convertToBoolProperty(val))
+    }
 
-  setTouched() {
-    this.onTouched();
-  }
+    setTouched() {
+        this.onTouched()
+    }
 
-  updateValueAndIndeterminate(event: Event) {
-    const nativeInput = event.target as HTMLInputElement;
-    this.isChecked.set(nativeInput.checked);
-    this.checkedChange.emit(nativeInput.checked);
-    this.onChange(nativeInput.checked);
-    this.isIndeterminate.set(nativeInput.indeterminate);
-  }
+    updateValueAndIndeterminate(event: Event) {
+        const nativeInput = event.target as HTMLInputElement
+        this.isChecked.set(nativeInput.checked)
+        this.checkedChange.emit(nativeInput.checked)
+        this.onChange(nativeInput.checked)
+        this.isIndeterminate.set(nativeInput.indeterminate)
+    }
 }

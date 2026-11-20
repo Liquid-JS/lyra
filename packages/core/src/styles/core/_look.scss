@@ -1,5 +1,5 @@
-@use 'sass:list';
-@use 'sass:selector';
+@use "sass:list";
+@use "sass:selector";
 
 /// What marks an element other than Lyra's as disabled: the `disabled` attribute's state, or `aria-disabled`.
 $disabled: ':disabled, [aria-disabled="true"]';
@@ -7,14 +7,14 @@ $disabled: ':disabled, [aria-disabled="true"]';
 /// The content in a rule for the current selector with each of `$suffixes` appended, as `&:disabled, &.disabled` would
 /// be, for suffixes given as a value.
 @mixin suffixed($suffixes) {
-  @at-root #{selector.append(&, $suffixes)} {
-    @content;
-  }
+    @at-root #{selector.append(&, $suffixes)} {
+        @content;
+    }
 }
 
 /// Fails the build when `$value` isn't one of `$allowed`, naming the mixin and its argument.
 @mixin check($mixin, $name, $value, $allowed) {
-  @if not list.index($allowed, $value) {
-    @error '#{$mixin}: `$#{$name}` is `#{$value}`; it can be #{list.join($allowed, (), $separator: comma)}.';
-  }
+    @if not list.index($allowed, $value) {
+        @error "#{$mixin}: `$#{$name}` is `#{$value}`; it can be #{list.join($allowed, (), $separator: comma)}.";
+    }
 }

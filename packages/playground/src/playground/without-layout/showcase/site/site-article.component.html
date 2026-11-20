@@ -1,78 +1,78 @@
 <article>
-  <a class="back"
-    routerLink="../blog"><nb-icon icon="arrow-back-outline" /> All posts</a>
-  <header>
-    <span class="meta">{{ post.tag }} · {{ post.minutes }} min read</span>
-    <h1>{{ post.title }}</h1>
-    <p class="lead">{{ post.excerpt }}</p>
-    <nb-user [picture]="post.avatar"
-      [name]="post.author"
-      [title]="(post.date | date: 'd MMMM y') ?? ''" />
-  </header>
+    <a class="back"
+        routerLink="../blog"><nb-icon icon="arrow-back-outline" /> All posts</a>
+    <header>
+        <span class="meta">{{ post.tag }} · {{ post.minutes }} min read</span>
+        <h1>{{ post.title }}</h1>
+        <p class="lead">{{ post.excerpt }}</p>
+        <nb-user [picture]="post.avatar"
+            [name]="post.author"
+            [title]="(post.date | date: 'd MMMM y') ?? ''" />
+    </header>
 
-  @if (post.image) {
-  <img class="cover"
-    alt="The team gathered around a whiteboard in a bright office"
-    [src]="post.image" />
-  }
+    @if (post.image) {
+    <img class="cover"
+        alt="The team gathered around a whiteboard in a bright office"
+        [src]="post.image" />
+    }
 
-  <div class="text">
-    <p>Every month, Fabrikam's operations team spent a week closing the books. Invoices lived in one tool, customer
-      notes in another, and the numbers that tied them together in three spreadsheets that only one person fully
-      understood.</p>
-    <h2>One place for every customer</h2>
-    <p>The team started by importing their customers from the main spreadsheet. Within a day, every invoice and note sat
-      on the customer it belonged to, and anyone could see where a deal stood without asking around.</p>
-    <blockquote>
-      <p>Month-end used to be the week we dreaded. Now it's an afternoon, and we actually trust the numbers.</p>
-      <cite>Emma Brown, operations lead</cite>
-    </blockquote>
-    <h2>Reports instead of spreadsheets</h2>
-    <p>With invoices and payments in one place, the revenue dashboard updated itself. The team replaced their monthly
-      report with a link, and spent the time they saved talking to customers instead.</p>
-    <ul>
-      <li>Closing the books went from five days to half a day.</li>
-      <li>Overdue invoices fell by a third with automatic reminders.</li>
-      <li>Every customer's history is one click away for the whole team.</li>
-    </ul>
-    <nb-alert status="info"
-      appearance="outline">Want the same for your team? Every plan starts with a 14-day trial.</nb-alert>
-  </div>
+    <div class="text">
+        <p>Every month, Fabrikam's operations team spent a week closing the books. Invoices lived in one tool, customer
+            notes in another, and the numbers that tied them together in three spreadsheets that only one person fully
+            understood.</p>
+        <h2>One place for every customer</h2>
+        <p>The team started by importing their customers from the main spreadsheet. Within a day, every invoice and note sat
+            on the customer it belonged to, and anyone could see where a deal stood without asking around.</p>
+        <blockquote>
+            <p>Month-end used to be the week we dreaded. Now it's an afternoon, and we actually trust the numbers.</p>
+            <cite>Emma Brown, operations lead</cite>
+        </blockquote>
+        <h2>Reports instead of spreadsheets</h2>
+        <p>With invoices and payments in one place, the revenue dashboard updated itself. The team replaced their monthly
+            report with a link, and spent the time they saved talking to customers instead.</p>
+        <ul>
+            <li>Closing the books went from five days to half a day.</li>
+            <li>Overdue invoices fell by a third with automatic reminders.</li>
+            <li>Every customer's history is one click away for the whole team.</li>
+        </ul>
+        <nb-alert status="info"
+            appearance="outline">Want the same for your team? Every plan starts with a 14-day trial.</nb-alert>
+    </div>
 
-  <footer>
-    <nb-tag-list aria-label="Topics">
-      <nb-tag size="small"
-        text="Customer story" />
-      <nb-tag size="small"
-        text="Reports" />
-      <nb-tag size="small"
-        text="Invoices" />
-    </nb-tag-list>
-    <nb-card class="subscribe">
-      <nb-card-body>
-        <h2>Get posts like this in your inbox</h2>
-        @if (subscribed(); as address) {
-        <p role="status">Thanks! New posts go to {{ address }}.</p>
-        } @else {
-        <form (submit)="$event.preventDefault(); subscribed.set(email.value)">
-          <input #email
-            nbInput
-            type="email"
-            required
-            aria-label="Email"
-            placeholder="you@example.com" />
-          <button nbButton
-            status="primary"
-            type="submit">Subscribe</button>
-        </form>
-        }
-      </nb-card-body>
-    </nb-card>
-    <h2>Read next</h2>
-    <ul class="next">
-      @for (item of next; track item.title) {
-      <li><a routerLink="../article">{{ item.title }}</a><span class="meta">{{ item.minutes }} min read</span></li>
-      }
-    </ul>
-  </footer>
+    <footer>
+        <nb-tag-list aria-label="Topics">
+            <nb-tag size="small"
+                text="Customer story" />
+            <nb-tag size="small"
+                text="Reports" />
+            <nb-tag size="small"
+                text="Invoices" />
+        </nb-tag-list>
+        <nb-card class="subscribe">
+            <nb-card-body>
+                <h2>Get posts like this in your inbox</h2>
+                @if (subscribed(); as address) {
+                <p role="status">Thanks! New posts go to {{ address }}.</p>
+                } @else {
+                <form (submit)="$event.preventDefault(); subscribed.set(email.value)">
+                    <input #email
+                        nbInput
+                        type="email"
+                        required
+                        aria-label="Email"
+                        placeholder="you@example.com" />
+                    <button nbButton
+                        status="primary"
+                        type="submit">Subscribe</button>
+                </form>
+                }
+            </nb-card-body>
+        </nb-card>
+        <h2>Read next</h2>
+        <ul class="next">
+            @for (item of next; track item.title) {
+            <li><a routerLink="../article">{{ item.title }}</a><span class="meta">{{ item.minutes }} min read</span></li>
+            }
+        </ul>
+    </footer>
 </article>

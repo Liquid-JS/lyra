@@ -1,101 +1,101 @@
-@use '../../styles/theming' as *;
+@use "../../styles/theming" as *;
 
 @mixin nb-timepicker-theme() {
-  $border: nb-theme(timepicker-border-width) nb-theme(timepicker-border-style) nb-theme(timepicker-border-color);
+    $border: nb-theme(timepicker-border-width) nb-theme(timepicker-border-style) nb-theme(timepicker-border-color);
 
-  // The time picker's own popup, framed as the date picker's is; in a date-time picker, the calendar's card frames it.
-  .cdk-overlay-pane > nb-card.nb-timepicker-container {
-    border: $border;
-    border-radius: nb-theme(timepicker-border-radius);
-    background: nb-theme(timepicker-background-color);
-    box-shadow: nb-theme(timepicker-shadow);
-  }
+    // The time picker's own popup, framed as the date picker's is; in a date-time picker, the calendar's card frames it.
+    .cdk-overlay-pane > nb-card.nb-timepicker-container {
+        border: $border;
+        border-radius: nb-theme(timepicker-border-radius);
+        background: nb-theme(timepicker-background-color);
+        box-shadow: nb-theme(timepicker-shadow);
+    }
 
-  .nb-timepicker-container {
-    width: nb-theme(timepicker-container-width);
-    height: nb-theme(timepicker-container-height);
+    .nb-timepicker-container {
+        width: nb-theme(timepicker-container-width);
+        height: nb-theme(timepicker-container-height);
 
-    .list-item {
-      &:first-child {
-        border-top: none;
-      }
+        .list-item {
+            &:first-child {
+                border-top: none;
+            }
 
-      &:hover {
-        background-color: nb-theme(timepicker-cell-hover-background-color);
-        color: nb-theme(timepicker-cell-hover-text-color);
-      }
+            &:hover {
+                background-color: nb-theme(timepicker-cell-hover-background-color);
+                color: nb-theme(timepicker-cell-hover-text-color);
+            }
 
-      // The keyboard's cell, with the focus ring inside its row, which the scrolling list would cut outside it.
-      &:has(> nb-timepicker-cell:focus-visible) {
-        background-color: nb-theme(timepicker-cell-focus-background-color);
-        color: nb-theme(timepicker-cell-focus-text-color);
-        box-shadow: inset 0 0 0 nb-theme(outline-width) nb-theme(outline-color);
-      }
+            // The keyboard's cell, with the focus ring inside its row, which the scrolling list would cut outside it.
+            &:has(> nb-timepicker-cell:focus-visible) {
+                background-color: nb-theme(timepicker-cell-focus-background-color);
+                color: nb-theme(timepicker-cell-focus-text-color);
+                box-shadow: inset 0 0 0 nb-theme(outline-width) nb-theme(outline-color);
+            }
 
-      &.selected {
-        background-color: nb-theme(timepicker-cell-active-background-color);
-        color: nb-theme(timepicker-cell-active-text-color);
-      }
+            &.selected {
+                background-color: nb-theme(timepicker-cell-active-background-color);
+                color: nb-theme(timepicker-cell-active-text-color);
+            }
 
-      // Out of the timepicker's range.
-      &.disabled {
-        color: nb-theme(timepicker-cell-disabled-text-color);
-        cursor: default;
+            // Out of the timepicker's range.
+            &.disabled {
+                color: nb-theme(timepicker-cell-disabled-text-color);
+                cursor: default;
 
-        &:hover {
-          background-color: transparent;
+                &:hover {
+                    background-color: transparent;
+                }
+            }
+
+            color: nb-theme(timepicker-cell-text-color);
+            font-size: nb-theme(timepicker-cell-text-font-size);
+            font-family: nb-theme(timepicker-cell-text-font-family);
+            height: nb-theme(timepicker-cell-height);
+            line-height: nb-theme(timepicker-cell-text-line-height);
+            font-weight: nb-theme(timepicker-cell-text-font-weight);
         }
-      }
 
-      color: nb-theme(timepicker-cell-text-color);
-      font-size: nb-theme(timepicker-cell-text-font-size);
-      font-family: nb-theme(timepicker-cell-text-font-family);
-      height: nb-theme(timepicker-cell-height);
-      line-height: nb-theme(timepicker-cell-text-line-height);
-      font-weight: nb-theme(timepicker-cell-text-font-weight);
+        .values-list {
+            &:not(:last-of-type) {
+                @include nb-ltr(border-right, $border);
+                @include nb-rtl(border-left, $border);
+            }
+
+            @include nb-scrollbars(
+                nb-theme(timepicker-scrollbar-color),
+                nb-theme(timepicker-scrollbar-background-color),
+                nb-theme(timepicker-scrollbar-width)
+            );
+        }
+
+        &.supports-scrollbar-theming {
+            .values-list:hover .list-item:not(.am-pm-item) {
+                @include nb-ltr(margin-right, calc(#{nb-theme(timepicker-scrollbar-width)} * -1));
+                @include nb-rtl(margin-left, calc(#{nb-theme(timepicker-scrollbar-width)} * -1));
+            }
+        }
+
+        .header-cell {
+            color: nb-theme(timepicker-header-cell-text-color);
+            font-size: nb-theme(timepicker-header-cell-text-font-size);
+            font-family: nb-theme(timepicker-header-cell-text-font-family);
+            height: nb-theme(timepicker-header-cell-height);
+            line-height: nb-theme(timepicker-header-cell-text-line-height);
+            font-weight: nb-theme(timepicker-header-cell-text-font-weight);
+
+            &:not(:last-child) {
+                @include nb-ltr(border-right, $border);
+                @include nb-rtl(border-left, $border);
+            }
+        }
+
+        .column-header {
+            border-bottom: $border;
+        }
+
+        // The actions line up with the columns' edges, as a calendar's do with its days.
+        .actions-footer {
+            padding-inline: nb-theme(calendar-picker-padding-start);
+        }
     }
-
-    .values-list {
-      &:not(:last-of-type) {
-        @include nb-ltr(border-right, $border);
-        @include nb-rtl(border-left, $border);
-      }
-
-      @include nb-scrollbars(
-        nb-theme(timepicker-scrollbar-color),
-        nb-theme(timepicker-scrollbar-background-color),
-        nb-theme(timepicker-scrollbar-width)
-      );
-    }
-
-    &.supports-scrollbar-theming {
-      .values-list:hover .list-item:not(.am-pm-item) {
-        @include nb-ltr(margin-right, calc(#{nb-theme(timepicker-scrollbar-width)} * -1));
-        @include nb-rtl(margin-left, calc(#{nb-theme(timepicker-scrollbar-width)} * -1));
-      }
-    }
-
-    .header-cell {
-      color: nb-theme(timepicker-header-cell-text-color);
-      font-size: nb-theme(timepicker-header-cell-text-font-size);
-      font-family: nb-theme(timepicker-header-cell-text-font-family);
-      height: nb-theme(timepicker-header-cell-height);
-      line-height: nb-theme(timepicker-header-cell-text-line-height);
-      font-weight: nb-theme(timepicker-header-cell-text-font-weight);
-
-      &:not(:last-child) {
-        @include nb-ltr(border-right, $border);
-        @include nb-rtl(border-left, $border);
-      }
-    }
-
-    .column-header {
-      border-bottom: $border;
-    }
-
-    // The actions line up with the columns' edges, as a calendar's do with its days.
-    .actions-footer {
-      padding-inline: nb-theme(calendar-picker-padding-start);
-    }
-  }
 }

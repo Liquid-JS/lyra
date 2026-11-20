@@ -1,7 +1,7 @@
-@use '../all' as *;
+@use "../all" as *;
 
 $nb-enabled-themes: (material-dark);
 
-@include nb-install() {
-  @include nb-theme-global();
+@include nb-install {
+    @include nb-theme-global;
 }

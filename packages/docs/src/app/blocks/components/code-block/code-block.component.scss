@@ -1,58 +1,61 @@
-@use '../../../@theme/styles/themes' as *;
+@use "../../../@theme/styles/themes" as *;
 
-@include nb-install-component() {
-  $code-lines-fg: #515877;
-  // The docs theme's, or the same where another theme is shown, e.g. over a full-screen example.
-  $code-block-bg: var(--code-block-bg, linear-gradient(225deg, #333c66 0%, #1d2447 100%));
+@include nb-install-component {
+    $code-lines-fg: #515877;
 
-  .container {
-    display: flex;
-    position: relative;
-    padding: 0;
-    font-size: 1rem;
-    border-radius: 0.5rem;
-    background: $code-block-bg;
-    overflow-x: auto;
+    // The docs theme's, or the same where another theme is shown, e.g. over a full-screen example.
+    $code-block-bg: var(--code-block-bg, linear-gradient(225deg, #333c66 0%, #1d2447 100%));
 
-    .lines {
-      display: flex;
-      flex-direction: column;
-      text-align: end;
-      font-size: 0.875rem;
-      line-height: 1.25rem;
-      padding: 2rem 0.5rem 0.5rem;
-      border-radius: 0.5rem 0 0 0.5rem;
-      color: $code-lines-fg;
-      user-select: none;
+    .container {
+        display: flex;
+        position: relative;
+        padding: 0;
+        font-size: 1rem;
+        border-radius: 0.5rem;
+        background: $code-block-bg;
+        overflow-x: auto;
+
+        .lines {
+            display: flex;
+            flex-direction: column;
+            text-align: end;
+            font-size: 0.875rem;
+            line-height: 1.25rem;
+            padding: 2rem 0.5rem 0.5rem;
+            border-radius: 0.5rem 0 0 0.5rem;
+            color: $code-lines-fg;
+            user-select: none;
+        }
+
+        pre {
+            // The code fills the block, so the copy button sits in its corner.
+            flex: 1 0 auto;
+
+            // Bootstrap's reboot used to reset the top margin; without it the code sits a line below its numbers.
+            margin-top: 0;
+            margin-bottom: 0;
+            background: transparent;
+            overflow: visible;
+
+            code.hljs {
+                background: transparent;
+                color: #f8f8f2;
+
+                // As on a docs page, which also sets it, so it's the same anywhere.
+                padding: 2rem 2.5rem 2rem 0.5rem;
+                font-size: 0.875rem;
+                line-height: 1.25rem;
+                margin-bottom: 0;
+            }
+        }
+
+        // In the block's corner, over the code's end padding; it stays there while the code scrolls sideways.
+        .copy-button {
+            position: sticky;
+            align-self: flex-start;
+            inset-inline-end: 0.5rem;
+            margin: 0.5rem 0.5rem 0 0;
+            margin-inline-start: -2.5rem;
+        }
     }
-
-    pre {
-      // The code fills the block, so the copy button sits in its corner.
-      flex: 1 0 auto;
-      // Bootstrap's reboot used to reset the top margin; without it the code sits a line below its numbers.
-      margin-top: 0;
-      margin-bottom: 0;
-      background: transparent;
-      overflow: visible;
-
-      code.hljs {
-        background: transparent;
-        color: #f8f8f2;
-        // As on a docs page, which also sets it, so it's the same anywhere.
-        padding: 2rem 2.5rem 2rem 0.5rem;
-        font-size: 0.875rem;
-        line-height: 1.25rem;
-        margin-bottom: 0;
-      }
-    }
-
-    // In the block's corner, over the code's end padding; it stays there while the code scrolls sideways.
-    .copy-button {
-      position: sticky;
-      align-self: flex-start;
-      inset-inline-end: 0.5rem;
-      margin: 0.5rem 0.5rem 0 0;
-      margin-inline-start: -2.5rem;
-    }
-  }
 }

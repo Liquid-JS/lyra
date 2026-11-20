@@ -1,96 +1,94 @@
-import { TestBed, inject } from '@angular/core/testing';
-import { of as observableOf } from 'rxjs';
-import { NbRoleProvider, NbAclService, NbAccessChecker } from '@liquid-js/lyr-security';
+import { TestBed, inject } from '@angular/core/testing'
+import { of as observableOf } from 'rxjs'
+import { NbRoleProvider, NbAclService, NbAccessChecker } from '@liquid-js/lyr-security'
 
-let accessChecker: NbAccessChecker;
+let accessChecker: NbAccessChecker
 
 function setupAcl(can: Record<string, boolean>, roles: string | string[]) {
-  beforeEach(() => {
+    beforeEach(() => {
     // Configure testbed to prepare services
-    TestBed.configureTestingModule({
-      providers: [
-        {
-          provide: NbRoleProvider,
-          useValue: {
-            getRole: () => {
-              return observableOf(roles);
-            },
-          },
-        },
-        {
-          provide: NbAclService,
-          useValue: {
-            can: (role: string) => {
-              return can[role]; // this is a simple mocked ACL implementation
-            },
-          },
-        },
-        NbAccessChecker,
-      ],
-    });
-  });
+        TestBed.configureTestingModule({
+            providers: [
+                {
+                    provide: NbRoleProvider,
+                    useValue: {
+                        getRole: () => observableOf(roles)
+                    }
+                },
+                {
+                    provide: NbAclService,
+                    useValue: {
+                        can: (role: string) =>
+                            can[role] // this is a simple mocked ACL implementation
 
-  // Single async inject to save references; which are used in all tests below
-  beforeEach(
-    inject([NbAccessChecker], (_accessChecker: NbAccessChecker) => {
-      accessChecker = _accessChecker;
-    }),
-  );
+                    }
+                },
+                NbAccessChecker
+            ]
+        })
+    })
+
+    // Single async inject to save references; which are used in all tests below
+    beforeEach(
+        inject([NbAccessChecker], (_accessChecker: NbAccessChecker) => {
+            accessChecker = _accessChecker
+        })
+    )
 }
 
 describe('authorization checker', () => {
-  describe('acl returns true', () => {
-    setupAcl({ admin: true }, 'admin');
+    describe('acl returns true', () => {
+        setupAcl({ admin: true }, 'admin')
 
-    it(`checks against provided role`, () => new Promise<void>((done) => {
-      accessChecker.isGranted('delete', 'users').subscribe((result: boolean) => {
-        expect(result).toBe(true);
-        done();
-      });
-    }));
-  });
+        it('checks against provided role', () => new Promise<void>((done) => {
+            accessChecker.isGranted('delete', 'users').subscribe((result: boolean) => {
+                expect(result).toBe(true)
+                done()
+            })
+        }))
+    })
 
-  describe('acl returns false', () => {
-    setupAcl({ admin: false }, 'admin');
+    describe('acl returns false', () => {
+        setupAcl({ admin: false }, 'admin')
 
-    it(`checks against provided role`, () => new Promise<void>((done) => {
-      accessChecker.isGranted('delete', 'users').subscribe((result: boolean) => {
-        expect(result).toBe(false);
-        done();
-      });
-    }));
-  });
+        it('checks against provided role', () => new Promise<void>((done) => {
+            accessChecker.isGranted('delete', 'users').subscribe((result: boolean) => {
+                expect(result).toBe(false)
+                done()
+            })
+        }))
+    })
 
-  describe('acl returns false (both roles return false)', () => {
-    setupAcl({ admin: false, user: false }, ['user', 'admin']);
+    describe('acl returns false (both roles return false)', () => {
+        setupAcl({ admin: false, user: false }, ['user', 'admin'])
 
-    it(`checks against provided roles`, () => new Promise<void>((done) => {
-      accessChecker.isGranted('delete', 'users').subscribe((result: boolean) => {
-        expect(result).toBe(false);
-        done();
-      });
-    }));
-  });
+        it('checks against provided roles', () => new Promise<void>((done) => {
+            accessChecker.isGranted('delete', 'users').subscribe((result: boolean) => {
+                expect(result).toBe(false)
+                done()
+            })
+        }))
+    })
 
-  describe('acl returns true (both roles return true)', () => {
-    setupAcl({ admin: true, user: true }, ['user', 'admin']);
+    describe('acl returns true (both roles return true)', () => {
+        setupAcl({ admin: true, user: true }, ['user', 'admin'])
 
-    it(`checks against provided roles`, () => new Promise<void>((done) => {
-      accessChecker.isGranted('delete', 'users').subscribe((result: boolean) => {
-        expect(result).toBe(true);
-        done();
-      });
-    }));
-  });
+        it('checks against provided roles', () => new Promise<void>((done) => {
+            accessChecker.isGranted('delete', 'users').subscribe((result: boolean) => {
+                expect(result).toBe(true)
+                done()
+            })
+        }))
+    })
 
-  describe('acl returns true (one of the roles return true)', () => {
-    setupAcl({ admin: true, user: false }, ['user', 'admin']);
+    describe('acl returns true (one of the roles return true)', () => {
+        setupAcl({ admin: true, user: false }, ['user', 'admin'])
 
-    it(`checks against provided roles`, () => new Promise<void>((done) => {
-      accessChecker.isGranted('delete', 'users').subscribe((result: boolean) => {
-        expect(result).toBe(true);
-        done();
-      });
-    }));
-  });
-});
+        it('checks against provided roles', () => new Promise<void>((done) => {
+            accessChecker.isGranted('delete', 'users').subscribe((result: boolean) => {
+                expect(result).toBe(true)
+                done()
+            })
+        }))
+    })
+})

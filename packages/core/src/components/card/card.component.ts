@@ -1,8 +1,6 @@
-import { Component, computed, Directive, input, linkedSignal } from '@angular/core';
+import { Component, computed, Directive, input, linkedSignal } from '@angular/core'
 
-import { injectNbDefaults, NbCardAppearance } from '@liquid-js/lyr-core/base';
-import { NbComponentSize } from '@liquid-js/lyr-core/base';
-import { NbComponentOrCustomStatus, NbComponentStatus } from '@liquid-js/lyr-core/base';
+import { injectNbDefaults, NbCardAppearance, NbComponentSize, NbComponentOrCustomStatus, NbComponentStatus } from '@liquid-js/lyr-core/base'
 
 /**
  * The header of an `nb-card`, coloured by the card's `status`.
@@ -30,8 +28,8 @@ import { NbComponentOrCustomStatus, NbComponentStatus } from '@liquid-js/lyr-cor
  * card-header-control-text-color:
  */
 @Component({
-  selector: 'nb-card-header',
-  template: `<ng-content />`,
+    selector: 'nb-card-header',
+    template: '<ng-content />'
 })
 export class NbCardHeaderComponent {}
 
@@ -39,8 +37,8 @@ export class NbCardHeaderComponent {}
  * The main content of an `nb-card`, padded and aligned with its header and footer.
  */
 @Component({
-  selector: 'nb-card-body',
-  template: `<ng-content />`,
+    selector: 'nb-card-body',
+    template: '<ng-content />'
 })
 export class NbCardBodyComponent {}
 
@@ -48,8 +46,8 @@ export class NbCardBodyComponent {}
  * The footer of an `nb-card`, divided from the content above it.
  */
 @Component({
-  selector: 'nb-card-footer',
-  template: `<ng-content />`,
+    selector: 'nb-card-footer',
+    template: '<ng-content />'
 })
 export class NbCardFooterComponent {}
 
@@ -71,8 +69,8 @@ export class NbCardFooterComponent {}
  * card-actions-gap:
  */
 @Component({
-  selector: 'nb-card-actions',
-  template: `<ng-content />`,
+    selector: 'nb-card-actions',
+    template: '<ng-content />'
 })
 export class NbCardActionsComponent {}
 
@@ -80,6 +78,7 @@ export class NbCardActionsComponent {}
  * Basic content container component.
  *
  * Basic card example:
+ *
  * @stacked-example(Showcase, card/card-showcase.component)
  *
  * Basic card configuration:
@@ -148,9 +147,7 @@ export class NbCardActionsComponent {}
  *
  * `size` gives a card a fixed height, so cards of smaller sizes stack beside a bigger one in a row:
  * @stacked-example(Card sizes combinations, card/card-sizes-combinations.component)
- *
  * @additional-example(Multiple Sizes, card/card-sizes.component)
- *
  * @styles
  *
  * card-background-color:
@@ -191,54 +188,54 @@ export class NbCardActionsComponent {}
  * card-outline-color:
  */
 @Component({
-  selector: 'nb-card',
-  styleUrls: ['./card.component.scss'],
-  templateUrl: './card.component.html',
-  host: {
-    '[class]': 'hostClasses()',
-    '[class.accent]': '!!accent()',
-  },
+    selector: 'nb-card',
+    styleUrls: ['./card.component.scss'],
+    templateUrl: './card.component.html',
+    host: {
+        '[class]': 'hostClasses()',
+        '[class.accent]': '!!accent()'
+    }
 })
 export class NbCardComponent {
-  // The app's defaults for this type, which the inputs below start from.
-  protected readonly nbDefaults = injectNbDefaults('card');
+    // The app's defaults for this type, which the inputs below start from.
+    protected readonly nbDefaults = injectNbDefaults('card')
 
-  /**
-   * A fixed height: `tiny`, `small`, `medium`, `large` or `giant`. Unset by default, so the card is as tall as its
-   * content.
-   */
-  readonly size = input<'' | NbComponentSize>('');
+    /**
+     * A fixed height: `tiny`, `small`, `medium`, `large` or `giant`. Unset by default, so the card is as tall as its
+     * content.
+     */
+    readonly size = input<'' | NbComponentSize>('')
 
-  /**
-   * Colours the header: `basic`, `primary`, `info`, `success`, `warning`, `danger`, `control` or a custom status.
-   * Unset by default.
-   */
-  readonly status = input<'' | NbComponentOrCustomStatus>('');
+    /**
+     * Colours the header: `basic`, `primary`, `info`, `success`, `warning`, `danger`, `control` or a custom status.
+     * Unset by default.
+     */
+    readonly status = input<'' | NbComponentOrCustomStatus>('')
 
-  /**
-   * A band of a status colour along the top: `basic`, `primary`, `info`, `success`, `warning`, `danger` or
-   * `control`. Unset by default.
-   */
-  readonly accent = input<'' | NbComponentStatus>('');
+    /**
+     * A band of a status colour along the top: `basic`, `primary`, `info`, `success`, `warning`, `danger` or
+     * `control`. Unset by default.
+     */
+    readonly accent = input<'' | NbComponentStatus>('')
 
-  /**
-   * Card appearance: `outline`, a card with a border, `filled`, a tinted card without one, or `floating`, a card with
-   * a shadow instead of a border, over the page.
-   */
-  readonly appearanceInput = input<NbCardAppearance | undefined>(undefined, { alias: 'appearance' });
-  /** The appearance in use: the input's, the app's default, or 'outline'. */
-  readonly appearance = linkedSignal<NbCardAppearance>(
-    () => this.appearanceInput() ?? this.nbDefaults().appearance ?? 'outline',
-  );
+    /**
+     * Card appearance: `outline`, a card with a border, `filled`, a tinted card without one, or `floating`, a card with
+     * a shadow instead of a border, over the page.
+     */
+    readonly appearanceInput = input<NbCardAppearance | undefined>(undefined, { alias: 'appearance' })
+    /** The appearance in use: the input's, the app's default, or 'outline'. */
+    readonly appearance = linkedSignal<NbCardAppearance>(
+        () => this.appearanceInput() ?? this.nbDefaults().appearance ?? 'outline'
+    )
 
-  protected readonly hostClasses = computed(() =>
-    [
-      `appearance-${this.appearance()}`,
-      this.size() && `size-${this.size()}`,
-      this.status() && `status-${this.status()}`,
-      this.accent() && `accent-${this.accent()}`,
-    ].filter(Boolean),
-  );
+    protected readonly hostClasses = computed(() =>
+        [
+            `appearance-${this.appearance()}`,
+            this.size() && `size-${this.size()}`,
+            this.status() && `status-${this.status()}`,
+            this.accent() && `accent-${this.accent()}`
+        ].filter(Boolean)
+    )
 }
 
 /**
@@ -254,8 +251,8 @@ export class NbCardComponent {
  * ```
  */
 @Directive({
-  selector: '[nbCardLink]',
-  host: { class: 'card-link' },
+    selector: '[nbCardLink]',
+    host: { class: 'card-link' }
 })
 export class NbCardLinkDirective {}
 
@@ -271,10 +268,10 @@ export class NbCardLinkDirective {}
  * ```
  */
 @Directive({
-  selector: '[nbCardMedia]',
-  host: { class: 'card-media' },
+    selector: '[nbCardMedia]',
+    host: { class: 'card-media' }
 })
 export class NbCardMediaDirective {
-  /** Where the media goes: the card's top (by default), or its `bottom`; set as a plain attribute. */
-  readonly nbCardMedia = input<'' | 'top' | 'bottom'>('');
+    /** Where the media goes: the card's top (by default), or its `bottom`; set as a plain attribute. */
+    readonly nbCardMedia = input<'' | 'top' | 'bottom'>('')
 }

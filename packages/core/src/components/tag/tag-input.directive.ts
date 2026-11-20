@@ -1,13 +1,13 @@
-import { Directive, ElementRef, inject, input, output } from '@angular/core';
+import { Directive, ElementRef, inject, input, output } from '@angular/core'
 
-import { NbAutocompleteDirective } from '../autocomplete/autocomplete.directive';
-import { ENTER } from '@angular/cdk/keycodes';
-import { NbFormFieldControl } from '@liquid-js/lyr-core/form-field';
-import { NbInputDirective } from '@liquid-js/lyr-core/input';
+import { ENTER } from '@angular/cdk/keycodes'
+import { NbFormFieldControl } from '@liquid-js/lyr-core/form-field'
+import { NbInputDirective } from '@liquid-js/lyr-core/input'
+import { NbAutocompleteDirective } from '../autocomplete/autocomplete.directive'
 
 export interface NbTagInputAddEvent {
-  input: ElementRef<HTMLInputElement>;
-  value: string;
+    input: ElementRef<HTMLInputElement>
+    value: string
 }
 
 /**
@@ -15,9 +15,7 @@ export interface NbTagInputAddEvent {
  * text into tags. It's an `nbInput`, and its `fieldSize`, `status` and `shape` style the whole list.
  *
  * @stacked-example(Tag Input, tag/tag-input.component)
- *
  * @additional-example(Tag Input with Autocomplete, tag/tag-input-with-autocomplete.component)
- *
  * @styles
  *
  * tag-list-tiny-tag-offset:
@@ -171,46 +169,46 @@ export interface NbTagInputAddEvent {
  * tag-input-giant-padding:
  */
 @Directive({
-  selector: 'input[nbTagInput]',
-  exportAs: 'nbTagInput',
-  providers: [
-    { provide: NbFormFieldControl, useExisting: NbTagInputDirective },
-  ],
-  host: {
-    class: 'nb-tag-input',
-    '(keydown)': '_onKeydown($event)',
-  },
+    selector: 'input[nbTagInput]',
+    exportAs: 'nbTagInput',
+    providers: [
+        { provide: NbFormFieldControl, useExisting: NbTagInputDirective }
+    ],
+    host: {
+        'class': 'nb-tag-input',
+        '(keydown)': '_onKeydown($event)'
+    }
 })
 export class NbTagInputDirective extends NbInputDirective {
-  readonly _hostElement = inject<ElementRef<HTMLInputElement>>(ElementRef);
-  protected readonly autocomplete = inject<NbAutocompleteDirective<unknown>>(
-    NbAutocompleteDirective, { optional: true, self: true },
-  );
+    readonly _hostElement = inject<ElementRef<HTMLInputElement>>(ElementRef)
+    protected readonly autocomplete = inject<NbAutocompleteDirective<unknown>>(
+        NbAutocompleteDirective, { optional: true, self: true }
+    )
 
-  get _value(): string {
-    return this._hostElement.nativeElement.value;
-  }
-
-  /**
-   * Key codes that emit `tagAdd`; Enter by default. A managed list also splits pasted text by the characters they
-   * type.
-   */
-  readonly separatorKeys = input<number[]>([ENTER]);
-
-  /**
-   * Emits the input's text when a separator key is pressed; an Enter that picks an autocomplete option doesn't.
-   */
-  readonly tagAdd = output<NbTagInputAddEvent>();
-
-  // eslint-disable-next-line @typescript-eslint/no-deprecated -- separatorKeys are key codes, as Angular Material's separatorKeyCodes; a code also leaves out the Enter that ends an IME composition in Safari (229).
-  _onKeydown({ keyCode }: KeyboardEvent) {
-    // An Enter key that selects an autocomplete option adds that option rather than the typed text.
-    if (this.isSeparatorKey(keyCode) && !(keyCode === ENTER && this.autocomplete?.hasActiveOption)) {
-      this.tagAdd.emit({ value: this._value, input: this._hostElement });
+    get _value(): string {
+        return this._hostElement.nativeElement.value
     }
-  }
 
-  protected isSeparatorKey(keyCode: number): boolean {
-    return this.separatorKeys().includes(keyCode);
-  }
+    /**
+     * Key codes that emit `tagAdd`; Enter by default. A managed list also splits pasted text by the characters they
+     * type.
+     */
+    readonly separatorKeys = input<number[]>([ENTER])
+
+    /**
+     * Emits the input's text when a separator key is pressed; an Enter that picks an autocomplete option doesn't.
+     */
+    readonly tagAdd = output<NbTagInputAddEvent>()
+
+    // eslint-disable-next-line @typescript-eslint/no-deprecated -- separatorKeys are key codes, as Angular Material's separatorKeyCodes; a code also leaves out the Enter that ends an IME composition in Safari (229).
+    _onKeydown({ keyCode }: KeyboardEvent) {
+    // An Enter key that selects an autocomplete option adds that option rather than the typed text.
+        if (this.isSeparatorKey(keyCode) && !(keyCode === ENTER && this.autocomplete?.hasActiveOption)) {
+            this.tagAdd.emit({ value: this._value, input: this._hostElement })
+        }
+    }
+
+    protected isSeparatorKey(keyCode: number): boolean {
+        return this.separatorKeys().includes(keyCode)
+    }
 }

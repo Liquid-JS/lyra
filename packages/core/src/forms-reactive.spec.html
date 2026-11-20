@@ -1,48 +1,48 @@
 <nb-layout [formGroup]="form">
-  <nb-layout-column>
-    <nb-checkbox data-control="checkbox"
-      formControlName="checkbox">Checkbox</nb-checkbox>
-    <nb-toggle data-control="toggle"
-      formControlName="toggle">Toggle</nb-toggle>
-    <nb-radio-group data-control="radio"
-      formControlName="radio">
-      <nb-radio value="a">A</nb-radio>
-      <nb-radio value="b">B</nb-radio>
-    </nb-radio-group>
-    <nb-select data-control="select"
-      formControlName="select">
-      <nb-option value="a">A</nb-option>
-      <nb-option value="b">B</nb-option>
-      <nb-option value="c">C</nb-option>
-    </nb-select>
-    <input nbInput
-      data-control="autocomplete"
-      [nbAutocomplete]="auto"
-      formControlName="autocomplete" />
-    <nb-autocomplete #auto>
-      <nb-option value="a">a</nb-option>
-      <nb-option value="b">b</nb-option>
-    </nb-autocomplete>
-    <input nbInput
-      data-control="datepicker"
-      [nbDatepicker]="datepicker"
-      formControlName="datepicker" />
-    <nb-datepicker #datepicker></nb-datepicker>
-    <input nbInput
-      data-control="timepicker"
-      [nbTimepicker]="timepicker"
-      formControlName="timepicker" />
-    <nb-timepicker #timepicker></nb-timepicker>
-    <input nbInput
-      data-control="input"
-      formControlName="input" />
-    <input nbInput
-      nbNumberInput
-      scale="100"
-      data-control="number"
-      formControlName="number" />
-    <textarea nbInput
-      data-control="textarea"
-      formControlName="textarea"></textarea>
-  </nb-layout-column>
+    <nb-layout-column>
+        <nb-checkbox data-control="checkbox"
+            formControlName="checkbox">Checkbox</nb-checkbox>
+        <nb-toggle data-control="toggle"
+            formControlName="toggle">Toggle</nb-toggle>
+        <nb-radio-group data-control="radio"
+            formControlName="radio">
+            <nb-radio value="a">A</nb-radio>
+            <nb-radio value="b">B</nb-radio>
+        </nb-radio-group>
+        <nb-select data-control="select"
+            formControlName="select">
+            <nb-option value="a">A</nb-option>
+            <nb-option value="b">B</nb-option>
+            <nb-option value="c">C</nb-option>
+        </nb-select>
+        <input nbInput
+            data-control="autocomplete"
+            [nbAutocomplete]="auto"
+            formControlName="autocomplete" />
+        <nb-autocomplete #auto>
+            <nb-option value="a">a</nb-option>
+            <nb-option value="b">b</nb-option>
+        </nb-autocomplete>
+        <input nbInput
+            data-control="datepicker"
+            [nbDatepicker]="datepicker"
+            formControlName="datepicker" />
+        <nb-datepicker #datepicker></nb-datepicker>
+        <input nbInput
+            data-control="timepicker"
+            [nbTimepicker]="timepicker"
+            formControlName="timepicker" />
+        <nb-timepicker #timepicker></nb-timepicker>
+        <input nbInput
+            data-control="input"
+            formControlName="input" />
+        <input nbInput
+            nbNumberInput
+            scale="100"
+            data-control="number"
+            formControlName="number" />
+        <textarea nbInput
+            data-control="textarea"
+            formControlName="textarea"></textarea>
+    </nb-layout-column>
 </nb-layout>

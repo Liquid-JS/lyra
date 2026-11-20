@@ -1,69 +1,69 @@
 <nb-layout>
-  <nb-layout-header fixed>
-    <a class="brand"
-      routerLink="search">
-      <span class="mark"
-        aria-hidden="true"><nb-icon icon="home" /></span>
-      Stay
-    </a>
+    <nb-layout-header fixed>
+        <a class="brand"
+            routerLink="search">
+            <span class="mark"
+                aria-hidden="true"><nb-icon icon="home" /></span>
+            Stay
+        </a>
 
-    <a class="search-pill"
-      routerLink="search"
-      aria-label="Search places to stay">
-      <span>Anywhere</span>
-      <span class="dot"
-        aria-hidden="true"></span>
-      <span>Any week</span>
-      <span class="dot"
-        aria-hidden="true"></span>
-      <span class="hint">Add guests</span>
-      <span class="pill-icon"
-        aria-hidden="true"><nb-icon icon="search-outline" /></span>
-    </a>
+        <a class="search-pill"
+            routerLink="search"
+            aria-label="Search places to stay">
+            <span>Anywhere</span>
+            <span class="dot"
+                aria-hidden="true"></span>
+            <span>Any week</span>
+            <span class="dot"
+                aria-hidden="true"></span>
+            <span class="hint">Add guests</span>
+            <span class="pill-icon"
+                aria-hidden="true"><nb-icon icon="search-outline" /></span>
+        </a>
 
-    <div class="actions">
-      <a nbButton
-        ghost
-        class="trips"
-        routerLink="trips"
-        routerLinkActive="active">Trips</a>
-      <a nbButton
-        ghost
-        routerLink="search"
-        aria-label="Saved places">
-        <nb-icon icon="heart-outline" />
-      </a>
-      <nb-user name="Jane Doe"
-        title="Account"
-        onlyPicture
-        [picture]="userPhoto"
-        [nbContextMenu]="userMenu" />
-    </div>
-  </nb-layout-header>
+        <div class="actions">
+            <a nbButton
+                ghost
+                class="trips"
+                routerLink="trips"
+                routerLinkActive="active">Trips</a>
+            <a nbButton
+                ghost
+                routerLink="search"
+                aria-label="Saved places">
+                <nb-icon icon="heart-outline" />
+            </a>
+            <nb-user name="Jane Doe"
+                title="Account"
+                onlyPicture
+                [picture]="userPhoto"
+                [nbContextMenu]="userMenu" />
+        </div>
+    </nb-layout-header>
 
-  <nb-layout-column class="page">
-    <router-outlet />
-  </nb-layout-column>
+    <nb-layout-column class="page">
+        <router-outlet />
+    </nb-layout-column>
 
-  <nb-layout-footer>
-    <div class="footer">
-      <div class="about">
-        <span class="brand"><span class="mark"
-            aria-hidden="true"><nb-icon icon="home" /></span> Stay</span>
-        <p>Cabins, cottages and apartments from people who love where they live.</p>
-      </div>
-      @for (column of footer; track column.title) {
-      <nav [attr.aria-label]="column.title">
-        <h2 class="label">{{ column.title }}</h2>
-        <ul>
-          @for (link of column.links; track link) {
-          <li><a href="#"
-              (click)="$event.preventDefault()">{{ link }}</a></li>
-          }
-        </ul>
-      </nav>
-      }
-    </div>
-    <p class="copyright">© {{ year }} Stay Ltd. Prices include taxes; fees are shown before you pay.</p>
-  </nb-layout-footer>
+    <nb-layout-footer>
+        <div class="footer">
+            <div class="about">
+                <span class="brand"><span class="mark"
+                        aria-hidden="true"><nb-icon icon="home" /></span> Stay</span>
+                <p>Cabins, cottages and apartments from people who love where they live.</p>
+            </div>
+            @for (column of footer; track column.title) {
+            <nav [attr.aria-label]="column.title">
+                <h2 class="label">{{ column.title }}</h2>
+                <ul>
+                    @for (link of column.links; track link) {
+                    <li><a href="#"
+                            (click)="$event.preventDefault()">{{ link }}</a></li>
+                    }
+                </ul>
+            </nav>
+            }
+        </div>
+        <p class="copyright">© {{ year }} Stay Ltd. Prices include taxes; fees are shown before you pay.</p>
+    </nb-layout-footer>
 </nb-layout>

@@ -1,31 +1,32 @@
-@use '../../styles/theming' as *;
+@use "../../styles/theming" as *;
 
 :host {
-  ::ng-deep nb-card.nb-timepicker-container {
-    flex: 1 0 0;
-    border-radius: 0;
-    width: auto;
-    border-right: 0;
-    border-bottom: 0;
-  }
+    ::ng-deep nb-card.nb-timepicker-container {
+        flex: 1 0 0;
+        border-radius: 0;
+        width: auto;
+        border-right: 0;
+        border-bottom: 0;
+    }
 }
 
 .picker-body {
-  align-items: stretch;
-  display: flex;
-  padding: 0;
+    align-items: stretch;
+    display: flex;
+    padding: 0;
 
-  nb-base-calendar {
-    ::ng-deep nb-card {
-      border-radius: 0;
+    nb-base-calendar {
+        ::ng-deep nb-card {
+            border-radius: 0;
+        }
     }
-  }
 }
+
 .calendar-with-time {
-  overflow: hidden;
+    overflow: hidden;
 }
 
 .timepicker-section {
-  display: flex;
-  flex-direction: column;
+    display: flex;
+    flex-direction: column;
 }

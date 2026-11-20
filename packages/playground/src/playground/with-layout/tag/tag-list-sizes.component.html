@@ -1,18 +1,18 @@
 <nb-card>
-  <nb-card-body class="example-items-col">
-    @for (size of sizes; track size) {
-    <nb-tag-list (tagRemove)="onTagRemove(size, $event)">
-      @for (tag of tags[size]; track tag) {
-      <nb-tag [text]="tag"
-        removable />
-      }
-      <input type="text"
-        nbTagInput
-        [fieldSize]="size"
-        [attr.aria-label]="size + ' tags'"
-        [placeholder]="size"
-        (tagAdd)="onTagAdd(size, $event)" />
-    </nb-tag-list>
-    }
-  </nb-card-body>
+    <nb-card-body class="example-items-col">
+        @for (size of sizes; track size) {
+        <nb-tag-list (tagRemove)="onTagRemove(size, $event)">
+            @for (tag of tags[size]; track tag) {
+            <nb-tag [text]="tag"
+                removable />
+            }
+            <input type="text"
+                nbTagInput
+                [fieldSize]="size"
+                [attr.aria-label]="size + ' tags'"
+                [placeholder]="size"
+                (tagAdd)="onTagAdd(size, $event)" />
+        </nb-tag-list>
+        }
+    </nb-card-body>
 </nb-card>

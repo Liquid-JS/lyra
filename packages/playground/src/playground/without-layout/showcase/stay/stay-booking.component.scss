@@ -1,320 +1,321 @@
-@use '../../../styles/themes' as *;
+@use "../../../styles/themes" as *;
 
 :host {
-  display: block;
-  max-width: 64rem;
-  margin: 0 auto;
-  padding: 1.5rem 1.5rem 3rem;
+    display: block;
+    max-width: 64rem;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem 3rem;
 
-  @media (max-width: 767.98px) {
-    padding: 1rem 1rem 2rem;
-  }
+    @media (width <= 767.98px) {
+        padding: 1rem 1rem 2rem;
+    }
 }
 
 .back {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  margin-bottom: 1rem;
-  color: nb-theme(text-hint-color);
-  font-size: 0.875rem;
-  font-weight: 600;
-  text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    margin-bottom: 1rem;
+    color: nb-theme(text-hint-color);
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-decoration: none;
 
-  &:hover {
-    color: nb-theme(text-basic-color);
-  }
+    &:hover {
+        color: nb-theme(text-basic-color);
+    }
 }
 
 h1 {
-  margin: 0 0 1.5rem;
+    margin: 0 0 1.5rem;
 }
 
 .columns {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 20rem;
-  gap: 3rem;
-  align-items: start;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 20rem;
+    gap: 3rem;
+    align-items: start;
 
-  @media (max-width: 991.98px) {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 2rem;
+    @media (width <= 991.98px) {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 2rem;
 
-    // The summary first on a phone, so the total is in sight before the card details.
-    .side {
-      order: -1;
+        // The summary first on a phone, so the total is in sight before the card details.
+        .side {
+            order: -1;
+        }
     }
-  }
 }
 
 .main {
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
 
-  > section {
-    padding-bottom: 2rem;
-    border-bottom: 1px solid nb-theme(divider-color);
-  }
+    > section {
+        padding-bottom: 2rem;
+        border-bottom: 1px solid nb-theme(divider-color);
+    }
 
-  h2 {
-    margin: 0 0 1rem;
-  }
+    h2 {
+        margin: 0 0 1rem;
+    }
 
-  .hint {
-    margin: 0 0 1rem;
-    color: nb-theme(text-hint-color);
-  }
+    .hint {
+        margin: 0 0 1rem;
+        color: nb-theme(text-hint-color);
+    }
 }
 
 .trip {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  margin: 0;
-
-  > div {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    gap: 0.25rem 1rem;
-    align-items: center;
-  }
-
-  dt {
-    grid-column: 1;
-    font-weight: 600;
-  }
-
-  dd {
-    grid-column: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
     margin: 0;
-    color: nb-theme(text-hint-color);
-  }
 
-  a {
-    grid-column: 2;
-    grid-row: 1 / 3;
-    font-weight: 600;
-  }
+    > div {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 0.25rem 1rem;
+        align-items: center;
+    }
+
+    dt {
+        grid-column: 1;
+        font-weight: 600;
+    }
+
+    dd {
+        grid-column: 1;
+        margin: 0;
+        color: nb-theme(text-hint-color);
+    }
+
+    a {
+        grid-column: 2;
+        grid-row: 1 / 3;
+        font-weight: 600;
+    }
 }
 
 .payment {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-
-  // A title and a hint, at their own sizes and weights rather than the radio's label's.
-  .choice {
     display: flex;
     flex-direction: column;
-    gap: 0.125rem;
-    line-height: 1.4;
+    gap: 0.75rem;
 
-    strong {
-      font-size: 0.9375rem;
-      font-weight: 700;
-    }
+    // A title and a hint, at their own sizes and weights rather than the radio's label's.
+    .choice {
+        display: flex;
+        flex-direction: column;
+        gap: 0.125rem;
+        line-height: 1.4;
 
-    span {
-      color: nb-theme(text-hint-color);
-      font-size: 0.875rem;
-      font-weight: 400;
+        strong {
+            font-size: 0.9375rem;
+            font-weight: 700;
+        }
+
+        span {
+            color: nb-theme(text-hint-color);
+            font-size: 0.875rem;
+            font-weight: 400;
+        }
     }
-  }
 }
 
 .fields {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1rem;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
 
-  .wide {
-    grid-column: 1 / -1;
-  }
+    .wide {
+        grid-column: 1 / -1;
+    }
 }
 
 .field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
 }
 
 .rules {
-  margin: 0 0 1rem;
-  padding-inline-start: 1.25rem;
-  color: nb-theme(text-hint-color);
+    margin: 0 0 1rem;
+    padding-inline-start: 1.25rem;
+    color: nb-theme(text-hint-color);
 
-  li {
-    margin-bottom: 0.25rem;
-  }
+    li {
+        margin-bottom: 0.25rem;
+    }
 }
 
 .confirm {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
 
-  .hint {
-    margin: 0;
-    color: nb-theme(text-hint-color);
-    font-size: 0.875rem;
-  }
+    .hint {
+        margin: 0;
+        color: nb-theme(text-hint-color);
+        font-size: 0.875rem;
+    }
 }
 
 .side {
-  position: sticky;
-  top: 5.5rem;
+    position: sticky;
+    top: 5.5rem;
 
-  nb-card {
-    margin: 0;
-  }
+    nb-card {
+        margin: 0;
+    }
 
-  nb-card-body {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-  }
+    nb-card-body {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
 
-  h2 {
-    margin: 0;
-  }
+    h2 {
+        margin: 0;
+    }
 }
 
 .place {
-  display: flex;
-  align-items: flex-start;
-  gap: 1rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid nb-theme(divider-color);
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid nb-theme(divider-color);
 
-  img {
-    flex: none;
-    width: 6.5rem;
-    // Over the height its attribute gives, so its proportions follow its width.
-    height: auto;
-    aspect-ratio: 4 / 3;
-    object-fit: cover;
-    border-radius: nb-theme(border-radius);
-  }
+    img {
+        flex: none;
+        width: 6.5rem;
 
-  p {
-    margin: 0;
-  }
+        // Over the height its attribute gives, so its proportions follow its width.
+        height: auto;
+        aspect-ratio: 4 / 3;
+        object-fit: cover;
+        border-radius: nb-theme(border-radius);
+    }
 
-  .type {
-    color: nb-theme(text-hint-color);
-    font-size: 0.875rem;
-  }
+    p {
+        margin: 0;
+    }
 
-  .name {
-    margin-bottom: 0.25rem;
-    font-family: nb-theme(text-heading-1-font-family);
-    font-size: 1.125rem;
-    font-weight: 500;
-  }
+    .type {
+        color: nb-theme(text-hint-color);
+        font-size: 0.875rem;
+    }
+
+    .name {
+        margin-bottom: 0.25rem;
+        font-family: nb-theme(text-heading-1-font-family);
+        font-size: 1.125rem;
+        font-weight: 500;
+    }
 }
 
 .quote {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 0.5rem 1rem;
-  margin: 0;
-  font-variant-numeric: tabular-nums;
-
-  dt {
-    color: nb-theme(text-hint-color);
-  }
-
-  dd {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0.5rem 1rem;
     margin: 0;
-    text-align: end;
-  }
+    font-variant-numeric: tabular-nums;
 
-  .total {
-    padding-top: 0.5rem;
-    border-top: 1px solid nb-theme(divider-color);
-    color: nb-theme(text-basic-color);
-    font-weight: 600;
-  }
+    dt {
+        color: nb-theme(text-hint-color);
+    }
+
+    dd {
+        margin: 0;
+        text-align: end;
+    }
+
+    .total {
+        padding-top: 0.5rem;
+        border-top: 1px solid nb-theme(divider-color);
+        color: nb-theme(text-basic-color);
+        font-weight: 600;
+    }
 }
 
 .done {
-  display: flex;
-  justify-content: center;
-  padding-block: 2rem;
+    display: flex;
+    justify-content: center;
+    padding-block: 2rem;
 }
 
 .done-card {
-  max-width: 36rem;
-  margin: 0;
-
-  nb-card-body {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
-    padding: 2.5rem 2rem;
-    text-align: center;
-  }
-
-  h1,
-  p {
+    max-width: 36rem;
     margin: 0;
-  }
 
-  p {
-    color: nb-theme(text-hint-color);
-  }
-
-  .tick {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 4rem;
-    height: 4rem;
-    border-radius: 50%;
-    background: nb-theme(color-success-default);
-    color: nb-theme(text-control-color);
-    font-size: 2rem;
-
-    // Its icon at the size above, which an icon doesn't take from what holds it.
-    nb-icon {
-      font-size: inherit;
+    nb-card-body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+        padding: 2.5rem 2rem;
+        text-align: center;
     }
-  }
 
-  code {
-    font-size: 1.125rem;
-    font-weight: 600;
-    letter-spacing: 0.05em;
-  }
+    h1,
+    p {
+        margin: 0;
+    }
+
+    p {
+        color: nb-theme(text-hint-color);
+    }
+
+    .tick {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 4rem;
+        height: 4rem;
+        border-radius: 50%;
+        background: nb-theme(color-success-default);
+        color: nb-theme(text-control-color);
+        font-size: 2rem;
+
+        // Its icon at the size above, which an icon doesn't take from what holds it.
+        nb-icon {
+            font-size: inherit;
+        }
+    }
+
+    code {
+        font-size: 1.125rem;
+        font-weight: 600;
+        letter-spacing: 0.05em;
+    }
 }
 
 .summary {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 0.5rem 1.5rem;
-  width: 100%;
-  margin: 0.5rem 0;
-  padding: 1rem 1.25rem;
-  border-radius: nb-theme(border-radius);
-  background: nb-theme(background-basic-color-2);
-  text-align: start;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.5rem 1.5rem;
+    width: 100%;
+    margin: 0.5rem 0;
+    padding: 1rem 1.25rem;
+    border-radius: nb-theme(border-radius);
+    background: nb-theme(background-basic-color-2);
+    text-align: start;
 
-  dt {
-    color: nb-theme(text-hint-color);
-  }
+    dt {
+        color: nb-theme(text-hint-color);
+    }
 
-  dd {
-    margin: 0;
-    font-weight: 500;
-  }
+    dd {
+        margin: 0;
+        font-weight: 500;
+    }
 }
 
 .done-actions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0.75rem;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.75rem;
 }

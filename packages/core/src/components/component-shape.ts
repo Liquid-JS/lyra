@@ -1,1 +1,1 @@
-export type NbComponentShape = 'rectangle' | 'semi-round' | 'round';
+export type NbComponentShape = 'rectangle' | 'semi-round' | 'round'

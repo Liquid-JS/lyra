@@ -1,12 +1,12 @@
 // The default theme's tree grid and card styles, which specs don't load otherwise.
-@use '@liquid-js/lyr-core/styles/all' as *;
-@use 'tree-grid.component.theme' as tree-grid;
-@use '../card/card.component.theme' as card;
+@use "@liquid-js/lyr-core/styles/all" as *;
+@use "tree-grid.component.theme" as tree-grid;
+@use "../card/card.component.theme" as card;
 
 $nb-enabled-themes: (default);
 
-@include nb-install() {
-  @include nb-theme-base();
-  @include card.nb-card-theme();
-  @include tree-grid.nb-tree-grid-theme();
+@include nb-install {
+    @include nb-theme-base;
+    @include card.nb-card-theme;
+    @include tree-grid.nb-tree-grid-theme;
 }

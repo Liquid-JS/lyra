@@ -1,76 +1,76 @@
 <nb-card>
-  <nb-card-body>
-    <nb-stepper #stepper>
-      <nb-step [stepControl]="firstForm"
-        label="First step">
-        <form [formGroup]="firstForm"
-          (ngSubmit)="onFirstSubmit()"
-          class="step-container">
-          <p class="lorem">
-            Tell us who you are. The next step opens once your name is filled in.
-          </p>
-          <div class="input-container">
-            <input nbInput
-              type="text"
-              placeholder="Enter your name"
-              formControlName="firstCtrl"
-              [status]="firstForm.invalid && (firstForm.dirty || firstForm.touched) ? 'danger' : 'basic'">
-          </div>
-          <button nbButton
-            nbStepperNext>next</button>
-        </form>
-      </nb-step>
-      <nb-step [stepControl]="secondForm"
-        label="Second step">
-        <form [formGroup]="secondForm"
-          (ngSubmit)="onSecondSubmit()"
-          class="step-container">
-          <p class="lorem">
-            Pick a film to recommend to your team. You can go back and change your name at any point.
-          </p>
-          <div class="input-container">
-            <input nbInput
-              type="text"
-              placeholder="Enter favorite movie"
-              formControlName="secondCtrl"
-              [status]="secondForm.invalid && (secondForm.dirty || secondForm.touched) ? 'danger' : 'basic'">
-          </div>
-          <button nbButton
-            nbStepperPrevious>prev</button>
-          <button nbButton
-            nbStepperNext>next</button>
-        </form>
-      </nb-step>
-      <nb-step [stepControl]="thirdForm"
-        label="Third step">
-        <form [formGroup]="thirdForm"
-          (ngSubmit)="onThirdSubmit()"
-          class="step-container">
-          <p class="lorem">
-            Add a note for the team, then confirm to finish.
-          </p>
-          <div class="input-container">
-            <input nbInput
-              type="text"
-              placeholder="Enter something"
-              formControlName="thirdCtrl"
-              [status]="thirdForm.invalid && (thirdForm.dirty || thirdForm.touched) ? 'danger' : 'basic'">
-          </div>
-          <button nbButton
-            nbStepperPrevious>prev</button>
-          <button nbButton
-            nbStepperNext>Confirm</button>
-        </form>
-      </nb-step>
-      <nb-step [stepControl]="thirdForm"
-        [hidden]="true"
-        label="Third step">
-        <div class="step-container">
-          <h3>Wizard completed!</h3>
-          <button nbButton
-            (click)="stepper.reset()">Try again</button>
-        </div>
-      </nb-step>
-    </nb-stepper>
-  </nb-card-body>
+    <nb-card-body>
+        <nb-stepper #stepper>
+            <nb-step [stepControl]="firstForm"
+                label="First step">
+                <form [formGroup]="firstForm"
+                    (ngSubmit)="onFirstSubmit()"
+                    class="step-container">
+                    <p class="lorem">
+                        Tell us who you are. The next step opens once your name is filled in.
+                    </p>
+                    <div class="input-container">
+                        <input nbInput
+                            type="text"
+                            placeholder="Enter your name"
+                            formControlName="firstCtrl"
+                            [status]="firstForm.invalid && (firstForm.dirty || firstForm.touched) ? 'danger' : 'basic'">
+                    </div>
+                    <button nbButton
+                        nbStepperNext>next</button>
+                </form>
+            </nb-step>
+            <nb-step [stepControl]="secondForm"
+                label="Second step">
+                <form [formGroup]="secondForm"
+                    (ngSubmit)="onSecondSubmit()"
+                    class="step-container">
+                    <p class="lorem">
+                        Pick a film to recommend to your team. You can go back and change your name at any point.
+                    </p>
+                    <div class="input-container">
+                        <input nbInput
+                            type="text"
+                            placeholder="Enter favorite movie"
+                            formControlName="secondCtrl"
+                            [status]="secondForm.invalid && (secondForm.dirty || secondForm.touched) ? 'danger' : 'basic'">
+                    </div>
+                    <button nbButton
+                        nbStepperPrevious>prev</button>
+                    <button nbButton
+                        nbStepperNext>next</button>
+                </form>
+            </nb-step>
+            <nb-step [stepControl]="thirdForm"
+                label="Third step">
+                <form [formGroup]="thirdForm"
+                    (ngSubmit)="onThirdSubmit()"
+                    class="step-container">
+                    <p class="lorem">
+                        Add a note for the team, then confirm to finish.
+                    </p>
+                    <div class="input-container">
+                        <input nbInput
+                            type="text"
+                            placeholder="Enter something"
+                            formControlName="thirdCtrl"
+                            [status]="thirdForm.invalid && (thirdForm.dirty || thirdForm.touched) ? 'danger' : 'basic'">
+                    </div>
+                    <button nbButton
+                        nbStepperPrevious>prev</button>
+                    <button nbButton
+                        nbStepperNext>Confirm</button>
+                </form>
+            </nb-step>
+            <nb-step [stepControl]="thirdForm"
+                [hidden]="true"
+                label="Third step">
+                <div class="step-container">
+                    <h3>Wizard completed!</h3>
+                    <button nbButton
+                        (click)="stepper.reset()">Try again</button>
+                </div>
+            </nb-step>
+        </nb-stepper>
+    </nb-card-body>
 </nb-card>

@@ -1,37 +1,37 @@
+import { createRequire } from 'node:module'
 import {
-  getProjectFromWorkspace,
-  getProjectTargetOptions,
-  getAppModulePath,
-  getProjectMainFile,
-} from '@angular/cdk/schematics';
-import { Tree } from '@angular-devkit/schematics';
-import { SchematicTestRunner, UnitTestTree } from '@angular-devkit/schematics/testing';
+    getProjectFromWorkspace,
+    getProjectTargetOptions,
+    getAppModulePath,
+    getProjectMainFile
+} from '@angular/cdk/schematics'
+import { Tree } from '@angular-devkit/schematics'
+import { SchematicTestRunner, UnitTestTree } from '@angular-devkit/schematics/testing'
 
-import { getWorkspace } from '@schematics/angular/utility/workspace';
-import { Schema as WorkspaceOptions } from '@schematics/angular/workspace/schema';
-import { Schema as ApplicationOptions, Style } from '@schematics/angular/application/schema';
+import { getWorkspace } from '@schematics/angular/utility/workspace'
+import { Schema as WorkspaceOptions } from '@schematics/angular/workspace/schema'
+import { Schema as ApplicationOptions, Style } from '@schematics/angular/application/schema'
 
-import { Schema as NgAddOptions } from './schema.js';
-import { createRequire } from 'node:module';
+import { Schema as NgAddOptions } from './schema.js'
 
-const require = createRequire(import.meta.url);
+const require = createRequire(import.meta.url)
 
 const workspaceOptions: WorkspaceOptions = {
-  name: 'workspace',
-  newProjectRoot: 'projects',
-  version: '7.0.0',
-};
+    name: 'workspace',
+    newProjectRoot: 'projects',
+    version: '7.0.0'
+}
 
 const defaultAppOptions: ApplicationOptions = {
-  name: 'app',
-  inlineStyle: false,
-  inlineTemplate: false,
-  routing: false,
-  style: Style.Scss,
-  skipTests: false,
-  skipPackageJson: false,
-  standalone: false,
-};
+    name: 'app',
+    inlineStyle: false,
+    inlineTemplate: false,
+    routing: false,
+    style: Style.Scss,
+    skipTests: false,
+    skipPackageJson: false,
+    standalone: false
+}
 
 const EXPECTED_STYLES_SCSS = `@use 'themes' as *;
 
@@ -40,7 +40,7 @@ const EXPECTED_STYLES_SCSS = `@use 'themes' as *;
 @include nb-install() {
   @include nb-theme-global();
 };
-`;
+`
 
 const EXPECTED_THEME_SCSS = `@forward '@liquid-js/lyr-core/styles/theming';
 @use '@liquid-js/lyr-core/styles/theming' as *;
@@ -61,293 +61,293 @@ $nb-themes: nb-register-theme((
   // color-primary-900: #0c225b,
 
 ), default, default);
-`;
+`
 
 async function createTestWorkspace(runner: SchematicTestRunner, appOptions: Partial<ApplicationOptions> = {}) {
-  const workspace: UnitTestTree = await runner.runExternalSchematic(
-    '@schematics/angular',
-    'workspace',
-    workspaceOptions,
-  );
-  const options = { ...defaultAppOptions, ...appOptions };
-  return runner.runExternalSchematic('@schematics/angular', 'application', options, workspace);
+    const workspace: UnitTestTree = await runner.runExternalSchematic(
+        '@schematics/angular',
+        'workspace',
+        workspaceOptions
+    )
+    const options = { ...defaultAppOptions, ...appOptions }
+    return runner.runExternalSchematic('@schematics/angular', 'application', options, workspace)
 }
 
 function getPackageDependencies(tree: Tree): any {
-  const packageJson = JSON.parse(tree.readText('/package.json'));
-  return packageJson.dependencies;
+    const packageJson = JSON.parse(tree.readText('/package.json'))
+    return packageJson.dependencies
 }
 
 async function getAppModuleContent(tree: UnitTestTree): Promise<string> {
-  const workspace = await getWorkspace(tree);
-  const project = getProjectFromWorkspace(workspace, 'app');
-  const appModulePath = getAppModulePath(tree, getProjectMainFile(project));
-  return tree.readContent(appModulePath);
+    const workspace = await getWorkspace(tree)
+    const project = getProjectFromWorkspace(workspace, 'app')
+    const appModulePath = getAppModulePath(tree, getProjectMainFile(project))
+    return tree.readContent(appModulePath)
 }
 
 describe('ng-add', () => {
-  let runner: SchematicTestRunner;
-  let appTree: Tree;
+    let runner: SchematicTestRunner
+    let appTree: Tree
 
-  function runNgAddSchematic(options: Partial<NgAddOptions> = {}) {
-    return runner.runSchematic('ng-add', { project: 'app', ...options }, appTree);
-  }
+    function runNgAddSchematic(options: Partial<NgAddOptions> = {}) {
+        return runner.runSchematic('ng-add', { project: 'app', ...options }, appTree)
+    }
 
-  function runSetupSchematic(options: Partial<NgAddOptions> = {}) {
-    return runner.runSchematic('setup', { project: 'app', ...options }, appTree);
-  }
+    function runSetupSchematic(options: Partial<NgAddOptions> = {}) {
+        return runner.runSchematic('setup', { project: 'app', ...options }, appTree)
+    }
 
-  function runPostInstallSchematic(options: Partial<NgAddOptions> = {}) {
-    return runner.runSchematic('post-install', { project: 'app', ...options }, appTree);
-  }
-
-  beforeEach(async () => {
-    const collectionPath = require.resolve('../collection.json');
-    runner = new SchematicTestRunner('schematics', collectionPath);
-
-    appTree = await createTestWorkspace(runner);
-  });
-
-  describe('ng-add', () => {
-    let tree: UnitTestTree;
+    function runPostInstallSchematic(options: Partial<NgAddOptions> = {}) {
+        return runner.runSchematic('post-install', { project: 'app', ...options }, appTree)
+    }
 
     beforeEach(async () => {
-      tree = await runNgAddSchematic();
-    });
+        const collectionPath = require.resolve('../collection.json')
+        runner = new SchematicTestRunner('schematics', collectionPath)
 
-    it('should add @angular/cdk in package.json', () => {
-      const dependencies = getPackageDependencies(tree);
-      const angularCdkVersion = require('../../package.json').peerDependencies['@angular/cdk'];
+        appTree = await createTestWorkspace(runner)
+    })
 
-      expect(dependencies['@angular/cdk']).toBeDefined();
-      expect(dependencies['@angular/cdk']).toBe(angularCdkVersion);
-    });
+    describe('ng-add', () => {
+        let tree: UnitTestTree
 
-    it('should add @liquid-js/lyr-core in package.json', function () {
-      const dependencies = getPackageDependencies(tree);
-      const lyraVersion = require('../../package.json').version;
+        beforeEach(async () => {
+            tree = await runNgAddSchematic()
+        })
 
-      expect(dependencies['@liquid-js/lyr-core']).toBeDefined();
-      expect(dependencies['@liquid-js/lyr-core']).toBe(lyraVersion);
-    });
+        it('should add @angular/cdk in package.json', () => {
+            const dependencies = getPackageDependencies(tree)
+            const angularCdkVersion = require('../../package.json').peerDependencies['@angular/cdk']
 
-    it('should add @liquid-js/lyr-icons in package.json', async () => {
-      let dependencies = getPackageDependencies(tree);
-      const iconsVersion = require('../../package.json').version;
+            expect(dependencies['@angular/cdk']).toBeDefined()
+            expect(dependencies['@angular/cdk']).toBe(angularCdkVersion)
+        })
 
-      expect(dependencies['@liquid-js/lyr-icons']).toBeDefined();
-      expect(dependencies['@liquid-js/lyr-icons']).toBe(iconsVersion);
+        it('should add @liquid-js/lyr-core in package.json', () => {
+            const dependencies = getPackageDependencies(tree)
+            const lyraVersion = require('../../package.json').version
 
-      const updatedTree = await runPostInstallSchematic();
-      dependencies = getPackageDependencies(updatedTree);
+            expect(dependencies['@liquid-js/lyr-core']).toBeDefined()
+            expect(dependencies['@liquid-js/lyr-core']).toBe(lyraVersion)
+        })
 
-      // The icons ship with @liquid-js/lyr-icons.
-      expect(dependencies['eva-icons']).toBeUndefined();
-    });
-  });
+        it('should add @liquid-js/lyr-icons in package.json', async () => {
+            let dependencies = getPackageDependencies(tree)
+            const iconsVersion = require('../../package.json').version
 
-  it('should register NbThemeModule.forRoot()', async () => {
-    const tree = await runSetupSchematic();
-    const appModuleContent = await getAppModuleContent(tree);
-    expect(appModuleContent).toContain(`NbThemeModule.forRoot({ name: 'default' })`);
-  });
+            expect(dependencies['@liquid-js/lyr-icons']).toBeDefined()
+            expect(dependencies['@liquid-js/lyr-icons']).toBe(iconsVersion)
 
-  it('should register NbThemeModule with specified theme', async () => {
-    const tree = await runSetupSchematic({ theme: 'cosmic' });
-    const appModuleContent = await getAppModuleContent(tree);
+            const updatedTree = await runPostInstallSchematic()
+            dependencies = getPackageDependencies(updatedTree)
 
-    expect(appModuleContent).toContain(`NbThemeModule.forRoot({ name: 'cosmic' })`);
-  });
+            // The icons ship with @liquid-js/lyr-icons.
+            expect(dependencies['eva-icons']).toBeUndefined()
+        })
+    })
 
-  it('should register NbLayoutModule', async () => {
-    const tree = await runSetupSchematic();
-    const appModuleContent = await getAppModuleContent(tree);
+    it('should register NbThemeModule.forRoot()', async () => {
+        const tree = await runSetupSchematic()
+        const appModuleContent = await getAppModuleContent(tree)
+        expect(appModuleContent).toContain('NbThemeModule.forRoot({ name: \'default\' })')
+    })
 
-    expect(appModuleContent).toContain(`NbLayoutModule`);
-  });
+    it('should register NbThemeModule with specified theme', async () => {
+        const tree = await runSetupSchematic({ theme: 'cosmic' })
+        const appModuleContent = await getAppModuleContent(tree)
 
-  it('should create AppRoutingModule if no Router already registered', async () => {
-    const tree = await runSetupSchematic();
-    const appModuleContent = await getAppModuleContent(tree);
+        expect(appModuleContent).toContain('NbThemeModule.forRoot({ name: \'cosmic\' })')
+    })
 
-    expect(appModuleContent).toContain(`AppRoutingModule`);
-    expect(tree.files).toContain('/projects/app/src/app/app-routing.module.ts');
-  });
+    it('should register NbLayoutModule', async () => {
+        const tree = await runSetupSchematic()
+        const appModuleContent = await getAppModuleContent(tree)
 
-  it('should register inline theme if no theme already registered', async () => {
-    const tree = await runSetupSchematic({ customization: false });
-    const workspace = await getWorkspace(tree);
-    const project = getProjectFromWorkspace(workspace, 'app');
-    const styles = getProjectTargetOptions(project, 'build')['styles'];
+        expect(appModuleContent).toContain('NbLayoutModule')
+    })
 
-    expect(styles).toContain('./node_modules/@liquid-js/lyr-core/styles/prebuilt/default.css');
-  });
+    it('should create AppRoutingModule if no Router already registered', async () => {
+        const tree = await runSetupSchematic()
+        const appModuleContent = await getAppModuleContent(tree)
 
-  it('should create theme.scss and plug it into the project', async () => {
-    appTree = await createTestWorkspace(runner, { style: Style.Scss });
-    const tree = await runSetupSchematic({ customization: true });
-    const styles = tree.readContent('/projects/app/src/styles.scss');
-    const themes = tree.readContent('/projects/app/src/themes.scss');
+        expect(appModuleContent).toContain('AppRoutingModule')
+        expect(tree.files).toContain('/projects/app/src/app/app-routing.module.ts')
+    })
 
-    expect(styles).toContain(EXPECTED_STYLES_SCSS);
-    expect(themes).toContain(EXPECTED_THEME_SCSS);
-  });
+    it('should register inline theme if no theme already registered', async () => {
+        const tree = await runSetupSchematic({ customization: false })
+        const workspace = await getWorkspace(tree)
+        const project = getProjectFromWorkspace(workspace, 'app')
+        const styles = getProjectTargetOptions(project, 'build')['styles']
 
-  it('should throw error if adding scss themes in css project', async () => {
-    appTree = await createTestWorkspace(runner, { style: Style.Css });
+        expect(styles).toContain('./node_modules/@liquid-js/lyr-core/styles/prebuilt/default.css')
+    })
 
-    await expect(runSetupSchematic({ customization: true })).rejects.toThrow();
-  });
+    it('should create theme.scss and plug it into the project', async () => {
+        appTree = await createTestWorkspace(runner, { style: Style.Scss })
+        const tree = await runSetupSchematic({ customization: true })
+        const styles = tree.readContent('/projects/app/src/styles.scss')
+        const themes = tree.readContent('/projects/app/src/themes.scss')
 
-  it('should wrap the root component template in nb-layout', async () => {
-    const tree = await runSetupSchematic();
-    const template = tree.readContent('/projects/app/src/app/app.html');
+        expect(styles).toContain(EXPECTED_STYLES_SCSS)
+        expect(themes).toContain(EXPECTED_THEME_SCSS)
+    })
 
-    expect(template).toMatch(/^<nb-layout>/);
-    expect(template).toContain('<nb-layout-column>');
-  });
+    it('should throw error if adding scss themes in css project', async () => {
+        appTree = await createTestWorkspace(runner, { style: Style.Css })
 
-  describe('standalone app', () => {
-    const appPath = '/projects/app/src/app/app.ts';
-    const appConfigPath = '/projects/app/src/app/app.config.ts';
-    const mainPath = '/projects/app/src/main.ts';
+        await expect(runSetupSchematic({ customization: true })).rejects.toThrow()
+    })
 
-    beforeEach(async () => {
-      appTree = await createTestWorkspace(runner, { standalone: true });
-    });
+    it('should wrap the root component template in nb-layout', async () => {
+        const tree = await runSetupSchematic()
+        const template = tree.readContent('/projects/app/src/app/app.html')
 
-    it('should provide the theme in the app config', async () => {
-      const tree = await runSetupSchematic();
-      const appConfig = tree.readContent(appConfigPath);
+        expect(template).toMatch(/^<nb-layout>/)
+        expect(template).toContain('<nb-layout-column>')
+    })
 
-      expect(appConfig).toContain(`provideNbTheme({ name: 'default' })`);
-      expect(appConfig).toMatch(/import \{ provideNbTheme \} from '@liquid-js\/lyr-core';/);
-    });
+    describe('standalone app', () => {
+        const appPath = '/projects/app/src/app/app.ts'
+        const appConfigPath = '/projects/app/src/app/app.config.ts'
+        const mainPath = '/projects/app/src/main.ts'
 
-    it('should provide the specified theme', async () => {
-      const tree = await runSetupSchematic({ theme: 'cosmic' });
+        beforeEach(async () => {
+            appTree = await createTestWorkspace(runner, { standalone: true })
+        })
 
-      expect(tree.readContent(appConfigPath)).toContain(`provideNbTheme({ name: 'cosmic' })`);
-    });
+        it('should provide the theme in the app config', async () => {
+            const tree = await runSetupSchematic()
+            const appConfig = tree.readContent(appConfigPath)
 
-    it('should provide the icons', async () => {
-      const tree = await runSetupSchematic();
-      const appConfig = tree.readContent(appConfigPath);
+            expect(appConfig).toContain('provideNbTheme({ name: \'default\' })')
+            expect(appConfig).toMatch(/import \{ provideNbTheme \} from '@liquid-js\/lyr-core';/)
+        })
 
-      expect(appConfig).toContain('provideNbIcons()');
-      expect(appConfig).toMatch(/import \{ provideNbIcons \} from '@liquid-js\/lyr-icons';/);
-    });
+        it('should provide the specified theme', async () => {
+            const tree = await runSetupSchematic({ theme: 'cosmic' })
 
-    it('should provide the router if the app has none', async () => {
-      const tree = await runSetupSchematic();
-      const appConfig = tree.readContent(appConfigPath);
+            expect(tree.readContent(appConfigPath)).toContain('provideNbTheme({ name: \'cosmic\' })')
+        })
 
-      expect(appConfig).toContain('provideRouter([])');
-      expect(appConfig).toMatch(/import \{ provideRouter \} from '@angular\/router';/);
-    });
+        it('should provide the icons', async () => {
+            const tree = await runSetupSchematic()
+            const appConfig = tree.readContent(appConfigPath)
 
-    it('should keep the router the app provides', async () => {
-      appTree = await createTestWorkspace(runner, { standalone: true, routing: true });
-      const tree = await runSetupSchematic();
-      const appConfig = tree.readContent(appConfigPath);
+            expect(appConfig).toContain('provideNbIcons()')
+            expect(appConfig).toMatch(/import \{ provideNbIcons \} from '@liquid-js\/lyr-icons';/)
+        })
 
-      expect(appConfig).toContain('provideRouter(routes)');
-      expect(appConfig).not.toContain('provideRouter([])');
-    });
+        it('should provide the router if the app has none', async () => {
+            const tree = await runSetupSchematic()
+            const appConfig = tree.readContent(appConfigPath)
 
-    it('should not register modules or create AppRoutingModule', async () => {
-      const tree = await runSetupSchematic();
+            expect(appConfig).toContain('provideRouter([])')
+            expect(appConfig).toMatch(/import \{ provideRouter \} from '@angular\/router';/)
+        })
 
-      expect(tree.readContent(appConfigPath)).not.toContain('Module');
-      expect(tree.readContent(mainPath)).not.toContain('Module');
-      expect(tree.files).not.toContain('/projects/app/src/app/app-routing.module.ts');
-    });
+        it('should keep the router the app provides', async () => {
+            appTree = await createTestWorkspace(runner, { standalone: true, routing: true })
+            const tree = await runSetupSchematic()
+            const appConfig = tree.readContent(appConfigPath)
 
-    it('should add the providers to bootstrapApplication without an app config', async () => {
-      appTree.overwrite(mainPath, `import { bootstrapApplication } from '@angular/platform-browser';
+            expect(appConfig).toContain('provideRouter(routes)')
+            expect(appConfig).not.toContain('provideRouter([])')
+        })
+
+        it('should not register modules or create AppRoutingModule', async () => {
+            const tree = await runSetupSchematic()
+
+            expect(tree.readContent(appConfigPath)).not.toContain('Module')
+            expect(tree.readContent(mainPath)).not.toContain('Module')
+            expect(tree.files).not.toContain('/projects/app/src/app/app-routing.module.ts')
+        })
+
+        it('should add the providers to bootstrapApplication without an app config', async () => {
+            appTree.overwrite(mainPath, `import { bootstrapApplication } from '@angular/platform-browser';
 import { App } from './app/app';
 
 bootstrapApplication(App)
   .catch((err) => console.error(err));
-`);
-      const tree = await runSetupSchematic();
-      const main = tree.readContent(mainPath);
+`)
+            const tree = await runSetupSchematic()
+            const main = tree.readContent(mainPath)
 
-      expect(main).toContain(`provideNbTheme({ name: 'default' })`);
-      expect(main).toContain('provideNbIcons()');
-      expect(main).toContain('provideRouter([])');
-      expect(main).toContain(`from '@liquid-js/lyr-core'`);
-    });
+            expect(main).toContain('provideNbTheme({ name: \'default\' })')
+            expect(main).toContain('provideNbIcons()')
+            expect(main).toContain('provideRouter([])')
+            expect(main).toContain('from \'@liquid-js/lyr-core\'')
+        })
 
-    it('should wrap the root component template in nb-layout', async () => {
-      const tree = await runSetupSchematic();
-      const template = tree.readContent('/projects/app/src/app/app.html');
+        it('should wrap the root component template in nb-layout', async () => {
+            const tree = await runSetupSchematic()
+            const template = tree.readContent('/projects/app/src/app/app.html')
 
-      expect(template).toMatch(/^<nb-layout>/);
-      expect(template).toContain('<nb-layout-header fixed>');
-      expect(template).toContain('<nb-layout-column>');
-      expect(template).toContain('<nb-layout-footer fixed>');
-    });
+            expect(template).toMatch(/^<nb-layout>/)
+            expect(template).toContain('<nb-layout-header fixed>')
+            expect(template).toContain('<nb-layout-column>')
+            expect(template).toContain('<nb-layout-footer fixed>')
+        })
 
-    it('should wrap an inline template in nb-layout', async () => {
-      appTree = await createTestWorkspace(runner, { standalone: true, inlineTemplate: true });
-      const tree = await runSetupSchematic();
-      const app = tree.readContent(appPath);
+        it('should wrap an inline template in nb-layout', async () => {
+            appTree = await createTestWorkspace(runner, { standalone: true, inlineTemplate: true })
+            const tree = await runSetupSchematic()
+            const app = tree.readContent(appPath)
 
-      expect(app).toMatch(/template: `\n {4}<nb-layout>/);
-      expect(app).toContain('<h1>Hello, {{ title() }}</h1>');
-      expect(app).toContain('NbLayoutComponent');
-    });
+            expect(app).toMatch(/template: `\n {4}<nb-layout>/)
+            expect(app).toContain('<h1>Hello, {{ title() }}</h1>')
+            expect(app).toContain('NbLayoutComponent')
+        })
 
-    it('should import the layout components into the root component', async () => {
-      const tree = await runSetupSchematic();
-      const app = tree.readContent(appPath);
+        it('should import the layout components into the root component', async () => {
+            const tree = await runSetupSchematic()
+            const app = tree.readContent(appPath)
 
-      expect(app).toContain(
-        'imports: [NbLayoutComponent, NbLayoutHeaderComponent, NbLayoutColumnComponent, NbLayoutFooterComponent]',
-      );
-      expect(app).toMatch(new RegExp(
-        'import \\{ NbLayoutComponent, NbLayoutHeaderComponent, NbLayoutColumnComponent, NbLayoutFooterComponent \\} ' +
-        `from '@liquid-js/lyr-core';`,
-      ));
-    });
+            expect(app).toContain(
+                'imports: [NbLayoutComponent, NbLayoutHeaderComponent, NbLayoutColumnComponent, NbLayoutFooterComponent]'
+            )
+            expect(app).toMatch(new RegExp(
+                'import \\{ NbLayoutComponent, NbLayoutHeaderComponent, NbLayoutColumnComponent, NbLayoutFooterComponent \\} ' +
+        'from \'@liquid-js/lyr-core\';'
+            ))
+        })
 
-    it('should keep the imports the root component has', async () => {
-      appTree = await createTestWorkspace(runner, { standalone: true, routing: true });
-      const tree = await runSetupSchematic();
+        it('should keep the imports the root component has', async () => {
+            appTree = await createTestWorkspace(runner, { standalone: true, routing: true })
+            const tree = await runSetupSchematic()
 
-      expect(tree.readContent(appPath)).toContain(
-        'imports: [RouterOutlet, NbLayoutComponent, NbLayoutHeaderComponent, NbLayoutColumnComponent, NbLayoutFooterComponent]',
-      );
-    });
+            expect(tree.readContent(appPath)).toContain(
+                'imports: [RouterOutlet, NbLayoutComponent, NbLayoutHeaderComponent, NbLayoutColumnComponent, NbLayoutFooterComponent]'
+            )
+        })
 
-    it('should add an imports array to a root component without one', async () => {
-      appTree.overwrite(appPath, appTree.readText(appPath).replace(/\n\s*imports: \[\],/, ''));
-      const tree = await runSetupSchematic();
+        it('should add an imports array to a root component without one', async () => {
+            appTree.overwrite(appPath, appTree.readText(appPath).replace(/\n\s*imports: \[\],/, ''))
+            const tree = await runSetupSchematic()
 
-      expect(tree.readContent(appPath)).toMatch(/templateUrl: '\.\/app\.html',\n {2}imports: \[NbLayoutComponent, /);
-    });
+            expect(tree.readContent(appPath)).toMatch(/templateUrl: '\.\/app\.html',\n {2}imports: \[NbLayoutComponent, /)
+        })
 
-    it('should not add the providers or imports twice', async () => {
-      appTree = await runSetupSchematic({ customization: false });
-      const tree = await runSetupSchematic({ customization: false });
-      const appConfig = tree.readContent(appConfigPath);
-      const app = tree.readContent(appPath);
+        it('should not add the providers or imports twice', async () => {
+            appTree = await runSetupSchematic({ customization: false })
+            const tree = await runSetupSchematic({ customization: false })
+            const appConfig = tree.readContent(appConfigPath)
+            const app = tree.readContent(appPath)
 
-      expect(appConfig.match(/provideNbTheme\(/g)).toHaveLength(1);
-      expect(appConfig.match(/provideNbIcons\(/g)).toHaveLength(1);
-      expect(appConfig.match(/provideRouter\(/g)).toHaveLength(1);
-      expect(app.match(/NbLayoutComponent/g)).toHaveLength(2);
-    });
+            expect(appConfig.match(/provideNbTheme\(/g)).toHaveLength(1)
+            expect(appConfig.match(/provideNbIcons\(/g)).toHaveLength(1)
+            expect(appConfig.match(/provideRouter\(/g)).toHaveLength(1)
+            expect(app.match(/NbLayoutComponent/g)).toHaveLength(2)
+        })
 
-    it('should leave the root component as it is without the layout', async () => {
-      const app = appTree.readText(appPath);
-      const template = appTree.readText('/projects/app/src/app/app.html');
-      const tree = await runSetupSchematic({ layout: false });
+        it('should leave the root component as it is without the layout', async () => {
+            const app = appTree.readText(appPath)
+            const template = appTree.readText('/projects/app/src/app/app.html')
+            const tree = await runSetupSchematic({ layout: false })
 
-      expect(tree.readContent(appPath)).toBe(app);
-      expect(tree.readContent('/projects/app/src/app/app.html')).toBe(template);
-    });
-  });
+            expect(tree.readContent(appPath)).toBe(app)
+            expect(tree.readContent('/projects/app/src/app/app.html')).toBe(template)
+        })
+    })
 
-});
+})

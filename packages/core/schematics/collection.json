@@ -1,19 +1,19 @@
 {
-  "$schema": "../node_modules/@angular-devkit/schematics/collection-schema.json",
-  "schematics": {
-    "ng-add": {
-      "description": "Adds Lyra Theme to the application.",
-      "factory": "./ng-add/index#ngAdd",
-      "schema": "./ng-add/schema.json"
-    },
-    "post-install": {
-      "description": "Adds Lyra Theme to the application.",
-      "factory": "./ng-add/post-install#postInstall"
-    },
-    "setup": {
-      "description": "Sets up the specified project after the ng-add dependencies have been installed.",
-      "factory": "./ng-add/setup#setup",
-      "schema": "./ng-add/schema.json"
+    "$schema": "../node_modules/@angular-devkit/schematics/collection-schema.json",
+    "schematics": {
+        "ng-add": {
+            "description": "Adds Lyra Theme to the application.",
+            "factory": "./ng-add/index#ngAdd",
+            "schema": "./ng-add/schema.json"
+        },
+        "post-install": {
+            "description": "Adds Lyra Theme to the application.",
+            "factory": "./ng-add/post-install#postInstall"
+        },
+        "setup": {
+            "description": "Sets up the specified project after the ng-add dependencies have been installed.",
+            "factory": "./ng-add/setup#setup",
+            "schema": "./ng-add/schema.json"
+        }
     }
-  }
 }

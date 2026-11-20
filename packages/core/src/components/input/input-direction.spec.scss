@@ -1,10 +1,10 @@
 // The default theme's input styles, which specs don't load otherwise.
-@use '@liquid-js/lyr-core/styles/all' as *;
-@use 'input.directive.theme' as input;
+@use "@liquid-js/lyr-core/styles/all" as *;
+@use "input.directive.theme" as input;
 
 $nb-enabled-themes: (default);
 
-@include nb-install() {
-  @include nb-theme-base();
-  @include input.nb-input-theme();
+@include nb-install {
+    @include nb-theme-base;
+    @include input.nb-input-theme;
 }

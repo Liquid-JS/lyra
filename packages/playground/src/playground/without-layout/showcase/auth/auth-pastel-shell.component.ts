@@ -1,16 +1,16 @@
-import { Component, signal } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
-import { NbLayoutColumnComponent, NbLayoutComponent } from '@liquid-js/lyr-core';
+import { Component, signal } from '@angular/core'
+import { RouterOutlet } from '@angular/router'
+import { NbLayoutColumnComponent, NbLayoutComponent } from '@liquid-js/lyr-core'
 
-import { AuthPanel, AuthPanelComponent } from './parts/auth-panel.component';
+import { AuthPanel, AuthPanelComponent } from './parts/auth-panel.component'
 
 /**
  * A light, friendly frame for the sign-in pages: the page's card on soft shapes in the theme's colours, with a word
  * from a customer below it.
  */
 @Component({
-  selector: 'npg-auth-pastel-shell',
-  template: `
+    selector: 'npg-auth-pastel-shell',
+    template: `
     <nb-layout>
       <nb-layout-column class="column">
         <div class="ground">
@@ -25,7 +25,7 @@ import { AuthPanel, AuthPanelComponent } from './parts/auth-panel.component';
       </nb-layout-column>
     </nb-layout>
   `,
-  styles: `
+    styles: `
     // The frame fills the screen, without the layout's padding at any width.
     nb-layout {
       --layout-padding: 0;
@@ -116,8 +116,8 @@ import { AuthPanel, AuthPanelComponent } from './parts/auth-panel.component';
       }
     }
   `,
-  imports: [AuthPanelComponent, NbLayoutComponent, NbLayoutColumnComponent, RouterOutlet],
+    imports: [AuthPanelComponent, NbLayoutComponent, NbLayoutColumnComponent, RouterOutlet]
 })
 export class AuthPastelShellComponent {
-  protected readonly panel = signal<AuthPanel>('tagline');
+    protected readonly panel = signal<AuthPanel>('tagline')
 }

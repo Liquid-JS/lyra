@@ -1,117 +1,117 @@
 <div class="page-header">
-  <h1 class="h4">Customers</h1>
-  <div class="tools">
-    <nb-form-field>
-      <nb-icon nbPrefix
-        icon="search-outline" />
-      <input nbInput
-        type="search"
-        placeholder="Search customers"
-        aria-label="Search customers"
-        (input)="search($any($event.target).value)" />
-    </nb-form-field>
-    <a nbButton
-      status="primary"
-      routerLink="../customers/edit">
-      <nb-icon icon="plus-outline" />
-      Add customer
-    </a>
-  </div>
+    <h1 class="h4">Customers</h1>
+    <div class="tools">
+        <nb-form-field>
+            <nb-icon nbPrefix
+                icon="search-outline" />
+            <input nbInput
+                type="search"
+                placeholder="Search customers"
+                aria-label="Search customers"
+                (input)="search($any($event.target).value)" />
+        </nb-form-field>
+        <a nbButton
+            status="primary"
+            routerLink="../customers/edit">
+            <nb-icon icon="plus-outline" />
+            Add customer
+        </a>
+    </div>
 </div>
 
 <nb-card>
-  <nb-card-header>Customer list</nb-card-header>
-  <div class="table">
-    <table nbTable
-      [dataSource]="source"
-      [nbSort]="source">
-      <nb-select-column />
-      <ng-container nbColumnDef="name">
-        <th nbHeaderCell
-          nbSortHeader
-          *nbHeaderCellDef>Name</th>
-        <td nbCell
-          *nbCellDef="let customer; of: source">
-          <nb-user [name]="customer.name"
-            [title]="customer.email"
-            [picture]="customer.photo" />
-        </td>
-      </ng-container>
-      <ng-container nbColumnDef="company">
-        <th nbHeaderCell
-          nbSortHeader
-          *nbHeaderCellDef>Company</th>
-        <td nbCell
-          *nbCellDef="let customer; of: source">
-          <span class="company">
-            @if (customer.logo) {
-            <npg-showcase-logo colour="mono"
-              [name]="customer.logo" />
-            } @else {
-            <span class="company-initial"
-              aria-hidden="true">{{ customer.company[0] }}</span>
-            }
-            {{ customer.company }}
-          </span>
-        </td>
-      </ng-container>
-      <ng-container nbColumnDef="location">
-        <th nbHeaderCell
-          nbSortHeader
-          *nbHeaderCellDef>Location</th>
-        <td nbCell
-          *nbCellDef="let customer; of: source">{{ customer.location }}</td>
-      </ng-container>
-      <ng-container nbColumnDef="phone">
-        <th nbHeaderCell
-          *nbHeaderCellDef>Phone</th>
-        <td nbCell
-          *nbCellDef="let customer; of: source">{{ customer.phone }}</td>
-      </ng-container>
-      <ng-container nbColumnDef="status">
-        <th nbHeaderCell
-          nbSortHeader
-          *nbHeaderCellDef>Status</th>
-        <td nbCell
-          *nbCellDef="let customer; of: source">
-          <nb-tag appearance="outline"
-            size="tiny"
-            [status]="status[customer.status]"
-            [text]="customer.status" />
-        </td>
-      </ng-container>
-      <ng-container nbColumnDef="actions">
-        <th nbHeaderCell
-          *nbHeaderCellDef><span class="visually-hidden">Actions</span></th>
-        <td nbCell
-          class="actions"
-          *nbCellDef="let customer; of: source">
-          <a nbButton
-            ghost
-            size="small"
-            routerLink="../customers/edit"
-            [attr.aria-label]="'Edit ' + customer.name">
-            <nb-icon icon="edit-2-outline" />
-          </a>
-          <button nbButton
-            ghost
-            size="small"
-            type="button"
-            [attr.aria-label]="'More for ' + customer.name"
-            [nbContextMenu]="actions">
-            <nb-icon icon="more-horizontal-outline" />
-          </button>
-        </td>
-      </ng-container>
+    <nb-card-header>Customer list</nb-card-header>
+    <div class="table">
+        <table nbTable
+            [dataSource]="source"
+            [nbSort]="source">
+            <nb-select-column />
+            <ng-container nbColumnDef="name">
+                <th nbHeaderCell
+                    nbSortHeader
+                    *nbHeaderCellDef>Name</th>
+                <td nbCell
+                    *nbCellDef="let customer; of: source">
+                    <nb-user [name]="customer.name"
+                        [title]="customer.email"
+                        [picture]="customer.photo" />
+                </td>
+            </ng-container>
+            <ng-container nbColumnDef="company">
+                <th nbHeaderCell
+                    nbSortHeader
+                    *nbHeaderCellDef>Company</th>
+                <td nbCell
+                    *nbCellDef="let customer; of: source">
+                    <span class="company">
+                        @if (customer.logo) {
+                        <npg-showcase-logo colour="mono"
+                            [name]="customer.logo" />
+                        } @else {
+                        <span class="company-initial"
+                            aria-hidden="true">{{ customer.company[0] }}</span>
+                        }
+                        {{ customer.company }}
+                    </span>
+                </td>
+            </ng-container>
+            <ng-container nbColumnDef="location">
+                <th nbHeaderCell
+                    nbSortHeader
+                    *nbHeaderCellDef>Location</th>
+                <td nbCell
+                    *nbCellDef="let customer; of: source">{{ customer.location }}</td>
+            </ng-container>
+            <ng-container nbColumnDef="phone">
+                <th nbHeaderCell
+                    *nbHeaderCellDef>Phone</th>
+                <td nbCell
+                    *nbCellDef="let customer; of: source">{{ customer.phone }}</td>
+            </ng-container>
+            <ng-container nbColumnDef="status">
+                <th nbHeaderCell
+                    nbSortHeader
+                    *nbHeaderCellDef>Status</th>
+                <td nbCell
+                    *nbCellDef="let customer; of: source">
+                    <nb-tag appearance="outline"
+                        size="tiny"
+                        [status]="status[customer.status]"
+                        [text]="customer.status" />
+                </td>
+            </ng-container>
+            <ng-container nbColumnDef="actions">
+                <th nbHeaderCell
+                    *nbHeaderCellDef><span class="visually-hidden">Actions</span></th>
+                <td nbCell
+                    class="actions"
+                    *nbCellDef="let customer; of: source">
+                    <a nbButton
+                        ghost
+                        size="small"
+                        routerLink="../customers/edit"
+                        [attr.aria-label]="'Edit ' + customer.name">
+                        <nb-icon icon="edit-2-outline" />
+                    </a>
+                    <button nbButton
+                        ghost
+                        size="small"
+                        type="button"
+                        [attr.aria-label]="'More for ' + customer.name"
+                        [nbContextMenu]="actions">
+                        <nb-icon icon="more-horizontal-outline" />
+                    </button>
+                </td>
+            </ng-container>
 
-      <tr nbHeaderRow
-        *nbHeaderRowDef="columns"></tr>
-      <tr nbRow
-        *nbRowDef="let customer; of: source; columns: columns"></tr>
-    </table>
-  </div>
-  <nb-card-footer>
-    <span class="caption">{{ source.selection().length }} selected</span>
-    <nb-pagination [for]="source" />
-  </nb-card-footer>
+            <tr nbHeaderRow
+                *nbHeaderRowDef="columns"></tr>
+            <tr nbRow
+                *nbRowDef="let customer; of: source; columns: columns"></tr>
+        </table>
+    </div>
+    <nb-card-footer>
+        <span class="caption">{{ source.selection().length }} selected</span>
+        <nb-pagination [for]="source" />
+    </nb-card-footer>
 </nb-card>

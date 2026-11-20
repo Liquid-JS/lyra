@@ -1,22 +1,22 @@
 <button type="button"
-  nbButton
-  (click)="prev.emit()"
-  ghost
-  size="medium"
-  status="basic"
-  class="prev-month"
-  [attr.aria-label]="texts().previous">
-  <nb-icon [icon]="isLtr ? 'chevron-left-outline' : 'chevron-right-outline'"
-    pack="essentials" />
+    nbButton
+    (click)="prev.emit()"
+    ghost
+    size="medium"
+    status="basic"
+    class="prev-month"
+    [attr.aria-label]="texts().previous">
+    <nb-icon [icon]="isLtr ? 'chevron-left-outline' : 'chevron-right-outline'"
+        pack="essentials" />
 </button>
 <button type="button"
-  nbButton
-  (click)="next.emit()"
-  ghost
-  size="medium"
-  status="basic"
-  class="next-month"
-  [attr.aria-label]="texts().next">
-  <nb-icon [icon]="isLtr ? 'chevron-right-outline' : 'chevron-left-outline'"
-    pack="essentials" />
+    nbButton
+    (click)="next.emit()"
+    ghost
+    size="medium"
+    status="basic"
+    class="next-month"
+    [attr.aria-label]="texts().next">
+    <nb-icon [icon]="isLtr ? 'chevron-right-outline' : 'chevron-left-outline'"
+        pack="essentials" />
 </button>

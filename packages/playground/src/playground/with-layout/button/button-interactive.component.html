@@ -1,69 +1,69 @@
 <nb-card>
-  <nb-card-body>
+    <nb-card-body>
 
-    <fieldset>
-      <legend class="subtitle">Size:</legend>
-      <nb-radio-group [(value)]="selectedSize"
-        name="size">
-        @for (size of sizes; track size) {
-        <nb-radio name="size"
-          [value]="size">{{ size }}</nb-radio>
-        }
-      </nb-radio-group>
-    </fieldset>
+        <fieldset>
+            <legend class="subtitle">Size:</legend>
+            <nb-radio-group [(value)]="selectedSize"
+                name="size">
+                @for (size of sizes; track size) {
+                <nb-radio name="size"
+                    [value]="size">{{ size }}</nb-radio>
+                }
+            </nb-radio-group>
+        </fieldset>
 
-    <fieldset>
-      <legend class="subtitle">Shape:</legend>
-      <nb-radio-group [(value)]="selectedShape"
-        name="shape">
-        @for (shape of shapes; track shape) {
-        <nb-radio name="shape"
-          [value]="shape">{{ shape }}</nb-radio>
-        }
-      </nb-radio-group>
-    </fieldset>
+        <fieldset>
+            <legend class="subtitle">Shape:</legend>
+            <nb-radio-group [(value)]="selectedShape"
+                name="shape">
+                @for (shape of shapes; track shape) {
+                <nb-radio name="shape"
+                    [value]="shape">{{ shape }}</nb-radio>
+                }
+            </nb-radio-group>
+        </fieldset>
 
-    <button nbButton
-      (click)="showDisabledRow = !showDisabledRow">
-      {{ showDisabledRow ? 'Hide' : 'Show' }} disabled row
-    </button>
+        <button nbButton
+            (click)="showDisabledRow = !showDisabledRow">
+            {{ showDisabledRow ? 'Hide' : 'Show' }} disabled row
+        </button>
 
-    @for (appearance of appearances; track appearance) {
-    <div class="appearance-container">
-      <p class="subtitle appearance-name">{{ appearance }}:</p>
-      <div class="appearance-row">
-        @for (status of statuses; track status) {
-        <div [class.control-status-example]="status === 'control'"
-          class="status-container">
-          <button nbButton
-            [appearance]="appearance"
-            [status]="status"
-            [size]="selectedSize"
-            [shape]="selectedShape">
-            {{ status }}
-          </button>
+        @for (appearance of appearances; track appearance) {
+        <div class="appearance-container">
+            <p class="subtitle appearance-name">{{ appearance }}:</p>
+            <div class="appearance-row">
+                @for (status of statuses; track status) {
+                <div [class.control-status-example]="status === 'control'"
+                    class="status-container">
+                    <button nbButton
+                        [appearance]="appearance"
+                        [status]="status"
+                        [size]="selectedSize"
+                        [shape]="selectedShape">
+                        {{ status }}
+                    </button>
+                </div>
+                }
+            </div>
+            @if (showDisabledRow) {
+            <div class="appearance-row">
+                @for (status of statuses; track status) {
+                <div [class.control-status-example]="status === 'control'"
+                    class="status-container">
+                    <button nbButton
+                        [appearance]="appearance"
+                        [status]="status"
+                        [size]="selectedSize"
+                        [shape]="selectedShape"
+                        disabled>
+                        {{ status }}
+                    </button>
+                </div>
+                }
+            </div>
+            }
         </div>
         }
-      </div>
-      @if (showDisabledRow) {
-      <div class="appearance-row">
-        @for (status of statuses; track status) {
-        <div [class.control-status-example]="status === 'control'"
-          class="status-container">
-          <button nbButton
-            [appearance]="appearance"
-            [status]="status"
-            [size]="selectedSize"
-            [shape]="selectedShape"
-            disabled>
-            {{ status }}
-          </button>
-        </div>
-        }
-      </div>
-      }
-    </div>
-    }
 
-  </nb-card-body>
+    </nb-card-body>
 </nb-card>

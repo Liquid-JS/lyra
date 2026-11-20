@@ -1,24 +1,24 @@
 // The status backgrounds and borders next to the shades they come from.
-@use 'sass:list';
-@use '@liquid-js/lyr-core/styles/all' as *;
+@use "sass:list";
+@use "@liquid-js/lyr-core/styles/all" as *;
 
 $nb-enabled-themes: (default, dark);
 
-@include nb-install() {
-  @include nb-theme-base();
-  @each $status in (primary, success, info, warning, danger) {
-    @for $level from 1 through 5 {
-      .border-probe-#{$status}-#{$level} {
-        color: nb-theme(border-#{$status}-color-#{$level});
-        background-color: nb-theme(color-#{$status}-#{list.nth((500, 600, 700, 800, 900), $level)});
-      }
-    }
+@include nb-install {
+    @include nb-theme-base;
+    @each $status in (primary, success, info, warning, danger) {
+        @for $level from 1 through 5 {
+            .border-probe-#{$status}-#{$level} {
+                color: nb-theme(border-#{$status}-color-#{$level});
+                background-color: nb-theme(color-#{$status}-#{list.nth((500, 600, 700, 800, 900), $level)});
+            }
+        }
 
-    @for $level from 1 through 4 {
-      .background-probe-#{$status}-#{$level} {
-        color: nb-theme(background-#{$status}-color-#{$level});
-        background-color: nb-theme(color-#{$status}-#{list.nth((500, 600, 700, 800), $level)});
-      }
+        @for $level from 1 through 4 {
+            .background-probe-#{$status}-#{$level} {
+                color: nb-theme(background-#{$status}-color-#{$level});
+                background-color: nb-theme(color-#{$status}-#{list.nth((500, 600, 700, 800), $level)});
+            }
+        }
     }
-  }
 }

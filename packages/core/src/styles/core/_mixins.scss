@@ -1,180 +1,183 @@
-@use 'sass:list';
-@use 'theming/get-value';
+@use "sass:list";
+@use "theming/get-value";
 
 @mixin nb-scrollbars($fg, $bg, $size, $border-radius: calc(#{$size} * 0.5)) {
-  &::-webkit-scrollbar {
-    width: $size;
-    height: $size;
-  }
+    &::-webkit-scrollbar {
+        width: $size;
+        height: $size;
+    }
 
-  &::-webkit-scrollbar-thumb {
-    background: $fg;
-    cursor: pointer;
-    border-radius: $border-radius;
-  }
+    &::-webkit-scrollbar-thumb {
+        background: $fg;
+        cursor: pointer;
+        border-radius: $border-radius;
+    }
 
-  &::-webkit-scrollbar-track {
-    background: $bg;
-  }
+    &::-webkit-scrollbar-track {
+        background: $bg;
+    }
 
-  &::-webkit-scrollbar-corner {
-    background: $bg;
-  }
+    &::-webkit-scrollbar-corner {
+        background: $bg;
+    }
 
-  // Firefox has no ::-webkit-scrollbar, so it takes the colours and a thin scrollbar from the standard properties.
-  // Chromium and Safari would drop their ::-webkit-scrollbar styles for those, so only Firefox gets them.
-  @supports (-moz-appearance: none) {
-    scrollbar-color: $fg $bg;
-    scrollbar-width: thin;
-  }
+    // Firefox has no ::-webkit-scrollbar, so it takes the colours and a thin scrollbar from the standard properties.
+    // Chromium and Safari would drop their ::-webkit-scrollbar styles for those, so only Firefox gets them.
+    @supports (-moz-appearance: none) {
+        scrollbar-color: $fg $bg;
+        scrollbar-width: thin;
+    }
 }
 
 @mixin nb-headings($from: 1, $to: 6) {
-  @for $i from $from through $to {
-    h#{$i} {
-      margin: 0;
+    @for $i from $from through $to {
+        h#{$i} {
+            margin: 0;
+        }
     }
-  }
 }
 
 @mixin nb-outline($outline-width, $outline-color, $inset-shadow-length: 0) {
-  $outset-shadow: 0 0 0 $outline-width $outline-color;
-  box-shadow: $outset-shadow;
+    $outset-shadow: 0 0 0 $outline-width $outline-color;
 
-  @if ($inset-shadow-length != 0) {
-    &:not(:hover):not(:active) {
-      $inset-shadow: inset $inset-shadow-length $outline-color;
-      box-shadow: $outset-shadow, $inset-shadow;
+    box-shadow: $outset-shadow;
+
+    @if $inset-shadow-length != 0 {
+        &:not(:hover, :active) {
+            $inset-shadow: inset $inset-shadow-length $outline-color;
+
+            box-shadow: $outset-shadow, $inset-shadow;
+        }
     }
-  }
 }
 
 @mixin hover-focus-active {
-  &:focus,
-  &:active,
-  &:hover {
-    @content;
-  }
+    &:focus,
+    &:active,
+    &:hover {
+        @content;
+    }
 }
 
 @mixin center-horizontal-absolute {
-  position: absolute;
-  transform: translate(-50%, 0);
-  left: 50%;
+    position: absolute;
+    transform: translate(-50%, 0);
+    left: 50%;
 }
 
 @mixin install-thumb() {
-  $thumb-selectors: ('::-webkit-slider-thumb' '::-moz-range-thumb');
+    $thumb-selectors: ("::-webkit-slider-thumb" "::-moz-range-thumb");
 
-  @each $selector in $thumb-selectors {
-    &#{$selector} {
-      -webkit-appearance: none;
-      -moz-appearance: none;
-      @content;
+    @each $selector in $thumb-selectors {
+        &#{$selector} {
+            appearance: none;
+            @content;
+        }
     }
-  }
 }
 
 @mixin install-track() {
-  $thumb-selectors: ('::-webkit-slider-runnable-track' '::-moz-range-track');
+    $thumb-selectors: ("::-webkit-slider-runnable-track" "::-moz-range-track");
 
-  @each $selector in $thumb-selectors {
-    &#{$selector} {
-      -webkit-appearance: none;
-      -moz-appearance: none;
-      @content;
+    @each $selector in $thumb-selectors {
+        &#{$selector} {
+            appearance: none;
+            @content;
+        }
     }
-  }
 }
 
 @mixin install-placeholder($color, $font-size, $opacity: 1) {
-  $placeholder-selectors: ('::-webkit-input-placeholder' '::-moz-placeholder' ':-moz-placeholder');
+    $placeholder-selectors: ("::-webkit-input-placeholder" "::-moz-placeholder" ":-moz-placeholder");
 
-  &::placeholder {
-    @include placeholder($color, $font-size, $opacity);
-  }
-
-  @each $selector in $placeholder-selectors {
-    &#{$selector} {
-      @include placeholder($color, $font-size, $opacity);
+    &::placeholder {
+        @include placeholder($color, $font-size, $opacity);
     }
 
-    &:focus#{$selector} {
-      @include placeholder-focus();
+    @each $selector in $placeholder-selectors {
+        &#{$selector} {
+            @include placeholder($color, $font-size, $opacity);
+        }
+
+        &:focus#{$selector} {
+            @include placeholder-focus;
+        }
     }
-  }
 }
 
 @mixin placeholder($color, $font-size, $opacity) {
-  color: $color;
-  font-size: $font-size;
-  opacity: $opacity;
-  transition: opacity 0.3s ease;
-  text-overflow: ellipsis;
+    color: $color;
+    font-size: $font-size;
+    opacity: $opacity;
+    transition: opacity 0.3s ease;
+    text-overflow: ellipsis;
 }
 
 @mixin placeholder-focus() {
-  opacity: 0;
-  transition: opacity 0.3s ease;
+    opacity: 0;
+    transition: opacity 0.3s ease;
 }
 
 /// A link inside `$container` (matched by `$link`) that covers it, so a click anywhere follows it, while the
 /// container's other controls stay above it and work on their own. The container shows the link's states itself.
 @mixin nb-stretched-link($container, $link) {
-  #{$container}:has(#{$link}) {
-    position: relative;
-    // Its own stacking context, so the link covers the content but nothing outside it.
-    isolation: isolate;
+    #{$container}:has(#{$link}) {
+        position: relative;
 
-    #{$link} {
-      &::after {
-        content: '';
-        position: absolute;
-        inset: 0;
-        // Above positioned content, such as a card's body.
-        z-index: 1;
-      }
+        // Its own stacking context, so the link covers the content but nothing outside it.
+        isolation: isolate;
 
-      // The container shows the focus.
-      &:focus-visible {
-        outline: none;
-      }
+        #{$link} {
+            &:after {
+                content: "";
+                position: absolute;
+                inset: 0;
+
+                // Above positioned content, such as a card's body.
+                z-index: 1;
+            }
+
+            // The container shows the focus.
+            &:focus-visible {
+                outline: none;
+            }
+        }
     }
-  }
 
-  // With as little specificity as can be, so controls positioned on their own keep it.
-  :where(#{$container}:has(#{$link})) {
-    :where(a[href], button, input, select, textarea, label, [tabindex]:not([tabindex='-1'])):where(:not(#{$link})) {
-      position: relative;
-      z-index: 2;
+    // With as little specificity as can be, so controls positioned on their own keep it.
+    :where(#{$container}:has(#{$link})) {
+        :where(a[href], button, input, select, textarea, label, [tabindex]:not([tabindex='-1'])):where(:not(#{$link})) {
+            position: relative;
+            z-index: 2;
+        }
     }
-  }
 }
 
 @mixin nb-component-animation($properties...) {
-  transition-duration: 0.15s;
-  transition-property: $properties;
-  transition-timing-function: ease-in;
+    transition-duration: 0.15s;
+    transition-property: $properties;
+    transition-timing-function: ease-in;
 }
 
 @mixin animation($animate...) {
-  $max: list.length($animate);
-  $animations: '';
+    $max: list.length($animate);
+    $animations: "";
 
-  @for $i from 1 through $max {
-    $animations: #{$animations + list.nth($animate, $i)};
+    @for $i from 1 through $max {
+        $animations: #{$animations + list.nth($animate, $i)};
 
-    @if $i < $max {
-      $animations: #{$animations + ', '};
+        @if $i < $max {
+            $animations: #{$animations + ", "};
+        }
     }
-  }
-  animation: $animations;
+
+    animation: #{$animations};
 }
 
 @mixin keyframes($animationName) {
-  @keyframes #{$animationName} {
-    @content;
-  }
+    @keyframes #{$animationName} {
+        @content;
+    }
 }
 
 /**
@@ -183,24 +186,26 @@
  * we need to puts unique name in each btn-pulse call.
  */
 @mixin btn-pulse($name, $color) {
-  &.btn-pulse {
-    @include animation(btn-#{$name}-pulse 1.5s infinite);
-  }
+    &.btn-pulse {
+        @include animation(btn-#{$name}-pulse 1.5s infinite);
+    }
 
-  @include keyframes(btn-#{$name}-pulse) {
-    0% {
-      box-shadow: none;
-      opacity: get-value.nb-theme(btn-disabled-opacity);
+    @include keyframes(btn-#{$name}-pulse) {
+        0% {
+            box-shadow: none;
+            opacity: get-value.nb-theme(btn-disabled-opacity);
+        }
+
+        50% {
+            box-shadow: 0 0 1rem 0 $color;
+            opacity: 0.8;
+        }
+
+        100% {
+            box-shadow: none;
+            opacity: get-value.nb-theme(btn-disabled-opacity);
+        }
     }
-    50% {
-      box-shadow: 0 0 1rem 0 $color;
-      opacity: 0.8;
-    }
-    100% {
-      box-shadow: none;
-      opacity: get-value.nb-theme(btn-disabled-opacity);
-    }
-  }
 }
 
 /*
@@ -258,7 +263,6 @@ Result will look like:
   so order is not important.
 *
 
-
 Currently, there're two problems with this approach:
 
 First, is that we can't combine :host, :host-context. Angular bugs #14349, #19199.
@@ -302,14 +306,12 @@ We can break such selectors, by just appending :host-context([dir=rtl]) to them.
     Or maybe add :host selector anyway? If multiple :host selectors are allowed
   ***
 
-
 Problems with the current approach.
 
 1. Direction can be applied only on document level, because mixin prepends theme class,
 which placed on the body.
 2. *.component.scss styles should be in :host selector. Otherwise angular will add host
 attribute to [dir=rtl] attribute as well.
-
 
 General problems.
 
@@ -320,24 +322,24 @@ Previous approach was to use single rtl mixin and reset ltr properties to initia
 But sometimes it's hard to find, what the previous value should be. And such mixin call looks too verbose.
 */
 
-@mixin _prepend-with-selector($selector, $prop: null, $value: null) {
-  #{$selector} & {
-    @if $prop != null {
-      #{$prop}: $value;
-    }
+@mixin -prepend-with-selector($selector, $prop: null, $value: null) {
+    #{$selector} & {
+        @if $prop {
+            #{$prop}: $value;
+        }
 
-    @content;
-  }
+        @content;
+    }
 }
 
 @mixin nb-ltr($prop: null, $value: null) {
-  @include _prepend-with-selector('[dir=ltr]', $prop, $value) {
-    @content;
-  }
+    @include -prepend-with-selector("[dir=ltr]", $prop, $value) {
+        @content;
+    }
 }
 
 @mixin nb-rtl($prop: null, $value: null) {
-  @include _prepend-with-selector('[dir=rtl]', $prop, $value) {
-    @content;
-  }
+    @include -prepend-with-selector("[dir=rtl]", $prop, $value) {
+        @content;
+    }
 }

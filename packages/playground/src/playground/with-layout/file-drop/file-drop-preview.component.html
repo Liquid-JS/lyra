@@ -1,29 +1,29 @@
 <nb-card>
-  <nb-card-body>
-    <label class="label"
-      for="file-drop-logo">Logo</label>
-    <nb-file-drop fullWidth
-      id="file-drop-logo"
-      accept="image/*"
-      prompt="Drop an image here or click to choose one"
-      [formControl]="logo">
-      <ng-template nbFileDropPreview
-        let-files
-        let-remove="remove"
-        let-url="url">
-        <div class="logo">
-          <img [src]="url(files[0])"
-            alt="The selected logo" />
-          <button nbButton
-            ghost
-            type="button"
-            aria-label="Remove the logo"
-            (click)="remove(files[0])">
-            <nb-icon icon="close-outline"
-              pack="essentials" />
-          </button>
-        </div>
-      </ng-template>
-    </nb-file-drop>
-  </nb-card-body>
+    <nb-card-body>
+        <label class="label"
+            for="file-drop-logo">Logo</label>
+        <nb-file-drop fullWidth
+            id="file-drop-logo"
+            accept="image/*"
+            prompt="Drop an image here or click to choose one"
+            [formControl]="logo">
+            <ng-template nbFileDropPreview
+                let-files
+                let-remove="remove"
+                let-url="url">
+                <div class="logo">
+                    <img [src]="url(files[0])"
+                        alt="The selected logo" />
+                    <button nbButton
+                        ghost
+                        type="button"
+                        aria-label="Remove the logo"
+                        (click)="remove(files[0])">
+                        <nb-icon icon="close-outline"
+                            pack="essentials" />
+                    </button>
+                </div>
+            </ng-template>
+        </nb-file-drop>
+    </nb-card-body>
 </nb-card>

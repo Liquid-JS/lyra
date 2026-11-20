@@ -1,12 +1,12 @@
-import { Component, input } from '@angular/core';
+import { Component, input } from '@angular/core'
 
 /**
  * An app drawn in the theme's colours, in place of a screenshot: a window with a sidebar, a chart and a list. The
  * `chart` variant leads with the chart, the `list` one with the list.
  */
 @Component({
-  selector: 'npg-site-mockup',
-  template: `
+    selector: 'npg-site-mockup',
+    template: `
     <div class="window" [class.list-first]="variant() === 'list'" aria-hidden="true">
       <div class="bar"><span></span><span></span><span></span></div>
       <div class="body">
@@ -30,9 +30,9 @@ import { Component, input } from '@angular/core';
       </div>
     </div>
   `,
-  styleUrls: ['./site-mockup.component.scss'],
+    styleUrls: ['./site-mockup.component.scss']
 })
 export class SiteMockupComponent {
-  readonly variant = input<'chart' | 'list'>('chart');
-  readonly bars = [45, 70, 55, 85, 60, 95, 75, 65, 90, 50];
+    readonly variant = input<'chart' | 'list'>('chart')
+    readonly bars = [45, 70, 55, 85, 60, 95, 75, 65, 90, 50]
 }

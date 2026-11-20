@@ -1,60 +1,60 @@
-@use '../../styles/theming' as *;
+@use "../../styles/theming" as *;
 
 @mixin nb-divider-line($side) {
-  border-#{$side}: nb-theme(divider-width) nb-theme(divider-style) nb-theme(divider-color);
+    border-#{$side}: nb-theme(divider-width) nb-theme(divider-style) nb-theme(divider-color);
 }
 
 @mixin nb-divider-theme() {
-  nb-divider {
-    display: flex;
-    align-items: center;
-    margin: nb-theme(divider-margin);
+    nb-divider {
+        display: flex;
+        align-items: center;
+        margin: nb-theme(divider-margin);
 
-    // The line on both sides of the content.
-    &::before,
-    &::after {
-      content: '';
-      flex: 1;
-      @include nb-divider-line(top);
+        // The line on both sides of the content.
+        &:before,
+        &:after {
+            content: "";
+            flex: 1;
+            @include nb-divider-line(top);
+        }
+
+        // Only the content takes the caption's text, so a vertical divider in text is as tall as that text.
+        .divider-content {
+            color: nb-theme(divider-content-text-color);
+            font-family: nb-theme(divider-content-text-font-family);
+            font-size: nb-theme(divider-content-text-font-size);
+            font-weight: nb-theme(divider-content-text-font-weight);
+            line-height: nb-theme(divider-content-text-line-height);
+
+            &:not(:empty) {
+                padding-inline: nb-theme(divider-content-gap);
+            }
+        }
+
+        &.vertical {
+            // As tall as a flex row it's in, or as the text around it.
+            display: inline-flex;
+            flex-direction: column;
+            align-self: stretch;
+            min-height: 1em;
+            vertical-align: middle;
+            margin: nb-theme(divider-vertical-margin);
+
+            &:before,
+            &:after {
+                border-top: none;
+                @include nb-divider-line(inline-start);
+            }
+
+            .divider-content:not(:empty) {
+                padding: nb-theme(divider-content-gap) 0;
+            }
+        }
     }
 
-    // Only the content takes the caption's text, so a vertical divider in text is as tall as that text.
-    .divider-content {
-      color: nb-theme(divider-content-text-color);
-      font-family: nb-theme(divider-content-text-font-family);
-      font-size: nb-theme(divider-content-text-font-size);
-      font-weight: nb-theme(divider-content-text-font-weight);
-      line-height: nb-theme(divider-content-text-line-height);
-
-      &:not(:empty) {
-        padding-inline: nb-theme(divider-content-gap);
-      }
+    hr {
+        border: none;
+        margin: nb-theme(divider-margin);
+        @include nb-divider-line(top);
     }
-
-    &.vertical {
-      // As tall as a flex row it's in, or as the text around it.
-      display: inline-flex;
-      flex-direction: column;
-      align-self: stretch;
-      min-height: 1em;
-      vertical-align: middle;
-      margin: nb-theme(divider-vertical-margin);
-
-      &::before,
-      &::after {
-        border-top: none;
-        @include nb-divider-line(inline-start);
-      }
-
-      .divider-content:not(:empty) {
-        padding: nb-theme(divider-content-gap) 0;
-      }
-    }
-  }
-
-  hr {
-    border: none;
-    margin: nb-theme(divider-margin);
-    @include nb-divider-line(top);
-  }
 }

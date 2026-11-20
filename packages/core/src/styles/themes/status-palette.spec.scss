@@ -1,20 +1,20 @@
 // Themes built with the status palette helper.
-@use 'sass:map';
-@use '@liquid-js/lyr-core/styles/all' as *;
-@use '../../components/button/button.component.theme' as button;
+@use "sass:map";
+@use "@liquid-js/lyr-core/styles/all" as *;
+@use "../../components/button/button.component.theme" as button;
 
 $nb-themes: nb-register-theme(nb-status-palette(primary, #3469d1), palette-default, default);
 $nb-themes: nb-register-theme(
-  nb-status-palettes((primary: #a855f7, success: #92e539, info: #32d0fc)),
-  palette-lyra,
-  default
+    nb-status-palettes((primary: #a855f7, success: #92e539, info: #32d0fc)),
+    palette-lyra,
+    default
 );
 $nb-themes: nb-register-theme(nb-status-palette(primary, #468086, material), palette-material, default);
 $nb-themes: nb-register-theme(nb-status-palette(basic, #808080), palette-grey, default);
 
 $nb-enabled-themes: (default, palette-default, palette-lyra, palette-material, palette-grey);
 
-@include nb-install() {
-  @include nb-theme-base();
-  @include button.nb-buttons-theme();
+@include nb-install {
+    @include nb-theme-base;
+    @include button.nb-buttons-theme;
 }

@@ -1,2 +1,2 @@
-export * from './page-indicator.component';
-export * from './page-indicator.module';
+export * from './page-indicator.component'
+export * from './page-indicator.module'

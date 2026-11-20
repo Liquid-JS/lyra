@@ -1,14 +1,14 @@
 // The default theme's toggle, checkbox and radio styles, which specs don't load otherwise.
-@use '@liquid-js/lyr-core/styles/all' as *;
-@use 'components/toggle/toggle.component.theme' as toggle;
-@use 'components/checkbox/checkbox.component.theme' as checkbox;
-@use 'components/radio/radio.component.theme' as radio;
+@use "@liquid-js/lyr-core/styles/all" as *;
+@use "components/toggle/toggle.component.theme" as toggle;
+@use "components/checkbox/checkbox.component.theme" as checkbox;
+@use "components/radio/radio.component.theme" as radio;
 
 $nb-enabled-themes: (default);
 
-@include nb-install() {
-  @include nb-theme-base();
-  @include toggle.nb-toggle-theme();
-  @include checkbox.nb-checkbox-theme();
-  @include radio.nb-radio-theme();
+@include nb-install {
+    @include nb-theme-base;
+    @include toggle.nb-toggle-theme;
+    @include checkbox.nb-checkbox-theme;
+    @include radio.nb-radio-theme;
 }

@@ -1,75 +1,75 @@
-@use '../../../styles/themes' as *;
+@use "../../../styles/themes" as *;
 
 :host {
-  display: block;
-  max-width: 56rem;
-  margin: 0 auto;
+    display: block;
+    max-width: 56rem;
+    margin: 0 auto;
 }
 
 .page-header {
-  margin-bottom: 1.5rem;
+    margin-bottom: 1.5rem;
 
-  h1 {
-    margin: 0 0 0.25rem;
-  }
+    h1 {
+        margin: 0 0 0.25rem;
+    }
 
-  p {
-    margin: 0;
-  }
+    p {
+        margin: 0;
+    }
 }
 
 .hint {
-  color: nb-theme(text-hint-color);
+    color: nb-theme(text-hint-color);
 }
 
 nb-card {
-  margin: 0;
+    margin: 0;
 }
 
 .profile {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 1.5rem;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.5rem;
 
-  @media (min-width: 768px) {
-    grid-template-columns: 9rem minmax(0, 1fr);
-  }
+    @media (width >= 768px) {
+        grid-template-columns: 9rem minmax(0, 1fr);
+    }
 }
 
 .picture {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
 }
 
 .fields {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
-  gap: 1rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+    gap: 1rem;
 }
 
 .wide {
-  grid-column: 1 / -1;
+    grid-column: 1 / -1;
 }
 
 .notification {
-  justify-content: space-between;
-  gap: 1rem;
+    justify-content: space-between;
+    gap: 1rem;
 
-  .item-title {
-    display: block;
-  }
+    .item-title {
+        display: block;
+    }
 }
 
 .appearance {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
-  gap: 1.5rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+    gap: 1.5rem;
 }
 
 .actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.5rem;
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
 }

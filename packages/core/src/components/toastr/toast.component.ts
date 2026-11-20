@@ -1,27 +1,25 @@
 import {
-  Component,
-  computed,
-  ElementRef,
-  ErrorHandler,
-  inject,
-  input,
-  OnDestroy,
-  OnInit,
-  output,
-  Renderer2,
-  signal,
-} from '@angular/core';
+    Component,
+    computed,
+    ElementRef,
+    ErrorHandler,
+    inject,
+    input,
+    OnDestroy,
+    OnInit,
+    output,
+    Renderer2,
+    signal
+} from '@angular/core'
 
-import { NbStatusService } from '@liquid-js/lyr-core/base';
-import { NbIconConfig, NbIconComponent } from '@liquid-js/lyr-core/icon';
-import { NbButtonComponent } from '@liquid-js/lyr-core/button';
-import { NbComponentOrCustomStatus } from '@liquid-js/lyr-core/base';
-import { NbToast, NbToastAction } from './model';
-import type { NbToastRef } from './toastr.service';
-import { injectNbTexts, NbLocalize } from '@liquid-js/lyr-core/base';
+import { NbStatusService, NbComponentOrCustomStatus, injectNbTexts, NbLocalize } from '@liquid-js/lyr-core/base'
+import { NbIconConfig, NbIconComponent } from '@liquid-js/lyr-core/icon'
+import { NbButtonComponent } from '@liquid-js/lyr-core/button'
+import { NbToast, NbToastAction } from './model'
+import type { NbToastRef } from './toastr.service'
 
 /** @internal */
-declare const $localize: NbLocalize;
+declare const $localize: NbLocalize
 
 /**
  * A toast, as `NbToastrService` shows it. A `danger` or `warning` toast is a live `alert`, announced at once; the
@@ -94,188 +92,188 @@ declare const $localize: NbLocalize;
  * toastr-destroyable-control-hover-border-color:
  * */
 @Component({
-  selector: 'nb-toast',
-  styleUrls: ['./toast.component.scss'],
-  templateUrl: './toast.component.html',
-  imports: [NbIconComponent, NbButtonComponent],
-  host: {
-    'aria-atomic': 'true',
-    '[attr.role]': 'role()',
-    '[attr.aria-live]': 'ariaLive()',
-    '[class]': 'statusClass()',
-    '[class.destroy-by-click]': 'destroyByClick()',
-    '[class.has-close-button]': 'closeButton()',
-    '[class.has-actions]': 'actions().length > 0',
-    '[class.has-icon]': 'hasIcon()',
-    '[class.custom-icon]': 'customIcon()',
-    '(click)': 'onClick()',
-    '(mouseenter)': 'onMouseEnter()',
-    '(mouseleave)': 'onMouseLeave()',
-    '(focusin)': 'onFocusIn($event)',
-    '(focusout)': 'onFocusOut($event)',
-  },
+    selector: 'nb-toast',
+    styleUrls: ['./toast.component.scss'],
+    templateUrl: './toast.component.html',
+    imports: [NbIconComponent, NbButtonComponent],
+    host: {
+        'aria-atomic': 'true',
+        '[attr.role]': 'role()',
+        '[attr.aria-live]': 'ariaLive()',
+        '[class]': 'statusClass()',
+        '[class.destroy-by-click]': 'destroyByClick()',
+        '[class.has-close-button]': 'closeButton()',
+        '[class.has-actions]': 'actions().length > 0',
+        '[class.has-icon]': 'hasIcon()',
+        '[class.custom-icon]': 'customIcon()',
+        '(click)': 'onClick()',
+        '(mouseenter)': 'onMouseEnter()',
+        '(mouseleave)': 'onMouseLeave()',
+        '(focusin)': 'onFocusIn($event)',
+        '(focusout)': 'onFocusOut($event)'
+    }
 })
 export class NbToastComponent implements OnInit, OnDestroy {
-  protected readonly texts = injectNbTexts('toastr', () => ({
-    close: $localize`:@@nb.toastr.close:Close`,
-  }));
+    protected readonly texts = injectNbTexts('toastr', () => ({
+        close: $localize`:@@nb.toastr.close:Close`
+    }))
 
-  protected readonly renderer = inject(Renderer2);
-  protected readonly elementRef = inject(ElementRef);
-  protected readonly statusService = inject(NbStatusService);
+    protected readonly renderer = inject(Renderer2)
+    protected readonly elementRef = inject(ElementRef)
+    protected readonly statusService = inject(NbStatusService)
 
-  readonly toast = input.required<NbToast>();
+    readonly toast = input.required<NbToast>()
 
-  readonly destroy = output<void>();
-  readonly toastClick = output<void>();
-  readonly closeClick = output<void>();
-  readonly pointerEnter = output<void>();
-  readonly pointerLeave = output<void>();
-  /**
-   * Whether the toast's auto-dismiss timer is paused: the pointer is over it (with `pauseOnHover`), the focus is in it,
-   * or an action runs.
-   */
-  readonly holdChange = output<boolean>();
+    readonly destroy = output<void>()
+    readonly toastClick = output<void>()
+    readonly closeClick = output<void>()
+    readonly pointerEnter = output<void>()
+    readonly pointerLeave = output<void>()
+    /**
+     * Whether the toast's auto-dismiss timer is paused: the pointer is over it (with `pauseOnHover`), the focus is in it,
+     * or an action runs.
+     */
+    readonly holdChange = output<boolean>()
 
-  /**
-   * The toast's ref, which actions get; set by its container.
-   */
-  ref?: NbToastRef;
+    /**
+     * The toast's ref, which actions get; set by its container.
+     */
+    ref?: NbToastRef
 
-  protected readonly errorHandler = inject(ErrorHandler);
-  protected readonly hovered = signal(false);
-  protected readonly focused = signal(false);
-  // The action that runs, whose button is loading.
-  protected readonly pending = signal<NbToastAction | undefined>(undefined);
-  protected wasHeld = false;
-  protected returnFocus?: HTMLElement;
-  protected readonly held = computed(
-    () => (this.hovered() && this.toast().config.pauseOnHover) || this.focused() || !!this.pending(),
-  );
+    protected readonly errorHandler = inject(ErrorHandler)
+    protected readonly hovered = signal(false)
+    protected readonly focused = signal(false)
+    // The action that runs, whose button is loading.
+    protected readonly pending = signal<NbToastAction | undefined>(undefined)
+    protected wasHeld = false
+    protected returnFocus?: HTMLElement
+    protected readonly held = computed(
+        () => (this.hovered() && this.toast().config.pauseOnHover) || this.focused() || !!this.pending()
+    )
 
-  readonly actions = computed(() => this.toast().config.actions ?? []);
+    readonly actions = computed(() => this.toast().config.actions ?? [])
 
-  // Buttons stand out on the toast: light on a toast of a color, of the primary color on a light one.
-  protected readonly actionStatus = computed<NbComponentOrCustomStatus>(() => {
-    const { status } = this.toast().config;
-    return status === 'basic' || status === 'control' ? 'primary' : 'control';
-  });
+    // Buttons stand out on the toast: light on a toast of a color, of the primary color on a light one.
+    protected readonly actionStatus = computed<NbComponentOrCustomStatus>(() => {
+        const { status } = this.toast().config
+        return status === 'basic' || status === 'control' ? 'primary' : 'control'
+    })
 
-  // The close button is chrome: ghost, light on a toast of a colour, as its text is, and basic on a light one.
-  protected readonly closeStatus = computed<NbComponentOrCustomStatus>(() => {
-    const { status } = this.toast().config;
-    return status === 'basic' || status === 'control' ? 'basic' : 'control';
-  });
+    // The close button is chrome: ghost, light on a toast of a colour, as its text is, and basic on a light one.
+    protected readonly closeStatus = computed<NbComponentOrCustomStatus>(() => {
+        const { status } = this.toast().config
+        return status === 'basic' || status === 'control' ? 'basic' : 'control'
+    })
 
-  protected readonly isUrgent = computed(() => {
-    const { status } = this.toast().config;
-    return status === 'danger' || status === 'warning';
-  });
+    protected readonly isUrgent = computed(() => {
+        const { status } = this.toast().config
+        return status === 'danger' || status === 'warning'
+    })
 
-  readonly role = computed(() => (this.isUrgent() ? 'alert' : 'status'));
+    readonly role = computed(() => (this.isUrgent() ? 'alert' : 'status'))
 
-  readonly ariaLive = computed(() => (this.isUrgent() ? 'assertive' : 'polite'));
+    readonly ariaLive = computed(() => (this.isUrgent() ? 'assertive' : 'polite'))
 
-  protected readonly statusClass = computed(() => this.statusService.getStatusClass(this.toast().config.status));
+    protected readonly statusClass = computed(() => this.statusService.getStatusClass(this.toast().config.status))
 
-  readonly destroyByClick = computed(() => this.toast().config.destroyByClick);
+    readonly destroyByClick = computed(() => this.toast().config.destroyByClick)
 
-  readonly closeButton = computed(() => this.toast().config.closeButton);
+    readonly closeButton = computed(() => this.toast().config.closeButton)
 
-  readonly icon = computed<string | NbIconConfig>(() => this.toast().config.icon);
+    readonly icon = computed<string | NbIconConfig>(() => this.toast().config.icon)
 
-  readonly hasIcon = computed(() => {
-    const icon = this.icon();
-    if (typeof icon === 'string') {
-      return true;
+    readonly hasIcon = computed(() => {
+        const icon = this.icon()
+        if (typeof icon === 'string') {
+            return true
+        }
+
+        return !!(icon && (icon as NbIconConfig).icon)
+    })
+
+    readonly customIcon = computed(() => !!this.icon())
+
+    onClick() {
+        this.toastClick.emit()
     }
 
-    return !!(icon && (icon as NbIconConfig).icon);
-  });
+    onMouseEnter() {
+        this.hovered.set(true)
+        this.updateHold()
+        this.pointerEnter.emit()
+    }
 
-  readonly customIcon = computed(() => !!this.icon());
+    onMouseLeave() {
+        this.hovered.set(false)
+        this.updateHold()
+        this.pointerLeave.emit()
+    }
 
-  onClick() {
-    this.toastClick.emit();
-  }
-
-  onMouseEnter() {
-    this.hovered.set(true);
-    this.updateHold();
-    this.pointerEnter.emit();
-  }
-
-  onMouseLeave() {
-    this.hovered.set(false);
-    this.updateHold();
-    this.pointerLeave.emit();
-  }
-
-  protected onFocusIn(event: FocusEvent) {
+    protected onFocusIn(event: FocusEvent) {
     // Where the focus came from, to go back to when the toast closes with the focus in it.
-    const from = event.relatedTarget as HTMLElement | null;
-    if (!this.focused() && from && !this.elementRef.nativeElement.contains(from)) {
-      this.returnFocus = from;
+        const from = event.relatedTarget as HTMLElement | null
+        if (!this.focused() && from && !this.elementRef.nativeElement.contains(from)) {
+            this.returnFocus = from
+        }
+        this.focused.set(true)
+        this.updateHold()
     }
-    this.focused.set(true);
-    this.updateHold();
-  }
 
-  protected onFocusOut(event: FocusEvent) {
-    if (!this.elementRef.nativeElement.contains(event.relatedTarget as Node | null)) {
-      this.focused.set(false);
-      this.updateHold();
+    protected onFocusOut(event: FocusEvent) {
+        if (!this.elementRef.nativeElement.contains(event.relatedTarget as Node | null)) {
+            this.focused.set(false)
+            this.updateHold()
+        }
     }
-  }
 
-  // Tells the container at once, so the timer can't run out in between.
-  protected updateHold() {
-    const held = this.held();
-    if (held !== this.wasHeld) {
-      this.wasHeld = held;
-      this.holdChange.emit(held);
+    // Tells the container at once, so the timer can't run out in between.
+    protected updateHold() {
+        const held = this.held()
+        if (held !== this.wasHeld) {
+            this.wasHeld = held
+            this.holdChange.emit(held)
+        }
     }
-  }
 
-  protected async runAction(action: NbToastAction, event: MouseEvent) {
+    protected async runAction(action: NbToastAction, event: MouseEvent) {
     // Keeps a destroy-by-click toast from also handling the click as a toast click.
-    event.stopPropagation();
-    if (this.pending()) {
-      return;
+        event.stopPropagation()
+        if (this.pending()) {
+            return
+        }
+        this.pending.set(action)
+        this.updateHold()
+        try {
+            await action.action?.(this.ref as NbToastRef)
+            if (action.close !== false) {
+                this.closeClick.emit()
+            }
+        } catch (error) {
+            this.errorHandler.handleError(error)
+        } finally {
+            this.pending.set(undefined)
+            this.updateHold()
+        }
     }
-    this.pending.set(action);
-    this.updateHold();
-    try {
-      await action.action?.(this.ref as NbToastRef);
-      if (action.close !== false) {
-        this.closeClick.emit();
-      }
-    } catch (error) {
-      this.errorHandler.handleError(error);
-    } finally {
-      this.pending.set(undefined);
-      this.updateHold();
-    }
-  }
 
-  onCloseClick(event: MouseEvent) {
+    onCloseClick(event: MouseEvent) {
     // Keeps a destroy-by-click toast from also handling the click as a toast click.
-    event.stopPropagation();
-    this.closeClick.emit();
-  }
-
-  ngOnInit() {
-    const { toastClass } = this.toast().config;
-    if (toastClass) {
-      this.renderer.addClass(this.elementRef.nativeElement, toastClass);
+        event.stopPropagation()
+        this.closeClick.emit()
     }
-  }
 
-  ngOnDestroy() {
+    ngOnInit() {
+        const { toastClass } = this.toast().config
+        if (toastClass) {
+            this.renderer.addClass(this.elementRef.nativeElement, toastClass)
+        }
+    }
+
+    ngOnDestroy() {
     // Closing with the focus in it, e.g. by an action, would leave the focus nowhere.
-    if (this.elementRef.nativeElement.contains(this.elementRef.nativeElement.ownerDocument.activeElement)) {
-      this.returnFocus?.focus();
+        if (this.elementRef.nativeElement.contains(this.elementRef.nativeElement.ownerDocument.activeElement)) {
+            this.returnFocus?.focus()
+        }
+        this.destroy.emit()
     }
-    this.destroy.emit();
-  }
 }

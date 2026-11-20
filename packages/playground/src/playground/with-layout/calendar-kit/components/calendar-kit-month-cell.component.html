@@ -1,7 +1,7 @@
 @if (date(); as date) {
 <h4>{{ title() }}</h4>
 <nb-calendar-day-picker [boundingMonths]="false"
-  [visibleDate]="date"
-  [date]="selectedValue()"
-  (dateChange)="select.emit($event)" />
+    [visibleDate]="date"
+    [date]="selectedValue()"
+    (dateChange)="select.emit($event)" />
 }

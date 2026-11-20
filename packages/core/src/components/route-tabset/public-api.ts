@@ -1,2 +1,2 @@
-export * from './route-tabset.module';
-export * from './route-tabset.component';
+export * from './route-tabset.module'
+export * from './route-tabset.component'

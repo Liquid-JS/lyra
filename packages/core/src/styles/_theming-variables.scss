@@ -11,6 +11,7 @@ $layout-window-mode-max-width: 1920px !default;
 $tabset-tab-text-hide-breakpoint: 36rem !default;
 $route-tabset-tab-text-hide-breakpoint: 36rem !default;
 $stepper-compact-breakpoint: 36rem !default;
+
 // If disabled `nb-install` wouldn't produce global theme styles and only install content provided into
 // `nb-install` mixin. Used to generate components themes without global theme styles.
 $nb-global-styles-on-install: true !default;

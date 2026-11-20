@@ -1,99 +1,99 @@
 <header class="page-header">
-  <p class="eyebrow">22–23 April 2027</p>
-  <h1>Agenda</h1>
-  <p class="lead">Thirty-two talks and workshops across a main stage, two rooms and a workshop space. Add the ones
-    you want to see and we’ll remind you ten minutes before each.</p>
+    <p class="eyebrow">22–23 April 2027</p>
+    <h1>Agenda</h1>
+    <p class="lead">Thirty-two talks and workshops across a main stage, two rooms and a workshop space. Add the ones
+        you want to see and we’ll remind you ten minutes before each.</p>
 </header>
 
 <div class="toolbar">
-  <span class="label"
-    id="agenda-tracks">Tracks</span>
-  <nb-button-group multiple
-    separate
-    appearance="outline"
-    size="small"
-    aria-labelledby="agenda-tracks"
-    [(value)]="filter">
-    @for (track of trackNames; track track) {
-    <button nbButtonToggle
-      [value]="track"
-      [status]="tracks[track].status">{{ tracks[track].label }}</button>
-    }
-  </nb-button-group>
+    <span class="label"
+        id="agenda-tracks">Tracks</span>
+    <nb-button-group multiple
+        separate
+        appearance="outline"
+        size="small"
+        aria-labelledby="agenda-tracks"
+        [(value)]="filter">
+        @for (track of trackNames; track track) {
+        <button nbButtonToggle
+            [value]="track"
+            [status]="tracks[track].status">{{ tracks[track].label }}</button>
+        }
+    </nb-button-group>
 </div>
 
 <nb-tabset>
-  @for (day of shown(); track day.id) {
-  <nb-tab [tabTitle]="day.label">
-    <p class="date">{{ day.date }}</p>
-    <ol class="timeline">
-      @for (session of day.sessions; track session.id) {
-      @if (session.track === 'break') {
-      <li class="break">
-        <span class="time">{{ session.start }}</span>
-        <span class="break-title">{{ session.title }} · {{ session.room }}</span>
-      </li>
-      } @else {
-      <li class="session"
-        [class.mine]="isMine(session)">
-        <span class="time">{{ session.start }}<span class="end">–{{ session.end }}</span></span>
-        <div class="details">
-          <div class="meta">
-            <nb-tag size="tiny"
-              [status]="tracks[session.track].status"
-              [text]="tracks[session.track].label" />
-            <span class="caption">{{ session.room }}</span>
-          </div>
-          <h2 class="h5">{{ session.title }}</h2>
-          @if (session.summary) {
-          <p>{{ session.summary }}</p>
-          }
-          @if (session.speakers.length) {
-          <div class="speakers">
-            @for (id of session.speakers; track id) {
-            @if (speakerById(id); as speaker) {
-            <a routerLink="../speakers">
-              <nb-user size="small"
-                [name]="speaker.name"
-                [title]="speaker.company"
-                [picture]="portrait(speaker.name)" />
-            </a>
+    @for (day of shown(); track day.id) {
+    <nb-tab [tabTitle]="day.label">
+        <p class="date">{{ day.date }}</p>
+        <ol class="timeline">
+            @for (session of day.sessions; track session.id) {
+            @if (session.track === 'break') {
+            <li class="break">
+                <span class="time">{{ session.start }}</span>
+                <span class="break-title">{{ session.title }} · {{ session.room }}</span>
+            </li>
+            } @else {
+            <li class="session"
+                [class.mine]="isMine(session)">
+                <span class="time">{{ session.start }}<span class="end">–{{ session.end }}</span></span>
+                <div class="details">
+                    <div class="meta">
+                        <nb-tag size="tiny"
+                            [status]="tracks[session.track].status"
+                            [text]="tracks[session.track].label" />
+                        <span class="caption">{{ session.room }}</span>
+                    </div>
+                    <h2 class="h5">{{ session.title }}</h2>
+                    @if (session.summary) {
+                    <p>{{ session.summary }}</p>
+                    }
+                    @if (session.speakers.length) {
+                    <div class="speakers">
+                        @for (id of session.speakers; track id) {
+                        @if (speakerById(id); as speaker) {
+                        <a routerLink="../speakers">
+                            <nb-user size="small"
+                                [name]="speaker.name"
+                                [title]="speaker.company"
+                                [picture]="portrait(speaker.name)" />
+                        </a>
+                        }
+                        }
+                    </div>
+                    }
+                </div>
+                <button nbButton
+                    size="small"
+                    class="add"
+                    type="button"
+                    [appearance]="isMine(session) ? 'filled' : 'outline'"
+                    [status]="isMine(session) ? 'primary' : 'basic'"
+                    [attr.aria-pressed]="isMine(session)"
+                    (click)="toggle(session)">
+                    <nb-icon [icon]="isMine(session) ? 'checkmark-outline' : 'plus-outline'" />
+                    {{ isMine(session) ? 'Added' : 'Add' }}
+                </button>
+            </li>
             }
             }
-          </div>
-          }
-        </div>
-        <button nbButton
-          size="small"
-          class="add"
-          type="button"
-          [appearance]="isMine(session) ? 'filled' : 'outline'"
-          [status]="isMine(session) ? 'primary' : 'basic'"
-          [attr.aria-pressed]="isMine(session)"
-          (click)="toggle(session)">
-          <nb-icon [icon]="isMine(session) ? 'checkmark-outline' : 'plus-outline'" />
-          {{ isMine(session) ? 'Added' : 'Add' }}
-        </button>
-      </li>
-      }
-      }
-    </ol>
-  </nb-tab>
-  }
+        </ol>
+    </nb-tab>
+    }
 </nb-tabset>
 
 @if (mineCount()) {
 <div class="my-agenda"
-  role="status">
-  <span><strong>{{ mineCount() }}</strong> in your agenda</span>
-  <button nbButton
-    ghost
-    size="small"
-    type="button"
-    (click)="clear()">Clear</button>
-  <a nbButton
-    status="primary"
-    size="small"
-    routerLink="../tickets">Get tickets</a>
+    role="status">
+    <span><strong>{{ mineCount() }}</strong> in your agenda</span>
+    <button nbButton
+        ghost
+        size="small"
+        type="button"
+        (click)="clear()">Clear</button>
+    <a nbButton
+        status="primary"
+        size="small"
+        routerLink="../tickets">Get tickets</a>
 </div>
 }

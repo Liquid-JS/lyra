@@ -1,44 +1,44 @@
 <nb-card>
-  <nb-card-body class="example-items-rows">
-    <nb-select placeholder="Import from"
-      [formControl]="source">
-      <nb-option value="device">This device</nb-option>
-      <nb-option-nested title="Cloud storage">
-        <nb-option value="drive">Google Drive</nb-option>
-        <nb-option value="dropbox">Dropbox</nb-option>
-        <nb-option-nested title="Object storage">
-          <nb-option value="s3">AWS S3</nb-option>
-          <nb-option value="azure">Azure Blob</nb-option>
-          <nb-option-nested title="Archives">
-            <nb-option value="glacier">S3 Glacier</nb-option>
-            <nb-option value="archive">Azure Archive</nb-option>
-          </nb-option-nested>
-        </nb-option-nested>
-      </nb-option-nested>
-      <nb-option-group title="Recent">
-        <nb-option value="plan">Project plan.docx</nb-option>
-        <nb-option-nested title="Shared with me">
-          <nb-option value="budget">Budget.xlsx</nb-option>
-        </nb-option-nested>
-      </nb-option-group>
-    </nb-select>
+    <nb-card-body class="example-items-rows">
+        <nb-select placeholder="Import from"
+            [formControl]="source">
+            <nb-option value="device">This device</nb-option>
+            <nb-option-nested title="Cloud storage">
+                <nb-option value="drive">Google Drive</nb-option>
+                <nb-option value="dropbox">Dropbox</nb-option>
+                <nb-option-nested title="Object storage">
+                    <nb-option value="s3">AWS S3</nb-option>
+                    <nb-option value="azure">Azure Blob</nb-option>
+                    <nb-option-nested title="Archives">
+                        <nb-option value="glacier">S3 Glacier</nb-option>
+                        <nb-option value="archive">Azure Archive</nb-option>
+                    </nb-option-nested>
+                </nb-option-nested>
+            </nb-option-nested>
+            <nb-option-group title="Recent">
+                <nb-option value="plan">Project plan.docx</nb-option>
+                <nb-option-nested title="Shared with me">
+                    <nb-option value="budget">Budget.xlsx</nb-option>
+                </nb-option-nested>
+            </nb-option-group>
+        </nb-select>
 
-    <nb-select multiple
-      chips
-      searchable
-      placeholder="Cities"
-      [formControl]="cities">
-      @for (region of regions; track region.name) {
-      <nb-option-nested [title]="region.name">
-        @for (country of region.countries; track country.name) {
-        <nb-option-nested [title]="country.name">
-          @for (city of country.cities; track city) {
-          <nb-option [value]="city">{{ city }}</nb-option>
-          }
-        </nb-option-nested>
-        }
-      </nb-option-nested>
-      }
-    </nb-select>
-  </nb-card-body>
+        <nb-select multiple
+            chips
+            searchable
+            placeholder="Cities"
+            [formControl]="cities">
+            @for (region of regions; track region.name) {
+            <nb-option-nested [title]="region.name">
+                @for (country of region.countries; track country.name) {
+                <nb-option-nested [title]="country.name">
+                    @for (city of country.cities; track city) {
+                    <nb-option [value]="city">{{ city }}</nb-option>
+                    }
+                </nb-option-nested>
+                }
+            </nb-option-nested>
+            }
+        </nb-select>
+    </nb-card-body>
 </nb-card>

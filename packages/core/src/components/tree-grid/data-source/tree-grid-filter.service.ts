@@ -1,6 +1,6 @@
-import { Service } from '@angular/core';
+import { Service } from '@angular/core'
 
-import { NbTreeGridPresentationNode } from './tree-grid.model';
+import { NbTreeGridPresentationNode } from './tree-grid.model'
 
 /**
  * Filters the tree grid's rows: a row matches when any of its data's values contains the query, ignoring case. A
@@ -9,45 +9,45 @@ import { NbTreeGridPresentationNode } from './tree-grid.model';
  */
 @Service()
 export class NbTreeGridFilterService<T> {
-  filter(query: string, data: NbTreeGridPresentationNode<T>[]): NbTreeGridPresentationNode<T>[] {
-    if (!query) {
-      return data;
+    filter(query: string, data: Array<NbTreeGridPresentationNode<T>>): Array<NbTreeGridPresentationNode<T>> {
+        if (!query) {
+            return data
+        }
+
+        return data.reduce((filtered: Array<NbTreeGridPresentationNode<T>>, node: NbTreeGridPresentationNode<T>) => {
+            let filteredChildren: Array<NbTreeGridPresentationNode<T>> | undefined
+
+            if (node.children) {
+                filteredChildren = this.filter(query, node.children)
+                node.children = filteredChildren
+            }
+
+            node.expanded = false
+
+            if (filteredChildren && filteredChildren.length) {
+                node.expanded = true
+                filtered.push(node)
+            } else if (this.filterPredicate(node.data, query)) {
+                filtered.push(node)
+            }
+
+            return filtered
+        }, [])
     }
 
-    return data.reduce((filtered: NbTreeGridPresentationNode<T>[], node: NbTreeGridPresentationNode<T>) => {
-      let filteredChildren: NbTreeGridPresentationNode<T>[] | undefined;
+    protected filterPredicate(data: T, searchQuery: string): boolean {
+        const preparedQuery = searchQuery.trim().toLocaleLowerCase()
+        // The rows are objects, though the row type isn't constrained to them.
+        if (typeof data !== 'object' || data === null) {
+            return false
+        }
+        for (const val of Object.values(data)) {
+            const preparedVal = `${val}`.trim().toLocaleLowerCase()
+            if (preparedVal.includes(preparedQuery)) {
+                return true
+            }
+        }
 
-      if (node.children) {
-        filteredChildren = this.filter(query, node.children);
-        node.children = filteredChildren;
-      }
-
-      node.expanded = false;
-
-      if (filteredChildren && filteredChildren.length) {
-        node.expanded = true;
-        filtered.push(node);
-      } else if (this.filterPredicate(node.data, query)) {
-        filtered.push(node);
-      }
-
-      return filtered;
-    }, []);
-  }
-
-  protected filterPredicate(data: T, searchQuery: string): boolean {
-    const preparedQuery = searchQuery.trim().toLocaleLowerCase();
-    // The rows are objects, though the row type isn't constrained to them.
-    if (typeof data !== 'object' || data === null) {
-      return false;
+        return false
     }
-    for (const val of Object.values(data)) {
-      const preparedVal = `${val}`.trim().toLocaleLowerCase();
-      if (preparedVal.includes(preparedQuery)) {
-        return true;
-      }
-    }
-
-    return false;
-  }
 }

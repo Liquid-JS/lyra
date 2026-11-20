@@ -1,11 +1,11 @@
-import { Component, input, output } from '@angular/core';
+import { Component, input, output } from '@angular/core'
 
-import { NgdThemeSwatches } from './theme-export';
+import { NgdThemeSwatches } from './theme-export'
 
 /** A theme as a button drawn in its own colours: its backgrounds, text and status colours. */
 @Component({
-  selector: 'ngd-theme-card',
-  template: `
+    selector: 'ngd-theme-card',
+    template: `
     <button
       type="button"
       tabindex="0"
@@ -28,13 +28,13 @@ import { NgdThemeSwatches } from './theme-export';
       </span>
     </button>
   `,
-  styleUrls: ['./theme-card.component.scss'],
+    styleUrls: ['./theme-card.component.scss']
 })
 export class NgdThemeCardComponent {
-  readonly name = input.required<string>();
-  readonly hint = input.required<string>();
-  readonly swatches = input.required<NgdThemeSwatches>();
-  /** Whether it's the theme being edited; unset for a card that starts a theme. */
-  readonly pressed = input<boolean>();
-  readonly pick = output();
+    readonly name = input.required<string>()
+    readonly hint = input.required<string>()
+    readonly swatches = input.required<NgdThemeSwatches>()
+    /** Whether it's the theme being edited; unset for a card that starts a theme. */
+    readonly pressed = input<boolean>()
+    readonly pick = output()
 }

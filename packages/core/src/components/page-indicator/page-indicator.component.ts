@@ -1,19 +1,16 @@
-import { Component, computed, ElementRef, inject, input, model, viewChildren } from '@angular/core';
+import { Component, computed, ElementRef, inject, input, model, viewChildren } from '@angular/core'
 
-import { NbStatusService } from '@liquid-js/lyr-core/base';
-import { injectNbTexts, NbLocalize } from '@liquid-js/lyr-core/base';
-import { NbComponentOrCustomStatus } from '@liquid-js/lyr-core/base';
-import { ɵfocusOnClick as focusOnClick } from '@liquid-js/lyr-core/base';
+import { NbStatusService, injectNbTexts, NbLocalize, NbComponentOrCustomStatus, ɵfocusOnClick as focusOnClick } from '@liquid-js/lyr-core/base'
 
 /** @internal */
-declare const $localize: NbLocalize;
+declare const $localize: NbLocalize
 
 /** @internal */
 function injectNbPageIndicatorTexts() {
-  return injectNbTexts('pageIndicator', () => ({
-    pages: $localize`:@@nb.pageIndicator.pages:Pages`,
-    page: (page: number, count: number) => $localize`:@@nb.pageIndicator.page:Page ${page}:page: of ${count}:count:`,
-  }));
+    return injectNbTexts('pageIndicator', () => ({
+        pages: $localize`:@@nb.pageIndicator.pages:Pages`,
+        page: (page: number, count: number) => $localize`:@@nb.pageIndicator.page:Page ${page}:page: of ${count}:count:`
+    }))
 }
 
 /**
@@ -29,7 +26,6 @@ function injectNbPageIndicatorTexts() {
  * `page` counts from 0. Each dot is a button, named e.g. "Page 2 of 5", and the current one is `aria-current`; the
  * group is named "Pages", or by `aria-label`. One dot is in the tab order: arrow keys, Home and End move to another
  * page, and the focus with it.
- *
  * @styles
  *
  * page-indicator-gap:
@@ -50,8 +46,8 @@ function injectNbPageIndicatorTexts() {
  * page-indicator-animation-duration:
  */
 @Component({
-  selector: 'nb-page-indicator',
-  template: `
+    selector: 'nb-page-indicator',
+    template: `
     @for (dot of dots(); track $index) {
       <button
         #dot
@@ -66,61 +62,61 @@ function injectNbPageIndicatorTexts() {
       ></button>
     }
   `,
-  styleUrls: ['./page-indicator.component.scss'],
-  host: {
-    role: 'group',
-    '[attr.aria-label]': 'ariaLabel() ?? texts().pages',
-    '[class]': 'statusClass()',
-  },
+    styleUrls: ['./page-indicator.component.scss'],
+    host: {
+        'role': 'group',
+        '[attr.aria-label]': 'ariaLabel() ?? texts().pages',
+        '[class]': 'statusClass()'
+    }
 })
 export class NbPageIndicatorComponent {
-  protected readonly statusService = inject(NbStatusService);
-  protected readonly texts = injectNbPageIndicatorTexts();
-  protected readonly focusOnClick = focusOnClick;
+    protected readonly statusService = inject(NbStatusService)
+    protected readonly texts = injectNbPageIndicatorTexts()
+    protected readonly focusOnClick = focusOnClick
 
-  /** How many pages there are. */
-  readonly count = input(0, { transform: (value: number | string) => Math.max(0, Math.floor(Number(value)) || 0) });
+    /** How many pages there are. */
+    readonly count = input(0, { transform: (value: number | string) => Math.max(0, Math.floor(Number(value)) || 0) })
 
-  /** The current page, from 0. */
-  readonly page = model(0);
+    /** The current page, from 0. */
+    readonly page = model(0)
 
-  /** The current dot's colour: `basic`, `primary` (default), `success`, `info`, `warning`, `danger` or `control`. */
-  readonly status = input<NbComponentOrCustomStatus>('primary');
+    /** The current dot's colour: `basic`, `primary` (default), `success`, `info`, `warning`, `danger` or `control`. */
+    readonly status = input<NbComponentOrCustomStatus>('primary')
 
-  /** Names the group of dots; "Pages" without it. */
-  readonly ariaLabel = input<string | undefined>(undefined, { alias: 'aria-label' });
+    /** Names the group of dots; "Pages" without it. */
+    readonly ariaLabel = input<string | undefined>(undefined, { alias: 'aria-label' })
 
-  protected readonly dots = computed(() => Array.from({ length: this.count() }));
-  /** The current page, within the pages there are. */
-  protected readonly current = computed(() => Math.min(Math.max(0, this.page()), this.count() - 1));
-  protected readonly statusClass = computed(() => this.statusService.getStatusClass(this.status()));
-  protected readonly buttons = viewChildren<ElementRef<HTMLButtonElement>>('dot');
+    protected readonly dots = computed(() => Array.from({ length: this.count() }))
+    /** The current page, within the pages there are. */
+    protected readonly current = computed(() => Math.min(Math.max(0, this.page()), this.count() - 1))
+    protected readonly statusClass = computed(() => this.statusService.getStatusClass(this.status()))
+    protected readonly buttons = viewChildren<ElementRef<HTMLButtonElement>>('dot')
 
-  /** @internal */
-  select(index: number) {
-    if (index !== this.page()) {
-      this.page.set(index);
+    /** @internal */
+    select(index: number) {
+        if (index !== this.page()) {
+            this.page.set(index)
+        }
     }
-  }
 
-  /** @internal */
-  onKeydown(event: KeyboardEvent, index: number) {
-    const last = this.count() - 1;
-    const rtl = getComputedStyle(event.currentTarget as HTMLElement).direction === 'rtl';
-    const next = {
-      ArrowRight: index + (rtl ? -1 : 1),
-      ArrowLeft: index + (rtl ? 1 : -1),
-      ArrowDown: index + 1,
-      ArrowUp: index - 1,
-      Home: 0,
-      End: last,
-    }[event.key];
-    if (next === undefined) {
-      return;
+    /** @internal */
+    onKeydown(event: KeyboardEvent, index: number) {
+        const last = this.count() - 1
+        const rtl = getComputedStyle(event.currentTarget as HTMLElement).direction === 'rtl'
+        const next = {
+            ArrowRight: index + (rtl ? -1 : 1),
+            ArrowLeft: index + (rtl ? 1 : -1),
+            ArrowDown: index + 1,
+            ArrowUp: index - 1,
+            Home: 0,
+            End: last
+        }[event.key]
+        if (next === undefined) {
+            return
+        }
+        event.preventDefault()
+        const target = Math.min(last, Math.max(0, next))
+        this.select(target)
+        this.buttons()[target]?.nativeElement.focus()
     }
-    event.preventDefault();
-    const target = Math.min(last, Math.max(0, next));
-    this.select(target);
-    this.buttons()[target]?.nativeElement.focus();
-  }
 }

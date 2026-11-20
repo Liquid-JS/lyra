@@ -1,43 +1,43 @@
 <nb-card>
-  <nb-card-body>
-    <label class="search-label"
-      for="search">Type to filter:</label>
-    <input nbInput
-      (input)="filter($event)"
-      id="search"
-      class="search-input" />
+    <nb-card-body>
+        <label class="search-label"
+            for="search">Type to filter:</label>
+        <input nbInput
+            (input)="filter($event)"
+            id="search"
+            class="search-input" />
 
-    <table [nbTreeGrid]="dataSource"
-      equalColumnsWidth>
-      <tr nbTreeGridHeaderRow
-        *nbTreeGridHeaderRowDef="allColumns"></tr>
-      <tr nbTreeGridRow
-        *nbTreeGridRowDef="let row; columns: allColumns"></tr>
+        <table [nbTreeGrid]="dataSource"
+            equalColumnsWidth>
+            <tr nbTreeGridHeaderRow
+                *nbTreeGridHeaderRowDef="allColumns"></tr>
+            <tr nbTreeGridRow
+                *nbTreeGridRowDef="let row; columns: allColumns"></tr>
 
-      <ng-container [nbTreeGridColumnDef]="customColumn">
-        <th nbTreeGridHeaderCell
-          *nbTreeGridHeaderCellDef>
-          {{ customColumn }}
-        </th>
+            <ng-container [nbTreeGridColumnDef]="customColumn">
+                <th nbTreeGridHeaderCell
+                    *nbTreeGridHeaderCellDef>
+                    {{ customColumn }}
+                </th>
 
-        <td nbTreeGridCell
-          *nbTreeGridCellDef="let row">
-          @if (row.data.kind === 'dir') {
-          <nb-tree-grid-row-toggle [expanded]="row.expanded" />
-          }
+                <td nbTreeGridCell
+                    *nbTreeGridCellDef="let row">
+                    @if (row.data.kind === 'dir') {
+                    <nb-tree-grid-row-toggle [expanded]="row.expanded" />
+                    }
 
-          {{ row.data.name }}
-        </td>
-      </ng-container>
+                    {{ row.data.name }}
+                </td>
+            </ng-container>
 
-      @for (column of defaultColumns; track column) {
-      <ng-container [nbTreeGridColumnDef]="column">
-        <th nbTreeGridHeaderCell
-          *nbTreeGridHeaderCellDef>{{ column }}</th>
-        <td nbTreeGridCell
-          *nbTreeGridCellDef="let row">{{ row.data[column] }}</td>
-      </ng-container>
-      }
-    </table>
-  </nb-card-body>
+            @for (column of defaultColumns; track column) {
+            <ng-container [nbTreeGridColumnDef]="column">
+                <th nbTreeGridHeaderCell
+                    *nbTreeGridHeaderCellDef>{{ column }}</th>
+                <td nbTreeGridCell
+                    *nbTreeGridCellDef="let row">{{ row.data[column] }}</td>
+            </ng-container>
+            }
+        </table>
+    </nb-card-body>
 </nb-card>

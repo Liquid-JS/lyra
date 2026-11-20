@@ -1,12 +1,12 @@
 <div dir="ltr">
-  @for (theme of themeList; track theme) {
-  <label class="theme-radio-label">
-    <input type="radio"
-      [value]="theme"
-      name="theme"
-      [checked]="theme === current()"
-      (change)="handleChange(theme)"
-      class="theme-radio" />{{ theme | titlecase }}
-  </label>
-  }
+    @for (theme of themeList; track theme) {
+    <label class="theme-radio-label">
+        <input type="radio"
+            [value]="theme"
+            name="theme"
+            [checked]="theme === current()"
+            (change)="handleChange(theme)"
+            class="theme-radio" />{{ theme | titlecase }}
+    </label>
+    }
 </div>

@@ -1,13 +1,13 @@
-import { Service } from '@angular/core';
-import { HttpResponse } from '@angular/common/http';
+import { Service } from '@angular/core'
+import { HttpResponse } from '@angular/common/http'
 
-import { Observable, of as observableOf } from 'rxjs';
-import { delay } from 'rxjs/operators';
+import { Observable, of as observableOf } from 'rxjs'
+import { delay } from 'rxjs/operators'
 
-import { NbAuthStrategy } from '../auth-strategy';
-import { NbAuthResult } from '../../services/auth-result';
-import { NbDummyAuthStrategyOptions, dummyStrategyOptions } from './dummy-strategy-options';
-import { NbAuthStrategyClass } from '../../auth.options';
+import { NbAuthStrategy } from '../auth-strategy'
+import { NbAuthResult } from '../../services/auth-result'
+import { NbAuthStrategyClass } from '../../auth.options'
+import { NbDummyAuthStrategyOptions, dummyStrategyOptions } from './dummy-strategy-options'
 
 /**
  * A strategy without a backend, for setting up the auth before there is one: every action succeeds after `delay`
@@ -28,46 +28,46 @@ import { NbAuthStrategyClass } from '../../auth.options';
  */
 @Service({ autoProvided: false })
 export class NbDummyAuthStrategy extends NbAuthStrategy<NbDummyAuthStrategyOptions> {
-  protected override defaultOptions: NbDummyAuthStrategyOptions = dummyStrategyOptions;
+    protected override defaultOptions: NbDummyAuthStrategyOptions = dummyStrategyOptions
 
-  static setup(options: NbDummyAuthStrategyOptions): [NbAuthStrategyClass, NbDummyAuthStrategyOptions] {
-    return [NbDummyAuthStrategy, options];
-  }
-
-  authenticate(data?: unknown): Observable<NbAuthResult<HttpResponse<unknown>>> {
-    return observableOf(this.createDummyResult(data)).pipe(delay(this.getOption('delay') ?? 0));
-  }
-
-  register(data?: unknown): Observable<NbAuthResult<HttpResponse<unknown>>> {
-    return observableOf(this.createDummyResult(data)).pipe(delay(this.getOption('delay') ?? 0));
-  }
-
-  requestPassword(data?: unknown): Observable<NbAuthResult<HttpResponse<unknown>>> {
-    return observableOf(this.createDummyResult(data)).pipe(delay(this.getOption('delay') ?? 0));
-  }
-
-  resetPassword(data?: unknown): Observable<NbAuthResult<HttpResponse<unknown>>> {
-    return observableOf(this.createDummyResult(data)).pipe(delay(this.getOption('delay') ?? 0));
-  }
-
-  logout(data?: unknown): Observable<NbAuthResult<HttpResponse<unknown>>> {
-    return observableOf(this.createDummyResult(data)).pipe(delay(this.getOption('delay') ?? 0));
-  }
-
-  refreshToken(data?: unknown): Observable<NbAuthResult<HttpResponse<unknown>>> {
-    return observableOf(this.createDummyResult(data)).pipe(delay(this.getOption('delay') ?? 0));
-  }
-
-  protected createDummyResult(data?: unknown): NbAuthResult<HttpResponse<unknown>> {
-    if (this.getOption('alwaysFail')) {
-      return new NbAuthResult(false, this.createFailResponse(data), undefined, [this.texts().unknownError]);
+    static setup(options: NbDummyAuthStrategyOptions): [NbAuthStrategyClass, NbDummyAuthStrategyOptions] {
+        return [NbDummyAuthStrategy, options]
     }
 
-    try {
-      const token = this.createToken('test token', true);
-      return new NbAuthResult(true, this.createSuccessResponse(data), '/', [], [this.texts().loginSuccess], token);
-    } catch (err) {
-      return new NbAuthResult(false, this.createFailResponse(data), undefined, [(err as Error).message]);
+    authenticate(data?: unknown): Observable<NbAuthResult<HttpResponse<unknown>>> {
+        return observableOf(this.createDummyResult(data)).pipe(delay(this.getOption('delay') ?? 0))
     }
-  }
+
+    register(data?: unknown): Observable<NbAuthResult<HttpResponse<unknown>>> {
+        return observableOf(this.createDummyResult(data)).pipe(delay(this.getOption('delay') ?? 0))
+    }
+
+    requestPassword(data?: unknown): Observable<NbAuthResult<HttpResponse<unknown>>> {
+        return observableOf(this.createDummyResult(data)).pipe(delay(this.getOption('delay') ?? 0))
+    }
+
+    resetPassword(data?: unknown): Observable<NbAuthResult<HttpResponse<unknown>>> {
+        return observableOf(this.createDummyResult(data)).pipe(delay(this.getOption('delay') ?? 0))
+    }
+
+    logout(data?: unknown): Observable<NbAuthResult<HttpResponse<unknown>>> {
+        return observableOf(this.createDummyResult(data)).pipe(delay(this.getOption('delay') ?? 0))
+    }
+
+    refreshToken(data?: unknown): Observable<NbAuthResult<HttpResponse<unknown>>> {
+        return observableOf(this.createDummyResult(data)).pipe(delay(this.getOption('delay') ?? 0))
+    }
+
+    protected createDummyResult(data?: unknown): NbAuthResult<HttpResponse<unknown>> {
+        if (this.getOption('alwaysFail')) {
+            return new NbAuthResult(false, this.createFailResponse(data), undefined, [this.texts().unknownError])
+        }
+
+        try {
+            const token = this.createToken('test token', true)
+            return new NbAuthResult(true, this.createSuccessResponse(data), '/', [], [this.texts().loginSuccess], token)
+        } catch (err) {
+            return new NbAuthResult(false, this.createFailResponse(data), undefined, [(err as Error).message])
+        }
+    }
 }

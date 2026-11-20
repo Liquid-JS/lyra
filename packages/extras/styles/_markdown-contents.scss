@@ -1,256 +1,256 @@
 // The markdown in the theme's text styles and colours, over the editor's own, which are for a white page. The
 // selectors are those of `@liquid-js/underflow`'s content styles in a `.nb-markdown` element.
 @mixin nb-markdown-contents() {
-  .nb-markdown {
-    .uf-contents,
-    .ProseMirror {
-      font-family: var(--text-paragraph-font-family);
-      font-size: var(--text-paragraph-font-size);
-      color: var(--text-basic-color);
-    }
-
-    .ProseMirror .placeholder {
-      color: var(--input-basic-placeholder-text-color);
-    }
-
-    .uf-contents {
-      p,
-      ul,
-      ol,
-      table,
-      h1,
-      h2,
-      h3,
-      h4,
-      h5,
-      h6 {
-        color: inherit;
-      }
-
-      // In the theme's heading fonts, at the sizes of prose.
-      @each $level in (1, 2, 3, 4, 5, 6) {
-        h#{$level} {
-          font-family: var(--text-heading-#{$level}-font-family);
-        }
-      }
-
-      h1 {
-        border-bottom-color: var(--border-basic-color-4);
-      }
-
-      h2 {
-        border-bottom-color: var(--divider-color);
-      }
-
-      del,
-      blockquote,
-      blockquote p,
-      blockquote ul,
-      blockquote ol {
-        color: var(--text-hint-color);
-      }
-
-      blockquote {
-        border-inline-start-color: var(--border-basic-color-4);
-      }
-
-      // Code is a shade off the page, which the editor, whose text has a field's background, picks.
-      pre {
-        background-color: var(--nb-markdown-code-background, var(--background-basic-color-2));
-      }
-
-      // Inline code in the text's own colour, which its background marks as code; a colour of its own, e.g. red,
-      // would read as an error.
-      code {
-        color: var(--nb-markdown-code-color, inherit);
-        background-color: var(--nb-markdown-code-background, var(--background-basic-color-2));
-      }
-
-      // A code block's code wraps, or scrolls, as its block does, so an app's `white-space` on `pre` decides.
-      pre code {
-        color: inherit;
-        background-color: transparent;
-        white-space: inherit;
-      }
-
-      kbd {
-        padding: 0 0.25rem;
-        border: 1px solid var(--border-basic-color-4);
-        border-bottom-width: 2px;
-        border-radius: 0.25rem;
-        font-family: inherit;
-        font-size: 0.875em;
-        background-color: var(--nb-markdown-code-background, var(--background-basic-color-2));
-      }
-
-      // Highlighted code, in the theme's text colours, over a highlight.js theme the app may load.
-      .hljs-comment,
-      .hljs-quote,
-      .hljs-meta {
-        color: var(--text-hint-color);
-      }
-
-      .hljs-comment,
-      .hljs-quote,
-      .hljs-emphasis {
-        font-style: italic;
-      }
-
-      .hljs-keyword,
-      .hljs-selector-tag,
-      .hljs-literal,
-      .hljs-doctag,
-      .hljs-built_in {
-        color: var(--text-primary-color);
-      }
-
-      .hljs-string,
-      .hljs-regexp,
-      .hljs-addition,
-      .hljs-selector-attr,
-      .hljs-selector-pseudo {
-        color: var(--text-success-color);
-      }
-
-      .hljs-number,
-      .hljs-symbol,
-      .hljs-bullet,
-      .hljs-variable,
-      .hljs-template-variable,
-      .hljs-link {
-        color: var(--text-warning-color);
-      }
-
-      .hljs-title,
-      .hljs-section,
-      .hljs-name,
-      .hljs-selector-id,
-      .hljs-selector-class {
-        color: var(--text-info-color);
-      }
-
-      .hljs-attr,
-      .hljs-attribute,
-      .hljs-property,
-      .hljs-type,
-      .hljs-deletion {
-        color: var(--text-danger-color);
-      }
-
-      .hljs-strong {
-        font-weight: bold;
-      }
-
-      // A table's lines and header text, as Lyra's tables have them; the header keeps a tint, as text in a field
-      // has a background of its own.
-      table,
-      th,
-      td {
-        border-color: var(--table-cell-border-color);
-      }
-
-      th {
-        font-family: var(--table-header-text-font-family);
-        font-weight: var(--table-header-text-font-weight);
-        color: var(--table-header-text-color);
-        background-color: var(--background-basic-color-3);
-
-        p {
-          color: inherit;
-        }
-      }
-
-      th.uf-cell-selected,
-      td.uf-cell-selected {
-        background-color: var(--color-primary-transparent-hover);
-      }
-
-      ul > li::before {
-        background-color: var(--text-hint-color);
-      }
-
-      ol > li::before {
-        color: var(--text-hint-color);
-      }
-
-      hr {
-        border-top-color: var(--divider-color);
-      }
-
-      // Links, as the theme's links are.
-      a {
-        color: var(--link-text-color);
-        text-decoration: var(--link-text-decoration);
-
-        &:focus {
-          color: var(--link-text-focus-color);
+    .nb-markdown {
+        .uf-contents,
+        .ProseMirror {
+            font-family: var(--text-paragraph-font-family);
+            font-size: var(--text-paragraph-font-size);
+            color: var(--text-basic-color);
         }
 
-        &:hover {
-          color: var(--link-text-hover-color);
+        .ProseMirror .placeholder {
+            color: var(--input-basic-placeholder-text-color);
         }
-      }
 
-      .uf-image-link-button {
-        border-color: var(--border-basic-color-4);
-        background-color: var(--background-basic-color-1);
-        box-shadow: var(--shadow);
-      }
+        .uf-contents {
+            p,
+            ul,
+            ol,
+            table,
+            h1,
+            h2,
+            h3,
+            h4,
+            h5,
+            h6 {
+                color: inherit;
+            }
 
-      .task-list-item::before {
-        border-color: var(--border-basic-color-5);
-        background-color: var(--background-basic-color-1);
-      }
+            // In the theme's heading fonts, at the sizes of prose.
+            @each $level in (1, 2, 3, 4, 5, 6) {
+                h#{$level} {
+                    font-family: var(--text-heading-#{$level}-font-family);
+                }
+            }
 
-      .task-list-item.checked::before {
-        background-color: var(--color-primary-default);
-      }
+            h1 {
+                border-bottom-color: var(--border-basic-color-4);
+            }
 
-      .uf-code-block-label {
-        color: var(--text-basic-color);
-        background-color: var(--background-basic-color-3);
-      }
+            h2 {
+                border-bottom-color: var(--divider-color);
+            }
 
-      .uf-md-preview-highlight::after,
-      th.uf-md-preview-highlight,
-      td.uf-md-preview-highlight {
-        background-color: var(--color-warning-transparent-hover);
-      }
+            del,
+            blockquote,
+            blockquote p,
+            blockquote ul,
+            blockquote ol {
+                color: var(--text-hint-color);
+            }
 
-      th.uf-md-preview-highlight {
-        color: var(--text-basic-color);
-      }
+            blockquote {
+                border-inline-start-color: var(--border-basic-color-4);
+            }
+
+            // Code is a shade off the page, which the editor, whose text has a field's background, picks.
+            pre {
+                background-color: var(--nb-markdown-code-background, var(--background-basic-color-2));
+            }
+
+            // Inline code in the text's own colour, which its background marks as code; a colour of its own, e.g. red,
+            // would read as an error.
+            code {
+                color: var(--nb-markdown-code-color, inherit);
+                background-color: var(--nb-markdown-code-background, var(--background-basic-color-2));
+            }
+
+            // A code block's code wraps, or scrolls, as its block does, so an app's `white-space` on `pre` decides.
+            pre code {
+                color: inherit;
+                background-color: transparent;
+                white-space: inherit;
+            }
+
+            kbd {
+                padding: 0 0.25rem;
+                border: 1px solid var(--border-basic-color-4);
+                border-bottom-width: 2px;
+                border-radius: 0.25rem;
+                font-family: inherit;
+                font-size: 0.875em;
+                background-color: var(--nb-markdown-code-background, var(--background-basic-color-2));
+            }
+
+            // Highlighted code, in the theme's text colours, over a highlight.js theme the app may load.
+            .hljs-comment,
+            .hljs-quote,
+            .hljs-meta {
+                color: var(--text-hint-color);
+            }
+
+            .hljs-comment,
+            .hljs-quote,
+            .hljs-emphasis {
+                font-style: italic;
+            }
+
+            .hljs-keyword,
+            .hljs-selector-tag,
+            .hljs-literal,
+            .hljs-doctag,
+            .hljs-built_in {
+                color: var(--text-primary-color);
+            }
+
+            .hljs-string,
+            .hljs-regexp,
+            .hljs-addition,
+            .hljs-selector-attr,
+            .hljs-selector-pseudo {
+                color: var(--text-success-color);
+            }
+
+            .hljs-number,
+            .hljs-symbol,
+            .hljs-bullet,
+            .hljs-variable,
+            .hljs-template-variable,
+            .hljs-link {
+                color: var(--text-warning-color);
+            }
+
+            .hljs-title,
+            .hljs-section,
+            .hljs-name,
+            .hljs-selector-id,
+            .hljs-selector-class {
+                color: var(--text-info-color);
+            }
+
+            .hljs-attr,
+            .hljs-attribute,
+            .hljs-property,
+            .hljs-type,
+            .hljs-deletion {
+                color: var(--text-danger-color);
+            }
+
+            .hljs-strong {
+                font-weight: bold;
+            }
+
+            // A table's lines and header text, as Lyra's tables have them; the header keeps a tint, as text in a field
+            // has a background of its own.
+            table,
+            th,
+            td {
+                border-color: var(--table-cell-border-color);
+            }
+
+            th {
+                font-family: var(--table-header-text-font-family);
+                font-weight: var(--table-header-text-font-weight);
+                color: var(--table-header-text-color);
+                background-color: var(--background-basic-color-3);
+
+                p {
+                    color: inherit;
+                }
+            }
+
+            th.uf-cell-selected,
+            td.uf-cell-selected {
+                background-color: var(--color-primary-transparent-hover);
+            }
+
+            ul > li:before {
+                background-color: var(--text-hint-color);
+            }
+
+            ol > li:before {
+                color: var(--text-hint-color);
+            }
+
+            hr {
+                border-top-color: var(--divider-color);
+            }
+
+            // Links, as the theme's links are.
+            a {
+                color: var(--link-text-color);
+                text-decoration: var(--link-text-decoration);
+
+                &:focus {
+                    color: var(--link-text-focus-color);
+                }
+
+                &:hover {
+                    color: var(--link-text-hover-color);
+                }
+            }
+
+            .uf-image-link-button {
+                border-color: var(--border-basic-color-4);
+                background-color: var(--background-basic-color-1);
+                box-shadow: var(--shadow);
+            }
+
+            .task-list-item:before {
+                border-color: var(--border-basic-color-5);
+                background-color: var(--background-basic-color-1);
+            }
+
+            .task-list-item.checked:before {
+                background-color: var(--color-primary-default);
+            }
+
+            .uf-code-block-label {
+                color: var(--text-basic-color);
+                background-color: var(--background-basic-color-3);
+            }
+
+            .uf-md-preview-highlight:after,
+            th.uf-md-preview-highlight,
+            td.uf-md-preview-highlight {
+                background-color: var(--color-warning-transparent-hover);
+            }
+
+            th.uf-md-preview-highlight {
+                color: var(--text-basic-color);
+            }
+        }
+
+        .uf-custom-block {
+            .uf-custom-block-editor {
+                color: var(--text-basic-color);
+                background-color: var(--background-basic-color-2);
+                border-color: var(--border-basic-color-4);
+            }
+
+            &.ProseMirror-selectednode .uf-custom-block-view {
+                border-color: var(--border-basic-color-4);
+            }
+        }
+
+        .uf-custom-block-view {
+            button {
+                border-color: var(--border-basic-color-4);
+            }
+
+            .info {
+                color: var(--text-primary-color);
+            }
+        }
+
+        .uf-ww-code-block-language {
+            border-color: var(--input-basic-border-color);
+            background-color: var(--input-basic-background-color);
+
+            input {
+                color: var(--text-basic-color);
+            }
+        }
     }
-
-    .uf-custom-block {
-      .uf-custom-block-editor {
-        color: var(--text-basic-color);
-        background-color: var(--background-basic-color-2);
-        border-color: var(--border-basic-color-4);
-      }
-
-      &.ProseMirror-selectednode .uf-custom-block-view {
-        border-color: var(--border-basic-color-4);
-      }
-    }
-
-    .uf-custom-block-view {
-      button {
-        border-color: var(--border-basic-color-4);
-      }
-
-      .info {
-        color: var(--text-primary-color);
-      }
-    }
-
-    .uf-ww-code-block-language {
-      border-color: var(--input-basic-border-color);
-      background-color: var(--input-basic-background-color);
-
-      input {
-        color: var(--text-basic-color);
-      }
-    }
-  }
 }

@@ -1,68 +1,69 @@
-@use 'sass:color';
-@use 'sass:list';
-@use 'sass:map';
-@use 'sass:math';
+@use "sass:color";
+@use "sass:list";
+@use "sass:map";
+@use "sass:math";
 
 // How each shade differs from the 500 one, in OKLCH: how far its lightness goes towards white (100-400) or what
 // part of it stays (600-900), the part of the chroma it keeps, and how far its hue turns. `lyra` is fitted to the
 // default theme's status ramps, `material` to Material Design palettes, whose dark shades stay close to the base.
 $_steps: (
-  lyra: (
-    100: (0.937, 0.076, 6.24deg),
-    200: (0.766, 0.268, 5.39deg),
-    300: (0.544, 0.523, 3.38deg),
-    400: (0.212, 0.854, 1.18deg),
-    600: (0.869, 0.911, 0.78deg),
-    700: (0.753, 0.834, 1.2deg),
-    800: (0.642, 0.734, 1.7deg),
-    900: (0.51, 0.616, 2.29deg),
-  ),
-  material: (
-    100: (0.669, 0.33, -4.37deg),
-    200: (0.445, 0.555, -2.81deg),
-    300: (0.241, 0.758, -2.08deg),
-    400: (0.111, 0.901, -1.14deg),
-    600: (0.968, 0.999, -0.52deg),
-    700: (0.928, 0.997, -1.07deg),
-    800: (0.891, 0.994, -1.69deg),
-    900: (0.829, 0.997, -2.83deg),
-  ),
+    lyra: (
+        100: (0.937, 0.076, 6.24deg),
+        200: (0.766, 0.268, 5.39deg),
+        300: (0.544, 0.523, 3.38deg),
+        400: (0.212, 0.854, 1.18deg),
+        600: (0.869, 0.911, 0.78deg),
+        700: (0.753, 0.834, 1.2deg),
+        800: (0.642, 0.734, 1.7deg),
+        900: (0.51, 0.616, 2.29deg),
+    ),
+    material: (
+        100: (0.669, 0.33, -4.37deg),
+        200: (0.445, 0.555, -2.81deg),
+        300: (0.241, 0.758, -2.08deg),
+        400: (0.111, 0.901, -1.14deg),
+        600: (0.968, 0.999, -0.52deg),
+        700: (0.928, 0.997, -1.07deg),
+        800: (0.891, 0.994, -1.69deg),
+        900: (0.829, 0.997, -2.83deg),
+    ),
 );
 
 $_transparent: (
-  100: 0.08,
-  200: 0.16,
-  300: 0.24,
-  400: 0.32,
-  500: 0.4,
-  600: 0.48,
+    100: 0.08,
+    200: 0.16,
+    300: 0.24,
+    400: 0.32,
+    500: 0.4,
+    600: 0.48,
 );
 
-@function _shade($base, $step, $shade) {
-  $base: color.to-space($base, oklch);
-  $lightness: math.div(color.channel($base, 'lightness', $space: oklch), 100%);
-  $chroma: color.channel($base, 'chroma', $space: oklch);
-  $hue: 0deg;
-  // A grey has no hue to turn.
-  @if (not color.is-missing($base, 'hue')) {
-    $hue: color.channel($base, 'hue', $space: oklch);
-  }
-  $t: list.nth($step, 1);
+@function -shade($base, $step, $shade) {
+    $base: color.to-space($base, oklch);
+    $lightness: math.div(color.channel($base, "lightness", $space: oklch), 100%);
+    $chroma: color.channel($base, "chroma", $space: oklch);
+    $hue: 0deg;
 
-  @if ($shade < 500) {
-    $lightness: $lightness + (1 - $lightness) * $t;
-  } @else {
-    $lightness: $lightness * $t;
-  }
+    // A grey has no hue to turn.
+    @if not color.is-missing($base, "hue") {
+        $hue: color.channel($base, "hue", $space: oklch);
+    }
+    $t: list.nth($step, 1);
 
-  $color: oklch($lightness * 100% $chroma * list.nth($step, 2) $hue + list.nth($step, 3));
-  $color: color.to-space(color.to-gamut($color, $space: rgb, $method: local-minde), rgb);
+    @if $shade < 500 {
+        $lightness: $lightness + (1 - $lightness) * $t;
+    } @else {
+        $lightness: $lightness * $t;
+    }
 
-  @return rgb(
-    math.round(color.channel($color, 'red')),
-    math.round(color.channel($color, 'green')),
-    math.round(color.channel($color, 'blue'))
-  );
+    $color: oklch($lightness * 100% $chroma * list.nth($step, 2) $hue + list.nth($step, 3));
+    $color: color.to-space(color.to-gamut($color, $space: rgb, $method: local-minde), rgb);
+
+    @return rgb(
+        math.round(color.channel($color, "red")),
+        math.round(color.channel($color, "green")),
+        math.round(color.channel($color, "blue"))
+    );
 }
 
 /**
@@ -80,30 +81,30 @@ $_transparent: (
  * `$style: material` makes the dark shades stay close to the base, as in Material Design palettes.
  */
 @function nb-status-palette($status, $base, $style: lyra) {
-  $steps: map.get($_steps, $style);
-  @if ($steps == null) {
-    @error 'Lyra Theme: unknown palette style `#{$style}`, use `lyra` or `material`.';
-  }
+    $steps: map.get($_steps, $style);
+    @if not $steps {
+        @error "Lyra Theme: unknown palette style `#{$style}`, use `lyra` or `material`.";
+    }
 
-  $palette: (
-    color-#{$status}-500: $base,
-  );
-  @each $shade, $step in $steps {
-    $palette: map.set($palette, color-#{$status}-#{$shade}, _shade($base, $step, $shade));
-  }
-  @each $shade, $alpha in $_transparent {
-    $palette: map.set($palette, color-#{$status}-transparent-#{$shade}, rgba($base, $alpha));
-  }
-  @return $palette;
+    $palette: (
+        color-#{$status}-500: $base,
+    );
+    @each $shade, $step in $steps {
+        $palette: map.set($palette, color-#{$status}-#{$shade}, -shade($base, $step, $shade));
+    }
+    @each $shade, $alpha in $_transparent {
+        $palette: map.set($palette, color-#{$status}-transparent-#{$shade}, rgba($base, $alpha));
+    }
+    @return $palette;
 }
 
 /**
  * The palettes of several statuses, e.g. `nb-status-palettes((primary: #a855f7, success: #92e539))`.
  */
 @function nb-status-palettes($bases, $style: lyra) {
-  $palettes: ();
-  @each $status, $base in $bases {
-    $palettes: map.merge($palettes, nb-status-palette($status, $base, $style));
-  }
-  @return $palettes;
+    $palettes: ();
+    @each $status, $base in $bases {
+        $palettes: map.merge($palettes, nb-status-palette($status, $base, $style));
+    }
+    @return $palettes;
 }

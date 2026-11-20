@@ -1,12 +1,12 @@
 <nb-card>
-  <nb-card-body>
+    <nb-card-body>
 
-    <nb-tag-list (tagRemove)="onTagRemove($event)">
-      @for (tree of trees; track tree) {
-      <nb-tag [text]="tree"
-        [removable]="trees.length > 1" />
-      }
-    </nb-tag-list>
+        <nb-tag-list (tagRemove)="onTagRemove($event)">
+            @for (tree of trees; track tree) {
+            <nb-tag [text]="tree"
+                [removable]="trees.length > 1" />
+            }
+        </nb-tag-list>
 
-  </nb-card-body>
+    </nb-card-body>
 </nb-card>

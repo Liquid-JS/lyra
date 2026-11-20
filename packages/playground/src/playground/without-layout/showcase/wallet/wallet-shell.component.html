@@ -1,50 +1,50 @@
 <nb-layout>
-  <nb-layout-header fixed>
-    <a class="brand"
-      [routerLink]="link('overview')">
-      <span class="logo"
-        aria-hidden="true"></span>
-      Wallet
-    </a>
+    <nb-layout-header fixed>
+        <a class="brand"
+            [routerLink]="link('overview')">
+            <span class="logo"
+                aria-hidden="true"></span>
+            Wallet
+        </a>
 
-    <nav class="sections"
-      aria-label="Sections">
-      @for (section of sections; track section.path) {
-      <a [routerLink]="link(section.path)"
-        routerLinkActive="active"
-        #active="routerLinkActive"
-        [attr.aria-current]="active.isActive ? 'page' : null">{{ section.title }}</a>
-      }
-    </nav>
+        <nav class="sections"
+            aria-label="Sections">
+            @for (section of sections; track section.path) {
+            <a [routerLink]="link(section.path)"
+                routerLinkActive="active"
+                #active="routerLinkActive"
+                [attr.aria-current]="active.isActive ? 'page' : null">{{ section.title }}</a>
+            }
+        </nav>
 
-    <nb-actions>
-      <nb-action icon="bell-outline"
-        title="Notifications"
-        badgeDot
-        badgeStatus="danger" />
-      <nb-action>
-        <nb-user name="Jane Doe"
-          title="Personal account"
-          [picture]="userPhoto"
-          [nbContextMenu]="userMenu" />
-      </nb-action>
-    </nb-actions>
-  </nb-layout-header>
+        <nb-actions>
+            <nb-action icon="bell-outline"
+                title="Notifications"
+                badgeDot
+                badgeStatus="danger" />
+            <nb-action>
+                <nb-user name="Jane Doe"
+                    title="Personal account"
+                    [picture]="userPhoto"
+                    [nbContextMenu]="userMenu" />
+            </nb-action>
+        </nb-actions>
+    </nb-layout-header>
 
-  <nb-layout-column class="page">
-    <router-outlet />
-  </nb-layout-column>
+    <nb-layout-column class="page">
+        <router-outlet />
+    </nb-layout-column>
 </nb-layout>
 
 <nav class="tabs"
-  aria-label="Sections">
-  @for (section of sections; track section.path) {
-  <a [routerLink]="link(section.path)"
-    routerLinkActive="active"
-    #tab="routerLinkActive"
-    [attr.aria-current]="tab.isActive ? 'page' : null">
-    <nb-icon [icon]="section.icon" />
-    <span>{{ section.title }}</span>
-  </a>
-  }
+    aria-label="Sections">
+    @for (section of sections; track section.path) {
+    <a [routerLink]="link(section.path)"
+        routerLinkActive="active"
+        #tab="routerLinkActive"
+        [attr.aria-current]="tab.isActive ? 'page' : null">
+        <nb-icon [icon]="section.icon" />
+        <span>{{ section.title }}</span>
+    </a>
+    }
 </nav>

@@ -1,64 +1,64 @@
-@use '../../../styles/themes' as *;
+@use "../../../styles/themes" as *;
 
 nb-layout-header ::ng-deep nav {
-  gap: 1rem;
+    gap: 1rem;
 }
 
 .header-start {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
 .brand {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  color: nb-theme(text-basic-color);
-  font-family: nb-theme(text-heading-1-font-family);
-  font-size: 1.25rem;
-  text-decoration: none;
-  white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: nb-theme(text-basic-color);
+    font-family: nb-theme(text-heading-1-font-family);
+    font-size: 1.25rem;
+    text-decoration: none;
+    white-space: nowrap;
 
-  strong {
-    color: nb-theme(text-primary-color);
-  }
+    strong {
+        color: nb-theme(text-primary-color);
+    }
 }
 
 // Two overlapping squares in the theme's colours.
 .logo {
-  width: 1.5rem;
-  height: 1.5rem;
-  border-radius: nb-theme(border-radius);
-  background: linear-gradient(135deg, nb-theme(color-primary-default) 50%, nb-theme(color-info-default) 50%);
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: nb-theme(border-radius);
+    background: linear-gradient(135deg, nb-theme(color-primary-default) 50%, nb-theme(color-info-default) 50%);
 }
 
 .search {
-  flex: 1;
-  max-width: 28rem;
-  margin-inline-start: 2rem;
+    flex: 1;
+    max-width: 28rem;
+    margin-inline-start: 2rem;
 
-  @media (max-width: 991.98px) {
-    display: none;
-  }
+    @media (width <= 991.98px) {
+        display: none;
+    }
 }
 
 nb-actions {
-  margin-inline-start: auto;
+    margin-inline-start: auto;
 }
 
 // Phones keep the notifications and the user.
 .settings {
-  @media (max-width: 575.98px) {
-    display: none;
-  }
+    @media (width <= 575.98px) {
+        display: none;
+    }
 }
 
 // Small screens show the avatar only.
 nb-user {
-  @media (max-width: 767.98px) {
-    ::ng-deep .info-container {
-      display: none;
+    @media (width <= 767.98px) {
+        ::ng-deep .info-container {
+            display: none;
+        }
     }
-  }
 }

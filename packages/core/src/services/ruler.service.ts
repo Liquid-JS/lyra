@@ -1,5 +1,5 @@
-import { Service } from '@angular/core';
-import { Observable, Subject, Subscriber } from 'rxjs';
+import { Service } from '@angular/core'
+import { Observable, Subject, Subscriber } from 'rxjs'
 
 /**
  * The client and scroll size of the layout's scroll container: `documentElement`, or the layout's own
@@ -7,13 +7,13 @@ import { Observable, Subject, Subscriber } from 'rxjs';
  */
 export interface NbLayoutDimensions {
 
-  clientWidth: number;
+    clientWidth: number
 
-  clientHeight: number;
+    clientHeight: number
 
-  scrollWidth: number;
+    scrollWidth: number
 
-  scrollHeight: number;
+    scrollHeight: number
 }
 
 /**
@@ -25,24 +25,25 @@ export interface NbLayoutDimensions {
 @Service()
 export class NbLayoutRulerService {
 
-  private contentDimensionsReq$ = new Subject<{ listener: Subject<NbLayoutDimensions> }>();
+    private contentDimensionsReq$ = new Subject<{ listener: Subject<NbLayoutDimensions> }>()
 
-  /** The dimensions, once the layout answers; it never emits without a layout on the page. */
-  getDimensions(): Observable<NbLayoutDimensions> {
-    return new Observable((observer: Subscriber<NbLayoutDimensions>) => {
-      const listener = new Subject<NbLayoutDimensions>();
-      listener.subscribe(observer);
-      this.contentDimensionsReq$.next({ listener });
+    /** The dimensions, once the layout answers; it never emits without a layout on the page. */
+    getDimensions(): Observable<NbLayoutDimensions> {
+        return new Observable((observer: Subscriber<NbLayoutDimensions>) => {
+            const listener = new Subject<NbLayoutDimensions>()
+            listener.subscribe(observer)
+            this.contentDimensionsReq$.next({ listener })
 
-      return () => listener.complete();
-    });
-  }
+            return () => listener.complete()
+        })
+    }
 
-  /**
-   * The requests `nb-layout` answers.
-   * @private
-   */
-  onGetDimensions(): Subject<{ listener: Subject<NbLayoutDimensions> }> {
-    return this.contentDimensionsReq$;
-  }
+    /**
+     * The requests `nb-layout` answers.
+     *
+     * @private
+     */
+    onGetDimensions(): Subject<{ listener: Subject<NbLayoutDimensions> }> {
+        return this.contentDimensionsReq$
+    }
 }

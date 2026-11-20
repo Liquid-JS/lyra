@@ -1,10 +1,10 @@
 <div class="nb-tag-list-tags-wrapper">
-  @if (managed()) {
-  @for (tag of value(); track tag) {
-  <nb-tag [text]="tag"
-    [removable]="!isDisabled()"
-    [size]="tagSize()" />
-  }
-  }
-  <ng-content select="nb-tag, input[nbTagInput]" />
+    @if (managed()) {
+    @for (tag of value(); track tag) {
+    <nb-tag [text]="tag"
+        [removable]="!isDisabled()"
+        [size]="tagSize()" />
+    }
+    }
+    <ng-content select="nb-tag, input[nbTagInput]" />
 </div>

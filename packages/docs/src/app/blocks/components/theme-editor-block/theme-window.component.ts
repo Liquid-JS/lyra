@@ -1,20 +1,20 @@
-import { Location } from '@angular/common';
-import { Component, computed, inject, signal } from '@angular/core';
+import { Location } from '@angular/common'
+import { Component, computed, inject, signal } from '@angular/core'
 import {
-  NbButtonComponent,
-  NbOptionComponent,
-  NbSelectComponent,
-  NbWindowRef,
-  NbWindowState,
-} from '@liquid-js/lyr-core';
+    NbButtonComponent,
+    NbOptionComponent,
+    NbSelectComponent,
+    NbWindowRef,
+    NbWindowState
+} from '@liquid-js/lyr-core'
 
-import { NgdThemeControlsComponent } from './theme-controls.component';
-import { NgdThemeDrafts, themeLabel } from './theme-drafts.service';
+import { NgdThemeControlsComponent } from './theme-controls.component'
+import { NgdThemeDrafts, themeLabel } from './theme-drafts.service'
 
 /** The theme editor's controls in a window over a full-screen example, which shows the changes as they're made. */
 @Component({
-  selector: 'ngd-theme-window',
-  template: `
+    selector: 'ngd-theme-window',
+    template: `
     <div class="picker">
       <!-- Drawn again when switching is cancelled, so it shows the theme still being edited. -->
       @for (key of [pickerKey()]; track key) {
@@ -49,7 +49,7 @@ import { NgdThemeDrafts, themeLabel } from './theme-drafts.service';
     </div>
     <p class="editor-link"><a [href]="editorUrl" target="_blank">Open the theme editor</a></p>
   `,
-  styles: `
+    styles: `
     // It scrolls out to the window's edge, so a scrollbar shown there leaves the fields' borders and focus rings be.
     :host {
       display: block;
@@ -112,22 +112,22 @@ import { NgdThemeDrafts, themeLabel } from './theme-drafts.service';
       margin-top: 1.5rem;
     }
   `,
-  host: { '[class.wide]': 'wide()' },
-  imports: [NbButtonComponent, NbOptionComponent, NbSelectComponent, NgdThemeControlsComponent],
+    host: { '[class.wide]': 'wide()' },
+    imports: [NbButtonComponent, NbOptionComponent, NbSelectComponent, NgdThemeControlsComponent]
 })
 export class NgdThemeWindowComponent {
-  protected readonly themes = inject(NgdThemeDrafts);
-  protected readonly label = themeLabel;
-  protected readonly editorUrl = inject(Location).prepareExternalUrl('theme/theme-editor');
-  protected readonly pickerKey = signal(0);
-  private readonly windowRef = inject(NbWindowRef, { optional: true });
-  /** Expanded in the middle of the screen, not docked or minimized. */
-  protected readonly wide = computed(() => this.windowRef?.state === NbWindowState.FULL_SCREEN);
+    protected readonly themes = inject(NgdThemeDrafts)
+    protected readonly label = themeLabel
+    protected readonly editorUrl = inject(Location).prepareExternalUrl('theme/theme-editor')
+    protected readonly pickerKey = signal(0)
+    private readonly windowRef = inject(NbWindowRef, { optional: true })
+    /** Expanded in the middle of the screen, not docked or minimized. */
+    protected readonly wide = computed(() => this.windowRef?.state === NbWindowState.FULL_SCREEN)
 
-  protected async pick(id: string) {
-    await this.themes.select(id);
-    if (this.themes.draft().id !== id) {
-      this.pickerKey.update((key) => key + 1);
+    protected async pick(id: string) {
+        await this.themes.select(id)
+        if (this.themes.draft().id !== id) {
+            this.pickerKey.update((key) => key + 1)
+        }
     }
-  }
 }

@@ -1,12 +1,12 @@
 <button nbButton
-  (click)="showToast('Toast 1', 'success')">Show toast 1</button>
+    (click)="showToast('Toast 1', 'success')">Show toast 1</button>
 <button nbButton
-  (click)="showToast('Toast 2', 'danger')">Show toast 2</button>
+    (click)="showToast('Toast 2', 'danger')">Show toast 2</button>
 
 <nb-radio-group [(ngModel)]="option">
-  @for (option of options; track option) {
-  <nb-radio [value]="option.value">
-    {{ option.label }}
-  </nb-radio>
-  }
+    @for (option of options; track option) {
+    <nb-radio [value]="option.value">
+        {{ option.label }}
+    </nb-radio>
+    }
 </nb-radio-group>

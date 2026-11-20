@@ -1,76 +1,69 @@
-@use '../../../styles/theming' as *;
-
-@mixin prefix-backface-visibility($value) {
-  backface-visibility: $value;
-  // Don't remove prefixed property as it's wouldn't be added during the build.
-  // Fixes back card visibility in Safari.
-  -webkit-backface-visibility: $value;
-}
+@use "../../../styles/theming" as *;
 
 :host {
-  display: block;
-  min-width: 0;
-  perspective: 1200px;
-  position: relative;
+    display: block;
+    min-width: 0;
+    perspective: 1200px;
+    position: relative;
 }
 
 // Not `:host-context`, which would flip a nested flip card with its parent, and child combinators throughout:
 // a nested flip card's template has the same encapsulation attribute.
 :host(.flipped) {
-  > .flipcard-body {
-    // Turns towards the start, the way the button's chevron points.
-    transform: rotateY(-180deg);
-    @include nb-rtl(transform, rotateY(180deg));
+    > .flipcard-body {
+        // Turns towards the start, the way the button's chevron points.
+        transform: rotateY(-180deg);
+        @include nb-rtl(transform, rotateY(180deg));
 
-    > .front-container {
-      opacity: 0;
-      transition: opacity 0s 0.25s;
-      @include prefix-backface-visibility(hidden);
+        > .front-container {
+            opacity: 0;
+            transition: opacity 0s 0.25s;
+            backface-visibility: hidden;
 
-      > .flip-button {
-        opacity: 0;
-        z-index: -1;
-      }
+            > .flip-button {
+                opacity: 0;
+                z-index: -1;
+            }
+        }
+
+        > .back-container {
+            backface-visibility: visible;
+        }
     }
-
-    > .back-container {
-      @include prefix-backface-visibility(visible);
-    }
-  }
 }
 
 .flipcard-body {
-  display: flex;
-  transition: transform 0.5s;
-  transform-style: preserve-3d;
+    display: flex;
+    transition: transform 0.5s;
+    transform-style: preserve-3d;
 
-  .front-container,
-  .back-container {
-    flex: 1;
-    height: fit-content;
-    overflow: auto;
+    .front-container,
+    .back-container {
+        flex: 1;
+        height: fit-content;
+        overflow: auto;
 
-    .flip-button {
-      cursor: pointer;
-      position: absolute;
-      inset-inline-end: 0;
-      bottom: 0;
-      opacity: 1;
-      transition: opacity 0s 0.15s;
+        .flip-button {
+            cursor: pointer;
+            position: absolute;
+            inset-inline-end: 0;
+            bottom: 0;
+            opacity: 1;
+            transition: opacity 0s 0.15s;
+        }
     }
-  }
 
-  .front-container {
-    @include prefix-backface-visibility(visible);
-    transition: opacity 0s 0.2s;
-  }
+    .front-container {
+        backface-visibility: visible;
+        transition: opacity 0s 0.2s;
+    }
 
-  .back-container {
-    @include prefix-backface-visibility(hidden);
-    transform: rotateY(180deg);
-  }
+    .back-container {
+        backface-visibility: hidden;
+        transform: rotateY(180deg);
+    }
 }
 
 :host .flip-button nb-icon {
-  @include nb-rtl(transform, scaleX(-1));
+    @include nb-rtl(transform, scaleX(-1));
 }

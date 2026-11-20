@@ -1,85 +1,85 @@
 <div #frame
-  class="frame"
-  [attr.role]="controls() ? 'group' : null"
-  [attr.tabindex]="controls() ? 0 : null"
-  [attr.aria-label]="controls() ? ariaLabel() : null"
-  [class.bare]="!controls()"
-  (keydown)="onKeydown($event)">
-  <div #media
-    class="media"></div>
+    class="frame"
+    [attr.role]="controls() ? 'group' : null"
+    [attr.tabindex]="controls() ? 0 : null"
+    [attr.aria-label]="controls() ? ariaLabel() : null"
+    [class.bare]="!controls()"
+    (keydown)="onKeydown($event)">
+    <div #media
+        class="media"></div>
 
-  <button nbButton
-    class="play"
-    appearance="filled"
-    status="primary"
-    size="small"
-    type="button"
-    [attr.aria-label]="paused() ? texts().play : texts().pause"
-    (click)="togglePlay()">
-    <nb-icon [icon]="paused() ? 'play' : 'pause'"
-      pack="essentials" />
-  </button>
+    <button nbButton
+        class="play"
+        appearance="filled"
+        status="primary"
+        size="small"
+        type="button"
+        [attr.aria-label]="paused() ? texts().play : texts().pause"
+        (click)="togglePlay()">
+        <nb-icon [icon]="paused() ? 'play' : 'pause'"
+            pack="essentials" />
+    </button>
 
-  @if (failed()) {
-  <span class="message"
-    role="alert">{{ texts().error }}</span>
-  } @else if (live()) {
-  <span class="live">{{ texts().live }}</span>
-  } @else {
-  <span class="time"
-    dir="ltr"
-    aria-hidden="true">{{ elapsed() }}</span>
-  <nb-slider class="position"
-    size="medium"
-    [min]="0"
-    [max]="seekable() ? duration() : 1"
-    [step]="0.1"
-    [labels]="false"
-    [showValue]="false"
-    [disabled]="!seekable()"
-    [formatValue]="formatPosition"
-    [value]="currentTime()"
-    (valueChange)="onPosition($event)"
-    [aria-label]="texts().position" />
-  <span class="time"
-    dir="ltr"
-    aria-hidden="true">{{ length() }}</span>
-  }
-
-  <button nbButton
-    ghost
-    status="basic"
-    size="small"
-    type="button"
-    [attr.aria-label]="volume() === 0 ? texts().unmute : texts().mute"
-    (click)="toggleMuted()">
-    <nb-icon [icon]="volumeIcon()"
-      pack="essentials" />
-  </button>
-  <nb-slider class="volume"
-    size="medium"
-    [min]="0"
-    [max]="1"
-    [step]="0.05"
-    [labels]="false"
-    [showValue]="false"
-    [formatValue]="formatVolume"
-    [value]="volume()"
-    (valueChange)="onVolume($event)"
-    [aria-label]="texts().volume" />
-
-  @if (!live()) {
-  <span hidden
-    [id]="id + '-speed'">{{ texts().speed }}</span>
-  <nb-select class="speed"
-    appearance="ghost"
-    size="small"
-    [aria-labelledby]="id + '-speed'"
-    [selected]="state().playbackRate ?? 1"
-    (selectedChange)="setRate($event)">
-    @for (rate of playbackRates(); track rate) {
-    <nb-option [value]="rate">{{ formatRate(rate) }}</nb-option>
+    @if (failed()) {
+    <span class="message"
+        role="alert">{{ texts().error }}</span>
+    } @else if (live()) {
+    <span class="live">{{ texts().live }}</span>
+    } @else {
+    <span class="time"
+        dir="ltr"
+        aria-hidden="true">{{ elapsed() }}</span>
+    <nb-slider class="position"
+        size="medium"
+        [min]="0"
+        [max]="seekable() ? duration() : 1"
+        [step]="0.1"
+        [labels]="false"
+        [showValue]="false"
+        [disabled]="!seekable()"
+        [formatValue]="formatPosition"
+        [value]="currentTime()"
+        (valueChange)="onPosition($event)"
+        [aria-label]="texts().position" />
+    <span class="time"
+        dir="ltr"
+        aria-hidden="true">{{ length() }}</span>
     }
-  </nb-select>
-  }
+
+    <button nbButton
+        ghost
+        status="basic"
+        size="small"
+        type="button"
+        [attr.aria-label]="volume() === 0 ? texts().unmute : texts().mute"
+        (click)="toggleMuted()">
+        <nb-icon [icon]="volumeIcon()"
+            pack="essentials" />
+    </button>
+    <nb-slider class="volume"
+        size="medium"
+        [min]="0"
+        [max]="1"
+        [step]="0.05"
+        [labels]="false"
+        [showValue]="false"
+        [formatValue]="formatVolume"
+        [value]="volume()"
+        (valueChange)="onVolume($event)"
+        [aria-label]="texts().volume" />
+
+    @if (!live()) {
+    <span hidden
+        [id]="id + '-speed'">{{ texts().speed }}</span>
+    <nb-select class="speed"
+        appearance="ghost"
+        size="small"
+        [aria-labelledby]="id + '-speed'"
+        [selected]="state().playbackRate ?? 1"
+        (selectedChange)="setRate($event)">
+        @for (rate of playbackRates(); track rate) {
+        <nb-option [value]="rate">{{ formatRate(rate) }}</nb-option>
+        }
+    </nb-select>
+    }
 </div>

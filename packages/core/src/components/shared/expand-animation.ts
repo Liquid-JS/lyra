@@ -1,4 +1,4 @@
-const running = new WeakMap<HTMLElement, Animation>();
+const running = new WeakMap<HTMLElement, Animation>()
 
 /**
  * How long a height change of `distance` pixels takes: longer for taller content, but less than in proportion, so a
@@ -6,7 +6,7 @@ const running = new WeakMap<HTMLElement, Animation>();
  * 410ms for 600px, at most 600ms.
  */
 export function expandDuration(distance: number): number {
-  return distance > 0 ? Math.min(600, Math.round(120 + 12 * Math.sqrt(distance))) : 0;
+    return distance > 0 ? Math.min(600, Math.round(120 + 12 * Math.sqrt(distance))) : 0
 }
 
 /**
@@ -18,37 +18,37 @@ export function expandDuration(distance: number): number {
  * Without a `duration`, it takes {@link expandDuration} of the distance.
  */
 export function animateExpand(
-  element: HTMLElement,
-  expanded: boolean,
-  options: KeyframeAnimationOptions = {},
-  keep: Keyframe = {},
+    element: HTMLElement,
+    expanded: boolean,
+    options: KeyframeAnimationOptions = {},
+    keep: Keyframe = {}
 ) {
-  if (typeof element.animate !== 'function' || matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    return;
-  }
-
-  const previous = running.get(element);
-  let from: number;
-  if (previous) {
-    from = element.getBoundingClientRect().height;
-    previous.cancel();
-  } else {
-    // A collapsed element still lays out its content, so its scroll height is the height it collapses from.
-    from = expanded ? 0 : element.scrollHeight;
-  }
-  const to = expanded ? element.scrollHeight : 0;
-
-  const animation = element.animate(
-    [
-      { ...keep, height: `${from}px` },
-      { ...keep, height: `${to}px` },
-    ],
-    { duration: expandDuration(Math.abs(to - from)), ...options },
-  );
-  running.set(element, animation);
-  animation.onfinish = animation.oncancel = () => {
-    if (running.get(element) === animation) {
-      running.delete(element);
+    if (typeof element.animate !== 'function' || matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        return
     }
-  };
+
+    const previous = running.get(element)
+    let from: number
+    if (previous) {
+        from = element.getBoundingClientRect().height
+        previous.cancel()
+    } else {
+    // A collapsed element still lays out its content, so its scroll height is the height it collapses from.
+        from = expanded ? 0 : element.scrollHeight
+    }
+    const to = expanded ? element.scrollHeight : 0
+
+    const animation = element.animate(
+        [
+            { ...keep, height: `${from}px` },
+            { ...keep, height: `${to}px` }
+        ],
+        { duration: expandDuration(Math.abs(to - from)), ...options }
+    )
+    running.set(element, animation)
+    animation.onfinish = animation.oncancel = () => {
+        if (running.get(element) === animation) {
+            running.delete(element)
+        }
+    }
 }

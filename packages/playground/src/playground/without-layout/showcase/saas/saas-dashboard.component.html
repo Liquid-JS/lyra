@@ -1,136 +1,136 @@
 <div class="page-header">
-  <h1 class="h4">Overview</h1>
-  <nb-select selected="week"
-    aria-label="Period">
-    <nb-option value="week">This week</nb-option>
-    <nb-option value="month">This month</nb-option>
-    <nb-option value="quarter">This quarter</nb-option>
-  </nb-select>
+    <h1 class="h4">Overview</h1>
+    <nb-select selected="week"
+        aria-label="Period">
+        <nb-option value="week">This week</nb-option>
+        <nb-option value="month">This month</nb-option>
+        <nb-option value="quarter">This quarter</nb-option>
+    </nb-select>
 </div>
 
 <div class="stats">
-  @for (stat of stats; track stat.title) {
-  <nb-card>
-    <nb-card-body>
-      <p class="caption hint">{{ stat.title }}</p>
-      <p class="stat">
-        <span class="h4">{{ stat.value }}</span>
-        <span class="change"
-          [class.up]="stat.change > 0">
-          <nb-icon [icon]="stat.change > 0 ? 'trending-up-outline' : 'trending-down-outline'" />
-          {{ stat.change | number: '1.1-2' }}%
-        </span>
-      </p>
-    </nb-card-body>
-  </nb-card>
-  }
+    @for (stat of stats; track stat.title) {
+    <nb-card>
+        <nb-card-body>
+            <p class="caption hint">{{ stat.title }}</p>
+            <p class="stat">
+                <span class="h4">{{ stat.value }}</span>
+                <span class="change"
+                    [class.up]="stat.change > 0">
+                    <nb-icon [icon]="stat.change > 0 ? 'trending-up-outline' : 'trending-down-outline'" />
+                    {{ stat.change | number: '1.1-2' }}%
+                </span>
+            </p>
+        </nb-card-body>
+    </nb-card>
+    }
 </div>
 
 <div class="grid">
-  <nb-card class="wide">
-    <nb-card-header>Sales report</nb-card-header>
-    <nb-card-body>
-      <nb-line-chart area
-        smooth
-        [labels]="days"
-        [series]="sales"
-        aria-label="Income and expenses this week; income peaks on Wednesday" />
-    </nb-card-body>
-  </nb-card>
+    <nb-card class="wide">
+        <nb-card-header>Sales report</nb-card-header>
+        <nb-card-body>
+            <nb-line-chart area
+                smooth
+                [labels]="days"
+                [series]="sales"
+                aria-label="Income and expenses this week; income peaks on Wednesday" />
+        </nb-card-body>
+    </nb-card>
 
-  <nb-card>
-    <nb-card-header>Top products</nb-card-header>
-    <nb-list>
-      @for (product of products; track product.name) {
-      <nb-list-item>
-        <span>
-          <span class="product">{{ product.name }}</span>
-          <span class="caption hint">{{ product.sold }} sold</span>
-        </span>
-        <span class="amount">{{ product.revenue | currency: 'USD' : 'symbol' : '1.0-0' }}</span>
-      </nb-list-item>
-      }
-    </nb-list>
-  </nb-card>
+    <nb-card>
+        <nb-card-header>Top products</nb-card-header>
+        <nb-list>
+            @for (product of products; track product.name) {
+            <nb-list-item>
+                <span>
+                    <span class="product">{{ product.name }}</span>
+                    <span class="caption hint">{{ product.sold }} sold</span>
+                </span>
+                <span class="amount">{{ product.revenue | currency: 'USD' : 'symbol' : '1.0-0' }}</span>
+            </nb-list-item>
+            }
+        </nb-list>
+    </nb-card>
 
-  <nb-card class="target">
-    <nb-card-body>
-      <nb-progress-bar shape="ring"
-        status="control"
-        displayValue
-        [value]="62"
-        aria-label="62% of the target" />
-      <div>
-        <p class="h4">1,860 <span class="caption">/ 3,000</span></p>
-        <p>Orders towards this quarter's target</p>
-      </div>
-    </nb-card-body>
-  </nb-card>
+    <nb-card class="target">
+        <nb-card-body>
+            <nb-progress-bar shape="ring"
+                status="control"
+                displayValue
+                [value]="62"
+                aria-label="62% of the target" />
+            <div>
+                <p class="h4">1,860 <span class="caption">/ 3,000</span></p>
+                <p>Orders towards this quarter's target</p>
+            </div>
+        </nb-card-body>
+    </nb-card>
 
-  <nb-card>
-    <nb-card-header>Upcoming</nb-card-header>
-    <nb-list>
-      @for (event of events; track event.title) {
-      <nb-list-item>
-        <span class="event-date caption">{{ event.date | date: 'EEE d MMM' }}</span>
-        <span>{{ event.title }}</span>
-      </nb-list-item>
-      }
-    </nb-list>
-  </nb-card>
+    <nb-card>
+        <nb-card-header>Upcoming</nb-card-header>
+        <nb-list>
+            @for (event of events; track event.title) {
+            <nb-list-item>
+                <span class="event-date caption">{{ event.date | date: 'EEE d MMM' }}</span>
+                <span>{{ event.title }}</span>
+            </nb-list-item>
+            }
+        </nb-list>
+    </nb-card>
 
-  <nb-card>
-    <nb-card-header>Revenue by category</nb-card-header>
-    <nb-card-body>
-      <nb-pie-chart doughnut
-        [slices]="categories"
-        aria-label="Subscriptions 60%, services 28%, add-ons 13%" />
-    </nb-card-body>
-  </nb-card>
+    <nb-card>
+        <nb-card-header>Revenue by category</nb-card-header>
+        <nb-card-body>
+            <nb-pie-chart doughnut
+                [slices]="categories"
+                aria-label="Subscriptions 60%, services 28%, add-ons 13%" />
+        </nb-card-body>
+    </nb-card>
 
-  <nb-card class="wide">
-    <nb-card-header class="card-header">
-      Recent orders
-      <a nbButton
-        edge="end"
-        ghost
-        inline
-        size="small"
-        routerLink="../customers">See all</a>
-    </nb-card-header>
-    <div class="table">
-      <table>
-        <thead>
-          <tr>
-            <th scope="col">Order</th>
-            <th scope="col">Date</th>
-            <th scope="col">Customer</th>
-            <th scope="col">Status</th>
-            <th scope="col"
-              class="number">Total</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (order of orders; track order.id) {
-          <tr>
-            <td>{{ order.id }}</td>
-            <td>{{ order.date | date: 'd MMM, h:mm a' }}</td>
-            <td>
-              <nb-user size="small"
-                [name]="order.customer"
-                [picture]="photoOf(order.customer)" />
-            </td>
-            <td>
-              <nb-badge dotMode
-                position="inline"
-                [status]="orderStatus[order.status]" />
-              {{ order.status }}
-            </td>
-            <td class="number">{{ order.total | currency: 'USD' }}</td>
-          </tr>
-          }
-        </tbody>
-      </table>
-    </div>
-  </nb-card>
+    <nb-card class="wide">
+        <nb-card-header class="card-header">
+            Recent orders
+            <a nbButton
+                edge="end"
+                ghost
+                inline
+                size="small"
+                routerLink="../customers">See all</a>
+        </nb-card-header>
+        <div class="table">
+            <table>
+                <thead>
+                    <tr>
+                        <th scope="col">Order</th>
+                        <th scope="col">Date</th>
+                        <th scope="col">Customer</th>
+                        <th scope="col">Status</th>
+                        <th scope="col"
+                            class="number">Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (order of orders; track order.id) {
+                    <tr>
+                        <td>{{ order.id }}</td>
+                        <td>{{ order.date | date: 'd MMM, h:mm a' }}</td>
+                        <td>
+                            <nb-user size="small"
+                                [name]="order.customer"
+                                [picture]="photoOf(order.customer)" />
+                        </td>
+                        <td>
+                            <nb-badge dotMode
+                                position="inline"
+                                [status]="orderStatus[order.status]" />
+                            {{ order.status }}
+                        </td>
+                        <td class="number">{{ order.total | currency: 'USD' }}</td>
+                    </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </nb-card>
 </div>

@@ -1,10 +1,10 @@
 /* You can add global styles to this file, and also import other style files */
 // import Lyra Theme System and the default theme
-@use '@liquid-js/lyr-core/styles/theming' as *;
-@use '@liquid-js/lyr-core/styles/themes/default';
-@use '@liquid-js/lyr-core/styles/globals' as *;
+@use "@liquid-js/lyr-core/styles/theming" as *;
+@use "@liquid-js/lyr-core/styles/themes/default";
+@use "@liquid-js/lyr-core/styles/globals" as *;
 
 // install the framework
-@include nb-install() {
-  @include nb-theme-global();
+@include nb-install {
+    @include nb-theme-global;
 }

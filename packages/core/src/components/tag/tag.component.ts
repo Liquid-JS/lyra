@@ -1,43 +1,36 @@
 import {
-  Component,
-  computed,
-  ElementRef,
-  inject,
-  input,
-  linkedSignal,
-  OnDestroy,
-  output,
-  signal,
-} from '@angular/core';
-import { Observable, Subject } from 'rxjs';
+    Component,
+    computed,
+    ElementRef,
+    inject,
+    input,
+    linkedSignal,
+    OnDestroy,
+    output,
+    signal
+} from '@angular/core'
+import { Observable, Subject } from 'rxjs'
 
-import { injectNbDefaults } from '@liquid-js/lyr-core/base';
-import { NbStatusService } from '@liquid-js/lyr-core/base';
-import { ɵNbHighlightableOption as NbHighlightableOption } from '@liquid-js/lyr-core/cdk';
-import { ɵconvertToBoolProperty as convertToBoolProperty, NbBooleanInput } from '@liquid-js/lyr-core/base';
-import { NbComponentOrCustomStatus } from '@liquid-js/lyr-core/base';
-import { NbComponentSize } from '@liquid-js/lyr-core/base';
-import { NbIconComponent } from '@liquid-js/lyr-core/icon';
-import { ɵenableTransitionsAfterRender as enableTransitionsAfterRender } from '@liquid-js/lyr-core/base';
-import { NB_TAG_LIST_SIZE } from './tag-list-size';
-import { injectNbTexts, NbLocalize } from '@liquid-js/lyr-core/base';
+import { injectNbDefaults, NbStatusService, ɵconvertToBoolProperty as convertToBoolProperty, NbBooleanInput, NbComponentOrCustomStatus, NbComponentSize, ɵenableTransitionsAfterRender as enableTransitionsAfterRender, injectNbTexts, NbLocalize, type NbTagAppearance } from '@liquid-js/lyr-core/base'
+import { ɵNbHighlightableOption as NbHighlightableOption } from '@liquid-js/lyr-core/cdk'
+import { NbIconComponent } from '@liquid-js/lyr-core/icon'
+import { NB_TAG_LIST_SIZE } from './tag-list-size'
 
 /** @internal */
-declare const $localize: NbLocalize;
-import type { NbTagAppearance } from '@liquid-js/lyr-core/base';
-
+declare const $localize: NbLocalize
 export interface NbTagSelectionChange {
-  tag: NbTagComponent;
-  selected: boolean;
+    tag: NbTagComponent
+    selected: boolean
 }
 
-let tagUniqueId = 0;
+let tagUniqueId = 0
 
 /**
  * A small label with a status, on its own or in an `nb-tag-list`, where it can be selected and removed.
  *
  * With `removable`, the tag shows a cross and emits `remove` when the cross is clicked or Backspace or Delete is
  * pressed on it:
+ *
  * @stacked-example(Removable tags, tag/tag-removable.component)
  *
  * The `appearance` is `filled` (default), `outline` or `hero`, the hero button's gradient:
@@ -45,7 +38,6 @@ let tagUniqueId = 0;
  *
  * The `status` colours it:
  * @stacked-example(Tag Status, tag/tag-status.component)
- *
  * @styles
  *
  * tag-text-font-family:
@@ -291,148 +283,148 @@ let tagUniqueId = 0;
  * tag-hero-control-selected-right-background-color:
  */
 @Component({
-  selector: 'nb-tag',
-  templateUrl: './tag.component.html',
-  exportAs: 'nbTag',
-  imports: [NbIconComponent],
-  host: {
-    '[class]': 'hostClasses()',
-    '[class.selected]': 'isSelected()',
-    '[attr.aria-selected]': "role() === 'option' ? isSelected() : null",
-    '[class.active]': '_isActive()',
-    '[attr.role]': 'role()',
-    '[attr.id]': '_id',
-    '(keydown.delete)': '_remove()',
-    '(keydown.backspace)': '_remove()',
-  },
+    selector: 'nb-tag',
+    templateUrl: './tag.component.html',
+    exportAs: 'nbTag',
+    imports: [NbIconComponent],
+    host: {
+        '[class]': 'hostClasses()',
+        '[class.selected]': 'isSelected()',
+        '[attr.aria-selected]': "role() === 'option' ? isSelected() : null",
+        '[class.active]': '_isActive()',
+        '[attr.role]': 'role()',
+        '[attr.id]': '_id',
+        '(keydown.delete)': '_remove()',
+        '(keydown.backspace)': '_remove()'
+    }
 })
 export class NbTagComponent implements OnDestroy, NbHighlightableOption {
-  // The app's defaults for this type, which the inputs below start from.
-  protected readonly nbDefaults = injectNbDefaults('tag');
+    // The app's defaults for this type, which the inputs below start from.
+    protected readonly nbDefaults = injectNbDefaults('tag')
 
-  readonly _hostElement = inject(ElementRef);
-  protected readonly statusService = inject(NbStatusService);
+    readonly _hostElement = inject(ElementRef)
+    protected readonly statusService = inject(NbStatusService)
 
-  private _destroy$: Subject<NbTagComponent> = new Subject<NbTagComponent>();
+    private _destroy$: Subject<NbTagComponent> = new Subject<NbTagComponent>()
 
-  get destroy$(): Observable<NbTagComponent> {
-    return this._destroy$.asObservable();
-  }
-
-  /**
-   * Tag text.
-   */
-  readonly text = input<string>();
-
-  /**
-   * Selects the tag, until a click or its list changes that; see `isSelected`.
-   */
-  readonly selected = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
-
-  /**
-   * Shows a cross and lets the user remove the tag; see `remove`.
-   */
-  readonly removable = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
-
-  /**
-   * Icon of the cross.
-   */
-  readonly removeIcon = input<string>('close-outline');
-
-  /**
-   * Pack of the cross's icon.
-   */
-  readonly removeIconPack = input<string>('essentials');
-
-  /**
-   * `filled` (default), `outline` or `hero`.
-   */
-  readonly appearanceInput = input<NbTagAppearance | undefined>(undefined, { alias: 'appearance' });
-  /** The appearance in use: the input's, the app's default, or 'filled'. */
-  readonly appearance = linkedSignal<NbTagAppearance>(() => this.appearanceInput() ?? this.nbDefaults().appearance ?? 'filled');
-
-  /**
-   * `basic` (default), `primary`, `info`, `success`, `warning`, `danger`, `control` or a custom status.
-   */
-  readonly status = input<NbComponentOrCustomStatus>('basic');
-
-  /**
-   * Tag size: `tiny`, `small`, `medium`, `large`, `giant`. A tag in an `nb-tag-list` takes the list's size unless it
-   * sets one; others are `medium`.
-   */
-  readonly sizeInput = input<NbComponentSize | undefined>(undefined, { alias: 'size' });
-
-  protected readonly listSize = inject(NB_TAG_LIST_SIZE, { optional: true });
-  // A tag in a tag list is one of its options; one on its own has a remove button the keyboard reaches.
-  protected readonly inList = this.listSize !== null;
-  protected readonly texts = injectNbTexts('tag', () => ({
-    remove: (text) => $localize`:@@nb.tag.remove:Remove ${text}:text:`,
-  }));
-
-  /** The tag's size: its own, its list's, or `medium`. */
-  readonly size = computed(() => this.sizeInput() ?? this.listSize?.() ?? this.nbDefaults().size ?? 'medium');
-
-  /** The tag's role: `option` in a tag list, none on its own. */
-  readonly roleInput = input<string | undefined>(undefined, { alias: 'role' });
-  readonly role = computed(() => this.roleInput() ?? (this.inList ? 'option' : null));
-
-  /**
-   * Emits when the user removes a `removable` tag, with its cross or the Backspace or Delete key. The tag stays until
-   * the app, or a managed `nb-tag-list`, takes it out.
-   */
-  readonly remove = output<NbTagComponent>();
-
-  readonly selectedChange = output<NbTagSelectionChange>();
-
-  /**
-   * Whether the tag is selected: the `selected` input, until a user or the tag list changes it.
-   */
-  readonly isSelected = linkedSignal(() => this.selected());
-
-  protected readonly activeState = signal(false);
-  readonly _isActive = this.activeState.asReadonly();
-
-  readonly _id: string = `nb-tag-${tagUniqueId++}`;
-
-  protected readonly hostClasses = computed(() => [
-    `appearance-${this.appearance()}`,
-    this.statusService.getStatusClass(this.status()),
-    `size-${this.size()}`,
-  ]);
-
-  _remove() {
-    if (this.removable()) {
-      this.remove.emit(this);
+    get destroy$(): Observable<NbTagComponent> {
+        return this._destroy$.asObservable()
     }
-  }
 
-  constructor() {
-    enableTransitionsAfterRender(this._hostElement.nativeElement);
-  }
+    /**
+     * Tag text.
+     */
+    readonly text = input<string>()
 
-  ngOnDestroy() {
-    this._destroy$.next(this);
-  }
+    /**
+     * Selects the tag, until a click or its list changes that; see `isSelected`.
+     */
+    readonly selected = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty })
 
-  /**
-   * Selects or deselects the tag and emits `selectedChange` when that changes its state.
-   */
-  setSelected(selected: boolean) {
-    if (this.isSelected() !== selected) {
-      this.isSelected.set(selected);
-      this.selectedChange.emit({ tag: this, selected });
+    /**
+     * Shows a cross and lets the user remove the tag; see `remove`.
+     */
+    readonly removable = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty })
+
+    /**
+     * Icon of the cross.
+     */
+    readonly removeIcon = input<string>('close-outline')
+
+    /**
+     * Pack of the cross's icon.
+     */
+    readonly removeIconPack = input<string>('essentials')
+
+    /**
+     * `filled` (default), `outline` or `hero`.
+     */
+    readonly appearanceInput = input<NbTagAppearance | undefined>(undefined, { alias: 'appearance' })
+    /** The appearance in use: the input's, the app's default, or 'filled'. */
+    readonly appearance = linkedSignal<NbTagAppearance>(() => this.appearanceInput() ?? this.nbDefaults().appearance ?? 'filled')
+
+    /**
+     * `basic` (default), `primary`, `info`, `success`, `warning`, `danger`, `control` or a custom status.
+     */
+    readonly status = input<NbComponentOrCustomStatus>('basic')
+
+    /**
+     * Tag size: `tiny`, `small`, `medium`, `large`, `giant`. A tag in an `nb-tag-list` takes the list's size unless it
+     * sets one; others are `medium`.
+     */
+    readonly sizeInput = input<NbComponentSize | undefined>(undefined, { alias: 'size' })
+
+    protected readonly listSize = inject(NB_TAG_LIST_SIZE, { optional: true })
+    // A tag in a tag list is one of its options; one on its own has a remove button the keyboard reaches.
+    protected readonly inList = this.listSize !== null
+    protected readonly texts = injectNbTexts('tag', () => ({
+        remove: (text) => $localize`:@@nb.tag.remove:Remove ${text}:text:`
+    }))
+
+    /** The tag's size: its own, its list's, or `medium`. */
+    readonly size = computed(() => this.sizeInput() ?? this.listSize?.() ?? this.nbDefaults().size ?? 'medium')
+
+    /** The tag's role: `option` in a tag list, none on its own. */
+    readonly roleInput = input<string | undefined>(undefined, { alias: 'role' })
+    readonly role = computed(() => this.roleInput() ?? (this.inList ? 'option' : null))
+
+    /**
+     * Emits when the user removes a `removable` tag, with its cross or the Backspace or Delete key. The tag stays until
+     * the app, or a managed `nb-tag-list`, takes it out.
+     */
+    readonly remove = output<NbTagComponent>()
+
+    readonly selectedChange = output<NbTagSelectionChange>()
+
+    /**
+     * Whether the tag is selected: the `selected` input, until a user or the tag list changes it.
+     */
+    readonly isSelected = linkedSignal(() => this.selected())
+
+    protected readonly activeState = signal(false)
+    readonly _isActive = this.activeState.asReadonly()
+
+    readonly _id: string = `nb-tag-${tagUniqueId++}`
+
+    protected readonly hostClasses = computed(() => [
+        `appearance-${this.appearance()}`,
+        this.statusService.getStatusClass(this.status()),
+        `size-${this.size()}`
+    ])
+
+    _remove() {
+        if (this.removable()) {
+            this.remove.emit(this)
+        }
     }
-  }
 
-  _toggleSelection() {
-    this.setSelected(!this.isSelected());
-  }
+    constructor() {
+        enableTransitionsAfterRender(this._hostElement.nativeElement)
+    }
 
-  setActiveStyles() {
-    this.activeState.set(true);
-  }
+    ngOnDestroy() {
+        this._destroy$.next(this)
+    }
 
-  setInactiveStyles() {
-    this.activeState.set(false);
-  }
+    /**
+     * Selects or deselects the tag and emits `selectedChange` when that changes its state.
+     */
+    setSelected(selected: boolean) {
+        if (this.isSelected() !== selected) {
+            this.isSelected.set(selected)
+            this.selectedChange.emit({ tag: this, selected })
+        }
+    }
+
+    _toggleSelection() {
+        this.setSelected(!this.isSelected())
+    }
+
+    setActiveStyles() {
+        this.activeState.set(true)
+    }
+
+    setInactiveStyles() {
+        this.activeState.set(false)
+    }
 }

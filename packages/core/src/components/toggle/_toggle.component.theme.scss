@@ -1,159 +1,159 @@
-@use '../../styles/theming' as *;
+@use "../../styles/theming" as *;
 
 @mixin nb-toggle-theme() {
-  nb-toggle {
-    .toggle {
-      border-width: nb-theme(toggle-border-width);
-      border-style: solid;
-      border-radius: nb-theme(toggle-border-radius);
-      cursor: nb-theme(toggle-cursor);
+    nb-toggle {
+        .toggle {
+            border-width: nb-theme(toggle-border-width);
+            border-style: solid;
+            border-radius: nb-theme(toggle-border-radius);
+            cursor: nb-theme(toggle-cursor);
 
-      // The switcher moves along one edge in both states, so the position transitions between two lengths.
-      @include nb-ltr() {
+            // The switcher moves along one edge in both states, so the position transitions between two lengths.
+            @include nb-ltr {
+                .toggle-switcher {
+                    left: 0;
+                }
+
+                &.checked .toggle-switcher {
+                    left: calc(100% - var(--nb-toggle-switcher-size) - #{nb-theme(toggle-border-width)} * 2);
+                }
+            }
+
+            @include nb-rtl {
+                .toggle-switcher {
+                    right: 0;
+                }
+
+                &.checked .toggle-switcher {
+                    right: calc(100% - var(--nb-toggle-switcher-size) - #{nb-theme(toggle-border-width)} * 2);
+                }
+            }
+        }
+
+        .native-input:enabled:focus + .toggle {
+            @include nb-outline(nb-theme(toggle-outline-width), nb-theme(toggle-outline-color));
+        }
+
+        .native-input:disabled + .toggle {
+            cursor: nb-theme(toggle-disabled-cursor);
+        }
+
         .toggle-switcher {
-          left: 0;
+            width: var(--nb-toggle-switcher-size);
+            height: var(--nb-toggle-switcher-size);
         }
 
-        &.checked .toggle-switcher {
-          left: calc(100% - var(--nb-toggle-switcher-size) - #{nb-theme(toggle-border-width)} * 2);
+        .text {
+            font-family: nb-theme(toggle-text-font-family);
         }
-      }
+    }
 
-      @include nb-rtl() {
-        .toggle-switcher {
-          right: 0;
+    @each $size in nb-get-sizes() {
+        nb-toggle.size-#{$size} {
+            // The switcher's position follows its size too.
+            --nb-toggle-switcher-size: #{nb-theme(toggle-#{$size}-switcher-size)};
+
+            .toggle {
+                height: nb-theme(toggle-#{$size}-height);
+                width: nb-theme(toggle-#{$size}-width);
+            }
+
+            .toggle-switcher nb-icon {
+                height: nb-theme(toggle-#{$size}-switcher-icon-size);
+                width: nb-theme(toggle-#{$size}-switcher-icon-size);
+            }
+
+            .text {
+                font-size: nb-theme(toggle-#{$size}-text-font-size);
+                font-weight: nb-theme(toggle-#{$size}-text-font-weight);
+                line-height: nb-theme(toggle-#{$size}-text-line-height);
+            }
         }
-
-        &.checked .toggle-switcher {
-          right: calc(100% - var(--nb-toggle-switcher-size) - #{nb-theme(toggle-border-width)} * 2);
-        }
-      }
     }
 
-    .native-input:enabled:focus + .toggle {
-      @include nb-outline(nb-theme(toggle-outline-width), nb-theme(toggle-outline-color));
+    @each $status in nb-get-statuses() {
+        @include nb-toggle-status($status);
     }
-
-    .native-input:disabled + .toggle {
-      cursor: nb-theme(toggle-disabled-cursor);
-    }
-
-    .toggle-switcher {
-      width: var(--nb-toggle-switcher-size);
-      height: var(--nb-toggle-switcher-size);
-    }
-
-    .text {
-      font-family: nb-theme(toggle-text-font-family);
-    }
-  }
-
-  @each $size in nb-get-sizes() {
-    nb-toggle.size-#{$size} {
-      // The switcher's position follows its size too.
-      --nb-toggle-switcher-size: #{nb-theme(toggle-#{$size}-switcher-size)};
-
-      .toggle {
-        height: nb-theme(toggle-#{$size}-height);
-        width: nb-theme(toggle-#{$size}-width);
-      }
-
-      .toggle-switcher nb-icon {
-        height: nb-theme(toggle-#{$size}-switcher-icon-size);
-        width: nb-theme(toggle-#{$size}-switcher-icon-size);
-      }
-
-      .text {
-        font-size: nb-theme(toggle-#{$size}-text-font-size);
-        font-weight: nb-theme(toggle-#{$size}-text-font-weight);
-        line-height: nb-theme(toggle-#{$size}-text-line-height);
-      }
-    }
-  }
-
-  @each $status in nb-get-statuses() {
-    @include nb-toggle-status($status);
-  }
 }
 
 @mixin nb-toggle-status($status) {
-  nb-toggle.status-#{$status} {
-    .text {
-      color: nb-theme(toggle-#{$status}-text-color);
-    }
-
-    .toggle {
-      background-color: nb-theme(toggle-#{$status}-background-color);
-      border-color: nb-theme(toggle-#{$status}-border-color);
-    }
-
-    .toggle.checked {
-      background-color: nb-theme(toggle-#{$status}-checked-background-color);
-      border-color: nb-theme(toggle-#{$status}-checked-border-color);
-    }
-
-    .native-input:enabled {
-      &:focus + .toggle {
-        background-color: nb-theme(toggle-#{$status}-focus-background-color);
-        border-color: nb-theme(toggle-#{$status}-focus-border-color);
-
-        &.checked {
-          background-color: nb-theme(toggle-#{$status}-focus-checked-background-color);
-          border-color: nb-theme(toggle-#{$status}-focus-checked-border-color);
+    nb-toggle.status-#{$status} {
+        .text {
+            color: nb-theme(toggle-#{$status}-text-color);
         }
-      }
 
-      &:active + .toggle {
-        background-color: nb-theme(toggle-#{$status}-active-background-color);
-        border-color: nb-theme(toggle-#{$status}-active-border-color);
-
-        &.checked {
-          background-color: nb-theme(toggle-#{$status}-active-checked-background-color);
-          border-color: nb-theme(toggle-#{$status}-active-checked-border-color);
+        .toggle {
+            background-color: nb-theme(toggle-#{$status}-background-color);
+            border-color: nb-theme(toggle-#{$status}-border-color);
         }
-      }
-    }
 
-    .native-input:enabled + .toggle:hover {
-      background-color: nb-theme(toggle-#{$status}-hover-background-color);
-      border-color: nb-theme(toggle-#{$status}-hover-border-color);
+        .toggle.checked {
+            background-color: nb-theme(toggle-#{$status}-checked-background-color);
+            border-color: nb-theme(toggle-#{$status}-checked-border-color);
+        }
 
-      &.checked {
-        background-color: nb-theme(toggle-#{$status}-hover-checked-background-color);
-        border-color: nb-theme(toggle-#{$status}-hover-checked-border-color);
-      }
-    }
+        .native-input:enabled {
+            &:focus + .toggle {
+                background-color: nb-theme(toggle-#{$status}-focus-background-color);
+                border-color: nb-theme(toggle-#{$status}-focus-border-color);
 
-    // The switcher off, then on: dark themes give it a colour of its own off, apart from the surface it's on.
-    .toggle-switcher {
-      background-color: nb-theme(toggle-#{$status}-switcher-background-color);
-    }
+                &.checked {
+                    background-color: nb-theme(toggle-#{$status}-focus-checked-background-color);
+                    border-color: nb-theme(toggle-#{$status}-focus-checked-border-color);
+                }
+            }
 
-    .toggle.checked .toggle-switcher {
-      background-color: nb-theme(toggle-#{$status}-checked-switcher-background-color);
+            &:active + .toggle {
+                background-color: nb-theme(toggle-#{$status}-active-background-color);
+                border-color: nb-theme(toggle-#{$status}-active-border-color);
 
-      nb-icon {
-        color: nb-theme(toggle-#{$status}-checked-switcher-checkmark-color);
-      }
-    }
+                &.checked {
+                    background-color: nb-theme(toggle-#{$status}-active-checked-background-color);
+                    border-color: nb-theme(toggle-#{$status}-active-checked-border-color);
+                }
+            }
+        }
 
-    .native-input:disabled {
-      & + .toggle {
-        background-color: nb-theme(toggle-#{$status}-disabled-background-color);
-        border-color: nb-theme(toggle-#{$status}-disabled-border-color);
+        .native-input:enabled + .toggle:hover {
+            background-color: nb-theme(toggle-#{$status}-hover-background-color);
+            border-color: nb-theme(toggle-#{$status}-hover-border-color);
 
+            &.checked {
+                background-color: nb-theme(toggle-#{$status}-hover-checked-background-color);
+                border-color: nb-theme(toggle-#{$status}-hover-checked-border-color);
+            }
+        }
+
+        // The switcher off, then on: dark themes give it a colour of its own off, apart from the surface it's on.
         .toggle-switcher {
-          background-color: nb-theme(toggle-#{$status}-disabled-switcher-background-color);
-
-          nb-icon {
-            color: nb-theme(toggle-#{$status}-disabled-checked-switcher-checkmark-color);
-          }
+            background-color: nb-theme(toggle-#{$status}-switcher-background-color);
         }
-      }
 
-      & ~ .text {
-        color: nb-theme(toggle-#{$status}-disabled-text-color);
-      }
+        .toggle.checked .toggle-switcher {
+            background-color: nb-theme(toggle-#{$status}-checked-switcher-background-color);
+
+            nb-icon {
+                color: nb-theme(toggle-#{$status}-checked-switcher-checkmark-color);
+            }
+        }
+
+        .native-input:disabled {
+            & + .toggle {
+                background-color: nb-theme(toggle-#{$status}-disabled-background-color);
+                border-color: nb-theme(toggle-#{$status}-disabled-border-color);
+
+                .toggle-switcher {
+                    background-color: nb-theme(toggle-#{$status}-disabled-switcher-background-color);
+
+                    nb-icon {
+                        color: nb-theme(toggle-#{$status}-disabled-checked-switcher-checkmark-color);
+                    }
+                }
+            }
+
+            & ~ .text {
+                color: nb-theme(toggle-#{$status}-disabled-text-color);
+            }
+        }
     }
-  }
 }

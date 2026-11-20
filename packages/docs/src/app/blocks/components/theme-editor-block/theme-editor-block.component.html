@@ -1,135 +1,135 @@
 <section class="themes">
-  <h2 class="subtitle">Your themes</h2>
-  <div class="cards">
-    @for (card of draftCards(); track card.id) {
-    <ngd-theme-card [name]="card.name"
-      [hint]="card.id === draft().id ? editingHint() : label(card.base)"
-      [swatches]="card.swatches"
-      [pressed]="card.id === draft().id"
-      (pick)="themes.select(card.id)" />
-    }
-  </div>
-  <h2 class="subtitle">Start a theme from</h2>
-  <div class="cards">
-    @for (card of baseCards(); track card.id) {
-    <ngd-theme-card hint="New theme"
-      [name]="card.name"
-      [swatches]="card.swatches"
-      (pick)="themes.startFrom(card.base)" />
-    }
-  </div>
+    <h2 class="subtitle">Your themes</h2>
+    <div class="cards">
+        @for (card of draftCards(); track card.id) {
+        <ngd-theme-card [name]="card.name"
+            [hint]="card.id === draft().id ? editingHint() : label(card.base)"
+            [swatches]="card.swatches"
+            [pressed]="card.id === draft().id"
+            (pick)="themes.select(card.id)" />
+        }
+    </div>
+    <h2 class="subtitle">Start a theme from</h2>
+    <div class="cards">
+        @for (card of baseCards(); track card.id) {
+        <ngd-theme-card hint="New theme"
+            [name]="card.name"
+            [swatches]="card.swatches"
+            (pick)="themes.startFrom(card.base)" />
+        }
+    </div>
 </section>
 
 <div class="editor">
-  <nb-card class="controls">
-    <nb-card-header class="controls-header">
-      <span>
-        Edit theme
-        @if (editingHint() !== 'Editing') {
-        <span class="caption status">{{ editingHint() }}</span>
-        }
-      </span>
-      <span class="header-buttons">
-        @if (themes.isSaved()) {
-        <button nbButton
-          ghost
-          size="small"
-          status="danger"
-          type="button"
-          (click)="themes.remove()">Delete</button>
-        }
-        <button nbButton
-          ghost
-          size="small"
-          type="button"
-          [disabled]="!themes.dirty() && !themes.isNew()"
-          (click)="themes.discard()">Discard</button>
-        <button nbButton
-          size="small"
-          status="primary"
-          type="button"
-          [disabled]="themes.isSaved() && !themes.dirty()"
-          (click)="themes.save()">Save</button>
-      </span>
-    </nb-card-header>
-    <nb-card-body class="controls-body">
-      <ngd-theme-controls />
-    </nb-card-body>
-    <nb-card-footer class="controls-footer">
-      <button nbButton
-        outline
-        type="button"
-        [disabled]="!themes.changed()"
-        (click)="themes.reset()">Back to {{ label(draft().base) }}</button>
-    </nb-card-footer>
-  </nb-card>
+    <nb-card class="controls">
+        <nb-card-header class="controls-header">
+            <span>
+                Edit theme
+                @if (editingHint() !== 'Editing') {
+                <span class="caption status">{{ editingHint() }}</span>
+                }
+            </span>
+            <span class="header-buttons">
+                @if (themes.isSaved()) {
+                <button nbButton
+                    ghost
+                    size="small"
+                    status="danger"
+                    type="button"
+                    (click)="themes.remove()">Delete</button>
+                }
+                <button nbButton
+                    ghost
+                    size="small"
+                    type="button"
+                    [disabled]="!themes.dirty() && !themes.isNew()"
+                    (click)="themes.discard()">Discard</button>
+                <button nbButton
+                    size="small"
+                    status="primary"
+                    type="button"
+                    [disabled]="themes.isSaved() && !themes.dirty()"
+                    (click)="themes.save()">Save</button>
+            </span>
+        </nb-card-header>
+        <nb-card-body class="controls-body">
+            <ngd-theme-controls />
+        </nb-card-body>
+        <nb-card-footer class="controls-footer">
+            <button nbButton
+                outline
+                type="button"
+                [disabled]="!themes.changed()"
+                (click)="themes.reset()">Back to {{ label(draft().base) }}</button>
+        </nb-card-footer>
+    </nb-card>
 
-  <div class="preview">
-    <div class="preview-bar">
-      <nb-select aria-label="Screen"
-        size="small"
-        [selected]="screen().id"
-        (selectedChange)="$event && showScreen($event)">
-        @for (group of screenGroups; track group.group) {
-        <nb-option-group [title]="group.group">
-          @for (item of group.screens; track item.id) {
-          <nb-option [value]="item.id">{{ item.title }}</nb-option>
-          }
-        </nb-option-group>
-        }
-      </nb-select>
-      <nb-button-group size="small"
-        aria-label="Devices"
-        (valueChange)="pickDevices($event)">
-        @for (option of deviceOptions; track option.value) {
-        <button nbButtonToggle
-          [value]="option.value"
-          [pressed]="devices() === option.value">{{ option.label }}</button>
-        }
-      </nb-button-group>
-      <nb-checkbox [checked]="rtl()"
-        (checkedChange)="rtl.set($event)">Right to left</nb-checkbox>
-      <a class="full-screen"
-        target="_blank"
-        [href]="screenUrl()">Open full screen</a>
-    </div>
+    <div class="preview">
+        <div class="preview-bar">
+            <nb-select aria-label="Screen"
+                size="small"
+                [selected]="screen().id"
+                (selectedChange)="$event && showScreen($event)">
+                @for (group of screenGroups; track group.group) {
+                <nb-option-group [title]="group.group">
+                    @for (item of group.screens; track item.id) {
+                    <nb-option [value]="item.id">{{ item.title }}</nb-option>
+                    }
+                </nb-option-group>
+                }
+            </nb-select>
+            <nb-button-group size="small"
+                aria-label="Devices"
+                (valueChange)="pickDevices($event)">
+                @for (option of deviceOptions; track option.value) {
+                <button nbButtonToggle
+                    [value]="option.value"
+                    [pressed]="devices() === option.value">{{ option.label }}</button>
+                }
+            </nb-button-group>
+            <nb-checkbox [checked]="rtl()"
+                (checkedChange)="rtl.set($event)">Right to left</nb-checkbox>
+            <a class="full-screen"
+                target="_blank"
+                [href]="screenUrl()">Open full screen</a>
+        </div>
 
-    <div class="devices"
-      [class.both]="devices() === 'both'">
-      @if (devices() !== 'phone') {
-      <ngd-device-frame class="laptop"
-        device="laptop"
-        [label]="screen().title + ' on a laptop'"
-        [url]="screenUrl()"
-        (loaded)="frameLoaded()" />
-      }
-      @if (devices() !== 'laptop') {
-      <ngd-device-frame class="phone"
-        device="phone"
-        [label]="screen().title + ' on a phone'"
-        [url]="screenUrl()"
-        (loaded)="frameLoaded()" />
-      }
+        <div class="devices"
+            [class.both]="devices() === 'both'">
+            @if (devices() !== 'phone') {
+            <ngd-device-frame class="laptop"
+                device="laptop"
+                [label]="screen().title + ' on a laptop'"
+                [url]="screenUrl()"
+                (loaded)="frameLoaded()" />
+            }
+            @if (devices() !== 'laptop') {
+            <ngd-device-frame class="phone"
+                device="phone"
+                [label]="screen().title + ' on a phone'"
+                [url]="screenUrl()"
+                (loaded)="frameLoaded()" />
+            }
+        </div>
     </div>
-  </div>
 </div>
 
 <nb-card>
-  <nb-card-header>Use it</nb-card-header>
-  <nb-card-body>
-    <nb-tabset>
-      <nb-tab tabTitle="Sass theme">
-        <p>Register the theme in your <code>themes.scss</code>, then pick it with <code>provideNbTheme</code>:</p>
-        <ngd-code-block [code]="scss()" />
-      </nb-tab>
-      <nb-tab tabTitle="CSS variables">
-        <p>Or change the {{ label(draft().base) }} theme's CSS variables in your styles:</p>
-        <ngd-code-block [code]="css()" />
-      </nb-tab>
-      <nb-tab tabTitle="Component defaults">
-        <p>Give the components these defaults across your app, see <a href="theme/customization/component-defaults">Component Defaults</a>:</p>
-        <ngd-code-block [code]="defaultsCode()" />
-      </nb-tab>
-    </nb-tabset>
-  </nb-card-body>
+    <nb-card-header>Use it</nb-card-header>
+    <nb-card-body>
+        <nb-tabset>
+            <nb-tab tabTitle="Sass theme">
+                <p>Register the theme in your <code>themes.scss</code>, then pick it with <code>provideNbTheme</code>:</p>
+                <ngd-code-block [code]="scss()" />
+            </nb-tab>
+            <nb-tab tabTitle="CSS variables">
+                <p>Or change the {{ label(draft().base) }} theme's CSS variables in your styles:</p>
+                <ngd-code-block [code]="css()" />
+            </nb-tab>
+            <nb-tab tabTitle="Component defaults">
+                <p>Give the components these defaults across your app, see <a href="theme/customization/component-defaults">Component Defaults</a>:</p>
+                <ngd-code-block [code]="defaultsCode()" />
+            </nb-tab>
+        </nb-tabset>
+    </nb-card-body>
 </nb-card>

@@ -1,19 +1,19 @@
 @if (shouldShowPrefix()) {
 <div #prefixAddon
-  [class]="prefixClasses()">
-  <ng-content select="[nbPrefix]" />
+    [class]="prefixClasses()">
+    <ng-content select="[nbPrefix]" />
 </div>
 }
 
 <div class="nb-form-control-container"
-  [class.nb-form-field-control-with-prefix]="shouldShowPrefix()"
-  [class.nb-form-field-control-with-suffix]="shouldShowSuffix()">
-  <ng-content />
+    [class.nb-form-field-control-with-prefix]="shouldShowPrefix()"
+    [class.nb-form-field-control-with-suffix]="shouldShowSuffix()">
+    <ng-content />
 </div>
 
 @if (shouldShowSuffix()) {
 <div #suffixAddon
-  [class]="suffixClasses()">
-  <ng-content select="[nbSuffix]" />
+    [class]="suffixClasses()">
+    <ng-content select="[nbSuffix]" />
 </div>
 }

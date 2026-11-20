@@ -1,23 +1,23 @@
 // The default theme's field, button, select and button group styles, which specs don't load otherwise.
-@use '@liquid-js/lyr-core/styles/all' as *;
-@use 'input.directive.theme' as input;
-@use '../button/button.component.theme' as button;
-@use '../select/select.component.theme' as select;
-@use '../button-group/button-group.component.theme' as button-group;
-@use '../button-group/button-toggle.component.theme' as button-toggle;
+@use "@liquid-js/lyr-core/styles/all" as *;
+@use "input.directive.theme" as input;
+@use "../button/button.component.theme" as button;
+@use "../select/select.component.theme" as select;
+@use "../button-group/button-group.component.theme" as button-group;
+@use "../button-group/button-toggle.component.theme" as button-toggle;
 
 $nb-enabled-themes: (default);
 
-@include nb-install() {
-  @include nb-theme-base();
-  @include input.nb-input-theme();
-  @include button.nb-buttons-theme();
-  @include select.nb-select-theme();
-  @include button-group.nb-buttons-group-theme();
-  @include button-toggle.nb-buttons-toggle-theme();
+@include nb-install {
+    @include nb-theme-base;
+    @include input.nb-input-theme;
+    @include button.nb-buttons-theme;
+    @include select.nb-select-theme;
+    @include button-group.nb-buttons-group-theme;
+    @include button-toggle.nb-buttons-toggle-theme;
 }
 
 // As a readability tool sets the text's spacing, to WCAG's text-spacing guideline.
 .text-spacing * {
-  line-height: 1.5 !important;
+    line-height: 1.5 !important;
 }

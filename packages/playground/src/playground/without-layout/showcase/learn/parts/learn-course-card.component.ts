@@ -1,26 +1,26 @@
-import { CurrencyPipe } from '@angular/common';
-import { Component, input } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { CurrencyPipe } from '@angular/common'
+import { Component, input } from '@angular/core'
+import { RouterLink } from '@angular/router'
 import {
-  NbCardBodyComponent,
-  NbCardComponent,
-  NbCardFooterComponent,
-  NbCardLinkDirective,
-  NbCardMediaDirective,
-  NbIconComponent,
-  NbProgressBarComponent,
-  NbTagComponent,
-  NbUserComponent,
-} from '@liquid-js/lyr-core';
+    NbCardBodyComponent,
+    NbCardComponent,
+    NbCardFooterComponent,
+    NbCardLinkDirective,
+    NbCardMediaDirective,
+    NbIconComponent,
+    NbProgressBarComponent,
+    NbTagComponent,
+    NbUserComponent
+} from '@liquid-js/lyr-core'
 
-import { portrait } from '../../shared/showcase-images';
-import { cover, LEARN_LEVEL_STATUS, LearnCourse } from '../learn-data';
-import { LearnStarsComponent } from './learn-stars.component';
+import { portrait } from '../../shared/showcase-images'
+import { cover, LEARN_LEVEL_STATUS, LearnCourse } from '../learn-data'
+import { LearnStarsComponent } from './learn-stars.component'
 
 /** A course in the catalogue: its cover, level, title, instructor, rating and price, or how far along it is. */
 @Component({
-  selector: 'npg-learn-course-card',
-  template: `
+    selector: 'npg-learn-course-card',
+    template: `
     @let course = this.course();
     <nb-card>
       <div nbCardMedia class="cover">
@@ -46,7 +46,7 @@ import { LearnStarsComponent } from './learn-stars.component';
       </nb-card-footer>
     </nb-card>
   `,
-  styles: `
+    styles: `
     :host {
       display: block;
     }
@@ -137,27 +137,27 @@ import { LearnStarsComponent } from './learn-stars.component';
       }
     }
   `,
-  imports: [
-    CurrencyPipe,
-    LearnStarsComponent,
-    NbCardBodyComponent,
-    NbCardComponent,
-    NbCardFooterComponent,
-    NbCardLinkDirective,
-    NbCardMediaDirective,
-    NbIconComponent,
-    NbProgressBarComponent,
-    NbTagComponent,
-    NbUserComponent,
-    RouterLink,
-  ],
+    imports: [
+        CurrencyPipe,
+        LearnStarsComponent,
+        NbCardBodyComponent,
+        NbCardComponent,
+        NbCardFooterComponent,
+        NbCardLinkDirective,
+        NbCardMediaDirective,
+        NbIconComponent,
+        NbProgressBarComponent,
+        NbTagComponent,
+        NbUserComponent,
+        RouterLink
+    ]
 })
 export class LearnCourseCardComponent {
-  readonly course = input.required<LearnCourse>();
-  /** Loads the cover right away, for the cards in view as the page opens. */
-  readonly eager = input(false);
+    readonly course = input.required<LearnCourse>()
+    /** Loads the cover right away, for the cards in view as the page opens. */
+    readonly eager = input(false)
 
-  protected readonly cover = cover;
-  protected readonly portrait = portrait;
-  protected readonly levelStatus = LEARN_LEVEL_STATUS;
+    protected readonly cover = cover
+    protected readonly portrait = portrait
+    protected readonly levelStatus = LEARN_LEVEL_STATUS
 }

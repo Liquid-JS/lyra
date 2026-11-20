@@ -1,5 +1,5 @@
-const hidden: Keyframe = { opacity: 0, transform: 'scale(0.96)' };
-const shown: Keyframe = { opacity: 1, transform: 'none' };
+const hidden: Keyframe = { opacity: 0, transform: 'scale(0.96)' }
+const shown: Keyframe = { opacity: 1, transform: 'none' }
 
 /**
  * Fades and scales a pane, a dialog's or a window's, in as it opens, or out before it's removed; the overlay fades the
@@ -7,23 +7,23 @@ const shown: Keyframe = { opacity: 1, transform: 'none' };
  * animate (the server).
  */
 export function animatePane(pane: HTMLElement, opening: boolean): Promise<void> {
-  if (
-    typeof pane.animate !== 'function' ||
+    if (
+        typeof pane.animate !== 'function' ||
     (typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches)
-  ) {
-    return Promise.resolve();
-  }
-  const duration = opening ? 150 : 100;
-  const animation = pane.animate(opening ? [hidden, shown] : [shown, hidden], {
-    duration,
-    easing: opening ? 'ease-out' : 'ease-in',
-    // Closing holds the end, so the pane doesn't flash back before it's removed.
-    fill: opening ? 'none' : 'forwards',
-  });
-  return new Promise((resolve) => {
-    const done = () => resolve();
-    animation.finished.then(done, done);
-    // A timer too, for clocks an animation doesn't follow, e.g. a test's fake timers.
-    setTimeout(done, duration + 50);
-  });
+    ) {
+        return Promise.resolve()
+    }
+    const duration = opening ? 150 : 100
+    const animation = pane.animate(opening ? [hidden, shown] : [shown, hidden], {
+        duration,
+        easing: opening ? 'ease-out' : 'ease-in',
+        // Closing holds the end, so the pane doesn't flash back before it's removed.
+        fill: opening ? 'none' : 'forwards'
+    })
+    return new Promise((resolve) => {
+        const done = () => resolve()
+        animation.finished.then(done, done)
+        // A timer too, for clocks an animation doesn't follow, e.g. a test's fake timers.
+        setTimeout(done, duration + 50)
+    })
 }

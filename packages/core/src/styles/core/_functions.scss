@@ -1,5 +1,5 @@
-@use 'sass:color';
-@use 'sass:map';
+@use "sass:color";
+@use "sass:map";
 
 /// Slightly lighten a color
 /// @access public
@@ -7,7 +7,7 @@
 /// @param {Number} $percentage - percentage of `$color` in returned color
 /// @return {Color}
 @function tint($color, $percentage) {
-  @return color.mix(white, $color, $percentage);
+    @return color.mix(white, $color, $percentage);
 }
 
 /// Slightly darken a color
@@ -16,16 +16,16 @@
 /// @param {Number} $percentage - percentage of `$color` in returned color
 /// @return {Color}
 @function shade($color, $percentage) {
-  @return color.mix(black, $color, $percentage);
+    @return color.mix(black, $color, $percentage);
 }
 
 @function map-set($map, $key, $value: null) {
-  $new: (
-    $key: $value,
-  );
-  @return map.merge($map, $new);
+    $new: (
+        $key: $value,
+    );
+    @return map.merge($map, $new);
 }
 
 @function nb-theme-var-negative($value) {
-  @return calc(#{$value} * -1);
+    @return calc(#{$value} * -1);
 }
