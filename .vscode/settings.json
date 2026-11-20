@@ -1,6 +1,25 @@
 {
-  "editor.defaultFormatter": "esbenp.prettier-vscode",
-  "editor.formatOnSave": true,
+  "editor.insertSpaces": true,
+  "editor.tabSize": 2,
+  "editor.detectIndentation": false,
+  "files.insertFinalNewline": true,
+  // Templates use VS Code's built-in HTML formatter; js-beautify.json holds the same options for `yarn format:html`.
+  "[html]": {
+    "editor.defaultFormatter": "vscode.html-language-features",
+    "editor.formatOnSave": true
+  },
+  // Markdown uses remark's extension, with `.remarkrc.mjs`, the settings of `yarn format:md`.
+  "[markdown]": {
+    "editor.defaultFormatter": "unifiedjs.vscode-remark"
+  },
+  "html.format.wrapAttributes": "force",
+  "html.format.wrapLineLength": 0,
+  "html.format.maxPreserveNewLines": 1,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit",
+    "source.fixAll.stylelint": "explicit"
+  },
+  "eslint.validate": ["javascript", "typescript", "html"],
   "stylelint.validate": ["css", "less", "postcss", "scss"],
   // disable error duplication for scss files
   "scss.validate": false,
@@ -12,7 +31,7 @@
     "**/.DS_Store": true,
 
     "**/.angular": true,
-    "**/packages-smoke/.angular": true,
+    "**/smoke/.angular": true,
 
     // exclude .js and .js.map files, when in a TypeScript project
     "**/*.js": {
@@ -20,7 +39,7 @@
     },
     "**/*.js.map": true,
 
-    // exclude @nebular build folders
+    // exclude build folders
     "**/dist": true
   }
 }
