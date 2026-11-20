@@ -1,55 +1,87 @@
 # Change Current Theme
 
-Nebular Theme System provides 4 color schemes out of the box - `default`, `dark`, `corporate` and `cosmic`. It is both possible to change the theme statically and dynamically during the runtime.
+Lyra has 6 built-in themes - `default`, `dark`, `corporate`, `cosmic`, `material-light` and `material-dark`. The theme
+is set at startup and can be changed at run time.
 
+## Set the Theme
 
-## Switch from Cosmic to Default
-It is extremely simple to replace a theme from one to another.
-All you need to do is to find your `NbThemeModule.forRoot` declaration and change the value of the `name` setting:
+Change the `name` setting of your `provideNbTheme` call (or `NbThemeModule.forRoot` in an NgModule app):
 
 ```ts
-  @NgModule({
-    imports: [
-      // ...
-      NbThemeModule.forRoot({ name: 'default' }),
-    ],
-  }
+bootstrapApplication(AppComponent, {
+  providers: [
+    // ...
+    provideNbTheme({ name: 'default' }),
+  ],
+});
 ```
-<hr>
+
+---
 
 ## Runtime Theme Switch
-In case you want to have better control when a theme is changed, or for instance need to change it based on a user role,
-it is possible to dynamically tell Nebular which theme should be enabled. 
-`NbThemeService` is our friend in this case and particularly the `changeTheme` method:
+
+To change the theme from code, e.g. by a user's role, call `NbThemeService.changeTheme`:
 
 ```ts
+export class AppComponent {
+  private readonly themeService = inject(NbThemeService);
 
-  // ...
-  constructor(private themeService: NbThemeService) {
+  constructor() {
     this.themeService.changeTheme('corporate');
   }
-
+}
 ```
-<hr>
 
-## Listen to Theme Change
-And of course it is possible to subscribe to an event when the current theme gets changed so that you can adjust something in your code accordingly:
+---
+
+## Follow the System and Remember the User's Choice
+
+Declare the app's themes with what each is for, and Lyra picks the one that fits the system's colour scheme and
+contrast (`prefers-color-scheme`, `prefers-contrast`) until the user chooses one. With `preferences`, the choice is
+kept, in `localStorage` by default:
 
 ```ts
-
-  // ...
-  constructor(private themeService: NbThemeService) {
-  
-    this.themeService.onThemeChange()
-          .subscribe((theme: any) => {
-            console.log(`Theme changed to ${theme.name}`);
-          });
-  }
-
+provideNbTheme({
+  name: 'default',
+  themes: [
+    { name: 'default', scheme: 'light' },
+    { name: 'dark', scheme: 'dark' },
+    { name: 'contrast', scheme: 'dark', contrast: 'more', label: 'High contrast' },
+  ],
+  preferences: true,
+}),
 ```
-<hr>
+
+`<nb-theme-select />` lets the user choose a theme or "System", and `<nb-content-size-switcher />` how large the content
+is, which scales the root font size. In code, `NbThemeService` has `theme()`, `themePreference()`,
+`setThemePreference()`, `contentSize()` and `setContentSize()`. To keep the preferences elsewhere, e.g. in the user's
+profile on a server, provide `NB_PREFERENCE_STORAGE`; its `get` and `set` may return promises.
+
+---
+
+## Listen to Theme Change
+
+`NbThemeService.onThemeChange()` emits each change, with the new and the previous theme's names:
+
+```ts
+export class AppComponent {
+  private readonly themeService = inject(NbThemeService);
+
+  constructor() {
+    this.themeService.onThemeChange()
+      .pipe(takeUntilDestroyed())
+      .subscribe((theme: NbThemeChange) => {
+        console.log(`Theme changed to ${theme.name}`);
+      });
+  }
+}
+```
+
+The current theme is also a signal, `themeService.theme()`, which templates, `computed()` and `effect()` can read.
+
+---
 
 ## Related Articles
 
-- [Enable Theme Customization](docs/design-system/enable-customizable-theme)
-- [Create Custom Theme](docs/design-system/create-custom-theme)
+- [Enable Theme Customization](theme/customization/enable-customizable-theme)
+- [Create Custom Theme](theme/customization/create-custom-theme)

@@ -1,25 +1,26 @@
 # RTL
 
-All Nebular components support RTL out of the box.
+All Lyra components support RTL.
 
-The components that accept a position as a setting now also support logical start and end values, similar to flexbox. The value of start and end depends on the current layout direction. For LTR it's left and for RTL - right.
-For instance, if we need the sidebar to be positioned logically depending on a language direction, then instead of setting it to left we can set its position to start:
+Components that take a position also accept the logical `start` and `end`, which follow the layout direction: `start` is left in LTR and right in RTL.
+The sidebar is at the start by default, and `end` puts it on the other side; the physical `left` and `right` keep it on that side in both directions:
 
 ```html
-<nb-sidebar start></nb-sidebar>
+<nb-sidebar></nb-sidebar>
+<nb-sidebar end></nb-sidebar>
 ```
 
-Document direction could be set through the `NbThemeModule.forRoot` call. Supported values are `ltr` and `rtl`.
+The document direction is the fourth argument of `provideNbTheme` (or `NbThemeModule.forRoot`, which takes the same arguments): `NbLayoutDirection.LTR`, the default, or `NbLayoutDirection.RTL`.
 
 ```typescript
-@NgModule({
-  imports: [
-    NbThemeModule.forRoot(nbThemeOptions, nbJSThemes, nbMediaBreakpoints, 'rtl')
-  ]
-})
-```
+import { NbLayoutDirection, provideNbTheme } from '@liquid-js/lyr-core';
 
-Default value is `ltr`.
+bootstrapApplication(AppComponent, {
+  providers: [
+    provideNbTheme({ name: 'default' }, [], undefined, NbLayoutDirection.RTL),
+  ],
+});
+```
 
 <div class="note note-info">
   <div class="note-title">Note</div>
@@ -28,7 +29,7 @@ Default value is `ltr`.
   </div>
 </div>
 
-To help you add RTL support to your custom components, Nebular provides you with two scss mixins: `nb-lrt` and `nb-rtl`. You can use them to alter values of css properties, which don't support logical values, like paddings, margins, etc. You can pass single property and value as arguments, pass multiple statements as the content of mixin or both. For example:
+For your own components, the `nb-ltr` and `nb-rtl` Sass mixins scope styles to one direction, for values that have no logical form. Pass a property and its value, a block, or both:
 
 ```scss
 :host {
@@ -48,14 +49,13 @@ To help you add RTL support to your custom components, Nebular provides you with
 }
 ```
 
-Please note, the mixins are only available within component `:host` selector or `nb-install-component()` mixin if used.
+The mixins only work inside the component's `:host` selector, or `nb-install-component()`, which wraps its content in `:host`.
 
-If you need to change direction dynamically, get current value or listen to changes of direction, Nebular provides `NbLayoutDirectionService`.
+`NbLayoutDirectionService` holds the direction: `direction()` is a signal, `isLtr()`, `isRtl()` and `getDirection()` read it, `setDirection()` changes it and `onDirectionChange()` emits the changes.
 
-# Layout direction directives
+## Layout direction directives
 
-Nebular provides `nbLtr` and `nbRlt` directives to show content based on the current direction.
-For example, you could apply the `nbRtl` directive to the element you need to show only when layout direction is right-to-left add:
+`*nbLtr` and `*nbRtl` render content only in that direction:
 
 ```html
 <div *nbRtl>This text is visible only when layout direction is RTL</div>

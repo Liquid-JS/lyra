@@ -1,57 +1,50 @@
 # UI Components
 
-Auth module comes with a list of authentication components:
+The Auth module's components:
 
-- `<nb-auth-block></nb-auth-block>` - component-wrapper, provides basic styles for the forms, already included inside of the page-components;
+- `<nb-auth-block></nb-auth-block>` - wrapper with the forms' basic styles, already used by the page components;
 - `<nb-register></nb-register>` - registration page;
 - `<nb-login></nb-login>` - login page;
-- `<nb-logout></nb-logout>` - logout page - shows "logging out..." message while sending logout request;
+- `<nb-logout></nb-logout>` - logout page, shows a "logging out..." message while the logout request is sent;
 - `<nb-request-password></nb-request-password>` - request password page;
 - `<nb-reset-password></nb-reset-password>` - reset password page.
-<hr>
+
+---
 
 ## UI Settings
 
-Alongside with the strategies' configuration `AuthModule` also accepts a list of settings for UI side under the `forms` key:
+Besides the strategies, `provideNbAuth` (or `NbAuthModule.forRoot`) takes the forms' settings under `forms`:
 
 ```typescript
-
-@NgModule({
-  imports: [
-   // ...
-    
-   NbAuthModule.forRoot({
-         strategies: [
-           NbPasswordAuthStrategy.setup({
-             name: 'email',
-           }),
-         ],
-         forms: {},
-       }), 
+provideNbAuth({
+  strategies: [
+    NbPasswordAuthStrategy.setup({
+      name: 'email',
+    }),
   ],
-});
-
+  forms: {},
+}),
 ```
 
-You can configure each specific form separately, here're the default values:
+Each form is configured separately. The defaults:
 
 ```typescript
-
 export interface NbAuthSocialLink {
-  link?: string,
-  url?: string,
-  target?: string,
-  title?: string,
-  icon?: string,
+  link?: string;
+  url?: string;
+  target?: string;
+  title?: string;
+  icon?: string;
 }
 
-const socialLinks: NbAuthSocialLink[] = [];
+const socialLinks = new Array<NbAuthSocialLink>();
 
-export const defaultSettings: any = {
+export const defaultAuthOptions: NbAuthResolvedOptions = {
+  strategies: [],
   forms: {
     login: {
       redirectDelay: 500, // delay before redirect after a successful login, while success message is shown to the user
-      strategy: 'email',  // strategy id key.
+      strategy: 'email',  // strategy name.
       rememberMe: true,   // whether to show or not the `rememberMe` checkbox
       showMessages: {     // show/not show success/error messages
         success: true,
@@ -109,98 +102,85 @@ export const defaultSettings: any = {
   },
 };
 ```
-<hr>
+
+---
 
 ## Remove redirect delay
 
-So, for instance, to remove the redirectDelay setting and disable the success message, we can do the following:
+For instance, to redirect at once and hide the success messages:
 
 ```typescript
-
-@NgModule({
-  imports: [
-   // ...
-    
-   NbAuthModule.forRoot({
-         strategies: [
-           NbPasswordAuthStrategy.setup({
-             name: 'email',
-           }),
-         ],
-         forms: {
-           login: {
-             redirectDelay: 0,
-             showMessages: {
-               success: true,
-             },
-           },
-           register: {
-             redirectDelay: 0,
-             showMessages: {
-               success: true,
-             },
-           },
-           requestPassword: {
-             redirectDelay: 0,
-             showMessages: {
-               success: true,
-             },
-           },
-           resetPassword: {
-             redirectDelay: 0,
-             showMessages: {
-               success: true,
-             },
-           },
-           logout: {
-             redirectDelay: 0,
-           },
-         },
-       }), 
+provideNbAuth({
+  strategies: [
+    NbPasswordAuthStrategy.setup({
+      name: 'email',
+    }),
   ],
-});
-
+  forms: {
+    login: {
+      redirectDelay: 0,
+      showMessages: {
+        success: false,
+      },
+    },
+    register: {
+      redirectDelay: 0,
+      showMessages: {
+        success: false,
+      },
+    },
+    requestPassword: {
+      redirectDelay: 0,
+      showMessages: {
+        success: false,
+      },
+    },
+    resetPassword: {
+      redirectDelay: 0,
+      showMessages: {
+        success: false,
+      },
+    },
+    logout: {
+      redirectDelay: 0,
+    },
+  },
+}),
 ```
 
-If it looks a bit verbose, we can move the repeating part into a variable like this:
+The repeating part can be a variable:
 
 ```typescript
-
-const formSetting: any = {
+const formSetting: NbAuthDeepPartial<NbAuthFormOptions> = {
   redirectDelay: 0,
   showMessages: {
-    success: true,
+    success: false,
   },
 };
 
-@NgModule({
-  imports: [
-   // ...
-    
-   NbAuthModule.forRoot({
-         strategies: [
-           NbPasswordAuthStrategy.setup({
-             name: 'email',
-           }),
-         ],
-         forms: {
-           login: formSetting,
-           register: formSetting,
-           requestPassword: formSetting,
-           resetPassword: formSetting,
-           logout: {
-             redirectDelay: 0,
-           },
-         },
-       }), 
+provideNbAuth({
+  strategies: [
+    NbPasswordAuthStrategy.setup({
+      name: 'email',
+    }),
   ],
-});
-
+  forms: {
+    login: formSetting,
+    register: formSetting,
+    requestPassword: formSetting,
+    resetPassword: formSetting,
+    logout: {
+      redirectDelay: 0,
+    },
+  },
+}),
 ```
-The settings will be merged with the default values so no need to specify all of the keys here.
-<hr>
+
+The settings are merged over the defaults, so only the changed keys are needed.
+
+---
 
 ## Where to next
 
-- Receiving [user token after authentication](docs/auth/getting-user-token)
-- [Custom Auth Components](docs/auth/custom-auth-components)
+- Receiving [user token after authentication](extras/auth/getting-user-token)
+- [Custom Auth Components](extras/auth/custom-auth-components)

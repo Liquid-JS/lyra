@@ -1,57 +1,59 @@
-# Enable CSS Custom Properties Mode
+# CSS Custom Properties
 
-Custom CSS properties - custom variables that could be declared in CSS, changed and resolved in browser runtime.
-This allows dynamically change application themes with no need to reload the page. Moreover, no additional CSS is loaded, resulting in good performance achievements.
-
-Starting with Nebular 4, Nebular can run in custom CSS properties mode in a simple configuration change.
-
-<div class="note note-info section-end">
-  <div class="note-title">Setup Required</div>
-  <div class="note-body">
-    This guide assumes you already enabled <a href="docs/design-system/enable-customizable-theme">Theme Customization</a> 
-    and reviewed <a href="docs/design-system/design-system-theme">Eva Design System Theme</a> rules.
-  </div>
-</div>
-
-## Enable Custom CSS Properties
-
-To enable the mode, find your `themes.scss` and set the `$nb-enable-css-custom-properties` to `true`:
-
-```scss
-@forward '@nebular/theme/styles/theming';
-@use '@nebular/theme/styles/theming' as *;
-@use '@nebular/theme/styles/themes/default';
-
-$nb-enable-css-custom-properties: true; // <-- enable css custom properties
-
-$nb-themes: nb-register-theme(
-  (
-    // your theme
-    text-basic-color: color-basic-800,
-    text-disabled-color: color-basic-600
-  ),
-  default,
-  default
-);
-```
-
-As a result, all theme properties will be placed under `body` element as custom css properties:
+Lyra's themes are CSS custom properties. Each installed theme writes its variables once, on its `.nb-theme-<name>`
+class, and the components read them with `var()`, so they follow whichever theme an element is in:
 
 ```css
-
 .nb-theme-default {
-  --color-basic-800: #2e384f,
-  --text-basic-color: var(--color-basic-800),
+  --color-basic-800: #222b45;
+  --text-basic-color: var(--color-basic-800);
+  --border-radius: 0.25rem;
+  --button-semi-round-border-radius: calc(var(--border-radius) * 3);
 }
-
 ```
 
-When you change a theme, the theme class will be changed, resulting in a new set of css properties, and changing all the component styles dynamically, in the runtime.
+`NbThemeService` puts the theme's class on the `body`. Changing the theme swaps the class, so the whole app takes the
+other theme's variables at once, without loading more CSS or reloading the page.
 
-<hr>
+With several themes enabled, the variables they have alike, such as the components' colours that follow a status's,
+are written once, for all of them, and each theme's own values after.
+
+---
+
+## Use them in your styles
+
+`nb-theme()` gives a variable's `var()`:
+
+```scss
+@use '../../../themes' as *;
+
+.summary {
+  background-color: nb-theme(background-basic-color-2);
+  border-radius: nb-theme(border-radius);
+}
+```
+
+In plain CSS, use the variables directly: `background-color: var(--background-basic-color-2)`.
+
+---
+
+## Change them at run time
+
+A variable can be set anywhere CSS can, and everything that refers to it follows, e.g. a corner radius:
+
+```css
+.nb-theme-default {
+  --border-radius: 0.5rem;
+}
+```
+
+Variables that refer to other ones follow them too: the semi-round shapes above are three times `--border-radius`, so
+they round off with it. The [Theme Editor](theme/theme-editor) works this way, and exports a theme's changes as CSS.
+
+---
 
 ## Related Articles
 
-- [Use Theme Variables](docs/design-system/use-theme-variables)
-- [Create Custom Theme](docs/design-system/create-custom-theme)
-- [Multiple Runtime Themes](docs/design-system/enable-multiple-runtime-themes)
+- [Use Theme Variables](theme/customization/use-theme-variables)
+- [Create Custom Theme](theme/customization/create-custom-theme)
+- [Multiple Runtime Themes](theme/customization/enable-multiple-runtime-themes)

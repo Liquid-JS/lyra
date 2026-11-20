@@ -1,207 +1,199 @@
-# Configuring Google OAuth2 with Nebular Auth
+# Configuring Google OAuth2 with Lyra Auth
 
-Using `NbOAuth2AuthStrategy` gives the possibility to configure authentication with a lot of 3rd party authentication providers, such as Google, Facebook, etc.
-There is no need in any backend implementation, as [OAuth2](https://tools.ietf.org/html/rfc6749) protocol enables completely server-less authentication flow as one of the options.
+`NbOAuth2AuthStrategy` signs in with OAuth2 providers such as Google or Facebook, with no backend of your own, as
+[OAuth2](https://tools.ietf.org/html/rfc6749) allows.
 
-In this article we will setup and configure `NbOAuth2AuthStrategy` for [Google Authentication](https://developers.google.com/identity/protocols/OAuth2UserAgent) 
-based on [Implicit](https://tools.ietf.org/html/rfc6749#section-4.2) flow.
-<hr>
+This article sets up `NbOAuth2AuthStrategy` for [Google](https://developers.google.com/identity/protocols/OAuth2UserAgent)
+with the [implicit](https://tools.ietf.org/html/rfc6749#section-4.2) flow.
+
+---
 
 ## Step 1. Obtain keys
 
-As a first step, we need to set up an application and obtain its keys on the authentication server (Google in our case).
-More details how to do this you can find on [Enable APIs for your project](https://developers.google.com/identity/protocols/OAuth2UserAgent#enable-apis) page. 
-We won't copy over this part of the article here, but as a result, you should have your `client_id` - unique application identifier.
-<hr>
+Register an application with the provider, as in Google's [Enable APIs for your project](https://developers.google.com/identity/protocols/OAuth2UserAgent#enable-apis),
+to get its `client_id`.
+
+---
 
 ## Step 2. Enable a Strategy
 
-Next step would be to register `NbOAuth2AuthStrategy` in your `app.module.ts`:
+Register `NbOAuth2AuthStrategy` in the application providers (`app.config.ts`); an app with other strategies adds it
+to their array:
 
 ```ts
-@NgModule({
-  imports: [
-    // ...
-
-    NbAuthModule.forRoot({
-      strategies: [
-        NbOAuth2AuthStrategy.setup({
-          name: 'google',
-          // ...
-        }),
-      ],
+provideNbAuth({
+  strategies: [
+    NbOAuth2AuthStrategy.setup({
+      name: 'google',
+      // ...
     }),
   ],
-})
-export class YourModule {
-}
-``` 
+}),
+```
 
-So we imported `NbAuthModule` and provided a strategy we want to use. If you already have some strategy configurated - don't worry, you can just add a new one to the `strategies` array.
-We also assigned a `name` - `google`. Later on, we will use this alias to call the strategy.
-<hr>
+`provideNbAuth` is `NbAuthModule.forRoot` in an NgModule app. The strategy's `name`, `google`, is how it's called
+later.
+
+---
 
 ## Step 3. Configure
 
-Let's fill in our strategy with some settings. We add the `client_id` obtained in Step 1. We don't need client_secret for this authentication flow, so we leave it empty.
-Then we set `authorize` endpoint, response_type (which is `token` in our case) and [scope](https://tools.ietf.org/html/rfc6749#section-3.3) of the authentication:
- 
-```ts
-@NgModule({
-  imports: [
-    // ...
+Add the `client_id` from Step 1 (this flow needs no client secret), the `authorize` endpoint, the response type
+(`token` for the implicit flow) and the [scope](https://tools.ietf.org/html/rfc6749#section-3.3):
 
-    NbAuthModule.forRoot({
-      strategies: [
-        NbOAuth2AuthStrategy.setup({
-          name: 'google',
-          clientId: 'YOUR_CLIENT_ID',
-          clientSecret: '',
-          authorize: {
-            endpoint: 'https://accounts.google.com/o/oauth2/v2/auth',
-            responseType: NbOAuth2ResponseType.TOKEN,
-            scope: 'https://www.googleapis.com/auth/userinfo.profile',
-          },
-        }),
-      ],
+```ts
+provideNbAuth({
+  strategies: [
+    NbOAuth2AuthStrategy.setup({
+      name: 'google',
+      clientId: 'YOUR_CLIENT_ID',
+      clientSecret: '',
+      authorize: {
+        endpoint: 'https://accounts.google.com/o/oauth2/v2/auth',
+        responseType: NbOAuth2ResponseType.TOKEN,
+        scope: 'https://www.googleapis.com/auth/userinfo.profile',
+      },
     }),
   ],
-})
-export class YourModule {
-}
+}),
 ```
-<hr>
+
+---
 
 ## Step 4. Routes
 
-We need at least two routes to be able to organize OAuth2 flow. First one - "login" route, where we can simply have a button to initiate the authentication process.
-The second one - so-called "callback" route, we need to handle OAuth2 server response.
-Let's add both to our routing referring some empty components:
+The flow needs two routes: a "login" route with a button that starts it, and a "callback" route that handles the
+provider's response:
 
 ```ts
-RouterModule.forChild([
+export const routes: Routes = [
   {
     path: '',
-    component: NbOAuth2LoginComponent,
+    component: OAuth2LoginComponent,
   },
   {
     path: 'callback',
-    component: NbOAuth2CallbackComponent,
+    component: OAuth2CallbackComponent,
   },
-]),
+];
 ```
-<hr>
+
+---
 
 ## Step 5. Redirect URI
 
-The last configuration bit is to set up the `redirect_uri` parameter. Make sure you've added the URL to the Google Console as per the [documentation](https://developers.google.com/identity/protocols/OAuth2UserAgent#redirecting).
+Set `redirectUri` to the callback route's URL, which must also be registered with the provider, as in Google's
+[documentation](https://developers.google.com/identity/protocols/OAuth2UserAgent#redirecting):
 
-Now let's complete the setup:
 ```ts
-@NgModule({
-  imports: [
-    // ...
+provideNbAuth({
+  strategies: [
+    NbOAuth2AuthStrategy.setup({
+      name: 'google',
+      clientId: 'YOUR_CLIENT_ID',
+      clientSecret: '',
+      authorize: {
+        endpoint: 'https://accounts.google.com/o/oauth2/v2/auth',
+        responseType: NbOAuth2ResponseType.TOKEN,
+        scope: 'https://www.googleapis.com/auth/userinfo.profile',
 
-    NbAuthModule.forRoot({
-      strategies: [
-        NbOAuth2AuthStrategy.setup({
-          name: 'google',
-          clientId: 'YOUR_CLIENT_ID',
-          clientSecret: '',
-          authorize: {
-            endpoint: 'https://accounts.google.com/o/oauth2/v2/auth',
-            responseType: NbOAuth2ResponseType.TOKEN,
-            scope: 'https://www.googleapis.com/auth/userinfo.profile',
-            
-            
-            redirectUri: 'http://localhost:4100/example/oauth2/callback',
-          },
-        }),
-      ],
+        redirectUri: 'http://localhost:4100/example/oauth2/callback',
+      },
     }),
   ],
-})
-export class YourModule {
-}
+}),
 ```
-<hr>
+
+---
 
 ## Step 6. Complete your components
 
-And finally, let's add code to our component to initiate the authentication. First - `NbOAuth2LoginComponent`:
-
+`OAuth2LoginComponent` starts the sign-in with `NbAuthService.authenticate` and the strategy's name, which builds the
+authorization URL and redirects to the provider:
 
 ```ts
 @Component({
-  selector: 'nb-oauth2-login',
+  selector: 'app-oauth2-login',
+  imports: [NbButtonComponent],
   template: `
-    <button class="btn btn-success" *ngIf="!token" (click)="login()">Sign In with Google</button>
+    @if (!token()) {
+      <button nbButton status="success" (click)="login()">Sign In with Google</button>
+    }
   `,
 })
-export class NbOAuth2LoginComponent implements OnDestroy {
+export class OAuth2LoginComponent {
+  private readonly authService = inject(NbAuthService);
+  private readonly destroyRef = inject(DestroyRef);
 
-  private destroy$ = new Subject<void>();
+  readonly token = toSignal(
+    this.authService.onTokenChange().pipe(map((token) => (token.isValid() ? token : undefined))),
+  );
 
   login() {
     this.authService.authenticate('google')
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((authResult: NbAuthResult) => {
-      });
-  }
-
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe();
   }
 }
 ```
-The code is pretty much straightforward - we call `NbAuthService`.`authenticate` method and pass our strategy alias - `google` subscribing to result.
-This will prepare `authorization` request URL and redirect us to google authentication server.
 
-Now, we need to configure that "callback" URL to be able to properly handle response:
+`OAuth2CallbackComponent` calls the same `authenticate`, which sees it's on the way back from the provider, handles the
+response and saves the token:
 
 ```ts
 @Component({
-  selector: 'nb-playground-oauth2-callback',
+  selector: 'app-oauth2-callback',
+  imports: [NbLayoutComponent, NbLayoutColumnComponent],
   template: `
     <nb-layout>
       <nb-layout-column>Authenticating...</nb-layout-column>
     </nb-layout>
   `,
 })
-export class NbOAuth2CallbackPlaygroundComponent implements OnDestroy {
+export class OAuth2CallbackComponent {
+  private readonly authService = inject(NbAuthService);
+  private readonly router = inject(Router);
 
-  private destroy$ = new Subject<void>();
-
-  constructor(private authService: NbAuthService, private router: Router) {
+  constructor() {
     this.authService.authenticate('google')
-      .pipe(takeUntil(this.destroy$))
+      .pipe(takeUntilDestroyed())
       .subscribe((authResult: NbAuthResult) => {
         if (authResult.isSuccess()) {
-          this.router.navigateByUrl('/pages/dashboard');
+          void this.router.navigateByUrl('/pages/dashboard');
         }
       });
   }
-
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
-  }
 }
-``` 
-Here we call the same `authenticate` method, which will determine that we are in the `redirect` state, handle the response, save your token and redirect you back to your app.
-<hr>
+```
+
+---
+
+## The code flow, PKCE and state
+
+This guide uses the implicit flow (`token`) for brevity, but OAuth 2.1 recommends the authorization code flow, the
+strategy's default (`responseType: NbOAuth2ResponseType.CODE`), with a `token` endpoint to exchange the code at.
+
+The code flow uses [PKCE](https://www.rfc-editor.org/rfc/rfc7636): each sign-in makes a random verifier, sends its
+S256 challenge to `authorize`, and the verifier with the code to `token`, so a stolen code is useless. Servers that
+don't support PKCE ignore it; `authorize: { pkce: false }` turns it off.
+
+Every redirect also sends a `state`, random unless `authorize.state` sets one, and the redirect back is refused
+unless it brings the same state, so a sign-in this browser didn't start can't complete. The verifier and the state
+are kept in `sessionStorage` while the browser is away.
+
+---
 
 ## Complete example
 
-A complete code example could be found on [GitHub](https://github.com/akveo/nebular/tree/master/src/playground/with-layout/oauth2).
-And here the playground example available to play around with [OAuth2 Nebular Example](/example/oauth2).
+A complete code example is on [GitHub](https://github.com/Liquid-JS/lyra/tree/master/packages/playground/src/playground/with-layout/oauth2).
+The [playground example](/example/oauth2) signs in once its `oauth2.routes.ts` has your own client ID in place of the
+placeholder.
 
-<hr>
+---
 
 ## Related Articles
 
-- [NbAuthService](/docs/auth/nbauthservice)
-- [NbTokenService](/docs/auth/nbtokenservice)
-- Receiving [user token after authentication](/docs/auth/getting-user-token)
-- [NbOAuth2AuthStrategy](/docs/auth/nboauth2authstrategy)
+- [NbAuthService](/extras/auth/nbauthservice)
+- [NbTokenService](/extras/auth/nbtokenservice)
+- Receiving [user token after authentication](/extras/auth/getting-user-token)
+- [NbOAuth2AuthStrategy](/extras/auth/nboauth2authstrategy)

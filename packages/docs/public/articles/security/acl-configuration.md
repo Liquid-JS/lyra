@@ -1,226 +1,168 @@
 # ACL
 
-Permissions control is a general task when it comes to the development of more or less complex web application. Your application may have various roles and resources you need to protect.
-ACL (access control list) provides a flexible way of configuring "who can do what against what resource".
+An ACL (access control list) says "who can do what against what resource". This article sets up three roles
+(`guest`, `user` and `moderator`) with three permissions (`view`, `create`, `remove`) over two resources (`news`,
+`comments`).
 
-In this article we configure a common setup when the app has three roles (`guest`, `user` and `moderator`), the roles have different permissions (`view`, `create`, `remove`) 
-and the application contains two types of resources that needs to be protected (`news`, `comments`).
-<hr>
+---
 
 ## ACL Configuration
 
-Nebular ACL has a simple way of setting it up. When registering a module you can specify a set of ACL rules by simply providing it as a module configuration.
-
-Let's assume that our guest users can only `view` `news` and `comments`, users can do everything as guests, but also can `create` `comments`, and moderators can also `create` and `remove` `news` and `comments`.
-Now, let's convert this into an ACL configuration object which Nebular can understand. Open your `app.module.ts` and change the `NbSecurityModule.forRoot()` call as follows:
+Guests can only `view` `news` and `comments`; users can do what guests can and `create` `comments`; moderators can
+also `create` `news` and `remove` both. As the `accessControl` of `provideNbSecurity()` (or
+`NbSecurityModule.forRoot()` in an NgModule app) in `app.config.ts`:
 
 ```ts
-@NgModule({
-  imports: [
-   // ...
-    
-   NbSecurityModule.forRoot({
-     accessControl: {
-       guest: {
-         view: ['news', 'comments'],
-       },
-       user: {
-         parent: 'guest',
-         create: 'comments',
-       },
-       moderator: {
-         parent: 'user',
-         create: 'news',
-         remove: '*',
-       },
-     },
-   }),
-   
- ],
+provideNbSecurity({
+  accessControl: {
+    guest: {
+      view: ['news', 'comments'],
+    },
+    user: {
+      parent: 'guest',
+      create: 'comments',
+    },
+    moderator: {
+      parent: 'user',
+      create: 'news',
+      remove: '*',
+    },
+  },
+}),
+```
 
-``` 
+Each role lists its permissions with the resources they allow, a string or an array; `parent` inherits another role's;
+`*` allows a permission on any resource.
 
-As you can see the configuration is pretty much straightforward, each role can have a list of permissions (view, create, remove) and resources that are allowed for those permissions. We can also specify a `*` resource,
-which means that we have permission against any resource (like moderators can remove both news and comments).    
-<hr>
+---
 
 ## Role Configuration
 
-So far we told Nebular Security what roles-permissions-resources our application has. Now we need to specify how Nebular can determine the role of the currently authenticated user.
-To do so we need to create a `RoleProvider` with one simple method `getRole`, which returns an `Observable<string>` of a role.
-In the simplest form we can provide this service directly in the main module:
-
+Next, Lyra Security needs the current user's role, from an `NbRoleProvider` whose `getRole` returns an
+`Observable<string>` (or of `string[]`, see [multiple roles](extras/security/multiple-user-roles)). The simplest
+provider is a value in the application providers:
 
 ```ts
 // ...
 
-import { of as observableOf } from 'rxjs/observable/of';
-import { NbSecurityModule, NbRoleProvider } from '@nebular/security';
+import { of } from 'rxjs';
+import { NbRoleProvider, provideNbSecurity } from '@liquid-js/lyr-security';
 
-
-@NgModule({
-  imports: [
-   // ...
-    
-   NbSecurityModule.forRoot({
-    // ...
-   }),
-
- ],
+export const appConfig: ApplicationConfig = {
   providers: [
     // ...
+    provideNbSecurity({
+      // ...
+    }),
     {
       provide: NbRoleProvider,
       useValue: {
         getRole: () => {
-          return observableOf('guest');
+          return of('guest');
         },
       },
     },
   ],
-``` 
-That's easy we have just provided a role, so that Nebular can determine which user is currently accessing the app.
-The good thing about this configuration is that it's not tightly coupled with the rest of your authentication flow, which gives you a lot of flexibility over it.
+};
+```
 
-<hr>
+The role provider isn't tied to the authentication flow, so it can take the role from anywhere.
+
+---
 
 ## Role Provider
 
-But, in our example, the role is "hardcoded", which in the real world app would be dynamic and depend on the current user. 
-
-Assuming that you already have `Nebular Auth` module fully configured and functioning based on `JWT` we will adjust the example to retrieve a role from the user token.
-
-Let's create a separate `role.provider.ts` service in order not to put a lot of logic into the module itself:
+In a real app the role depends on the current user. With Lyra Auth configured and a JWT token, a `role.provider.ts`
+service reads it from the token:
 
 ```typescript
-import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs/Observable';
-import { map } from 'rxjs/operators/map';
+import { inject, Injectable } from '@angular/core';
+import { map, Observable } from 'rxjs';
 
-import { NbAuthService, NbAuthJWTToken } from '@nebular/auth';
-import { NbRoleProvider } from '@nebular/security';
-
+import { NbAuthJWTToken, NbAuthService } from '@liquid-js/lyr-auth';
+import { NbRoleProvider } from '@liquid-js/lyr-security';
 
 @Injectable()
 export class RoleProvider implements NbRoleProvider {
-
-  constructor(private authService: NbAuthService) {
-  }
+  private readonly authService = inject(NbAuthService);
 
   getRole(): Observable<string> {
-    // ...
+    return this.authService.onTokenChange().pipe(
+      map((token) => {
+        // Claims other than the registered ones (exp, sub, …) are `unknown` until checked.
+        const role = token instanceof NbAuthJWTToken && token.isValid() ? token.getPayload()?.['role'] : undefined;
+        return typeof role === 'string' ? role : 'guest';
+      }),
+    );
   }
 }
+```
 
-``` 
+`onTokenChange` emits a new token on each authentication change, so the role follows it; without a role in the
+token, the user is a `guest`. Without Lyra Auth, the same service reads the role from a service of your own.
 
-Now, let's complete the `getRole` method to extract the role from the token: 
-
-```typescript
-import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs/Observable';
-import { map } from 'rxjs/operators/map';
-
-import { NbAuthService, NbAuthJWTToken } from '@nebular/auth';
-import { NbRoleProvider } from '@nebular/security';
-
-@Injectable()
-export class RoleProvider implements NbRoleProvider {
-
-  constructor(private authService: NbAuthService) {
-  }
-
-  getRole(): Observable<string> {
-    return this.authService.onTokenChange()
-      .pipe(
-        map((token: NbAuthJWTToken) => {
-          return token.isValid() ? token.getPayload()['role'] : 'guest';
-        }),
-      );
-  }
-}
-``` 
-
-So we subscribe to the `tokenChange` observable, which will produce a new token each time authentication change occurs. 
-Then we simply get a role from a token (for example simplicity, we assume that token payload always has a role value) or return default `guest` value.
-
-Don't worry if your setup does not use Nebular Auth. You can adjust this code to retrieve a user role from any service of your own. 
-
-
-And let's provide the service in the app module:
+Provide it:
 
 ```typescript
 // ...
 
 import { RoleProvider } from './role.provider';
-import { NbSecurityModule, NbRoleProvider } from '@nebular/security';
+import { NbRoleProvider, provideNbSecurity } from '@liquid-js/lyr-security';
 
-
-@NgModule({
-  imports: [
-   // ...
-    
-   NbSecurityModule.forRoot({
-    // ...
-   }),
-
- ],
+export const appConfig: ApplicationConfig = {
   providers: [
     // ...
-    { provide: NbRoleProvider, useClass: RoleProvider }, // provide the class
+    provideNbSecurity({
+      // ...
+    }),
+    { provide: NbRoleProvider, useClass: RoleProvider },
   ],
-``` 
+};
+```
 
-<hr>
+---
 
 ## Usage
 
-Finally, we can move on to the part where we start putting security rules in our app. Let's assume that we have that `Post Comment` button, that should only be shown to authenticated users (with a role `user`).
-So we need to hide the button for guests. 
-
-Nebular Security provides us with a simple `*nbIsGranted` conditional directive, which under the hood works as `*ngIf`, showing or hiding a template block based on a user role:
+A `Post Comment` button should only show to users who may `create` `comments`. The `*nbIsGranted` directive works
+like `@if`, with a permission and a resource:
 
 ```typescript
+import { NbIsGrantedDirective } from '@liquid-js/lyr-security';
+
 @Component({
   // ...
+  imports: [NbIsGrantedDirective],
   template: `
-      <button *nbIsGranted="['create', 'comments']" >Post Comment</button>
-    `,
+    <button *nbIsGranted="['create', 'comments']">Post Comment</button>
+  `,
 })
 export class CommentFormComponent {
 // ...
 ```
-We just need to pass a `permission` and some `resource` in order to control the button visibility.
 
-For more advanced use cases, we can directly use the `NbAccessChecker` service. It provides you with `isGranted` method, which returns an `Observable<boolean>` of the ACL check result.
-We can adjust our example to utilize it. In your `comment-form.component.ts`, import the `NbAccessChecker` service. 
-
-```typescript
-import { Component } from '@angular/core';
-import { NbAccessChecker } from '@nebular/security';
-
-@Component({
-  // ...
-})
-export class CommentFormComponent {
-
-  constructor(public accessChecker: NbAccessChecker) { }
-}
-``` 
-
-And let's add an `if` statement to the `Post Comment` button so that it is only shown when permitted:
+For more, `NbAccessChecker.isGranted(permission, resource)` returns an `Observable<boolean>` of the check, here as a
+signal in `comment-form.component.ts`:
 
 ```typescript
+import { Component, inject } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { NbAccessChecker } from '@liquid-js/lyr-security';
+
 @Component({
   // ...
   template: `
-      <button *ngIf="accessChecker.isGranted('create', 'comments') | async" >Post Comment</button>
-    `,
+    @if (canPost()) {
+      <button>Post Comment</button>
+    }
+  `,
 })
 export class CommentFormComponent {
-// ...
-``` 
-We call `isGranted` method, which listens to the currently provided role and checks it permissions against specified in the ACL configuration. 
-Moreover, as it listens to the *role change*, it hides the button if authentication gets changed during the app usage.
+  private readonly accessChecker = inject(NbAccessChecker);
 
-The same way we can call the `isGranted` method from any part of the app, including router guards and services, which gives us a transparent and flexibly configurable way to manage user access to various resources.   
+  readonly canPost = toSignal(this.accessChecker.isGranted('create', 'comments'), { initialValue: false });
+}
+```
+
+`isGranted` follows the role, so the button hides when the authentication changes while the app is in use. It can be
+called from anywhere, including router guards and services.

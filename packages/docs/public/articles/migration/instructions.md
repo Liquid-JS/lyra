@@ -1,26 +1,21 @@
-# Nebular Migration Instructions
+# Lyra Migration Instructions
 
-Nebular follows [semantic versioning](https://semver.org/) strategy for the release process.
-This means that every Nebular version number could be broken down into the *major.minor.patch* parts, where each of them means:
+Lyra follows [semantic versioning](https://semver.org/), and its major version tracks the Angular major it supports:
 
-- **major** - contains significant new features, as well as possible breaking changes. Still each new major version - is an increment of the previous version, not a complete rework or new product.
-- **minor** - contains new small features and bug fixes. Minor versions are backward-compatible.
-- **patch** - bug fix releases.
+- **major** - targets a new Angular major and may contain breaking changes;
+- **minor** - new features and bug fixes, backward-compatible;
+- **patch** - bug fixes.
 
 ## Migration Steps
 
-Installation of the minor and patch version in most of the times won't require any developer assistance during the update, though we recommend following these steps for all cases:
+1. Run `ng update @liquid-js/lyr-core@22`, where `22` is the desired version, or update the versions in your `package.json`.
+   Several packages update at once: `ng update @liquid-js/lyr-core @liquid-js/lyr-auth @liquid-js/lyr-security`.
 
-1. Update version in your package.json and run `npm i` or simply run `ng update @nebular/theme@4.0.1`, where `4.0.1` is the desired version.
+2. Resolve npm peer-dependency warnings. To update Angular, follow the [Angular update guide](https://angular.dev/update-guide).
 
-You may also specify all required Nebular packages during the installation `ng update @nebular/{theme,auth,security}@4.0.1`
-
-2. Check for npm peer-dependency warning, update accordingly.
-To update Angular, follow [offician Angular upgrage guide](https://update.angular.io/).
-
-3. Check [Nebular CHANGELOG](https://github.com/akveo/nebular/blob/master/CHANGELOG.md) for list of changes and follow migration instructions, if any. 
-
+3. Follow the migration notes in the [Lyra CHANGELOG](https://github.com/Liquid-JS/lyra/blob/master/CHANGELOG.md), if any.
 
 ## Related Articles
 
-- [Angular Migration Process](https://angular.io/guide/releases)
+- [Migrating from Nebular](docs/migration/migrating-from-nebular)
+- [Angular release process](https://angular.dev/reference/releases)

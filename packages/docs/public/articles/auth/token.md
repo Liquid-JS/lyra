@@ -2,50 +2,38 @@
 
 ## Receiving user token after login/registration
 
-At this step, we assume that the Nebular Auth module is up and running, 
-you have successfully configured an auth strategy and adjusted auth look & fell accordingly with your requirements.
+With a strategy configured, the next step is to use the token the backend returns: to call the API, and e.g. to show
+the user's name in the header. This article assumes the backend returns a JWT, whose payload holds the user info.
 
-It's time to get a user token after a successful authentication to be able to communicate with the server and, for instance, show username in the header of the application.
-Let's assume that your backend returns a JWT token so that we can use the token payload to extract user info out of it.
+Each strategy has a default token class: `NbPasswordAuthStrategy` uses `NbAuthSimpleToken`, `NbOAuth2AuthStrategy`
+uses `NbAuthOAuth2Token`. Another class can be set, as below.
 
-Each `Strategy` specifies which token class is going to be used by default. For example, `NbPasswordAuthStrategy` uses `NbAuthSimpleToken`,
-and `NbOAuth2AuthProvider` uses `NbAuthOAuth2Token`. It is also possible to specify another token class if it is required, like in the example below.
-<hr>
+---
 
 ## Configure the token type
 
-Let's tell Nebular that we are waiting for a JWT token instead of a simple string token.
-We just need to provide a respective class to do that. Open your `app.module.ts` and adjust your `Strategy` configuration:
+Set `NbAuthJWTToken` as the token class of the strategy, in the `provideNbAuth` call (or `NbAuthModule.forRoot`):
 
 ```typescript
+provideNbAuth({
+  strategies: [
+    NbPasswordAuthStrategy.setup({
+      name: 'email',
 
-@NgModule({
-  imports: [
-   // ...
-    
-   NbAuthModule.forRoot({
-         strategies: [
-           NbPasswordAuthStrategy.setup({
-             name: 'email',
-             
-             token: {
-               class: NbAuthJWTToken,
-             }
-           }),
-         ],
-         forms: {},
-       }), 
+      token: {
+        class: NbAuthJWTToken,
+      },
+    }),
   ],
-});
-
+  forms: {},
+}),
 ```
-This line tells Angular to inject `NbAuthJWTToken` (instead of the default `NbAuthSimpleToken`) which is a wrapper class around a value your API service returns.
-<hr>
+
+---
 
 ## Configure token extraction
 
-Then, let's configure where `NbPasswordAuthStrategy` should look for a token in the login/register response data. 
-By default `NbPasswordAuthStrategy` expects that your token is located under the `data.token` key of the JSON response:
+By default `NbPasswordAuthStrategy` reads the token from the `data.token` key of the login/register response:
 
 ```typescript
 {
@@ -55,107 +43,88 @@ By default `NbPasswordAuthStrategy` expects that your token is located under the
 }
 ```
 
-We'll assume that our API returns a token as just `{ token: 'some-jwt-token' }` not wrapping your response in `data` property, let's tell that to Nebular:
+For an API that returns `{ token: 'some-jwt-token' }`, set the key:
 
 ```typescript
+provideNbAuth({
+  strategies: [
+    NbPasswordAuthStrategy.setup({
+      name: 'email',
 
-@NgModule({
-  imports: [
-   // ...
-    
-   NbAuthModule.forRoot({
-         strategies: [
-           NbPasswordAuthStrategy.setup({
-             name: 'email',
-             
-             token: {
-               class: NbAuthJWTToken,
-              
-               key: 'token', // this parameter tells where to look for the token
-             }
-           }),
-         ],
-         forms: {},
-       }), 
+      token: {
+        class: NbAuthJWTToken,
+
+        key: 'token', // where to look for the token in the response body
+      },
+    }),
   ],
-});
-
+  forms: {},
+}),
 ```
-<hr>
+
+---
+
+## Where the token is kept
+
+`NbTokenLocalStorage`, the default `NbTokenStorage`, keeps a remembered token in `localStorage`, and one that isn't in
+`sessionStorage`, so it's gone when the browser closes. The login form's "remember me" box, ticked unless the user
+unticks it, decides; a refreshed token stays where the current one is, and a token from a redirect, e.g. OAuth2, is
+remembered. Tabs share a token kept for the session over a `BroadcastChannel`: a new tab asks the open ones for it, and
+signing in, a refresh or signing out in one tab reaches the others.
+
+An app's own `NbTokenStorage` gets the choice as `set(token, { remember })`, and can tell the token service about
+changes from elsewhere with a `changes` Observable.
+
+---
 
 ## Use token
 
-Okay, let's use the token to extract a payload and show username in the header. Open your `header.component.ts` and import the following services:
+In the header component, `NbAuthService.onTokenChange()` emits the token now and whenever it changes, so the header
+stays up to date without requesting anything. The payload types the registered JWT claims (`exp`, `sub`, ...) and
+leaves the others `unknown`, so describe the claims your backend adds:
 
 ```typescript
-import { NbAuthJWTToken, NbAuthService } from '@nebular/auth';
-```
+import { Component, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { NbAuthJWTPayload, NbAuthJWTToken, NbAuthService } from '@liquid-js/lyr-auth';
+import { NbLayoutHeaderComponent, NbUserComponent } from '@liquid-js/lyr-core';
 
-Then, let's create a `user` variable, which will store the token payload inside of the component: 
-
-```typescript
-
-@Component({
-  ...
-})
-export class HeaderComponent {
-
-  user = {};
-
-  ...
+interface UserPayload extends NbAuthJWTPayload {
+  name?: string;
+  picture?: string;
 }
-```
-
-Then, let's inject the `NbAuthService` and subscribe to an `onTokenChange` method, which will push an event on each token update so that the header component 
-is up-to-date with the information received from the backend and there is no need to additionally refresh/request the data:
-
-```typescript
 
 @Component({
-  ...
+  imports: [NbLayoutHeaderComponent, NbUserComponent],
+  template: `
+    <nb-layout-header fixed>
+      <nb-user [name]="user()?.name" [picture]="user()?.picture" />
+    </nb-layout-header>
+  `,
 })
 export class HeaderComponent {
+  private readonly authService = inject(NbAuthService);
 
-  user = {};
+  readonly user = signal<UserPayload | undefined>(undefined);
 
-  constructor(private authService: NbAuthService) {
-  
+  constructor() {
     this.authService.onTokenChange()
-      .subscribe((token: NbAuthJWTToken) => {
-      
-        if (token.isValid()) {
-          this.user = token.getPayload(); // here we receive a payload from the token and assigns it to our `user` variable 
+      .pipe(takeUntilDestroyed())
+      .subscribe((token) => {
+        if (token instanceof NbAuthJWTToken && token.isValid()) {
+          // We assume the backend puts name and picture claims into the token.
+          this.user.set(token.getPayload() as UserPayload);
         }
-        
       });
   }
-
 }
 ```
 
-Lastly, let's grab a `user` variable and put it in the template to show the user info. The `nb-user` component is a great fit for this:
+`NbAuthService` can be injected in any component the same way to read or react to the authentication state.
 
-
-```typescript
-
-@Component({
-  template: `
-  
-    <nb-layout-header fixed>
-      <nb-user [name]="user?.name" [picture]="user?.picture"></nb-user>
-    </nb-layout-header>
-  `
-})
-export class HeaderComponent implements OnInit {
-  ...
-}
-```
-*We assume that the extracted payload contains name and picture properties*.
-
-And done! Relatively you can inject `NbAuthService` in the other components to manage your authentication state in the application.
-<hr>
+---
 
 ## Related Articles
 
-- [NbAuthService](docs/auth/nbauthservice)
-- [NbTokenService](docs/auth/nbtokenservice)
+- [NbAuthService](extras/auth/nbauthservice)
+- [NbTokenService](extras/auth/nbtokenservice)

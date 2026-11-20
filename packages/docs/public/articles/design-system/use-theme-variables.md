@@ -1,24 +1,21 @@
 # Use Theme Variable
 
-In case when you need to access theme variables from your application component,
-Nebular provides you with simple sass function called `nb-theme`.
+The `nb-theme` Sass function gives a theme variable as its CSS custom property: `nb-theme(border-radius)` is
+`var(--border-radius)`, so the style follows the theme the element is in.
 
-<hr>
+---
 
 ## Import Theme
 
-In you `*.component.scss` add an import of `themes.scss`
-(created in [Enable Customizable Theme](docs/design-system/enable-customizable-theme) step):
+In your `*.component.scss`, use the `themes.scss` created in [Enable Customizable Theme](theme/customization/enable-customizable-theme):
 
 ```scss
 @use '../../../themes' as *;
 ```
 
-<hr>
+---
 
 ## Access Variable
-
-Now we can simply call `nb-theme(variable-name)` to access a variable:
 
 ```scss
 @use '../../../themes' as *;
@@ -28,14 +25,15 @@ Now we can simply call `nb-theme(variable-name)` to access a variable:
 }
 ```
 
-Complete list of variables could be found under [Default Theme Variables](docs/design-system/default-theme) table.
+The variables are listed under [Default Theme Variables](theme/built-in-themes/default-theme).
 
-<hr>
+---
 
-## Access with Multiples Theme Mode
+## Multiple Runtime Themes
 
-In a case when you have [Multiple Runtime Themes](docs/design-system/enable-multiple-runtime-themes), you also need to cover your component styles
-using `nb-install-component` mixin like this:
+The styles read [CSS custom properties](theme/customization/css-custom-properties), so with
+[Multiple Runtime Themes](theme/customization/enable-multiple-runtime-themes) they follow whichever theme is active,
+with nothing more to do. `nb-install-component` puts its content in the component's `:host`:
 
 ```scss
 @use '../../../themes' as *;
@@ -45,12 +43,9 @@ using `nb-install-component` mixin like this:
 }
 ```
 
-The mixin will multiple the component styles per each enabled theme, giving the ability to use run-time themes.
-Note, in case when [Custom CSS Properties](docs/design-system/enable-css-properties-mode) mode enables,
-the mixin **is not needed**, since there is no need to multiple the styles.
-
 ## Related Articles
 
-- [Design System Theme](docs/design-system/design-system-theme)
-- [Enable Customizable Theme](docs/design-system/enable-customizable-theme)
-- [Create Custom Theme](docs/design-system/create-custom-theme)
+- [Style Other Elements](theme/customization/style-other-elements)
+- [Design System Theme](theme/design-system/design-system-theme)
+- [Enable Customizable Theme](theme/customization/enable-customizable-theme)
+- [Create Custom Theme](theme/customization/create-custom-theme)

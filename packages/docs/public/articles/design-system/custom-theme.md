@@ -1,69 +1,66 @@
 # Create Custom Theme
 
-Custom theme creation is a very similar process to [Theme Customization](docs/design-system/enable-customizable-theme).
-Only in this case, we suggest following simple but very important rules so that we can minimize the number of necessary changes
-and avoid repeated code.
+A custom theme is registered like the changes in [Theme Customization](theme/customization/enable-customizable-theme),
+under a name of its own and on top of a parent theme, so it only lists what differs.
 
 <div class="note note-info section-end">
   <div class="note-title">Setup Required</div>
   <div class="note-body">
-    This guide assumes you already enabled <a href="docs/design-system/enable-customizable-theme">Theme Customization</a> 
-    and reviewed <a href="docs/design-system/design-system-theme">Eva Design System Theme</a> rules.
+    This guide assumes you already enabled <a href="theme/customization/enable-customizable-theme">Theme Customization</a> 
+    and reviewed <a href="theme/design-system/design-system-theme">Design System Theme</a> rules.
   </div>
 </div>
 
-Before we start, let's pretend we want to create an `aquamarine` theme with a violet primary color.
+The [Theme Editor](theme/theme-editor) builds one interactively: pick a base theme, colours, fonts, corner radius
+and text size, see them on components, and copy the result. This guide does the same by hand, for an `aquamarine`
+theme with a violet primary colour.
 
-<hr>
+---
 
 ## Select parent Theme
 
-In order to minify the amount of work, parent theme selection is a very important step.
-Though it is very simple - for colored and dark themes - use `dark` base theme, otherwise - `default` theme.
-In our case `aquamarine` theme is a colored one, let's use `dark` as a parent.
+Use `dark` as the parent for coloured and dark themes, and `default` otherwise. `aquamarine` is a coloured one, so its
+parent is `dark`.
 
-<hr>
+---
 
 ## Register new Theme
 
-Now, let's register the new theme in `themes.scss`:
+Register the theme in `themes.scss`:
 
 ```scss
-@forward '@nebular/theme/styles/theming';
-@use '@nebular/theme/styles/theming' as *;
-@use '@nebular/theme/styles/themes/dark';
+@forward '@liquid-js/lyr-core/styles/theming';
+@use '@liquid-js/lyr-core/styles/theming' as *;
+@use '@liquid-js/lyr-core/styles/themes/dark';
 
 $nb-themes: nb-register-theme((), aquamarine, dark); // <- theme name and a parent theme
 ```
 
-Next, find your `NbThemeModule.forRoot` declaration and change the value of the `name` setting:
+Then name it in your `provideNbTheme` call (or `NbThemeModule.forRoot` in an NgModule app):
 
 ```ts
-  @NgModule({
-    imports: [
-      // ...
-      NbThemeModule.forRoot({ name: 'aquamarine' }),
-    ],
-  }
+bootstrapApplication(AppComponent, {
+  providers: [
+    // ...
+    provideNbTheme({ name: 'aquamarine' }),
+  ],
+});
 ```
 
-Now the new theme is enabled, let's modify it.
-
-<hr>
+---
 
 ## Start with Basic
 
-Basic shades are one of the most important as they are the source for backgrounds, borders and text colors.
-In the dark theme, text colors utilize the upper part of the shades (whitish colors)
-and backgrounds the lower part.
+Basic shades are the source for backgrounds, borders and text colours. In the dark theme, text uses the upper part of
+the shades (whitish colours) and backgrounds the lower part.
 
-Let's modify them and put our aquamarine colors, starting with white for `color-basic-100` and finishing with almost black
-for `color-basic-1100`:
+Set the aquamarine shades, starting with white for `color-basic-100` and finishing with almost black for
+`color-basic-1100`:
 
 ```scss
-@forward '@nebular/theme/styles/theming';
-@use '@nebular/theme/styles/theming' as *;
-@use '@nebular/theme/styles/themes/dark';
+@forward '@liquid-js/lyr-core/styles/theming';
+@use '@liquid-js/lyr-core/styles/theming' as *;
+@use '@liquid-js/lyr-core/styles/themes/dark';
 
 $nb-themes: nb-register-theme(
   (
@@ -84,187 +81,127 @@ $nb-themes: nb-register-theme(
 );
 ```
 
-<hr>
+---
 
 ## Tweak backgrounds
 
-In a case we need to tweak the color more accurately, we can change how basic colors are used.
-For example, we can make the theme backgrounds and borders lighter, by using basic color lighter for one grade up:
+To tune the colours further, change which basic shades the backgrounds and borders use. Here they get lighter, by
+one shade each:
 
 ```scss
-@forward '@nebular/theme/styles/theming';
-@use '@nebular/theme/styles/theming' as *;
-@use '@nebular/theme/styles/themes/dark';
-
-$nb-themes: nb-register-theme(
-  (
-    color-basic-100: white,
-    color-basic-200: #eefafc,
-    color-basic-300: #e8f5fa,
-    color-basic-400: #d6e6f2,
-    color-basic-500: #c7dbeb,
-    color-basic-600: #a9c0db,
-    color-basic-700: #4f969e,
-    color-basic-800: #336a77,
-    color-basic-900: #295c66,
-    color-basic-1000: #244555,
-    color-basic-1100: #121a2b,
-    background-basic-color-1: color-basic-700,
-    background-basic-color-2: color-basic-800,
-    background-basic-color-3: color-basic-900,
-    background-basic-color-4: color-basic-100,
-    border-basic-color-1: color-basic-700,
-    border-basic-color-2: color-basic-800,
-    border-basic-color-3: color-basic-900,
-    border-basic-color-4: color-basic-1000,
-    border-basic-color-5: color-basic-1100,
-  ),
-  aquamarine,
-  dark
-);
+background-basic-color-1: color-basic-700,
+background-basic-color-2: color-basic-800,
+background-basic-color-3: color-basic-900,
+background-basic-color-4: color-basic-100,
+border-basic-color-1: color-basic-700,
+border-basic-color-2: color-basic-800,
+border-basic-color-3: color-basic-900,
+border-basic-color-4: color-basic-1000,
+border-basic-color-5: color-basic-1100,
 ```
 
-<hr>
+---
 
 ## Adjust shadows
 
-Since we changed backgrounds to a lighter ones, we might need to change elements shadow, making it lighter as well:
+Lighter backgrounds may need a lighter shadow:
 
 ```scss
-@forward '@nebular/theme/styles/theming';
-@use '@nebular/theme/styles/theming' as *;
-@use '@nebular/theme/styles/themes/dark';
-
-$nb-themes: nb-register-theme(
-  (
-    color-basic-100: white,
-    color-basic-200: #eefafc,
-    color-basic-300: #e8f5fa,
-    color-basic-400: #d6e6f2,
-    color-basic-500: #c7dbeb,
-    color-basic-600: #a9c0db,
-    color-basic-700: #4f969e,
-    color-basic-800: #336a77,
-    color-basic-900: #295c66,
-    color-basic-1000: #244555,
-    color-basic-1100: #121a2b,
-    background-basic-color-1: color-basic-700,
-    background-basic-color-2: color-basic-800,
-    background-basic-color-3: color-basic-900,
-    background-basic-color-4: color-basic-100,
-    border-basic-color-1: color-basic-700,
-    border-basic-color-2: color-basic-800,
-    border-basic-color-3: color-basic-900,
-    border-basic-color-4: color-basic-1000,
-    border-basic-color-5: color-basic-1100,
-    shadow: 0 0.5rem 1rem 0 rgba(25, 30, 51, 0.24),
-  ),
-  aquamarine,
-  dark
-);
+shadow: 0 0.5rem 1rem 0 rgba(25, 30, 51, 0.24),
 ```
 
-<hr>
+---
 
 ## Text Colors
 
-Texts color may also be affected by the backgrounds change. In our case, `disabled` text is now the same
-color as a background. Let's make it one shade lighter:
+Text colours may need a change too. The dark theme's disabled text is a transparent grey from the parent's
+`color-basic-transparent-600`; make it an aquamarine shade:
 
 ```scss
-@forward '@nebular/theme/styles/theming';
-@use '@nebular/theme/styles/theming' as *;
-@use '@nebular/theme/styles/themes/dark';
-
-$nb-themes: nb-register-theme(
-  (
-    color-basic-100: white,
-    color-basic-200: #eefafc,
-    color-basic-300: #e8f5fa,
-    color-basic-400: #d6e6f2,
-    color-basic-500: #c7dbeb,
-    color-basic-600: #a9c0db,
-    color-basic-700: #4f969e,
-    color-basic-800: #336a77,
-    color-basic-900: #295c66,
-    color-basic-1000: #244555,
-    color-basic-1100: #121a2b,
-    background-basic-color-1: color-basic-700,
-    background-basic-color-2: color-basic-800,
-    background-basic-color-3: color-basic-900,
-    background-basic-color-4: color-basic-100,
-    border-basic-color-1: color-basic-700,
-    border-basic-color-2: color-basic-800,
-    border-basic-color-3: color-basic-900,
-    border-basic-color-4: color-basic-1000,
-    border-basic-color-5: color-basic-1100,
-    shadow: 0 0.5rem 1rem 0 rgba(25, 30, 51, 0.24),
-    text-disabled-color: color-basic-600,
-  ),
-  aquamarine,
-  dark
-);
+text-disabled-color: color-basic-600,
 ```
 
-<hr>
+---
 
 ## Primary Color
 
-Lastly, let's make the final change and replace the primary blue color with desired violet one:
-[Eva Colors](https://colors.eva.design?utm_campaign=eva_design%20-%20eva%20colors%20-%20nebular%20docs%20link&utm_source=nebular&utm_medium=referral&utm_content=custom_theme_primary_color) is a great tool to generate colors pallet from a given brand color.
+Lastly, replace the primary blue with violet. `nb-status-palette` makes the shades from the 500 shade:
+`color-primary-100` to `-900`, and the transparent `color-primary-transparent-100` to `-600` (the
+[theme editor](theme/theme-editor) does the same from a brand colour). Merge them into the theme:
 
 ```scss
+@use 'sass:map';
+@forward '@liquid-js/lyr-core/styles/theming';
+@use '@liquid-js/lyr-core/styles/theming' as *;
+@use '@liquid-js/lyr-core/styles/themes/dark';
+
 $nb-themes: nb-register-theme(
-  (
-    color-primary-100: #faf7ff,
-    // <- primary violet shades
-    color-primary-200: #ece3ff,
-    color-primary-300: #d5bfff,
-    color-primary-400: #b18aff,
-    color-primary-500: #a16eff,
-    color-primary-600: #7b51db,
-    color-primary-700: #5a37b8,
-    color-primary-800: #3e2494,
-    color-primary-900: #29157a,
-    color-basic-100: white,
-    color-basic-200: #eefafc,
-    color-basic-300: #e8f5fa,
-    color-basic-400: #d6e6f2,
-    color-basic-500: #c7dbeb,
-    color-basic-600: #a9c0db,
-    color-basic-700: #497d8e,
-    color-basic-800: #336a77,
-    color-basic-900: #295c66,
-    color-basic-1000: #244555,
-    color-basic-1100: #121a2b,
-    background-basic-color-1: color-basic-700,
-    background-basic-color-2: color-basic-800,
-    background-basic-color-3: color-basic-900,
-    background-basic-color-4: color-basic-100,
-    border-basic-color-1: color-basic-700,
-    border-basic-color-2: color-basic-800,
-    border-basic-color-3: color-basic-900,
-    border-basic-color-4: color-basic-1000,
-    border-basic-color-5: color-basic-1100,
-    shadow: 0 0.5rem 1rem 0 rgba(25, 30, 51, 0.24),
-    text-disabled-color: color-basic-600,
+  map.merge(
+    nb-status-palette(primary, #a16eff),
+    (
+      color-basic-100: white,
+      color-basic-200: #eefafc,
+      color-basic-300: #e8f5fa,
+      color-basic-400: #d6e6f2,
+      color-basic-500: #c7dbeb,
+      color-basic-600: #a9c0db,
+      color-basic-700: #4f969e,
+      color-basic-800: #336a77,
+      color-basic-900: #295c66,
+      color-basic-1000: #244555,
+      color-basic-1100: #121a2b,
+      background-basic-color-1: color-basic-700,
+      background-basic-color-2: color-basic-800,
+      background-basic-color-3: color-basic-900,
+      background-basic-color-4: color-basic-100,
+      border-basic-color-1: color-basic-700,
+      border-basic-color-2: color-basic-800,
+      border-basic-color-3: color-basic-900,
+      border-basic-color-4: color-basic-1000,
+      border-basic-color-5: color-basic-1100,
+      shadow: 0 0.5rem 1rem 0 rgba(25, 30, 51, 0.24),
+      text-disabled-color: color-basic-600,
+    )
   ),
   aquamarine,
   dark
 );
 ```
 
-Simple as that, here's our result:
+`nb-status-palettes((primary: #a16eff, success: #00d68f))` makes several at once. The shades follow the built-in
+themes; pass `material` as the last argument for Material Design shades, whose darker ones stay close to the 500
+shade. Shades listed in the second map replace the generated ones, so a palette can also be pasted in by hand:
+
+```scss
+color-primary-100: #faf7ff,
+color-primary-200: #ece3ff,
+color-primary-300: #d5bfff,
+color-primary-400: #b18aff,
+color-primary-500: #a16eff,
+color-primary-600: #7b51db,
+color-primary-700: #5a37b8,
+color-primary-800: #3e2494,
+color-primary-900: #29157a,
+```
+
+A status's text, `text-primary-color` and the others, is the status's own colour, so a light colour may read poorly
+on the backgrounds. The [theme editor](theme/theme-editor) says by each colour how its text reads and offers the shade
+that reaches a 3:1 contrast on backgrounds 1 to 3, or 4.5:1 (WCAG AA for small text) when you tick that; taking it sets
+`text-<status>-color` and its hovered, focused and pressed variants, and nothing else. The same goes for the hint text
+and the basic colour. It also notes a status colour on which the control text, as a filled button's, reads under the
+target, which a darker colour or another `text-control-color` fixes.
+
+The result:
 
 ![image](assets/images/articles/design-system/aquamarine-theme.png)
 
-That's it. In a similar way, the rest of the available theme variables could be changed to achieve the desired result.
-Complete list of variables could be found under [Default Theme Variables](docs/design-system/default-theme) table.
+The rest of the theme variables change the same way; they are listed under
+[Default Theme Variables](theme/built-in-themes/default-theme).
 
-<hr>
+---
 
 ## Related Articles
 
-- [Use Theme Variables](docs/design-system/use-theme-variables)
-- [Enable Theme Customization](docs/design-system/enable-customizable-theme)
-- [Enable CSS Properties Mode](docs/design-system/enable-css-properties-mode)
+- [Use Theme Variables](theme/customization/use-theme-variables)
+- [Enable Theme Customization](theme/customization/enable-customizable-theme)
+- [CSS Custom Properties](theme/customization/css-custom-properties)

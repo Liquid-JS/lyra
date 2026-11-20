@@ -1,85 +1,69 @@
 # Protecting application based on user authentication
 
-Let's imagine we have the following application structure:
-- `/pages/*` - protected area available only for authenticated users
-- `/auth/*` - authentication area (login/register/etc) available for non-authenticated users
+Take an app with two areas:
 
-Angular provides a simple way to protect your routes called [Router Guard](https://angular.io/guide/router#guard-the-admin-feature).
-Here's how we combine it with Nebular Auth to protect `/pages/*` from anonymous users:
-<hr>
+- `/pages/*` - available only to authenticated users
+- `/auth/*` - login, register, etc.
+
+A [route guard](https://angular.dev/guide/routing/route-guards) with `NbAuthService` keeps anonymous users out of
+`/pages/*`.
+
+---
 
 ## Create a guard
-Create `auth-guard.service.ts` somewhere near your `app-routing.module.ts` like this:
+
+Create `auth.guard.ts` next to `app.routes.ts`:
 
 ```ts
-import { Injectable } from '@angular/core';
-import { CanActivate } from '@angular/router';
+import { CanActivateFn } from '@angular/router';
 
-@Injectable()
-export class AuthGuard implements CanActivate {
-
-  canActivate() {
-    return true;
-  }
-}
-```
-<hr>
-
-## Complete canActivate
-Then, let's import `NbAuthService` and complete the `canActivate` method:
-
-```ts
-import { Injectable } from '@angular/core';
-import { CanActivate } from '@angular/router';
-import { NbAuthService } from '@nebular/auth';
-
-@Injectable()
-export class AuthGuard implements CanActivate {
-
-  constructor(private authService: NbAuthService) {
-  }
-
-  canActivate() {
-    return this.authService.isAuthenticated(); // canActive can return Observable<boolean>, which is exactly what isAuthenticated returns
-  }
-}
-```
-*So we just return the isAuthenticated value, so that when it's true - route can be activated, and vise versa when it's not.*
-<hr>
-
-## Register the service
-Now we need to register the service inside of the `app.module.ts`:
-
-```ts
-import { AuthGuard } from '../auth-guard.service';
-
-@NgModule({
-  imports: [
-    // ...
-  ],
-  providers: [
-    // ...
-    AuthGuard
-  ]
-});
-
+export const authGuard: CanActivateFn = () => {
+  return true;
+};
 ```
 
-<hr>
+---
 
-## Add guard to routes 
-Last step - reference the AuthGuard in the `app-routing.module.ts`:
+## Complete the guard
+
+`NbAuthService.isAuthenticated()` returns an `Observable<boolean>`, which a guard can return as is:
 
 ```ts
-import { AuthGuard } from '../auth-guard.service';
+import { inject } from '@angular/core';
+import { CanActivateFn } from '@angular/router';
+import { NbAuthService } from '@liquid-js/lyr-auth';
+
+export const authGuard: CanActivateFn = () => {
+  return inject(NbAuthService).isAuthenticated();
+};
+```
+
+`isAuthenticated()` checks the stored token; `isAuthenticatedOrRefresh()` first refreshes one that has expired with
+its strategy.
+
+---
+
+## Register the guard
+
+A functional guard runs in the route's injection context, so there is nothing to register: `inject()` gets
+`NbAuthService` from the application providers, where `provideNbAuth()` put it.
+
+---
+
+## Add guard to routes
+
+Reference the guard in `app.routes.ts`:
+
+```ts
+import { authGuard } from './auth.guard';
 
 // ...
 
-const routes: Routes = [
-  { 
+export const routes: Routes = [
+  {
     path: 'pages',
-    canActivate: [AuthGuard], // here we tell Angular to check the access with our AuthGuard
-    loadChildren: 'app/pages/pages.module#PagesModule' 
+    canActivate: [authGuard],
+    loadChildren: () => import('./pages/pages.routes').then((m) => m.routes),
   },
   {
     path: 'auth',
@@ -90,47 +74,33 @@ const routes: Routes = [
   },
   // ...
 ];
-
 ```
 
-As a result, it is not possible to access any of the `pages/*` if you are not an authenticated user.
-<hr>
+---
 
 ## Redirect non-authenticated to the login page
 
-Additionally, you may want to redirect straight to `auth/login` when the user is accessing a restricted page.
-Let's modify our guard a bit to reflect this logic:
+To send a user who isn't authenticated to `auth/login` instead of refusing the route, return a `UrlTree`:
 
 ```ts
-import { Injectable } from '@angular/core';
-import { CanActivate, Router } from '@angular/router';
-import { NbAuthService } from '@nebular/auth';
-import { tap } from 'rxjs/operators';
+import { inject } from '@angular/core';
+import { CanActivateFn, Router } from '@angular/router';
+import { NbAuthService } from '@liquid-js/lyr-auth';
+import { map } from 'rxjs';
 
-@Injectable()
-export class AuthGuard implements CanActivate {
+export const authGuard: CanActivateFn = () => {
+  const router = inject(Router);
 
-  constructor(private authService: NbAuthService, private router: Router) {
-  }
-
-  canActivate() {
-    return this.authService.isAuthenticated()
-      .pipe(
-        tap(authenticated => {
-          if (!authenticated) {
-            this.router.navigate(['auth/login']);
-          }
-        }),
-      );
-  }
-}
+  return inject(NbAuthService).isAuthenticated()
+    .pipe(
+      map((authenticated) => authenticated || router.createUrlTree(['auth/login'])),
+    );
+};
 ```
-*So we just check the the value returned by isAuthenticated and simply redirect to the login page.*
 
-Easy as that! Hope you found it useful.
-<hr>
+---
 
 ## Related Articles
 
-- [NbAuthService](docs/auth/nbauthservice)
-- [NbTokenService](docs/auth/nbtokenservice)
+- [NbAuthService](extras/auth/nbauthservice)
+- [NbTokenService](extras/auth/nbtokenservice)

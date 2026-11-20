@@ -1,85 +1,64 @@
 # Strategy
 
-In Nebular terms `Auth Strategy` is a class containing authentication logic specific for some authentication flow (email/password, OAuth2, etc). 
-It accepts user input (login/email/password/token/etc), communicates the input to the backend API and finally provides the resulting output back to the Auth UI layer.
-Currently, there are two Auth Strategies available out of the box:
+An `Auth Strategy` holds the logic of one authentication flow (email/password, OAuth2, ...): it takes the user's input,
+talks to the backend and hands the result back to the UI layer. Three come out of the box:
 
-  - `NbDummyAuthStrategy` - a simple strategy for testing purposes, could be used to simulate backend responses while API is in the development;
-  - `NbPasswordAuthStrategy` - the most common email/password authentication strategy.
-  
-Each Strategy has a list of configurations available with the default values set. But you can adjust the settings based on your requirements.
-<hr>
-  
+- `NbDummyAuthStrategy` - simulates backend responses, for testing and while the API is in development;
+- `NbPasswordAuthStrategy` - email/password authentication, see [NbPasswordAuthStrategy](extras/auth/nbpasswordauthstrategy);
+- `NbOAuth2AuthStrategy` - sign-in with an OAuth2 provider, see [NbOAuth2AuthStrategy](extras/auth/nboauth2authstrategy).
+
+Each has defaults for every option; what you pass to `setup` is merged over them.
+
+---
+
 ## Configure a strategy
 
-As an example, let's configure API endpoints for the `NbPasswordAuthStrategy`. The strategy is configured by default, please take a look at the [default configuration values](docs/auth/nbpasswordauthstrategy) if you need any custom behavior.
-We assume you already have the Auth module installed inside of your `*.module.ts`:
-
+As an example, let's configure the API endpoints of `NbPasswordAuthStrategy`, provided with `provideNbAuth` (or
+`NbAuthModule.forRoot` in an NgModule app):
 
 ```typescript
-
-@NgModule({
-  imports: [
-   // ...
-    
-   NbAuthModule.forRoot({
-         strategies: [
-           NbPasswordAuthStrategy.setup({
-             name: 'email',
-           }),
-         ],
-         forms: {},
-       }), 
+provideNbAuth({
+  strategies: [
+    NbPasswordAuthStrategy.setup({
+      name: 'email',
+    }),
   ],
-});
-
+  forms: {},
+}),
 ```
-`email` here is an alias we've assigned to the strategy so that we can dynamically mention it later. This also allows us to configure multiple strategies with various configurations in one app.
-<hr>
+
+`email` is the strategy's name, which the forms and `NbAuthService` refer to it by, so an app can configure several
+strategies.
+
+---
 
 ## Setup API configuration
 
-Now, let's add API endpoints. According to the [NbPasswordAuthStrategy documentation](docs/auth/nbpasswordauthstrategy), we have `baseEndpoint` setting, and also an `endpoint` setting for each function (login/register/etc):
+Each action's endpoint is `baseEndpoint + endpoint`. By default `baseEndpoint` is `/api/auth/` and the endpoints are
+`login`, `register`, `request-pass`, `reset-pass`, `logout` and `refresh-token`:
 
 ```typescript
+provideNbAuth({
+  strategies: [
+    NbPasswordAuthStrategy.setup({
+      name: 'email',
 
-@NgModule({
-  imports: [
-   // ...
-    
-   NbAuthModule.forRoot({
-         strategies: [
-           NbPasswordAuthStrategy.setup({
-             name: 'email',
-            
-             baseEndpoint: '',
-              login: {
-                // ...
-                endpoint: '/api/auth/login',
-              },
-              register: {
-                // ...
-                endpoint: '/api/auth/register',
-              },
-           }),
-         ],
-         forms: {},
-       }), 
+      baseEndpoint: '',
+      login: {
+        // ...
+        endpoint: '/api/auth/login',
+      },
+      register: {
+        // ...
+        endpoint: '/api/auth/register',
+      },
+    }),
   ],
-});
+  forms: {},
+}),
 ```
 
-Let's assume that our API is localed on a separate server `http://example.com/app-api/v1` and change the `baseEndpoint` accordingly:
-
-```typescript
-{
- // ...
- baseEndpoint: 'http://example.com/app-api/v1',
- // ...
-}
-```
-
-And configure the endpoints, considering that the final endpoint will consist of `baseEndpoint + method.endpoint`:
+For an API on a separate server, `http://example.com/app-api/v1`, with its own paths:
 
 ```typescript
 {
@@ -102,7 +81,8 @@ And configure the endpoints, considering that the final endpoint will consist of
 }
 ```
 
-Finally, let's presume that unlike in the default strategy settings, our API accepts only `HTTP POST`, so let's fix that too: 
+By default `resetPass` is a `PUT` and `logout` a `DELETE`; an API that accepts only `POST` sets each action's
+`method`:
 
 ```typescript
 {
@@ -133,14 +113,13 @@ Finally, let's presume that unlike in the default strategy settings, our API acc
 <div class="note note-info">
   <div class="note-title">Note</div>
   <div class="note-body">
-    No need to list all available configurations there. Your settings will be merged with default strategy settings accordingly.
+    Only the options you change need listing; the rest keep the strategy's defaults.
   </div>
 </div>
 
-Great! With these simple steps, you should have the authentication layer correctly configured against your API back-end.
-<hr>
+---
 
 ## Related Articles
 
-- Adjusting [Auth Components UI](docs/auth/configuring-ui)
-- Receiving [user token after authentication](docs/auth/getting-user-token)
+- Adjusting [Auth Components UI](extras/auth/configuring-ui)
+- Receiving [user token after authentication](extras/auth/getting-user-token)

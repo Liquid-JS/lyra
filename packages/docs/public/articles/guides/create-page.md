@@ -1,67 +1,53 @@
-# Create Nebular Page
+# Create Lyra Page
 
-Let's create a simple Nebular page (header + sidebar) in your project. 
-We suppose that you have a separate module per page, let's open your `some-page.module.ts` and import necessary layout components:
+A page with a sticky header and a sidebar:
 
 ```ts
-import { RouterModule } from '@angular/router'; // we also need angular router for Nebular to function properly
-import { NbSidebarModule, NbLayoutModule, NbButtonModule } from '@nebular/theme';
+import { Component } from '@angular/core';
+import {
+  NbButtonComponent,
+  NbLayoutColumnComponent,
+  NbLayoutComponent,
+  NbLayoutHeaderComponent,
+  NbSidebarComponent,
+} from '@liquid-js/lyr-core';
 
-...
-
-@NgModule({
-  ...
-  imports: [
-    RouterModule, // RouterModule.forRoot(routes, { useHash: true }), if this is your app.module
-    NbLayoutModule,
-    NbSidebarModule, // NbSidebarModule.forRoot(), //if this is your app.module
-    NbButtonModule,
-  ],
-  ...
-})
-export class SomePageModule {
-
-```
-
-Then let's add layout components with a sticky header into your `some-page.component.ts`:
-```ts
 @Component({
-  ...
+  selector: 'app-some-page',
+  imports: [NbLayoutComponent, NbLayoutHeaderComponent, NbLayoutColumnComponent, NbSidebarComponent, NbButtonComponent],
   template: `
-
     <nb-layout>
       <nb-layout-header fixed>Company Name</nb-layout-header>
 
       <nb-sidebar>Sidebar Content</nb-sidebar>
-      
+
       <nb-layout-column>
         Page Content <button nbButton>Hello World</button>
       </nb-layout-column>
     </nb-layout>
-  `
+  `,
 })
-export class SomePageComponent {
-
+export class SomePageComponent {}
 ```
 
-As a result, you should have a page with a simple layout on it looking similar to this:
+The application providers need `provideRouter(routes)` next to `provideNbTheme()`.
+With NgModules, import `NbLayoutModule`, `NbSidebarModule` and `NbButtonModule` into the page's module instead.
 
 ![image](assets/images/articles/sample-page.png)
 
 <div class="note note-info">
   <div class="note-title">Adding into existing page</div>
   <div class="note-body">
-    In case you already have some code on your page and want to mix it with Nebular components you would need to place your page code inside of the Nebular layout. 
-    `<nb-layout></nb-layout>` is a required root component for Nebular to work.
+    `<nb-layout></nb-layout>` is the required root of every Lyra page: place an existing page's content inside it.
   </div>
 </div>
-<hr> 
 
+---
 
 ## Related Articles
 
-- [NbLayout, NbLayoutColumn, NbLayoutHeader, NbLayoutFooter](docs/components/layout)
-- [Design System Intro](/docs/design-system/eva-design-system-intro)
-- [Design System Rules](docs/design-system/design-system-theme)
-- [Enabling Customizable Themes](docs/design-system/enable-customizable-theme)
+- [NbLayout, NbLayoutColumn, NbLayoutHeader, NbLayoutFooter](components/global/layout)
+- [Design System Intro](/theme/design-system/design-system-intro)
+- [Design System Rules](theme/design-system/design-system-theme)
+- [Enabling Customizable Themes](theme/customization/enable-customizable-theme)
 - [Deploying to production server](docs/guides/server-deployment)

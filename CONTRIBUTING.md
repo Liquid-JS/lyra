@@ -1,156 +1,112 @@
-# Contributing to Nebular
+# Contributing to Lyra
 
-We would love for you to contribute to Nebular and help make it ever better together! :rocket:
-
-- [Code of Conduct](#coc)
-- [Question or Problem?](#question)
-- [Issues and Bugs](#issue)
-- [Feature Requests](#feature)
-- [Submission Guidelines](#submit-pr)
-- [Framework Structure](#framework-structure)
+- [Questions, Bugs and Features](#issue)
+- [Pull Requests](#submit-pr)
+- [Repository Structure](#framework-structure)
 - [Coding Rules](#rules)
 - [New Feature Checklist](#new-feature-checklist)
-- [Commit Message Guidelines](#commit)
+- [Commit Messages](#commit)
 
-## <a name="coc"></a> Code of Conduct
+## <a name="issue"></a> Questions, Bugs and Features
 
-Help us keep Nebular open and inclusive. Please read and follow our [Code of Conduct][coc].
+Ask questions in [GitHub Discussions][discussions]; [issues][issues] are for bug reports and feature requests.
 
-## <a name="question"></a> Got a Question or Problem?
+Before opening an issue, search the existing ones, closed ones included. A bug report needs steps to reproduce,
+ideally a minimal repository or StackBlitz, with screenshots and stack traces where they help; an issue without
+them is labelled "needs info" and closed after five days without a reply. Fill in the issue form.
 
-Please do not open issues for general support questions as we want to keep GitHub issues for bug reports and feature requests. You've got much better chances of getting your question answered on [StackOverflow][stackoverflow] where the questions should be tagged with tag `nebular`.
+To implement a feature, open an issue with a proposal first, so the work can be discussed before it is done; a
+small fix can go straight to a pull request.
 
-StackOverflow is a much better place to ask questions since:
+## <a name="submit-pr"></a> Pull Requests
 
-- there are thousands of people willing to help on StackOverflow
-- questions and answers stay available for public viewing so your question / answer might help someone else
-- StackOverflow's voting system assures that the best answers are prominently visible.
+- Search [open and closed pull requests][pulls] for one that covers your change.
+- Branch from `master`, make the change with tests, and follow the [coding rules](#rules).
+- Commit with a message in the [commit format](#commit); the change log is generated from it.
+- Open the pull request against `Liquid-JS/lyra:master`. The PR check runs the build, lint, unit and e2e tests,
+  the playground and docs builds and the smoke app, as described below.
 
-To save your and our time, we will be systematically closing all the issues that are requests for general support and redirecting people to StackOverflow.
+## <a name="framework-structure"></a> Repository Structure
 
-## <a name="issue"></a> Found an Issue?
+The repository is a Yarn workspace on the Node version in `.nvmrc`. Run `yarn install` in the root, then:
 
-If you find a bug in the source code or a mistake in the documentation, you can help us by
-[submitting an issue](#submit-issue) to our [GitHub Repository][github]. Including an issue
-reproduction (via CodePen, JsBin, Plunkr, GitHub repo, etc.) is the absolute best way to help the team quickly
-diagnose the problem. Screenshots and error stack traces are also helpful.
+- `yarn start` - serve the playground app with every component example (<http://localhost:4200>)
+- `yarn build` - build all packages into `dist/`
+- `yarn test` - run the unit tests of every package; `yarn test:schematics` runs the `ng add` schematics tests
+- `yarn e2e` - run the Playwright end-to-end tests against the playground in Chromium, Firefox and WebKit
+  (`yarn e2e:install` installs the three browsers). It serves the playground built against `dist/` (`yarn build`
+  first), or uses one already running on port 4200, such as `yarn start` for the sources; `E2E_BASE_URL` points it
+  at another server
+- `yarn e2e:safari` - check Safari's Tab order: every Lyra control on every playground page must be reachable with Tab,
+  as in Chromium. Safari leaves buttons, links, checkboxes and radios without a `tabindex` out of the Tab order, and
+  Playwright's WebKit does the same only on macOS with keyboard navigation off (System Settings → Keyboard), so the
+  check skips itself elsewhere
+- `yarn lint` / `yarn lint:styles` - ESLint with the repository's check scripts, and stylelint; `yarn lint:fix` applies
+  fixes
+- `yarn format:html` - format the component templates with js-beautify, the formatter VS Code uses for HTML;
+  `js-beautify.json` and `.vscode/settings.json` hold the same options, so formatting on save gives the same result
+- `yarn format:md` - format the docs' articles, the READMEs and this file with the markdown editor's formatter, which
+  writes typographic quotes, dashes and ellipses as plain characters and `<hr>` as `---`; `yarn lint` checks them.
+  Its settings are in `scripts/remark-config.ts`, which VS Code's remark extension (`unifiedjs.vscode-remark`,
+  recommended for the workspace) formats with too
+- `yarn docs:serve` - generate the API docs and serve the documentation site (<http://localhost:4100>)
+- `yarn docs:example-pictures` - with the docs served, picture each example app's screens for the Examples gallery;
+  run it after changing an example app or its theme, and commit the pictures
 
-Please follow this simple checklist before submitting:
+A pre-commit hook runs the formatters and linters on the staged files, and a commit-msg hook runs commitlint.
 
-- If you have a question about using Nebular, please ask on the [StackOverflow][stackoverflow].
+Component templates live in `.html` files next to the component; only one-line templates stay inline.
 
-- It is required that you clearly describe the steps necessary to reproduce the issue you are running into. Although we would love to help our users as much as possible, diagnosing issues without clear reproduction steps is extremely time-consuming and simply not sustainable.
+Layout follows what the Angular CLI generates (`ng generate library` / `ng generate application`):
 
-- The issue list of this repository is exclusively for bug reports and feature requests. Non-conforming issues will be closed immediately.
+- `packages/<name>/src` - library sources with `src/public-api.ts` as the entry point; `package.json`,
+  `ng-package.json` and the tsconfigs sit next to `src`
+  - `core` - `@liquid-js/lyr-core`, components and the theming system; `packages/core/schematics` holds `ng add`
+  - `extras` - `@liquid-js/lyr-extras`, an entry point per feature (chart, colour picker, markdown, mask, media,
+    phone input, QR code)
+  - `icons` - `@liquid-js/lyr-icons`, the icons
+  - `auth`, `firebase-auth` - `@liquid-js/lyr-auth` and `@liquid-js/lyr-firebase-auth`
+  - `security` - `@liquid-js/lyr-security`, ACL
+  - `moment`, `date-fns` - date adapters
+- `packages/playground` - runnable examples for each feature, also used by the docs and the e2e tests;
+  static files live in `public/`, and `backend/` is a small sample API for the auth examples (`node backend/app.js`)
+- `packages/docs` - the documentation site; `scripts/docs` generates its API data from the doc comments
+- `e2e` - Playwright tests, `smoke` - consumer app that installs the built packages
+- `tools/dev-schematics` - generators for playground routes and new components (`ng g .:new-component <name>`)
 
-- Issues with no clear steps to reproduce will not be triaged. If an issue is labeled with "needs info" and receives no further replies from the author of the issue for more than 5 days, it will be closed.
+Libraries import each other's Sass by package name, for example `@use '@liquid-js/lyr-core/styles/theming'`.
+`yarn install` links the library style sources into `node_modules/.lyra-styles`, which the builds use as an include path.
 
-- If you think you have found a bug, or have a new feature idea, please start by making sure it hasn't already been [reported][issues]. You can search through existing issues to see if there is a similar one reported. Include closed issues as it may have been closed with a solution.
+Dependencies are declared by role, and `yarn lint` checks the rules (`yarn constraints` and `scripts/check-versions.ts`):
 
-- Next, [create a new issue](#submit-issue) that thoroughly explains the problem. Please fill out the populated issue form before submitting the issue.
-
-## <a name="feature"></a> Want a Feature?
-
-You can _request_ a new feature by [submitting an issue](#submit-issue) to our [GitHub
-Repository][github]. If you would like to _implement_ a new feature, please submit an issue with
-a proposal for your work first, to be sure that we can use it.
-Please consider what kind of change it is:
-
-- For a **Major Feature**, first open an issue and outline your proposal so that it can be
-  discussed. This will also allow us to better coordinate our efforts, prevent duplication of work,
-  and help you to craft the change so that it is successfully accepted into the project.
-- **Small Features** can be crafted and directly [submitted as a Pull Request](#submit-pr).
-
-### <a name="submit-issue"></a> Submitting an Issue
-
-Before you submit an issue, search the archive, maybe your question was already answered.
-
-If your issue appears to be a bug, and hasn't been reported, open a new issue.
-Help us to maximize the effort we can spend fixing issues and adding new
-features by not reporting duplicate issues. Please make sure to fill out the populated issue form before submitting the issue.
-
-You can file new issues by providing the information [here][new_issue].
-
-### <a name="submit-pr"></a> Submitting a Pull Request (PR)
-
-Before you submit your Pull Request (PR) consider the following guidelines:
-
-- Search [GitHub][pulls] for an open or closed PR
-  that relates to your submission. You don't want to duplicate effort.
-- Make your changes in a new git branch:
-
-  ```shell
-  git checkout -b my-fix-branch master
-  ```
-
-- Create your patch, **including appropriate test cases**.
-- Follow our [Coding Rules](#rules).
-- Test your changes with our supported browsers.
-- Commit your changes using a descriptive commit message that follows our
-  [commit message conventions](#commit). Adherence to these conventions
-  is necessary because release notes are automatically generated from these messages.
-
-  ```shell
-  git commit -a
-  ```
-
-  Note: the optional commit `-a` command line option will automatically "add" and "rm" edited files.
-
-- Push your branch to GitHub:
-
-  ```shell
-  git push my-fork my-fix-branch
-  ```
-
-- In GitHub, send a pull request to `nebular:master`.
-
-That's it! Thank you for your contribution!
-
-## <a name="framework-structure"></a> Framework Structure
-
-- docs - Documentation and framework website built on top on the framework
-- src
-  - app - runner app for components playground
-  - playground - independent module with runnable examples for each feature
-  - backend - Small backend example
-  - framework - Framework itself, divided into npm packages
-    - theme - `@nebular/theme` npm package, main framework package
-    - auth - `@nebular/auth` npm package, auth package (login, register, etc)
-    - security - `@nebular/security` npm package, security framework package
+- The root `package.json` only has `devDependencies`: the toolchain and everything the libraries build and test against.
+  Workspace scripts run its binaries with `yarn run -T <bin>`.
+- Published packages only declare `peerDependencies`.
+- The playground and docs apps declare what they run on as `dependencies`, and keep a `devDependency` only when no
+  other workspace uses it.
+- A package uses the same range everywhere and installs at a single version. If a tool pulls in another copy, align it
+  with `resolutions` in the root `package.json`. `yarn constraints --fix` aligns the declared ranges.
 
 ## <a name="rules"></a> Coding Rules
 
-To ensure consistency throughout the source code, keep these rules in mind as you are working:
-
-- All features or bug fixes **must be tested** by one or more specs (unit-tests).
-- All public API methods **must be documented** following JsDoc notation.
-- Never forget [document your changes add create some examples](#documentation)
-- Create playground page per each new component/feature
+- Every feature or fix comes with specs.
+- Every public API has a doc comment that says what the signature doesn't: behaviour, defaults, constraints,
+  keyboard and ARIA handling. The docs site is generated from them.
+- Every component or feature has a playground page, which the docs show as its examples.
 
 ## <a name="new-feature-checklist"></a> New Feature Checklist
 
-- lint checks are passing
-- tests are added/updated and passing
-- showcase in the playground updated
-- Styles variables added/updated
-- tsdocs added/updated
-- commit message is properly formatted
-- for the override styles - registered in a list of overrides
-- component \*.theme registered in a list of component themes
-- looks great on all default themes
-- supports bidirectionality
-- requires approval from several core team contributors
+- lint and tests pass
+- a playground page shows it
+- its theme variables are in the theme mapping, its `*.theme.scss` in `styles/global/_components.scss` and any
+  override in `styles/global/_overrides.scss`
+- doc comments are written
+- it looks right in every built-in theme, and right to left
 
-## <a name="commit"></a> Commit Message Guidelines
+## <a name="commit"></a> Commit Messages
 
-We have very precise rules over how our git commit messages can be formatted. This leads to **more
-readable messages** that are easy to follow when looking through the **project history**. But also,
-we use the git commit messages to **generate the Nebular change log**.
-
-### Commit Message Format
-
-Each commit message consists of a **header**, a **body** and a **footer**. The header has a special
-format that includes a **type**, a **scope** and a **subject**:
+Commit messages follow [Conventional Commits][conventional], checked by commitlint on commit, and the change log is
+generated from them:
 
 ```
 <type>(<scope>): <subject>
@@ -160,63 +116,19 @@ format that includes a **type**, a **scope** and a **subject**:
 <footer>
 ```
 
-The **header** is mandatory and the **scope** of the header is optional.
+- The header is at most 100 characters. The subject is imperative and lower case, without a full stop.
+- `type` is one of `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore` or `revert`.
+  Release commits are made by `yarn release`.
+- `scope` is optional, and when given it is a workspace's package name without the `@liquid-js/lyr-` prefix: `core`,
+  `extras`, `auth`, `security`, `icons`, `moment`, `date-fns`, `firebase-auth`, `docs` or `playground`.
+- The body says why, and what changed from before. Lines in the body are not limited.
+- A breaking change starts a footer line with `BREAKING CHANGE:`; a footer may also name the issues the commit closes.
+- A revert's header is `revert: ` and the reverted commit's header, with `This reverts commit <hash>.` in the body.
 
-Any line of the commit message cannot be longer 100 characters! This allows the message to be easier
-to read on GitHub as well as in various git tools.
+[discussions]: https://github.com/Liquid-JS/lyra/discussions
 
-### Revert
+[issues]: https://github.com/Liquid-JS/lyra/issues
 
-If the commit reverts a previous commit, it should begin with `revert: `, followed by the header of
-the reverted commit. In the body it should say: `This reverts commit <hash>.`, where the hash is
-the SHA of the commit being reverted.
+[pulls]: https://github.com/Liquid-JS/lyra/pulls
 
-### Type
-
-Must be one of the following:
-
-- **feat**: A new feature
-- **fix**: A bug fix
-- **docs**: Documentation only changes
-- **style**: Changes that do not affect the meaning of the code (white-space, formatting, missing
-  semi-colons, etc)
-- **refactor**: A code change that neither fixes a bug nor adds a feature
-- **perf**: A code change that improves performance
-- **test**: Adding missing tests or correcting existing tests
-- **build**: Changes that affect the build system, CI configuration or external dependencies
-  (example scopes: gulp, broccoli, npm)
-- **chore**: Other changes that don't modify `src` or `test` files
-- **release**: Release version commit
-
-### Scope
-
-The scope could be anything specifying place of the commit change. For example
-`menu`, `sidebar`, etc.
-
-### Subject
-
-The subject contains succinct description of the change:
-
-- use the imperative, present tense: "change" not "changed" nor "changes"
-- don't capitalize first letter
-- no dot (.) at the end
-
-### Body
-
-Optional. Just as in the **subject**, use the imperative, present tense: "change" not "changed" nor "changes".
-The body should include the motivation for the change and contrast this with previous behavior.
-
-### Footer
-
-Optional. The footer should contain any information about **Breaking Changes** and is also the place to
-reference GitHub issues that this commit **Closes**.
-
-**Breaking Changes** should start with the word `BREAKING CHANGE:` with a space or two newlines.
-The rest of the commit message is then used for this.
-
-[coc]: CODE_OF_CONDUCT.md
-[github]: https://github.com/akveo/nebular
-[stackoverflow]: https://stackoverflow.com/questions/tagged/nebular
-[issues]: https://github.com/akveo/nebular/issues
-[new_issue]: https://github.com/akveo/nebular/issues/new
-[pulls]: https://github.com/akveo/nebular/pulls
+[conventional]: https://www.conventionalcommits.org/

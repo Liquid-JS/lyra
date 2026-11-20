@@ -1,30 +1,31 @@
 # Enable Multiple Runtime Themes
 
-This mode comes in handy when you need to have multiple themes and be able to change them in the run-time.
+Several themes in one app, switched at run time.
 
 <div class="note note-info section-end">
   <div class="note-title">Setup Required</div>
   <div class="note-body">
-    This guide assumes you already enabled <a href="docs/design-system/enable-customizable-theme">Theme Customization</a> 
-    and reviewed <a href="docs/design-system/design-system-theme">Eva Design System Theme</a> rules.
+    This guide assumes you already enabled <a href="theme/customization/enable-customizable-theme">Theme Customization</a> 
+    and reviewed <a href="theme/design-system/design-system-theme">Design System Theme</a> rules.
   </div>
 </div>
-<hr>
+
+---
 
 ## Enable Second Theme
 
-Assuming you already have the `themes.scss` file with the `default` theme enabled, let's add a second theme:
+Every registered theme is installed, so loading a built-in theme in `themes.scss` is enough to add it. To change its
+variables, register it again with your changes, as with the first theme:
 
 ```scss
-@forward '@nebular/theme/styles/theming';
-@use '@nebular/theme/styles/theming' as *;
-@use '@nebular/theme/styles/themes/default';
-@use '@nebular/theme/styles/themes/dark';
+@forward '@liquid-js/lyr-core/styles/theming';
+@use '@liquid-js/lyr-core/styles/theming' as *;
+@use '@liquid-js/lyr-core/styles/themes/default';
+@use '@liquid-js/lyr-core/styles/themes/dark';
 
 $nb-themes: nb-register-theme(
   (
-    // some styles we changed
-    text-basic-color: color-basic-800,
+    text-basic-color: color-basic-900,
     text-disabled-color: color-basic-600
   ),
   default,
@@ -33,8 +34,7 @@ $nb-themes: nb-register-theme(
 
 $nb-themes: nb-register-theme(
   (
-    // some styles we changed
-    text-basic-color: color-basic-800,
+    text-basic-color: color-basic-200,
     text-disabled-color: color-basic-600
   ),
   dark,
@@ -42,12 +42,13 @@ $nb-themes: nb-register-theme(
 );
 ```
 
-Basically, that's it. Now you have two themes registered.
+Each theme's variables are written on its `.nb-theme-<name>` class, and [Change Theme in Runtime](theme/customization/changing-theme)
+switches between them.
 
-<hr>
+---
 
 ## Related Articles
 
-- [Change Theme in Runtime](docs/design-system/changing-theme)
-- [Enable CSS Properties Mode](docs/design-system/enable-css-properties-mode)
-- [Create Custom Theme](docs/design-system/create-custom-theme)
+- [Change Theme in Runtime](theme/customization/changing-theme)
+- [CSS Custom Properties](theme/customization/css-custom-properties)
+- [Create Custom Theme](theme/customization/create-custom-theme)

@@ -1,84 +1,97 @@
 # Backend Auth Endpoints
 
-<div class="note note-info">
-  <div class="note-title">Note</div>
-  <div class="note-body">
-    While this page provides description about the API endpoints required to integrate Nebular Auth module with your backend, you can also save time by purchasing a
-    <a class="backend-bundle-link" href="https://store.akveo.com/pages/all-collections?utm_campaign=akveo_store%20-%20all%20bundles%20-%20nebular%20landing&utm_source=nebular&utm_medium=referral&utm_content=backend_api_endpoints_docs">
-      backend bundle from Akveo Store
-    </a>
-    for your technology.
-  </div>
-</div>
+The endpoints `NbPasswordAuthStrategy` calls by default, under its `baseEndpoint` of `/api/auth/`. Each action's
+endpoint, HTTP method and the keys of the response are [settings of the strategy](extras/auth/configuring-a-strategy),
+so an existing API can be matched instead.
 
-Your backend API should support the following endpoint to be compatible with out of the box nebular Authentication Strategies:
+The token is read from the `data.token` key of a response, messages from `data.messages` and errors from
+`data.errors`, each a string or an array of strings; without them, the strategy's default messages are shown.
 
-- POST method `<domain>/auth/login`
+- `POST /api/auth/login`
 
-  This is the regular login method, used for the first time call with email and password. The received token will be passed as a header on all further API requests.
-  Input:
-  ```json
-  {
-    "email": "string",
-    "password": "string"
-  }
-  ```
-  Output:
-  ```json
-  {
-    "token": "string"
-  }
-  ```
+  Signs in. Input:
 
-- POST method `<domain>/auth/sign-up`
-
-  This call is to create a new user. Its called after clicking on ‘Register’ button on a Login form.
-
-  Input:
   ```json
   {
     "email": "string",
     "password": "string",
-    "fullName": "string",
-    "confirmPassword": "string"
+    "rememberMe": true
   }
   ```
+
   Output:
+
   ```json
   {
-    "token": "string"
+    "data": {
+      "token": "string"
+    }
   }
   ```
-- POST method `<domain>/auth/request-pass`
 
-  This call is used to request a password reset token. The token is not returned as endpoint output. Instead, it’s expected that the user will receive token to reset password in email and use it for the next call.
+- `POST /api/auth/register`
 
-  Input:
+  Creates a user. Input:
+
+  ```json
+  {
+    "email": "string",
+    "password": "string",
+    "confirmPassword": "string",
+    "fullName": "string",
+    "terms": true
+  }
+  ```
+
+  Output: as `login`, a token.
+
+- `POST /api/auth/request-pass`
+
+  Requests a password reset. The backend emails the user a link to the reset password page with a reset token in its
+  query, e.g. `/auth/reset-password?reset_password_token=…`. Input:
+
   ```json
   {
     "email": "string"
   }
   ```
+
   Output: `Status 200`
 
-- POST method `<domain>/auth/reset-pass`
-  This call is used to clear sign in information if it exists. In case of fully REST service which doesn’t keep such information at the backend - just return status 200.
-  
-  Input:
+- `PUT /api/auth/reset-pass`
+
+  Sets the new password. The reset token is taken from the page's query, under the strategy's
+  `resetPass.resetPasswordTokenKey` (`reset_password_token` by default), and sent under the same key. Input:
+
   ```json
   {
-    "email": "string"
+    "password": "string",
+    "confirmPassword": "string",
+    "reset_password_token": "string"
   }
   ```
+
   Output: `Status 200`
+
+- `DELETE /api/auth/logout`
+
+  Clears the sign-in information, if the backend keeps any; a stateless REST service just returns `Status 200`.
+
+- `POST /api/auth/refresh-token`
+
+  Exchanges the current token, sent as the body, for a new one. Output: as `login`, a token.
 
 # Token Validation
 
-All other endpoints of your API, which are not public, should be protected by token validation. Nebular Auth Module puts JWT token as a header to each request.
+Every other non-public endpoint should validate the token. `NbAuthJWTInterceptor` sends it as a `Bearer`
+`Authorization` header, refreshing an expired one first, and skips the requests the `NB_AUTH_TOKEN_INTERCEPTOR_FILTER`
+function returns `true` for; the default filter skips every request, so provide one that returns `false` for the API's
+requests. `NbAuthSimpleInterceptor` sends the token's value as it is, in the `NB_AUTH_INTERCEPTOR_HEADER` header
+(`Authorization` by default), with every request.
 
 # Sample for pure Node.JS
 
-This sample shows part of app.js file how to setup the controller to get users data and validate each controller endpoint using [Passport](https://github.com/jaredhanson/passport) module.
+Validating a controller's endpoints with [Passport](https://github.com/jaredhanson/passport), in `app.js`:
 
 ```ts
 app.use(`${root}/users`, passport.authenticate('jwt', { session: false }), userController);
@@ -86,15 +99,15 @@ app.use(`${root}/users`, passport.authenticate('jwt', { session: false }), userC
 
 # Sample for Nest.JS framework for Node.JS
 
-This sample shows how to use [Passport](https://github.com/nestjs/passport/) module for controller calls validation
+With Nest's [Passport](https://github.com/nestjs/passport/) module:
 
 ```ts
 @UseGuards(AuthGuard('jwt'))
 export class UserController { }
 ```
 
-Additional information for backend implementation on the subject can be found:
-- https://github.com/nestjs/passport/ 
-- https://github.com/jaredhanson/passport
-- https://docs.nestjs.com/techniques/authentication
+More on backend implementation:
 
+- <https://github.com/nestjs/passport/>
+- <https://github.com/jaredhanson/passport>
+- <https://docs.nestjs.com/techniques/authentication>

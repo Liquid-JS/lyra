@@ -1,14 +1,14 @@
 # Server Deployment
 
-Though in the development Nebular app consists of a number of TypeScript, SASS, etc files, the built package is just a bunch HTML/JavaScript/CSS files.
-No other processing is needed to get them running in a browser.
-So to deploy the app you basically need two simple steps:
+A built Lyra app is static HTML, JavaScript and CSS:
 
-- Build your app with `npm run build:prod`
-- Copy the output from the `dist` folder under a web-server of your choice.
+- Build it with `ng build`.
+- Copy the output under `dist/` to a web server.
 
-More details on how to setup your web-server to better serve the application can be found on Angular Documentation website, under <a href="https://angular.io/guide/deployment#server-configuration" target="_blank">Server Configuration</a> section.
-<hr>
+The server has to send `index.html` for every route the app handles; see Angular's
+[deployment guide](https://angular.dev/tools/cli/deployment).
+
+---
 
 ## Related Articles
 

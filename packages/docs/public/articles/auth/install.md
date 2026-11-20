@@ -1,82 +1,67 @@
 # Installation
 
-<div class="note note-info section-end">
-  <div class="note-title">Note</div>
-  <div class="note-body">
-    If you use our [ngx-admin starter kit](docs/guides/install-based-on-starter-kit) then you already have the Auth module in place.
-  </div>
-</div>
-
 ## Install the module
 
-First, let's install the module as it's distributed as npm package. Make sure you have the [Nebular Theme module up and running](https://akveo.github.io/nebulardocs/installation/add-into-existing-project).
-Nebular Theme is required to use built-in Auth Components. If you are not going to use those at all, you can use `Auth Module` without the `Nebular Theme` module.
+The built-in Auth components need [Lyra Core](docs/guides/install-lyra); the strategies and services alone don't.
 
 ```bash
-npm i @nebular/auth
+npm i @liquid-js/lyr-auth
 ```
 
-<hr>
+---
 
-## HttpClientModule
+## HttpClient
 
-Auth module utilizes features of `HttpClientModule` and since it should only be imported in the root module, please make sure you've done this:
+The Auth package sends its requests with `HttpClient`, so the application provides it:
 
 ```ts
-import { HttpClientModule } from '@angular/common/http';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 
 // ...
 
-@NgModule({
-  imports: [
-    HttpClientModule
+bootstrapApplication(AppComponent, {
+  providers: [
+    provideHttpClient(withInterceptorsFromDi()),
   ],
-})
-export class AppModule {
-
+});
 ```
 
-## Import
+`withInterceptorsFromDi()` is needed for the class-based interceptors registered with `HTTP_INTERCEPTORS`, `NbAuthJWTInterceptor` and `NbAuthSimpleInterceptor`, which add the token to requests.
 
-Import the module and `NbPasswordAuthStrategy` strategy:
-
-```ts
-import { NbPasswordAuthStrategy, NbAuthModule } from '@nebular/auth';
-```
-
-<hr>
+---
 
 ## Configure a strategy
 
-Now, let's configure the module by specifying available strategies, in our case, we add `NbPasswordAuthStrategy`.
-To add a strategy we need to call static `setup` method to pass a list of options:
+Provide the auth services with the strategies, here `NbPasswordAuthStrategy`, each set up with its static `setup` method:
 
 ```ts
-@NgModule({
-  imports: [
-   // ...
+import { NbPasswordAuthStrategy, provideNbAuth } from '@liquid-js/lyr-auth';
 
-   NbAuthModule.forRoot({
-         strategies: [
-           NbPasswordAuthStrategy.setup({
-             name: 'email',
-           }),
-         ],
-         forms: {},
-       }),
+bootstrapApplication(AppComponent, {
+  providers: [
+    // ...
+
+    provideNbAuth({
+      strategies: [
+        NbPasswordAuthStrategy.setup({
+          name: 'email',
+        }),
+      ],
+      forms: {},
+    }),
   ],
 });
-
 ```
 
-We also specified `forms` key, that configures available options for the Auth Components.
-We leave it empty for now and get back to it in the [Configuring UI](docs/auth/configuring-ui) article.
+In an NgModule app, `NbAuthModule.forRoot()` takes the same options.
 
-<hr>
+`forms` configures the Auth components; it's empty here and covered in [Configuring UI](extras/auth/configuring-ui).
+
+---
 
 ## Enable Auth Components
 
-Next, we need to configure Auth Components routes, let's add those into your `app-routing.module.ts`:
+Add the components' routes to `app.routes.ts`:
 
 ```ts
 import {
@@ -86,7 +71,7 @@ import {
   NbLogoutComponent,
   NbRequestPasswordComponent,
   NbResetPasswordComponent,
-} from '@nebular/auth';
+} from '@liquid-js/lyr-auth';
 
 export const routes: Routes = [
   // ...
@@ -124,28 +109,37 @@ export const routes: Routes = [
 ];
 ```
 
-<hr>
+---
 
 ## Enable Styles
 
-Last but not least - install the component styles into your styles.scss ([more details](docs/design-system/enable-customizable-theme)):
+With a prebuilt theme, add the matching prebuilt Auth styles after it in `angular.json`:
+
+```json
+"styles": [
+  "node_modules/@liquid-js/lyr-core/styles/prebuilt/default.css",
+  "node_modules/@liquid-js/lyr-auth/styles/prebuilt/default.css"
+],
+```
+
+With a [customizable theme](theme/customization/enable-customizable-theme), include the Auth styles in your `styles.scss`:
 
 ```scss
 // ...
-@use '@nebular/auth/styles/globals' as *;
+@use '@liquid-js/lyr-auth/styles/globals' as *;
 
 @include nb-install() {
   @include nb-theme-global();
-  @include nb-auth-global(); // append the install mixin inside of the nb-install
-} ;
+  @include nb-auth-global();
+}
 ```
 
-At this point, if you navigate to http://localhost:4200/#/auth/login the login form is shown.
+Now <http://localhost:4200/auth/login> shows the login form.
 
-<hr>
+---
 
 ## Related Articles
 
-- [Configuring a Strategy](docs/auth/configuring-a-strategy)
-- Adjusting [Auth Components UI](docs/auth/configuring-ui)
-- [Custom Auth Components](docs/auth/custom-auth-components)
+- [Configuring a Strategy](extras/auth/configuring-a-strategy)
+- Adjusting [Auth Components UI](extras/auth/configuring-ui)
+- [Custom Auth Components](extras/auth/custom-auth-components)

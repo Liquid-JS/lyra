@@ -1,43 +1,42 @@
-# Eva Design System
+# Design System
 
-Starting with version 4.0 Nebular becomes an Angular implementation of [Eva Design System](https://eva.design/?utm_campaign=eva_design%20-%20home%20-%20nebular%20intro&utm_source=nebular&utm_medium=referral&utm_content=nebular_intro).
-This means that components visual style and behavior are based on Design System rules and agreements.  
-<hr>
+Lyra's components follow a design system of their own: shared rules for colour, type, shape, spacing and states,
+kept as theme variables. A theme sets them once, and every component follows.
+
+---
 
 ## Principles
 
-Eva is a customizable Design System based on Atomic Design Principles.
-All components are built based on basic elements with shared styles, connected with a single Visual Language for both Mobile and Web platforms.
-Most importantly, Eva is built to be customizable, meaning architectural support of multiple themes across all components and supporting platforms.  
-<hr>
+Components are built from the same basic elements, with shared styles, so they look and behave alike: a select, an
+input and a button of the same size line up, and a status colour means the same everywhere.
 
-## Implementations
+The system is built to be customised. Every theme value is a CSS variable, themes inherit from one another, and an app
+can also set its components' shapes, sizes and appearances once for all of them.
 
-Eva Design System is implemented for two platforms:
-
-- Web - Nebular
-- Mobile - [UI Kitten](https://github.com/akveo/react-native-ui-kitten?utm_source=nebular_docs&utm_medium=intro)
-
-Both implementations have a single source of truth for styles and unified theming system.
-<hr>
+---
 
 ## Built-in themes
 
-Currently, there are 4 built-in themes: 
 - `default` - clean white theme
 - `dark` - dark theme
 - `cosmic` - alternative dark violet theme
 - `corporate` - firm business theme
+- `material-light` and `material-dark` - Material 3's baseline light and dark schemes, with Roboto (load the font in
+  your app)
 
-Theme extension mechanism allows theme inheritance,  for instance, is inherited from the `dark` theme.
-<hr>
+Themes inherit from one another: `cosmic` and `material-dark` are built on `dark`, and `dark`, `corporate` and
+`material-light` on `default`.
 
-## Enterprise ready
+---
 
-Being a part of Eva Ecosystem, Nebular is a great choice for Enterprise-grade products, providing complete control over application look & feel.  
-<hr>
+## Your own theme
+
+The [theme editor](theme/theme-editor) builds a theme from a few choices, such as status colours, fonts, corners and
+component defaults, previews it on real screens, and gives it back as Sass, CSS variables or component defaults.
+
+---
 
 ## Related Articles
 
-- [Design System Rules](docs/design-system/design-system-theme)
-- [Create Custom Theme](docs/design-system/create-custom-theme)
+- [Design System Rules](theme/design-system/design-system-theme)
+- [Create Custom Theme](theme/customization/create-custom-theme)

@@ -1,7 +1,7 @@
 # Auth Module
 
-The main goal of the Auth module is to provide a pluggable set of components and services for easier setup of the authentication layer for Angular applications.
-The module separates the UI part (login/register/etc components) from the business logic with the help of the authentication `Strategies` layer. 
+The Auth module is a pluggable authentication layer: UI components (login, register, ...) on one side, authentication
+`Strategies` that talk to the backend on the other.
 
 <div class="note note-info">
   <div class="note-title">Note</div>
@@ -9,32 +9,39 @@ The module separates the UI part (login/register/etc components) from the busine
     The setup still requires communication with backend services.
   </div>
 </div>
-<hr>
+
+---
 
 ## Authentication UI components
-  - Login
-  - Logout
-  - Register
-  - Password Recover
-  - Password Reset
 
-You can use the built-in components or create your custom ones.  
-<hr>
-  
+- Login
+- Logout
+- Register
+- Password Recover
+- Password Reset
+
+Use the built-in components or [create your own](extras/auth/custom-auth-components).
+
+---
+
 ## Auth Strategies
-  - `NbDummyAuthStrategy` - a simple strategy for testing purposes, could be used for simulating backend responses while API is in the development;
-  - `NbPasswordAuthStrategy` - the most common email/login/password authentication strategy.
-  - `NbOAuth2AuthStrategy` - the most popular authentication framework that enables applications to obtain limited access to user accounts on HTTP service.
-<hr>
-    
+
+- `NbDummyAuthStrategy` - simulates backend responses, for testing and while the API is in development;
+- `NbPasswordAuthStrategy` - email/password authentication against an HTTP API;
+- `NbOAuth2AuthStrategy` - sign-in with an OAuth2 provider.
+
+---
+
 ## Other helper services
-  - `NbAuthService` - facade service to communicate with a configured strategy;
-  - `NbTokenService` - service that allows you to manage authentication token - get, set, clear and also listen to token changes over time;
-  - `NbTokenLocalStorage` - storage service for storing tokens in a browser local storage;
-  - `NbAuthJWTToken`, `NbAuthSimpleToken`, `NbAuthOAuth2Token`, `NbAuthOAuth2JWTToken` - helper classes to work with your token;
-  - `NbAuthJWTInterceptor` and `NbAuthSimpleInterceptor` - http interceptors to inject token value into http requests.
-<hr>
+
+- `NbAuthService` - facade to communicate with a configured strategy;
+- `NbTokenService` - gets, sets and clears the authentication token, and tells when it changes;
+- `NbTokenLocalStorage` - keeps the token in the browser's storage;
+- `NbAuthJWTToken`, `NbAuthSimpleToken`, `NbAuthOAuth2Token`, `NbAuthOAuth2JWTToken` - token classes;
+- `NbAuthJWTInterceptor` and `NbAuthSimpleInterceptor` - HTTP interceptors that add the token to requests.
+
+---
 
 ## Related Articles
 
-- Auth Module [Installation](docs/auth/installation) 
+- Auth Module [Installation](extras/auth/installation)

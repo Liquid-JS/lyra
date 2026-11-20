@@ -1,44 +1,44 @@
 # Enable Customizable Themes
 
-Nebular styles come as a css file by default.
-In order to be able to customize theme variables, scss files should be enabled.
+Lyra's styles come as prebuilt CSS by default. To customize theme variables, use the Sass sources instead.
 
 <div class="note note-info section-end">
   <div class="note-title">Note</div>
   <div class="note-body">
-    You may already have this setup in place, if you used `ng add @nebular/theme` and selected customizable themes during the installation process.
+    You may already have this setup in place, if you used `ng add @liquid-js/lyr-core` and selected customizable themes during the installation process.
   </div>
 </div>
-<hr>
+
+---
 
 ## Import a theme
 
 Create a `themes.scss` in your `src` folder and import a theme of your choice:
 
 ```scss
-// import Nebular Theme System and the default theme
-@forward '@nebular/theme/styles/theming';
-@use '@nebular/theme/styles/theming' as *;
-@use '@nebular/theme/styles/themes/default';
+// import Lyra Theme System and the default theme
+@forward '@liquid-js/lyr-core/styles/theming';
+@use '@liquid-js/lyr-core/styles/theming' as *;
+@use '@liquid-js/lyr-core/styles/themes/default';
 ```
 
-<hr>
+---
 
 ## Modify theme variables
 
-To adjust some of the theme variables, we need to register our changes using `nb-register-theme` function.
-Let's make text color lighter and disabled text - darker:
+Register your changes with `nb-register-theme`: the changed variables, the theme's name and its parent. Here the text
+gets darker and the disabled text opaque:
 
 ```scss
-@forward '@nebular/theme/styles/theming';
-@use '@nebular/theme/styles/theming' as *;
-@use '@nebular/theme/styles/themes/default';
+@forward '@liquid-js/lyr-core/styles/theming';
+@use '@liquid-js/lyr-core/styles/theming' as *;
+@use '@liquid-js/lyr-core/styles/themes/default';
 
 $nb-themes: nb-register-theme(
   (
-    // we setting color-basic-800 instead of color-basic-1000
-    text-basic-color: color-basic-800,
-    // and color-basic-600 as instead of color-basic-500
+    // color-basic-900 instead of color-basic-800
+    text-basic-color: color-basic-900,
+    // color-basic-600 instead of color-basic-transparent-600
     text-disabled-color: color-basic-600
   ),
   default,
@@ -46,13 +46,14 @@ $nb-themes: nb-register-theme(
 );
 ```
 
-We can also modify a primary color, for example make it violet.
-[Eva Colors](https://colors.eva.design?utm_campaign=eva_design%20-%20eva%20colors%20-%20nebular%20docs%20link&utm_source=nebular&utm_medium=referral&utm_content=enable_customizable_theme_primary_color) is a great tool to generate colors pallet from a given brand color.
+A status colour is its nine shades. The [theme editor](theme/theme-editor) makes them from a brand colour, as
+`nb-status-palette` does in Sass (see [Create Custom Theme](theme/customization/create-custom-theme)), or set them
+yourself, e.g. a violet primary:
 
 ```scss
-@forward '@nebular/theme/styles/theming';
-@use '@nebular/theme/styles/theming' as *;
-@use '@nebular/theme/styles/themes/default';
+@forward '@liquid-js/lyr-core/styles/theming';
+@use '@liquid-js/lyr-core/styles/theming' as *;
+@use '@liquid-js/lyr-core/styles/themes/default';
 
 $nb-themes: nb-register-theme(
   (
@@ -66,7 +67,7 @@ $nb-themes: nb-register-theme(
     color-primary-700: #5a37b8,
     color-primary-800: #3e2494,
     color-primary-900: #29157a,
-    text-basic-color: color-basic-800,
+    text-basic-color: color-basic-900,
     text-disabled-color: color-basic-600
   ),
   default,
@@ -74,18 +75,18 @@ $nb-themes: nb-register-theme(
 );
 ```
 
-<hr>
+---
 
-## Enable Nebular Styles
+## Enable Lyra Styles
 
-The last thing, find your `styles.scss` (or create one and add it into `angular.json` under `"styles": [..]`) or your app and paste the following:
+In your `styles.scss` (listed under `"styles": [..]` in `angular.json`):
 
 ```scss
 // this is our just created themes.scss file, make sure the path to the file is correct
 @use 'themes' as *;
 
 // framework component styles
-@use '@nebular/theme/styles/globals' as *;
+@use '@liquid-js/lyr-core/styles/globals' as *;
 
 // install the framework styles
 @include nb-install() {
@@ -93,10 +94,14 @@ The last thing, find your `styles.scss` (or create one and add it into `angular.
 }
 ```
 
-<hr>
+`nb-theme-global()` writes every component's styles, and the page-wide rules once: normalize, `.visually-hidden` and the
+overlays' structure. To install only some components' themes, include `nb-theme-base()` for those rules, then each
+component's theme mixin.
+
+---
 
 ## Related Articles
 
-- [Use Theme Variables](docs/design-system/use-theme-variables)
-- [Create Custom Theme](docs/design-system/create-custom-theme)
-- [Multiple Runtime Themes](docs/design-system/enable-multiple-runtime-themes)
+- [Use Theme Variables](theme/customization/use-theme-variables)
+- [Create Custom Theme](theme/customization/create-custom-theme)
+- [Multiple Runtime Themes](theme/customization/enable-multiple-runtime-themes)
