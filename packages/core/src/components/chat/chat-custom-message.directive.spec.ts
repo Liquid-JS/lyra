@@ -1,18 +1,18 @@
 import { Component } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { NbChatModule, NbThemeModule, NbChatCustomMessageService } from '@nebular/theme';
+import { NbChatModule, NbThemeModule, NbChatCustomMessageService } from '@liquid-js/lyr-core';
 
 @Component({
-    selector: 'nb-custom-message-directive-test',
-    template: `
+  selector: 'nb-custom-message-directive-test',
+  template: `
     <div *nbCustomMessage="customMessageType">
       <p>Hello world</p>
     </div>
   `,
-    standalone: false
+  imports: [NbChatModule],
 })
 export class NbCustomMessageTestComponent {
-  customMessageType: string = 'simpleMessageType';
+  customMessageType = 'simpleMessageType';
 }
 
 describe('Directive chat-custom-message-directive: NbCustomMessageTestComponent', () => {
@@ -21,8 +21,7 @@ describe('Directive chat-custom-message-directive: NbCustomMessageTestComponent'
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [NbThemeModule.forRoot(), NbChatModule],
-      declarations: [NbCustomMessageTestComponent],
+      imports: [NbThemeModule.forRoot(), NbChatModule, NbCustomMessageTestComponent],
       providers: [NbChatCustomMessageService],
     });
 

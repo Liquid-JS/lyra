@@ -1,58 +1,40 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { Component, input } from '@angular/core';
+import { NbChatMessageTextComponent } from './chat-message-text.component';
+import { DatePipe } from '@angular/common';
 
 /**
- * Chat message component.
+ * A `quote` message: the quoted text above the message's own.
  */
 @Component({
-    selector: 'nb-chat-message-quote',
-    template: `
-    <p class="sender" *ngIf="sender || date">{{ sender }} <time>{{ date | date: dateFormat }}</time></p>
-    <p class="quote">
-      {{ quote }}
-    </p>
-    <nb-chat-message-text [message]="message">
-      {{ message }}
-    </nb-chat-message-text>
-  `,
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  selector: 'nb-chat-message-quote',
+  templateUrl: './chat-message-quote.component.html',
+  imports: [NbChatMessageTextComponent, DatePipe],
 })
 export class NbChatMessageQuoteComponent {
 
   /**
-   * Message sender
-   * @type {string}
+   * The message text.
    */
-  @Input() message: string;
+  readonly message = input<string>();
 
   /**
-   * Message sender
-   * @type {string}
+   * The sender's name.
    */
-  @Input() sender: string;
+  readonly sender = input<string>();
 
   /**
-   * Message send date
-   * @type {Date}
+   * When the message was sent.
    */
-  @Input() date: Date;
-
- /**
-   * Message send date format, default 'shortTime'
-   * @type {string}
-   */
-  @Input() dateFormat: string = 'shortTime';
+  readonly date = input<Date>();
 
   /**
-   * Quoted message
-   * @type {Date}
+   * `DatePipe` format of the date; `shortTime` by default.
    */
-  @Input() quote: string;
+  readonly dateFormat = input<string>('shortTime');
+
+  /**
+   * The quoted text.
+   */
+  readonly quote = input<string>();
 
 }

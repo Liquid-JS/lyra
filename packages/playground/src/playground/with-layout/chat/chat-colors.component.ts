@@ -1,25 +1,49 @@
 import { Component } from '@angular/core';
+import {
+  NbChatComponent,
+  NbChatFormComponent,
+  NbChatMessageComponent,
+  NbChatMessageFile,
+  NbComponentStatus,
+} from '@liquid-js/lyr-core';
+
+interface ChatMessage {
+  text: string;
+  date: Date;
+  reply: boolean;
+  type?: string;
+  files?: NbChatMessageFile[];
+  user: { name: string; avatar: string };
+}
+
+interface Chat {
+  title: string;
+  status: NbComponentStatus;
+  messages: ChatMessage[];
+}
 
 @Component({
-    selector: 'nb-chat-colors',
-    templateUrl: './chat-colors.component.html',
-    styles: [`
-    ::ng-deep nb-layout-column {
-      justify-content: center;
-      display: flex;
-    }
-    nb-chat {
-      width: 500px;
-      margin: 0.5rem 0 2rem 2rem;
-    }
-  `],
-    standalone: false
+  selector: 'nb-chat-colors',
+  templateUrl: './chat-colors.component.html',
+  styles: [
+    `
+      ::ng-deep nb-layout-column {
+        justify-content: center;
+        display: flex;
+      }
+      nb-chat {
+        width: 500px;
+        margin: 0.5rem 0 2rem 2rem;
+      }
+    `,
+  ],
+  imports: [NbChatComponent, NbChatMessageComponent, NbChatFormComponent],
 })
 export class ChatColorsComponent {
-  chats: any[] = [
+  readonly chats: Chat[] = [
     {
       status: 'success',
-      title: 'Nebular Conversational UI Success',
+      title: 'Lyra Conversational UI Success',
       messages: [
         {
           text: 'Success!',
@@ -34,7 +58,7 @@ export class ChatColorsComponent {
     },
     {
       status: 'danger',
-      title: 'Nebular Conversational UI Danger',
+      title: 'Lyra Conversational UI Danger',
       messages: [
         {
           text: 'Danger!',
@@ -49,7 +73,7 @@ export class ChatColorsComponent {
     },
     {
       status: 'primary',
-      title: 'Nebular Conversational UI Primary',
+      title: 'Lyra Conversational UI Primary',
       messages: [
         {
           text: 'Primary!',
@@ -64,7 +88,7 @@ export class ChatColorsComponent {
     },
     {
       status: 'info',
-      title: 'Nebular Conversational UI Info',
+      title: 'Lyra Conversational UI Info',
       messages: [
         {
           text: 'Info!',
@@ -79,7 +103,7 @@ export class ChatColorsComponent {
     },
     {
       status: 'warning',
-      title: 'Nebular Conversational UI Warning',
+      title: 'Lyra Conversational UI Warning',
       messages: [
         {
           text: 'Warning!',
@@ -94,13 +118,13 @@ export class ChatColorsComponent {
     },
   ];
 
-  sendMessage(messages, event) {
+  sendMessage(messages: ChatMessage[], event: { message: string }) {
     messages.push({
       text: event.message,
       date: new Date(),
       reply: true,
       user: {
-        name: 'Jonh Doe',
+        name: 'John Doe',
         avatar: 'https://techcrunch.com/wp-content/uploads/2015/08/safe_image.gif',
       },
     });

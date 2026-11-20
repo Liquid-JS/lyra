@@ -1,47 +1,34 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { Component, input } from '@angular/core';
+import { DatePipe } from '@angular/common';
 
 /**
- * Chat message component.
+ * The text of a message, with its sender and time.
  */
 @Component({
-    selector: 'nb-chat-message-text',
-    template: `
-    <p class="sender" *ngIf="sender || date">{{ sender }} <time>{{ date  | date: dateFormat }}</time></p>
-    <p class="text" *ngIf="message">{{ message }}</p>
-  `,
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  selector: 'nb-chat-message-text',
+  templateUrl: './chat-message-text.component.html',
+  imports: [DatePipe],
 })
 export class NbChatMessageTextComponent {
 
   /**
-   * Message sender
-   * @type {string}
+   * The sender's name.
    */
-  @Input() sender: string;
+  readonly sender = input<string>();
 
   /**
-   * Message sender
-   * @type {string}
+   * The message text.
    */
-  @Input() message: string;
+  readonly message = input<string>();
 
   /**
-   * Message send date
-   * @type {Date}
+   * When the message was sent.
    */
-  @Input() date: Date;
+  readonly date = input<Date>();
 
   /**
-   * Message send date format, default 'shortTime'
-   * @type {string}
+   * `DatePipe` format of the date; `shortTime` by default.
    */
-  @Input() dateFormat: string = 'shortTime';
+  readonly dateFormat = input<string>('shortTime');
 
 }

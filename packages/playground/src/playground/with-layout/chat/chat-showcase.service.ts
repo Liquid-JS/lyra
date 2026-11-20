@@ -1,11 +1,10 @@
-import { Injectable } from '@angular/core';
+import { Service } from '@angular/core';
 
 import { messages } from './messages';
 import { botReplies, gifsLinks, imageLinks } from './bot-replies';
 
-@Injectable()
+@Service({ autoProvided: false })
 export class ChatShowcaseService {
-
 
   loadMessages() {
     return messages;
@@ -16,7 +15,7 @@ export class ChatShowcaseService {
   }
 
   reply(message: string) {
-    const botReply: any =  this.loadBotReplies()
+    const botReply: any = this.loadBotReplies()
       .find((reply: any) => message.search(reply.regExp) !== -1);
 
     if (botReply.reply.type === 'quote') {

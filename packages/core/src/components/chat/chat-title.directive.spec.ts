@@ -1,35 +1,35 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Component } from '@angular/core';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { Component, signal } from '@angular/core';
 import { By } from '@angular/platform-browser';
-import { NbThemeModule, NbChatModule, NbChatComponent } from '@nebular/theme';
+import { NbThemeModule, NbChatModule, NbChatComponent } from '@liquid-js/lyr-core';
 
 @Component({
-    template: `
+  template: `
     <nb-chat [title]="title">
       <ng-template nbChatTitle [context]="{ text: contextTemplateText }" let-data>
         {{ staticTemplateText }} {{ data.text }}
       </ng-template>
 
-      <nb-chat-message
-        *ngFor="let msg of messages"
-        [type]="msg.type"
-        [message]="msg.text"
-        [reply]="msg.reply"
-        [sender]="msg.user.name"
-        [date]="msg.date"
-        [avatar]="msg.user.avatar"
-        [customMessageData]="msg.optionalData"
-      >
-        <div *nbCustomMessage="'link'; let data">
-          <a [href]="data.href">{{ data.label }}</a>
-        </div>
-      </nb-chat-message>
+      @for (msg of messages; track msg) {
+        <nb-chat-message
+          [type]="msg.type"
+          [message]="msg.text"
+          [reply]="msg.reply"
+          [sender]="msg.user.name"
+          [date]="msg.date"
+          [avatar]="msg.user.avatar"
+          [customMessageData]="msg.optionalData"
+        >
+          <div *nbCustomMessage="'link'; let data">
+            <a [href]="data.href">{{ data.label }}</a>
+          </div>
+        </nb-chat-message>
+      }
 
-      <nb-chat-form [dropFiles]="false"> </nb-chat-form>
+      <nb-chat-form [dropFiles]="false" />
     </nb-chat>
   `,
-    standalone: false
+  imports: [NbChatModule],
 })
 export class NbChatTitleTemplateTestComponent {
   messages = [
@@ -38,7 +38,7 @@ export class NbChatTitleTemplateTestComponent {
       type: 'link',
       optionalData: {
         href: 'https://akveo.github.io/ngx-admin/',
-        label: 'Visit Akveo Nebular',
+        label: 'Visit Akveo Lyra',
       },
       date: new Date(),
       user: {
@@ -69,8 +69,7 @@ describe('NbChatTitleDirective', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [NoopAnimationsModule, NbThemeModule.forRoot(), NbChatModule],
-      declarations: [NbChatTitleTemplateTestComponent],
+      imports: [NbThemeModule.forRoot(), NbChatModule, NbChatTitleTemplateTestComponent],
     });
 
     fixture = TestBed.createComponent(NbChatTitleTemplateTestComponent);
@@ -93,5 +92,55 @@ describe('NbChatTitleDirective', () => {
       .query(By.css('.header')).nativeElement;
 
     expect(chatHeaderElement.textContent).not.toContain(testComponent.title);
+  });
+});
+
+@Component({
+  template: `<nb-chat title="Support" noMessagesPlaceholder="Nothing here yet" />`,
+  imports: [NbChatModule],
+})
+class NbChatTextTitleTestComponent {}
+
+describe('NbChatComponent text title', () => {
+  // The texts take their own direction, without changing how the title is aligned in the header.
+  it('should isolate the direction of the title and the empty placeholder', () => {
+    TestBed.configureTestingModule({
+      imports: [NbThemeModule.forRoot(), NbChatModule, NbChatTextTitleTestComponent],
+    });
+    const fixture = TestBed.createComponent(NbChatTextTitleTestComponent);
+    fixture.detectChanges();
+
+    const element: HTMLElement = fixture.nativeElement;
+    expect(element.querySelector('.header')?.hasAttribute('dir')).toBe(false);
+    expect(element.querySelector('.header [dir="auto"]')?.textContent).toBe('Support');
+    expect(element.querySelector('.no-messages')?.getAttribute('dir')).toBe('auto');
+  });
+});
+
+@Component({
+  template: `<nb-chat [title]="title()" />`,
+  imports: [NbChatModule],
+})
+class NbChatMessagesRegionTestComponent {
+  readonly title = signal('Support');
+}
+
+describe('NbChatComponent messages', () => {
+  // A Tab stop, so the messages scroll by keyboard in Safari too, named for screen readers.
+  it('should make the messages a named, focusable log', () => {
+    TestBed.configureTestingModule({
+      imports: [NbThemeModule.forRoot(), NbChatModule, NbChatMessagesRegionTestComponent],
+    });
+    const fixture = TestBed.createComponent(NbChatMessagesRegionTestComponent);
+    fixture.detectChanges();
+
+    const scrollable = (fixture.nativeElement as HTMLElement).querySelector('.scrollable');
+    expect(scrollable?.getAttribute('role')).toBe('log');
+    expect(scrollable?.getAttribute('tabindex')).toBe('0');
+    expect(scrollable?.getAttribute('aria-label')).toBe('Support');
+
+    fixture.componentInstance.title.set('');
+    fixture.detectChanges();
+    expect(scrollable?.getAttribute('aria-label')).toBe('Messages');
   });
 });

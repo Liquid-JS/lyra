@@ -1,27 +1,26 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { ChangeDetectionStrategy, Component, HostBinding, Input, TemplateRef } from '@angular/core';
+import { Component, computed, inject, input, TemplateRef } from '@angular/core';
 import { DomSanitizer, SafeStyle } from '@angular/platform-browser';
-import { animate, state, style, transition, trigger } from '@angular/animations';
 
-import { convertToBoolProperty, NbBooleanInput } from '../helpers';
-import { NbChatMessageFile } from './chat-message-file.component';
+import { ɵconvertToBoolProperty as convertToBoolProperty, NbBooleanInput } from '@liquid-js/lyr-core/base';
+import { NbChatMessageFile, NbChatMessageFileComponent } from './chat-message-file.component';
 import { NbChatCustomMessageService } from './chat-custom-message.service';
+import { NbChatState } from './chat-state';
 import { NbChatCustomMessageDirective } from './chat-custom-message.directive';
+import { NbChatAvatarComponent } from './chat-avatar.component';
+import { NbChatMessageQuoteComponent } from './chat-message-quote.component';
+import { NbChatMessageMapComponent } from './chat-message-map.component';
+import { NbChatMessageTextComponent } from './chat-message-text.component';
+import { NgTemplateOutlet } from '@angular/common';
 
 /**
- * Chat message component.
+ * A message in an `nb-chat`, with its sender, time and avatar; a `reply` is the other side of the conversation.
  *
- * Multiple message types are available through a `type` property, such as
- * - text - simple text message
- * - file - could be a file preview or a file icon
- * if multiple files are provided grouped files are shown
- * - quote - quotes a message with specific quote styles
- * - map - shows a google map picture by provided [latitude] and [longitude] properties
+ * `type` sets what the message holds:
+ * - `text` (default) - the message text
+ * - `file` - `files`, images as previews and other files with an icon, grouped when there are several
+ * - `quote` - a `quote` of another message above the text
+ * - `map` - a Google Maps picture of `latitude` and `longitude`
+ * - a custom type, rendered with the chat's `nbCustomMessage` template of that type
  *
  * @stacked-example(Available Types, chat/chat-message-types-showcase.component)
  *
@@ -58,192 +57,118 @@ import { NbChatCustomMessageDirective } from './chat-custom-message.directive';
  * chat-message-file-background-color:
  */
 @Component({
-    selector: 'nb-chat-message',
-    template: `
-    <nb-chat-avatar *ngIf="notReply" [initials]="getInitials()" [avatarStyle]="avatarStyle"> </nb-chat-avatar>
-
-    <div class="message">
-      <ng-container [ngSwitch]="type" *ngIf="_isBuiltInMessageType(); else customTemplate">
-        <nb-chat-message-file
-          *ngSwitchCase="'file'"
-          [sender]="sender"
-          [date]="date"
-          [dateFormat]="dateFormat"
-          [message]="message"
-          [files]="files"
-        >
-        </nb-chat-message-file>
-
-        <nb-chat-message-quote
-          *ngSwitchCase="'quote'"
-          [sender]="sender"
-          [date]="date"
-          [dateFormat]="dateFormat"
-          [message]="message"
-          [quote]="quote"
-        >
-        </nb-chat-message-quote>
-
-        <nb-chat-message-map
-          *ngSwitchCase="'map'"
-          [sender]="sender"
-          [date]="date"
-          [message]="message"
-          [latitude]="latitude"
-          [longitude]="longitude"
-        >
-        </nb-chat-message-map>
-
-        <nb-chat-message-text
-          *ngSwitchDefault
-          [sender]="sender"
-          [date]="date"
-          [dateFormat]="dateFormat"
-          [message]="message"
-        >
-        </nb-chat-message-text>
-      </ng-container>
-    </div>
-
-    <ng-template #customTemplate>
-      <nb-chat-message-text [sender]="sender" [date]="date" [dateFormat]="dateFormat" [message]="message">
-      </nb-chat-message-text>
-      <div
-        [class.nb-custom-message]="_areDefaultStylesEnabled()"
-        [class.nb-custom-message-no-space]="_addNoSpaceClass"
-        [class.nb-custom-message-reply]="_addReplyClass"
-        [class.nb-custom-message-not-reply]="_addNotReplyClass"
-        [class.nb-custom-message-full-width]="!_areDefaultStylesEnabled()"
-      >
-        <ng-container [ngTemplateOutlet]="_getTemplate()" [ngTemplateOutletContext]="_getTemplateContext()">
-        </ng-container>
-      </div>
-    </ng-template>
-  `,
-    animations: [
-        trigger('flyInOut', [
-            state('in', style({ transform: 'translateX(0)' })),
-            transition('void => *', [style({ transform: 'translateX(-100%)' }), animate(80)]),
-            transition('* => void', [animate(80, style({ transform: 'translateX(100%)' }))]),
-        ]),
-    ],
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  selector: 'nb-chat-message',
+  templateUrl: './chat-message.component.html',
+  styleUrls: ['./chat-message.component.scss'],
+  imports: [
+    NbChatAvatarComponent,
+    NbChatMessageFileComponent,
+    NbChatMessageQuoteComponent,
+    NbChatMessageMapComponent,
+    NbChatMessageTextComponent,
+    NgTemplateOutlet,
+  ],
+  host: {
+    '[animate.enter]': 'enterAnimation',
+    'animate.leave': 'nb-chat-message-leave',
+    '[class.reply]': 'reply()',
+    '[class.not-reply]': 'notReply()',
+  },
 })
 export class NbChatMessageComponent {
+  protected readonly domSanitizer = inject(DomSanitizer);
+  protected readonly customMessageService = inject(NbChatCustomMessageService);
+  private readonly chatState = inject(NbChatState, { optional: true });
+
+  /** Animates in when it arrives in a chat that has rendered, not with the chat's first messages. */
+  protected readonly enterAnimation = this.chatState?.settled() === false ? '' : 'nb-chat-message-enter';
+
   protected readonly builtInMessageTypes: string[] = ['text', 'file', 'map', 'quote'];
 
-  avatarStyle: SafeStyle;
-
   get _addReplyClass(): boolean {
-    return this._areDefaultStylesEnabled() && this.reply;
+    return this._areDefaultStylesEnabled() && this.reply();
   }
 
   get _addNotReplyClass(): boolean {
-    return this._areDefaultStylesEnabled() && this.notReply;
+    return this._areDefaultStylesEnabled() && this.notReply();
   }
 
   get _addNoSpaceClass(): boolean {
-    return this._areDefaultStylesEnabled() && !this.message;
+    return this._areDefaultStylesEnabled() && !this.message();
   }
 
-  @HostBinding('@flyInOut')
-  get flyInOut() {
-    return true;
-  }
-
-  @HostBinding('class.not-reply')
-  get notReply() {
-    return !this.reply;
-  }
+  readonly notReply = computed(() => !this.reply());
 
   /**
-   * Determines if a message is a reply
+   * Marks a message from the other side of the conversation: aligned to the other edge, in the reply colours, without
+   * an avatar.
    */
-  @Input()
-  @HostBinding('class.reply')
-  get reply(): boolean {
-    return this._reply;
-  }
-  set reply(value: boolean) {
-    this._reply = convertToBoolProperty(value);
-  }
-  protected _reply: boolean = false;
-  static ngAcceptInputType_reply: NbBooleanInput;
+  readonly reply = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
 
   /**
-   * Message sender
-   * @type {string}
+   * The message text.
    */
-  @Input() message: string;
+  readonly message = input<string>();
 
   /**
-   * Message sender
-   * @type {string}
+   * The sender's name, shown with the message; its initials stand in for a missing `avatar`.
    */
-  @Input() sender: string;
+  readonly sender = input<string>();
 
   /**
-   * Message send date
-   * @type {Date}
+   * When the message was sent.
    */
-  @Input() date: Date;
+  readonly date = input<Date>();
 
   /**
-   * Message send date format, default 'shortTime'
-   * @type {string}
+   * `DatePipe` format of the date; `shortTime` by default.
    */
-  @Input() dateFormat: string;
+  readonly dateFormat = input<string>('shortTime');
 
   /**
-   * Array of files `{ url: 'file url', icon: 'file icon class' }`
+   * The files of a `file` message: `{ url, type }` for an image shown as a preview, `{ url, icon }` for another file.
    */
-  @Input() files: NbChatMessageFile[];
+  readonly files = input<NbChatMessageFile[]>();
 
   /**
-   * Quoted message text
-   * @type {string}
+   * The quoted text of a `quote` message.
    */
-  @Input() quote: string;
+  readonly quote = input<string>();
 
   /**
-   * Map latitude
-   * @type {number}
+   * Latitude of a `map` message.
    */
-  @Input() latitude: number;
+  readonly latitude = input<number>();
 
   /**
-   * Map longitude
-   * @type {number}
+   * Longitude of a `map` message.
    */
-  @Input() longitude: number;
+  readonly longitude = input<number>();
 
   /**
-   * Message send avatar
-   * @type {string}
+   * URL of the sender's picture, shown beside a message that isn't a `reply`.
    */
-  @Input()
-  set avatar(value: string) {
-    this.avatarStyle = value ? this.domSanitizer.bypassSecurityTrustStyle(`url(${value})`) : null;
-  }
+  readonly avatar = input<string>();
+
+  readonly avatarStyle = computed<SafeStyle | undefined>(() => {
+    const avatar = this.avatar();
+    return avatar ? this.domSanitizer.bypassSecurityTrustStyle(`url(${avatar})`) : undefined;
+  });
 
   /**
-   * Message type, available options `text|file|map|quote`
-   * @type {string}
+   * Message type: `text` (default), `file`, `map`, `quote`, or a custom one with an `nbCustomMessage` template.
    */
-  @Input() type: string;
+  readonly type = input<string>();
 
   /**
-   * Data which will be set as custom message template context
-   * @type {any}
+   * What a custom message's template gets as its `$implicit` context.
    */
-  @Input() customMessageData: any;
-
-  constructor(protected domSanitizer: DomSanitizer, protected customMessageService: NbChatCustomMessageService) {}
+  readonly customMessageData = input<unknown>();
 
   getInitials(): string {
-    if (this.sender) {
-      const names = this.sender.split(' ');
+    const sender = this.sender();
+    if (sender) {
+      const names = sender.split(' ');
       return names
         .map((n) => n.charAt(0))
         .splice(0, 2)
@@ -255,25 +180,26 @@ export class NbChatMessageComponent {
 
   _isBuiltInMessageType(): boolean {
     // Unset type defaults to "text" type
-    return this.type == null || this.builtInMessageTypes.includes(this.type);
+    const type = this.type();
+    return type == null || this.builtInMessageTypes.includes(type);
   }
 
-  _getTemplate(): TemplateRef<any> {
-    const customMessage = this.getCustomMessage(this.type);
+  _getTemplate(): TemplateRef<unknown> {
+    const customMessage = this.getCustomMessage(this.type());
     return customMessage.templateRef;
   }
 
-  _getTemplateContext(): { $implicit: any; isReply: boolean } {
-    return { $implicit: this.customMessageData, isReply: this.reply };
+  _getTemplateContext(): { $implicit: unknown; isReply: boolean } {
+    return { $implicit: this.customMessageData(), isReply: this.reply() };
   }
 
   _areDefaultStylesEnabled(): boolean {
-    const customMessageDirective = this.getCustomMessage(this.type);
-    return !customMessageDirective.noStyles;
+    const customMessageDirective = this.getCustomMessage(this.type());
+    return !customMessageDirective.noStyles();
   }
 
-  protected getCustomMessage(type: string): NbChatCustomMessageDirective {
-    const customMessageDirective = this.customMessageService.getInstance(type);
+  protected getCustomMessage(type?: string): NbChatCustomMessageDirective {
+    const customMessageDirective = type ? this.customMessageService.getInstance(type) : undefined;
     if (!customMessageDirective) {
       throw new Error(
         `nb-chat: Can't find template for custom type '${type}'. ` +

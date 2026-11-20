@@ -1,67 +1,89 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 import {
+  afterNextRender,
+  afterRenderEffect,
   Component,
-  Input,
-  HostBinding,
-  ViewChild,
+  computed,
+  contentChild,
+  contentChildren,
+  effect,
   ElementRef,
-  ContentChildren,
-  QueryList,
-  AfterViewInit,
-  ContentChild,
-  SimpleChanges,
-  AfterContentInit,
-  OnChanges,
+  inject,
+  input,
+  linkedSignal,
+  untracked,
+  viewChild,
 } from '@angular/core';
 
-import { NbStatusService } from '../../services/status.service';
-import { NbComponentSize } from '../component-size';
-import { NbComponentOrCustomStatus } from '../component-status';
-import { convertToBoolProperty, NbBooleanInput } from '../helpers';
-import { NbChatFormComponent } from './chat-form.component';
+import { NbStatusService } from '@liquid-js/lyr-core/base';
+import { injectNbDefaults, NbContainerAppearance } from '@liquid-js/lyr-core/base';
+import { NbComponentSize } from '@liquid-js/lyr-core/base';
+import { NbComponentOrCustomStatus } from '@liquid-js/lyr-core/base';
+import { ɵconvertToBoolProperty as convertToBoolProperty, NbBooleanInput } from '@liquid-js/lyr-core/base';
+import { NbChatFormRef } from './chat-form-ref';
 import { NbChatMessageComponent } from './chat-message.component';
 import { NbChatCustomMessageService } from './chat-custom-message.service';
+import { NbChatState } from './chat-state';
 import { NbChatTitleDirective } from './chat-title.directive';
+import { NgTemplateOutlet } from '@angular/common';
+import { injectNbTexts, NbLocalize } from '@liquid-js/lyr-core/base';
+
+/** @internal */
+declare const $localize: NbLocalize;
 
 /**
- * Conversational UI collection - a set of components for chat-like UI construction.
+ * A chat: a titled list of messages with a form to send one.
  *
  * Main features:
- * - different message types support (text, image, file, file group, map, etc)
- * - drag & drop for images and files with preview
- * - different UI styles
- * - custom action buttons (coming soon)
+ * - message types: text, files and images, quotes, maps, and custom ones with their own templates
+ * - drag & drop and pasting of images and files, with previews
+ * - statuses, sizes and appearances
  *
- * Here's a complete example build in a bot-like app. Type `help` to be able to receive different message types.
- * Enjoy the conversation and the beautiful UI.
+ * Here's a complete example built as a bot-like app. Type `help` to receive the different message types.
  * @stacked-example(Showcase, chat/chat-showcase.component)
+ *
+ * The messages are a `log` region named by the title, which scrolls by keyboard, and new messages animate in and
+ * scroll into view.
  *
  * Basic chat configuration and usage:
  * ```ts
- * <nb-chat title="Nebular Conversational UI">
- *       <nb-chat-message *ngFor="let msg of messages"
- *                        [type]="msg.type"
- *                        [message]="msg.text"
- *                        [reply]="msg.reply"
- *                        [sender]="msg.user.name"
- *                        [date]="msg.date"
- *                        [files]="msg.files"
- *                        [quote]="msg.quote"
- *                        [latitude]="msg.latitude"
- *                        [longitude]="msg.longitude"
- *                        [avatar]="msg.user.avatar">
- *   </nb-chat-message>
+ * <nb-chat title="Lyra Conversational UI">
+ *   @for (msg of messages; track msg) {
+ *     <nb-chat-message [type]="msg.type"
+ *                      [message]="msg.text"
+ *                      [reply]="msg.reply"
+ *                      [sender]="msg.user.name"
+ *                      [date]="msg.date"
+ *                      [files]="msg.files"
+ *                      [quote]="msg.quote"
+ *                      [latitude]="msg.latitude"
+ *                      [longitude]="msg.longitude"
+ *                      [avatar]="msg.user.avatar">
+ *     </nb-chat-message>
+ *   }
  *
- *   <nb-chat-form (send)="sendMessage($event)" [dropFiles]="true">
+ *   <nb-chat-form (send)="sendMessage($event)" dropFiles>
  *   </nb-chat-form>
  * </nb-chat>
  * ```
  * ### Installation
+ *
+ * Import `NbChatComponent`, `NbChatMessageComponent`, `NbChatFormComponent` into your standalone component:
+ * ```ts
+ * @Component({
+ *   imports: [NbChatComponent, NbChatMessageComponent, NbChatFormComponent],
+ * })
+ * export class PageComponent { }
+ * ```
+ *
+ * and add `provideNbChat()` to the application providers:
+ * ```ts
+ * bootstrapApplication(AppComponent, {
+ *   providers: [provideNbChat({ messageGoogleMapKey: 'MAP_KEY' })],
+ * });
+ * ```
+ * In a lazy loaded route, add `provideNbChat()` to the route's `providers` instead, so the route gets its own instance.
+ *
+ * With NgModules:
  *
  * Import `NbChatModule` to your feature module.
  * ```ts
@@ -102,19 +124,24 @@ import { NbChatTitleDirective } from './chat-title.directive';
  * </nb-chat-message> // chat message, available multiple types
  * ```
  *
- * You could provide a title template via the `nbChatTitle` directive. It overrides `title` input.
+ * An `nbChatTitle` template replaces the `title` text:
  * @stacked-example(Custom template as a title, chat/chat-template-title.component)
  *
- * Two users conversation showcase:
+ * A conversation between two users, with `reply` marking one side's messages:
  * @stacked-example(Conversation, chat/chat-conversation-showcase.component)
  *
- * Chat UI is also available in different colors by specifying a `[status]` input:
+ * `status` colours the header and the form:
  *
  * @stacked-example(Colored Chat, chat/chat-colors.component)
  *
- * Also it is possible to configure sizes through `[size]` input:
+ * `size` gives the chat a fixed height:
  *
  * @stacked-example(Chat Sizes, chat/chat-sizes.component)
+ *
+ * A chat looks like a card, to sit among them in a page. One that floats over the page, e.g. opened from a button in
+ * a corner, has a shadow instead of a border with `appearance="floating"`:
+ *
+ * @stacked-example(Floating Chat, chat/chat-floating.component)
  *
  * # Custom message types
  *
@@ -159,7 +186,7 @@ import { NbChatTitleDirective } from './chat-title.directive';
  *
  * That's it, full example will look like this:
  * ```html
- * <nb-chat title="Nebular Conversational UI">
+ * <nb-chat title="Lyra Conversational UI">
  *   <a *nbCustomMessage="'link'; let data" [href]="data.href">{{ data.text }}</a>
  *   <nb-chat-message type="link" [customMessageData]="{ href: 'https://example.com', text: 'example.com' }">
  *   </nb-chat-message>
@@ -188,9 +215,12 @@ import { NbChatTitleDirective } from './chat-title.directive';
  * @styles
  *
  * chat-background-color:
- * chat-border:
+ * chat-border-width:
+ * chat-border-style:
+ * chat-border-color:
  * chat-border-radius:
  * chat-shadow:
+ * chat-floating-shadow:
  * chat-padding:
  * chat-scrollbar-color:
  * chat-scrollbar-background-color:
@@ -236,173 +266,117 @@ import { NbChatTitleDirective } from './chat-title.directive';
  * chat-message-quote-text-color:
  * chat-message-file-text-color:
  * chat-message-file-background-color:
+ * chat-form-input-max-height:
  */
 @Component({
-    selector: 'nb-chat',
-    styleUrls: ['./chat.component.scss'],
-    template: `
-    <div class="header">
-      <ng-container
-        *ngIf="titleTemplate; else textTitleTemplate"
-        [ngTemplateOutlet]="titleTemplate.templateRef"
-        [ngTemplateOutletContext]="{ $implicit: titleTemplate.context }"
-      >
-      </ng-container>
-      <ng-template #textTitleTemplate>
-        {{ title }}
-      </ng-template>
-    </div>
-
-    <div class="scrollable" #scrollable>
-      <div class="messages">
-        <ng-content select="nb-chat-message"></ng-content>
-        <p class="no-messages" *ngIf="!messages?.length">{{ noMessagesPlaceholder }}</p>
-      </div>
-    </div>
-    <div class="form">
-      <ng-content select="nb-chat-form"></ng-content>
-    </div>
-  `,
-    providers: [NbChatCustomMessageService],
-    standalone: false
+  selector: 'nb-chat',
+  styleUrls: ['./chat.component.scss'],
+  templateUrl: './chat.component.html',
+  providers: [NbChatCustomMessageService, NbChatState],
+  host: {
+    '[class]': 'hostClasses()',
+  },
+  imports: [NgTemplateOutlet],
 })
-export class NbChatComponent implements OnChanges, AfterContentInit, AfterViewInit {
-  @Input() title: string;
+export class NbChatComponent {
+  protected readonly texts = injectNbTexts('chat', () => ({
+    noMessages: $localize`:@@nb.chat.noMessages:No messages yet.`,
+    messages: $localize`:@@nb.chat.messages:Messages`,
+    messagePlaceholder: $localize`:@@nb.chat.messagePlaceholder:Type a message`,
+    dropFilePlaceholder: $localize`:@@nb.chat.dropFilePlaceholder:Drop file to send`,
+    removeFile: (name) => $localize`:@@nb.chat.removeFile:Remove ${name}:name:`,
+  }));
+
+  protected readonly statusService = inject(NbStatusService);
 
   /**
-   * Chat size, available sizes:
-   * `tiny`, `small`, `medium`, `large`, `giant`
+   * The title in the header, which also names the list of messages; an `nbChatTitle` template replaces it.
    */
-  @Input() size: NbComponentSize;
+  readonly title = input<string>();
 
   /**
-   * Chat status color (adds specific styles):
-   * `basic` (default), `primary`, `success`, `info`, `warning`, `danger`, `control`.
+   * A fixed height: `tiny`, `small`, `medium`, `large` or `giant`. Unset by default.
    */
-  @Input() status: NbComponentOrCustomStatus = 'basic';
-
-  @Input() noMessagesPlaceholder: string = 'No messages yet.';
+  readonly size = input<NbComponentSize>();
 
   /**
-   * Scroll chat to the bottom of the list when a new message arrives
+   * Colours the header and the form: `basic` (default), `primary`, `success`, `info`, `warning`, `danger`,
+   * `control` or a custom status.
    */
-  @Input()
-  get scrollBottom(): boolean {
-    return this._scrollBottom;
-  }
-  set scrollBottom(value: boolean) {
-    this._scrollBottom = convertToBoolProperty(value);
-  }
-  protected _scrollBottom: boolean = true;
-  static ngAcceptInputType_scrollBottom: NbBooleanInput;
+  readonly status = input<NbComponentOrCustomStatus>('basic');
 
-  @ViewChild('scrollable') scrollable: ElementRef;
-  @ContentChildren(NbChatMessageComponent) messages: QueryList<NbChatMessageComponent>;
-  @ContentChild(NbChatFormComponent) chatForm: NbChatFormComponent;
-  @ContentChild(NbChatTitleDirective) titleTemplate: NbChatTitleDirective;
+  /**
+   * Text shown while there are no messages; "No messages yet." by default.
+   */
+  readonly noMessagesPlaceholder = input<string>();
 
-  constructor(protected statusService: NbStatusService) {}
+  // The app's defaults for chats, which the appearance starts from.
+  protected readonly nbDefaults = injectNbDefaults('chat');
 
-  ngOnChanges(changes: SimpleChanges) {
-    if ('status' in changes) {
-      this.updateFormStatus();
-    }
-  }
+  /**
+   * Chat appearance: `outline`, a card's border, or `floating`, a shadow instead, for a chat over the page, e.g.
+   * opened from a button in a corner.
+   */
+  readonly appearanceInput = input<NbContainerAppearance | undefined>(undefined, { alias: 'appearance' });
+  /** The appearance in use: the input's, the app's default, or 'outline'. */
+  readonly appearance = linkedSignal<NbContainerAppearance>(
+    () => this.appearanceInput() ?? this.nbDefaults().appearance ?? 'outline',
+  );
 
-  ngAfterContentInit() {
-    this.updateFormStatus();
-  }
+  /**
+   * Scrolls to the latest message as messages arrive (default).
+   */
+  readonly scrollBottom = input<boolean, NbBooleanInput>(true, { transform: convertToBoolProperty });
 
-  ngAfterViewInit() {
-    this.messages.changes.subscribe((messages) => {
-      this.messages = messages;
-      this.updateView();
+  readonly scrollable = viewChild<ElementRef<HTMLElement>>('scrollable');
+  readonly messages = contentChildren(NbChatMessageComponent);
+  readonly chatForm = contentChild(NbChatFormRef);
+  readonly titleTemplate = contentChild(NbChatTitleDirective);
+  private readonly state = inject(NbChatState);
+
+  protected readonly hostClasses = computed(() => [
+    this.size() && `size-${this.size()}`,
+    `appearance-${this.appearance()}`,
+    this.statusService.getStatusClass(this.status()),
+  ].filter(Boolean));
+
+  constructor() {
+    // The form takes the chat's status.
+    effect(() => {
+      const status = this.status();
+      untracked(() => this.chatForm()?.setStatus(status));
     });
 
-    this.updateView();
+    // Show the latest message once the messages render.
+    afterRenderEffect(() => {
+      this.messages();
+      untracked(() => this.updateView());
+    });
+
+    // The messages it renders with are there already; later ones arrive, and animate in.
+    afterNextRender(() => this.state.settled.set(true));
   }
 
   updateView() {
-    if (this.scrollBottom) {
+    if (this.scrollBottom()) {
       this.scrollListBottom();
     }
   }
 
   scrollListBottom() {
-    this.scrollable.nativeElement.scrollTop = this.scrollable.nativeElement.scrollHeight;
-  }
-
-  protected updateFormStatus(): void {
-    if (this.chatForm) {
-      this.chatForm.setStatus(this.status);
+    const scrollable = this.scrollable()?.nativeElement;
+    if (!scrollable) {
+      return;
     }
-  }
-
-  @HostBinding('class.size-tiny')
-  get tiny(): boolean {
-    return this.size === 'tiny';
-  }
-
-  @HostBinding('class.size-small')
-  get small(): boolean {
-    return this.size === 'small';
-  }
-
-  @HostBinding('class.size-medium')
-  get medium(): boolean {
-    return this.size === 'medium';
-  }
-
-  @HostBinding('class.size-large')
-  get large(): boolean {
-    return this.size === 'large';
-  }
-
-  @HostBinding('class.size-giant')
-  get giant(): boolean {
-    return this.size === 'giant';
-  }
-
-  @HostBinding('class.status-primary')
-  get primary(): boolean {
-    return this.status === 'primary';
-  }
-
-  @HostBinding('class.status-success')
-  get success(): boolean {
-    return this.status === 'success';
-  }
-
-  @HostBinding('class.status-info')
-  get info(): boolean {
-    return this.status === 'info';
-  }
-
-  @HostBinding('class.status-warning')
-  get warning(): boolean {
-    return this.status === 'warning';
-  }
-
-  @HostBinding('class.status-danger')
-  get danger(): boolean {
-    return this.status === 'danger';
-  }
-
-  @HostBinding('class.status-basic')
-  get basic(): boolean {
-    return this.status === 'basic';
-  }
-
-  @HostBinding('class.status-control')
-  get control(): boolean {
-    return this.status === 'control';
-  }
-
-  @HostBinding('class')
-  get additionalClasses(): string[] {
-    if (this.statusService.isCustomStatus(this.status)) {
-      return [this.statusService.getStatusClass(this.status)];
+    // To a message that arrives smoothly, alongside its animation; at once to the ones it renders with, or where motion
+    // is reduced.
+    const view = scrollable.ownerDocument.defaultView;
+    const smooth =
+      this.state.settled() && !!view && !view.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    if (smooth && typeof scrollable.scrollTo === 'function') {
+      scrollable.scrollTo({ top: scrollable.scrollHeight, behavior: 'smooth' });
+    } else {
+      scrollable.scrollTop = scrollable.scrollHeight;
     }
-    return [];
   }
 }

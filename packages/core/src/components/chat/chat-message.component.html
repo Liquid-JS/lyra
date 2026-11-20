@@ -1,0 +1,51 @@
+@if (notReply()) {
+<nb-chat-avatar [initials]="getInitials()"
+  [avatarStyle]="avatarStyle()" />
+}
+
+<div class="message">
+  @if (_isBuiltInMessageType()) {
+  @switch (type()) {
+  @case ('file') {
+  <nb-chat-message-file [sender]="sender()"
+    [date]="date()"
+    [dateFormat]="dateFormat()"
+    [message]="message()"
+    [files]="files()" />
+  }
+  @case ('quote') {
+  <nb-chat-message-quote [sender]="sender()"
+    [date]="date()"
+    [dateFormat]="dateFormat()"
+    [message]="message()"
+    [quote]="quote()" />
+  }
+  @case ('map') {
+  <nb-chat-message-map [sender]="sender()"
+    [date]="date()"
+    [message]="message()"
+    [latitude]="latitude()"
+    [longitude]="longitude()" />
+  }
+  @default {
+  <nb-chat-message-text [sender]="sender()"
+    [date]="date()"
+    [dateFormat]="dateFormat()"
+    [message]="message()" />
+  }
+  }
+  } @else {
+  <nb-chat-message-text [sender]="sender()"
+    [date]="date()"
+    [dateFormat]="dateFormat()"
+    [message]="message()" />
+  <div [class.nb-custom-message]="_areDefaultStylesEnabled()"
+    [class.nb-custom-message-no-space]="_addNoSpaceClass"
+    [class.nb-custom-message-reply]="_addReplyClass"
+    [class.nb-custom-message-not-reply]="_addNotReplyClass"
+    [class.nb-custom-message-full-width]="!_areDefaultStylesEnabled()">
+    <ng-container [ngTemplateOutlet]="_getTemplate()"
+      [ngTemplateOutletContext]="_getTemplateContext()" />
+  </div>
+  }
+</div>

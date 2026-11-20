@@ -1,22 +1,15 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { Injectable } from '@angular/core';
+import { Service } from '@angular/core';
 
 import { NbChatCustomMessageDirective } from './chat-custom-message.directive';
 
 /**
- * `NbCustomMessageService` is used to store instances of `NbChatCustomMessageDirective`s which
- * were provided in the chat component.
+ * Holds the `nbCustomMessage` templates declared in a chat, by message type.
  */
-@Injectable()
+@Service({ autoProvided: false })
 export class NbChatCustomMessageService {
   protected readonly customMessages = new Map<string, NbChatCustomMessageDirective>();
 
-  register(type: string, instance: NbChatCustomMessageDirective): void {
+  register(type: string, instance: NbChatCustomMessageDirective) {
     this.customMessages.set(type, instance);
   }
 

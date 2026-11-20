@@ -1,42 +1,51 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { NbChatMessageComponent, NbChatModule, NbThemeModule, NbChatCustomMessageService } from '@nebular/theme';
+import { NbChatMessageComponent, NbChatModule, NbThemeModule, NbChatCustomMessageService } from '@liquid-js/lyr-core';
+
+interface TestMessage {
+  text?: string;
+  reply: boolean;
+  type: string;
+  optionalData?: { href: string; label: string };
+  date: Date;
+  user: { name: string; avatar: string };
+}
 
 @Component({
-    selector: 'nb-chat-message-test',
-    template: `
+  selector: 'nb-chat-message-test',
+  template: `
     <nb-chat size="large">
-      <nb-chat-message
-        *ngFor="let msg of messages"
-        [type]="msg.type"
-        [message]="msg.text"
-        [reply]="msg.reply"
-        [sender]="msg.user.name"
-        [date]="msg.date"
-        [avatar]="msg.user.avatar"
-        [customMessageData]="msg.optionalData"
-      >
-        <div *nbCustomMessage="'link'; let data">
-          <a [href]="data.href">{{ data.label }}</a>
-        </div>
-      </nb-chat-message>
-      <nb-chat-form [dropFiles]="false"> </nb-chat-form>
+      @for (msg of messages(); track msg) {
+        <nb-chat-message
+          [type]="msg.type"
+          [message]="msg.text"
+          [reply]="msg.reply"
+          [sender]="msg.user.name"
+          [date]="msg.date"
+          [avatar]="msg.user.avatar"
+          [customMessageData]="msg.optionalData"
+        >
+          <div *nbCustomMessage="'link'; let data">
+            <a [href]="data.href">{{ data.label }}</a>
+          </div>
+        </nb-chat-message>
+      }
+      <nb-chat-form [dropFiles]="false" />
     </nb-chat>
   `,
-    standalone: false
+  imports: [NbChatModule],
 })
 export class NbChatMessageTestComponent {
-  messages = [];
+  readonly messages = signal(new Array<TestMessage>());
 
-  loadMessages(): void {
-    this.messages = [
+  loadMessages() {
+    this.messages.set([
       {
         reply: false,
         type: 'link',
         optionalData: {
           href: 'https://akveo.github.io/ngx-admin/',
-          label: 'Visit Akveo Nebular',
+          label: 'Visit Akveo Lyra',
         },
         date: new Date(),
         user: {
@@ -54,7 +63,7 @@ export class NbChatMessageTestComponent {
           avatar: '',
         },
       },
-    ];
+    ]);
   }
 }
 
@@ -64,8 +73,7 @@ describe('Chat-message component: NbChatMessageTestComponent', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [BrowserAnimationsModule, NbThemeModule.forRoot(), NbChatModule],
-      declarations: [NbChatMessageTestComponent],
+      imports: [NbThemeModule.forRoot(), NbChatModule, NbChatMessageTestComponent],
     });
 
     fixture = TestBed.createComponent(NbChatMessageTestComponent);
@@ -88,7 +96,7 @@ describe('Chat-message component: NbChatMessageTestComponent', () => {
     expect(linkHref).toBe('https://akveo.github.io/ngx-admin/');
 
     const linkLabel = customMessageElement.textContent;
-    expect(linkLabel).toBe('Visit Akveo Nebular');
+    expect(linkLabel).toBe('Visit Akveo Lyra');
   });
 });
 
@@ -98,7 +106,7 @@ describe('Component: NbChatMessageComponent', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [BrowserAnimationsModule, NbThemeModule.forRoot(), NbChatModule],
+      imports: [NbThemeModule.forRoot(), NbChatModule],
       providers: [NbChatCustomMessageService],
     });
 
@@ -111,32 +119,44 @@ describe('Component: NbChatMessageComponent', () => {
     expect(chat).toBeTruthy();
   });
 
+  it('should show the time by default', () => {
+    fixture.componentRef.setInput('type', 'text');
+    fixture.componentRef.setInput('sender', 'John Connor');
+    fixture.componentRef.setInput('message', 'Hello');
+    fixture.componentRef.setInput('date', new Date(2026, 0, 15, 10, 30));
+    fixture.detectChanges();
+
+    const time = fixture.nativeElement.querySelector('time').textContent;
+    expect(time).toContain('10:30');
+    expect(time).not.toContain('2026');
+  });
+
   it('ChatMessageComponent testing getInitials method', () => {
-    chat.sender = '';
+    fixture.componentRef.setInput('sender', '');
     fixture.detectChanges();
     expect(chat.getInitials()).toEqual('');
 
-    chat.sender = 'John Connor';
+    fixture.componentRef.setInput('sender', 'John Connor');
     fixture.detectChanges();
     expect(chat.getInitials()).toEqual('JC');
   });
 
   it('ChatMessageComponent testing _isDefaultMessageType method', () => {
-    chat.type = null;
+    fixture.componentRef.setInput('type', null);
     expect(chat._isBuiltInMessageType()).toBe(true);
-    chat.type = undefined;
+    fixture.componentRef.setInput('type', undefined);
     expect(chat._isBuiltInMessageType()).toBe(true);
-    chat.type = 'text';
+    fixture.componentRef.setInput('type', 'text');
     expect(chat._isBuiltInMessageType()).toBe(true);
-    chat.type = 'file';
+    fixture.componentRef.setInput('type', 'file');
     expect(chat._isBuiltInMessageType()).toBe(true);
-    chat.type = 'map';
+    fixture.componentRef.setInput('type', 'map');
     expect(chat._isBuiltInMessageType()).toBe(true);
-    chat.type = 'quote';
+    fixture.componentRef.setInput('type', 'quote');
     expect(chat._isBuiltInMessageType()).toBe(true);
-    chat.type = 'link';
+    fixture.componentRef.setInput('type', 'link');
     expect(chat._isBuiltInMessageType()).toBe(false);
-    chat.type = 'button';
+    fixture.componentRef.setInput('type', 'button');
     expect(chat._isBuiltInMessageType()).toBe(false);
   });
 });

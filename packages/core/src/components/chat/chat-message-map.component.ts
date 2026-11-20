@@ -1,74 +1,56 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { Component, inject, input } from '@angular/core';
 import { NbChatOptions } from './chat.options';
+import { NbChatMessageFileComponent } from './chat-message-file.component';
 
 /**
- * Chat message component.
+ * A `map` message: its text, and a static Google Maps picture of the location, which needs the `messageGoogleMapKey`
+ * of `provideNbChat`.
  */
 @Component({
-    selector: 'nb-chat-message-map',
-    template: `
-    <nb-chat-message-file [files]="[file]" [message]="message" [sender]="sender" [date]="date"
-     [dateFormat]="dateFormat"></nb-chat-message-file>
-  `,
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  selector: 'nb-chat-message-map',
+  templateUrl: './chat-message-map.component.html',
+  imports: [NbChatMessageFileComponent],
 })
 export class NbChatMessageMapComponent {
 
   /**
-   * Message sender
-   * @type {string}
+   * The message text.
    */
-  @Input() message: string;
+  readonly message = input<string>();
 
   /**
-   * Message sender
-   * @type {string}
+   * The sender's name.
    */
-  @Input() sender: string;
+  readonly sender = input<string>();
 
   /**
-   * Message send date
-   * @type {Date}
+   * When the message was sent.
    */
-  @Input() date: Date;
+  readonly date = input<Date>();
 
   /**
-   * Message send date format, default 'shortTime'
-   * @type {string}
+   * `DatePipe` format of the date; `shortTime` by default.
    */
-  @Input() dateFormat: string = 'shortTime';
+  readonly dateFormat = input<string>('shortTime');
 
   /**
-   * Map latitude
-   * @type {number}
+   * Latitude of the location.
    */
-  @Input() latitude: number;
+  readonly latitude = input<number>();
 
   /**
-   * Map longitude
-   * @type {number}
+   * Longitude of the location.
    */
-  @Input() longitude: number;
+  readonly longitude = input<number>();
 
   get file() {
     return {
-      // eslint-disable-next-line max-len
-      url: `https://maps.googleapis.com/maps/api/staticmap?center=${this.latitude},${this.longitude}&zoom=12&size=400x400&key=${this.mapKey}`,
+
+      url: `https://maps.googleapis.com/maps/api/staticmap?center=${this.latitude()},${this.longitude()}&zoom=12&size=400x400&key=${this.mapKey}`,
       type: 'image/png',
       icon: 'location',
     };
   }
 
-  mapKey: string;
-
-  constructor(options: NbChatOptions) {
-    this.mapKey = options.messageGoogleMapKey;
-  }
+  mapKey = inject(NbChatOptions, { optional: true })?.messageGoogleMapKey;
 }

@@ -1,22 +1,24 @@
 import { Component } from '@angular/core';
+import { NbChatComponent, NbChatMessageComponent, NbChatFormComponent, NbChatFormFile } from '@liquid-js/lyr-core';
 
 @Component({
-    selector: 'nb-chat-drop',
-    styles: [`
-    ::ng-deep nb-layout-column {
-      justify-content: center;
-      display: flex;
-    }
-    nb-chat {
-      width: 500px;
-      height: 80vw;
-    }
-  `],
-    templateUrl: './chat-drop.component.html',
-    standalone: false
+  selector: 'nb-chat-drop',
+  styles: [
+    `
+      ::ng-deep nb-layout-column {
+        justify-content: center;
+        display: flex;
+      }
+      nb-chat {
+        width: 500px;
+        height: 80vw;
+      }
+    `,
+  ],
+  templateUrl: './chat-drop.component.html',
+  imports: [NbChatComponent, NbChatMessageComponent, NbChatFormComponent],
 })
 export class ChatDropComponent {
-
   messages: any[] = [
     {
       text: 'Drag & drop a file or a group of files.',
@@ -29,14 +31,16 @@ export class ChatDropComponent {
     },
   ];
 
-  sendMessage(event) {
-    const files = !event.files ? [] : event.files.map((file) => {
-      return {
-        url: file.src,
-        type: file.type,
-        icon: 'file-text-outline',
-      };
-    });
+  sendMessage(event: { message: string; files: NbChatFormFile[] }) {
+    const files = !event.files
+      ? []
+      : event.files.map((file) => {
+        return {
+          url: file.src,
+          type: file.type,
+          icon: 'file-text-outline',
+        };
+      });
 
     this.messages.push({
       text: event.message,
@@ -45,7 +49,7 @@ export class ChatDropComponent {
       type: files.length ? 'file' : 'text',
       reply: true,
       user: {
-        name: 'Jonh Doe',
+        name: 'John Doe',
         avatar: 'https://i.gifer.com/no.gif',
       },
     });

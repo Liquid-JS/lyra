@@ -1,58 +1,57 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { Component } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { ChatShowcaseService } from './chat-showcase.service';
+import { NbChatComponent, NbChatMessageComponent, NbChatFormComponent, NbChatFormFile } from '@liquid-js/lyr-core';
 
 @Component({
-    selector: 'nb-chat-showcase',
-    templateUrl: './chat-showcase.component.html',
-    providers: [ChatShowcaseService],
-    styles: [`
-    ::ng-deep nb-layout-column {
-      justify-content: center;
-      display: flex;
-    }
-    nb-chat {
-      width: 500px;
-    }
-  `],
-    standalone: false
+  selector: 'nb-chat-showcase',
+  templateUrl: './chat-showcase.component.html',
+  providers: [ChatShowcaseService],
+  styles: [
+    `
+      ::ng-deep nb-layout-column {
+        justify-content: center;
+        display: flex;
+      }
+      nb-chat {
+        width: 500px;
+      }
+    `,
+  ],
+  imports: [NbChatComponent, NbChatMessageComponent, NbChatFormComponent],
 })
 export class ChatShowcaseComponent {
+  protected readonly chatShowcaseService = inject(ChatShowcaseService);
 
-  messages: any[];
+  readonly messages = signal<any[]>(this.chatShowcaseService.loadMessages());
 
-  constructor(protected chatShowcaseService: ChatShowcaseService) {
-    this.messages = this.chatShowcaseService.loadMessages();
-  }
+  sendMessage(event: { message: string; files: NbChatFormFile[] }) {
+    const files = !event.files
+      ? []
+      : event.files.map((file) => {
+        return {
+          url: file.src,
+          type: file.type,
+          icon: 'file-text-outline',
+        };
+      });
 
-  sendMessage(event: any) {
-    const files = !event.files ? [] : event.files.map((file) => {
-      return {
-        url: file.src,
-        type: file.type,
-        icon: 'file-text-outline',
-      };
-    });
-
-    this.messages.push({
+    const message = {
       text: event.message,
       date: new Date(),
       reply: true,
       type: files.length ? 'file' : 'text',
       files: files,
       user: {
-        name: 'Jonh Doe',
+        name: 'John Doe',
         avatar: 'https://i.gifer.com/no.gif',
       },
-    });
+    };
+    this.messages.update((messages) => [...messages, message]);
     const botReply = this.chatShowcaseService.reply(event.message);
     if (botReply) {
-      setTimeout(() => { this.messages.push(botReply) }, 500);
+      setTimeout(() => {
+        this.messages.update((messages) => [...messages, botReply]);
+      }, 500);
     }
   }
 }

@@ -1,24 +1,17 @@
-import { ChangeDetectionStrategy, Component, HostBinding, Input } from '@angular/core';
+import { Component, input } from '@angular/core';
 import { SafeStyle } from '@angular/platform-browser';
 
 @Component({
-    selector: 'nb-chat-avatar',
-    template: `
-    <ng-container *ngIf="!avatarStyle">
-      {{ initials }}
-    </ng-container>
-  `,
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  selector: 'nb-chat-avatar',
+  templateUrl: './chat-avatar.component.html',
+  host: {
+    class: 'avatar',
+    '[style.background-image]': 'avatarStyle()',
+  },
 })
 export class NbChatAvatarComponent {
 
-  @Input() initials: string;
+  readonly initials = input<string>();
 
-  @Input()
-  @HostBinding('style.background-image')
-  avatarStyle: SafeStyle;
-
-  @HostBinding('class.avatar')
-  readonly avatarClass = true;
+  readonly avatarStyle = input<SafeStyle>();
 }

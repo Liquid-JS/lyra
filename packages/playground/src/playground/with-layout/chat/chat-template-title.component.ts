@@ -1,17 +1,17 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 import { Component } from '@angular/core';
 import { ChatShowcaseService } from './chat-showcase.service';
+import {
+  NbChatComponent,
+  NbChatTitleDirective,
+  NbChatMessageComponent,
+  NbChatFormComponent,
+} from '@liquid-js/lyr-core';
 
 @Component({
-    templateUrl: './chat-template-title.component.html',
-    providers: [ChatShowcaseService],
-    styles: [
-        `
+  templateUrl: './chat-template-title.component.html',
+  providers: [ChatShowcaseService],
+  styles: [
+    `
       ::ng-deep nb-layout-column {
         justify-content: center;
         display: flex;
@@ -20,8 +20,8 @@ import { ChatShowcaseService } from './chat-showcase.service';
         width: 500px;
       }
     `,
-    ],
-    standalone: false
+  ],
+  imports: [NbChatComponent, NbChatTitleDirective, NbChatMessageComponent, NbChatFormComponent],
 })
 export class ChatTemplateTitleComponent {
   messages: any[] = [
@@ -36,7 +36,7 @@ export class ChatTemplateTitleComponent {
     },
   ];
 
-  sendMessage(event) {
+  sendMessage(event: { message: string }) {
     this.messages.push({
       text: event.message,
       date: new Date(),

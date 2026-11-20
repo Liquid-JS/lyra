@@ -1,0 +1,19 @@
+<table>
+  <thead>
+    <tr>
+      @for (column of columns(); track column) {
+      <th>{{ column }}</th>
+      }
+    </tr>
+  </thead>
+
+  <tbody>
+    @for (row of rows(); track row) {
+    <tr>
+      <td>{{ row.firstName }}</td>
+      <td>{{ row.lastName }}</td>
+      <td>{{ row.age }}</td>
+    </tr>
+    }
+  </tbody>
+</table>

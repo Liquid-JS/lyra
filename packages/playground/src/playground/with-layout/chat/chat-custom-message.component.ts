@@ -1,66 +1,80 @@
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import {
+  NbChatComponent,
+  NbChatCustomMessageDirective,
+  NbButtonComponent,
+  NbChatMessageComponent,
+  NbChatFormComponent,
+} from '@liquid-js/lyr-core';
+import { ChatCustomMessageTableComponent } from './components/chat-custom-message-table.component';
 
 @Component({
-    templateUrl: './chat-custom-message.component.html',
-    styleUrls: ['./chat-custom-message.component.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  templateUrl: './chat-custom-message.component.html',
+  styleUrls: ['./chat-custom-message.component.scss'],
+  imports: [
+    NbChatComponent,
+    NbChatCustomMessageDirective,
+    NbButtonComponent,
+    ChatCustomMessageTableComponent,
+    NbChatMessageComponent,
+    NbChatFormComponent,
+  ],
 })
 export class ChatCustomMessageComponent implements OnInit {
 
   readonly tableData = {
-    columns: [ 'First Name', 'Last Name', 'Age' ],
+    columns: ['First Name', 'Last Name', 'Age'],
     rows: [
       { firstName: 'Robert', lastName: 'Baratheon', age: 46 },
       { firstName: 'Jaime', lastName: 'Lannister', age: 31 },
     ],
   };
 
-  messages: any[] = [];
+  messages = new Array<any>();
 
-  ngOnInit(): void {
+  ngOnInit() {
     this.loadMessages();
   }
 
-  sendMessage(event: any): void {
+  sendMessage(event: any) {
     this.messages.push({
       text: event.message,
       date: new Date(),
       reply: true,
       type: 'text',
       user: {
-        name: 'Gandalf the Grey',
+        name: 'John Smith',
         avatar: 'https://i.gifer.com/no.gif',
       },
     });
   }
 
-  private loadMessages(): void {
+  private loadMessages() {
     this.messages = [
       {
         type: 'link',
         text: 'Now you able to use links!',
         customMessageData: {
-          href: 'https://akveo.github.io/nebular/',
-          text: 'Go to Nebular',
+          href: 'https://liquid-js.github.io/lyra/',
+          text: 'Go to Lyra',
         },
         reply: false,
         date: new Date(),
         user: {
-          name: 'Frodo Baggins',
+          name: 'Jane Doe',
           avatar: 'https://i.gifer.com/no.gif',
         },
       },
       {
         type: 'link',
         customMessageData: {
-          href: 'https://akveo.github.io/ngx-admin/',
-          text: 'Go to ngx-admin',
+          href: 'https://github.com/Liquid-JS/lyra',
+          text: 'Go to Lyra on GitHub',
         },
         reply: true,
         date: new Date(),
         user: {
-          name: 'Meriadoc Brandybuck',
+          name: 'Richard Roe',
           avatar: 'https://i.gifer.com/no.gif',
         },
       },
@@ -70,7 +84,7 @@ export class ChatCustomMessageComponent implements OnInit {
         reply: false,
         date: new Date(),
         user: {
-          name: 'Gimli Gloin',
+          name: 'Mary Major',
           avatar: '',
         },
       },
@@ -81,7 +95,7 @@ export class ChatCustomMessageComponent implements OnInit {
         reply: false,
         date: new Date(),
         user: {
-          name: 'Fredegar Bolger',
+          name: 'Sam Taylor',
           avatar: 'https://i.gifer.com/no.gif',
         },
       },
@@ -92,10 +106,10 @@ export class ChatCustomMessageComponent implements OnInit {
         reply: true,
         date: new Date(),
         user: {
-          name: 'Fredegar Bolger',
+          name: 'Sam Taylor',
           avatar: 'https://i.gifer.com/no.gif',
         },
       },
-    ]
+    ];
   }
 }

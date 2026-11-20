@@ -1,0 +1,55 @@
+@if (droppedFiles().length) {
+<div class="dropped-files">
+  @for (file of droppedFiles(); track file) {
+  <div [style.background-image]="file.urlStyle">
+    @if (!file.urlStyle) {
+    <nb-icon icon="file-text-outline"
+      pack="essentials" />
+    }
+    <!-- Reachable with Tab in Safari, which skips buttons by default. -->
+    <button type="button"
+      class="remove"
+      tabindex="0"
+      [attr.aria-label]="texts().removeFile(file.name)"
+      (click)="removeFile(file)">&times;</button>
+  </div>
+  }
+</div>
+}
+<div class="message-row">
+  <!-- Takes the direction of the message; an empty field keeps the page's, for its placeholder. -->
+  <textarea #messageInput
+    nbInput
+    fieldSize="medium"
+    [attr.dir]="message() ? 'auto' : null"
+    fullWidth
+    rows="1"
+    [status]="inputStatus()"
+    (focus)="inputFocus.set(true)"
+    (blur)="inputFocus.set(false)"
+    (mouseenter)="inputHover.set(true)"
+    (mouseleave)="inputHover.set(false)"
+    [value]="message()"
+    (input)="onInput($event)"
+    (keydown.enter)="onEnter($event)"
+    (paste)="onPaste($event)"
+    [class.with-button]="showButton()"
+    [placeholder]="fileOver()
+      ? (dropFilePlaceholder() ?? texts().dropFilePlaceholder)
+      : (messagePlaceholder() ?? texts().messagePlaceholder)"></textarea>
+  @if (showButton()) {
+  <button #sendButton
+    type="button"
+    nbButton
+    size="medium"
+    [status]="buttonStatus()"
+    [class.with-icon]="!buttonTitle()"
+    (click)="sendMessage()"
+    class="send-button">
+    @if (!buttonTitle()) {
+    <nb-icon [icon]="buttonIcon()"
+      pack="essentials" />
+    } @else {{{ buttonTitle() }}}
+  </button>
+  }
+</div>

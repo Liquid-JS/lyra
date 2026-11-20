@@ -1,0 +1,8 @@
+@if (sender() || date()) {
+<p class="sender"><span dir="auto">{{ sender() }}</span>&ngsp;<time>{{ date() | date: dateFormat() }}</time></p>
+}
+@if (message()) {
+<!-- The bubble sits by the page's direction; its text aligns by its own. -->
+<p class="text"
+  dir="auto">{{ message() }}</p>
+}

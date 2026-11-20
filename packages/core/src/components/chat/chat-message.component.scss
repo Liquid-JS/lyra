@@ -1,0 +1,28 @@
+// Rises and fades in when added, easing to a stop, and fades out when removed.
+:host(.nb-chat-message-enter) {
+  animation: nb-chat-message-in 240ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+:host(.nb-chat-message-leave) {
+  animation: nb-chat-message-out 160ms ease-in forwards;
+}
+
+@keyframes nb-chat-message-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.75rem);
+  }
+}
+
+@keyframes nb-chat-message-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :host(.nb-chat-message-enter),
+  :host(.nb-chat-message-leave) {
+    animation: none;
+  }
+}

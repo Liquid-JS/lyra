@@ -1,6 +1,5 @@
-import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
-import { NbChatFormComponent, NbChatModule, NbThemeModule } from '@nebular/theme';
-import createSpy = jasmine.createSpy;
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { NbChatFormComponent, NbChatModule, NbThemeModule } from '@liquid-js/lyr-core';
 
 describe('NbChatFormComponent', () => {
   let fixture: ComponentFixture<NbChatFormComponent>;
@@ -8,7 +7,7 @@ describe('NbChatFormComponent', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [ NbThemeModule.forRoot(), NbChatModule.forRoot() ],
+      imports: [NbThemeModule.forRoot(), NbChatModule.forRoot()],
     });
 
     fixture = TestBed.createComponent(NbChatFormComponent);
@@ -17,67 +16,83 @@ describe('NbChatFormComponent', () => {
     fixture.detectChanges();
   });
 
-  describe('getInputStatus', () => {
+  describe('inputStatus', () => {
 
     it('should return basic status by default', () => {
-      expect(chatFormComponent.getInputStatus()).toEqual('basic');
+      expect(chatFormComponent.inputStatus()).toEqual('basic');
     });
 
     it('should return component status if input focused', () => {
-      chatFormComponent.status = 'info';
-      chatFormComponent.inputFocus = true;
+      chatFormComponent.status.set('info');
+      chatFormComponent.inputFocus.set(true);
 
-      expect(chatFormComponent.getInputStatus()).toEqual('info');
+      expect(chatFormComponent.inputStatus()).toEqual('info');
     });
 
     it('should return component status if input hovered', () => {
-      chatFormComponent.status = 'info';
-      chatFormComponent.inputHover = true;
+      chatFormComponent.status.set('info');
+      chatFormComponent.inputHover.set(true);
 
-      expect(chatFormComponent.getInputStatus()).toEqual('info');
+      expect(chatFormComponent.inputStatus()).toEqual('info');
     });
 
     it('should return primary if file over and status is basic or control', () => {
-      chatFormComponent.fileOver = true;
+      chatFormComponent.fileOver.set(true);
 
-      expect(chatFormComponent.getInputStatus()).toEqual('primary');
+      expect(chatFormComponent.inputStatus()).toEqual('primary');
     });
 
     it('should return status if file over and status is not basic nor control', () => {
-      chatFormComponent.status = 'info';
-      chatFormComponent.fileOver = true;
+      chatFormComponent.status.set('info');
+      chatFormComponent.fileOver.set(true);
 
-      expect(chatFormComponent.getInputStatus()).toEqual('info');
+      expect(chatFormComponent.inputStatus()).toEqual('info');
     });
   });
 
-  describe('getButtonStatus', () => {
+  describe('buttonStatus', () => {
 
     it('should return primary if status is basic or control', () => {
-      chatFormComponent.status = 'basic';
-      expect(chatFormComponent.getButtonStatus()).toEqual('primary');
+      chatFormComponent.status.set('basic');
+      expect(chatFormComponent.buttonStatus()).toEqual('primary');
 
-      chatFormComponent.status = 'control';
-      expect(chatFormComponent.getButtonStatus()).toEqual('primary');
+      chatFormComponent.status.set('control');
+      expect(chatFormComponent.buttonStatus()).toEqual('primary');
     });
 
     it('should return status if status is not basic nor control', () => {
-      chatFormComponent.status = 'info';
+      chatFormComponent.status.set('info');
 
-      expect(chatFormComponent.getButtonStatus()).toEqual('info');
+      expect(chatFormComponent.buttonStatus()).toEqual('info');
     });
   });
 
   describe('chat-form input change event', () => {
-    it('should emit changed input event', fakeAsync(() => {
-      const onInputChange = createSpy('onInputChange');
-      const chatFormInput = fixture.nativeElement.querySelector('input');
+    it('should emit changed input event', async () => {
+      const onInputChange = vi.fn();
+      const chatFormInput = fixture.nativeElement.querySelector('textarea');
       fixture.componentInstance.onInputChange.subscribe(onInputChange);
       chatFormInput.value = 'new input value';
       chatFormInput.dispatchEvent(new Event('input'));
       fixture.detectChanges();
-      tick();
+      await fixture.whenStable();
       expect(onInputChange).toHaveBeenCalled();
-    }));
+    });
+
+    // The message takes its own direction; the empty field keeps the page's, for the placeholder.
+    it('should take the direction of the message', () => {
+      const chatFormInput: HTMLTextAreaElement = fixture.nativeElement.querySelector('textarea');
+      expect(chatFormInput.hasAttribute('dir')).toBe(false);
+
+      chatFormInput.value = 'new input value';
+      chatFormInput.dispatchEvent(new Event('input'));
+      fixture.detectChanges();
+      expect(chatFormInput.getAttribute('dir')).toBe('auto');
+
+      chatFormInput.value = '';
+      chatFormInput.dispatchEvent(new Event('input'));
+      fixture.detectChanges();
+      expect(chatFormInput.hasAttribute('dir')).toBe(false);
+    });
   });
 });

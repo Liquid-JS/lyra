@@ -1,0 +1,36 @@
+<nb-chat-message-text [sender]="sender()"
+  [date]="date()"
+  [dateFormat]="dateFormat()"
+  [message]="message()">
+  {{ message() }}
+</nb-chat-message-text>
+
+@if (readyFiles()?.length > 1) {
+<div class="message-content-group">
+  @for (file of readyFiles(); track file) {
+  <a [href]="file.url"
+    target="_blank"
+    [attr.aria-label]="file.name">
+    @if (!file.urlStyle && file.icon) {
+    <nb-icon [icon]="file.icon" />
+    }
+    @if (file.urlStyle) {
+    <div [style.background-image]="file.urlStyle"></div>
+    }
+  </a>
+  }
+</div>
+}
+
+@if (readyFiles()?.length === 1) {
+<a [href]="readyFiles()[0].url"
+  target="_blank"
+  [attr.aria-label]="readyFiles()[0].name">
+  @if (!readyFiles()[0].urlStyle && readyFiles()[0].icon) {
+  <nb-icon [icon]="readyFiles()[0].icon" />
+  }
+  @if (readyFiles()[0].urlStyle) {
+  <div [style.background-image]="readyFiles()[0].urlStyle"></div>
+  }
+</a>
+}

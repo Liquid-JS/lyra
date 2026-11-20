@@ -1,0 +1,26 @@
+<div class="header">
+  @if (titleTemplate(); as titleTemplate) {
+  <ng-container [ngTemplateOutlet]="titleTemplate.templateRef"
+    [ngTemplateOutletContext]="{ $implicit: titleTemplate.context() }" />
+  } @else {
+  <span dir="auto">{{ title() }}</span>
+  }
+</div>
+
+<!-- A Tab stop, so the messages scroll by keyboard in Safari too. -->
+<div class="scrollable"
+  role="log"
+  tabindex="0"
+  [attr.aria-label]="title() || texts().messages"
+  #scrollable>
+  <div class="messages">
+    <ng-content select="nb-chat-message" />
+    @if (!messages().length) {
+    <p class="no-messages"
+      dir="auto">{{ noMessagesPlaceholder() ?? texts().noMessages }}</p>
+    }
+  </div>
+</div>
+<div class="form">
+  <ng-content select="nb-chat-form" />
+</div>

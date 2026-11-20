@@ -1,25 +1,25 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { NbChatModule, NbThemeModule } from '@nebular/theme';
+import { NbChatModule, NbThemeModule } from '@liquid-js/lyr-core';
 
 @Component({
-    selector: 'nb-chat-message-quote-test',
-    template: `
-    <nb-chat-message-quote [sender]="sender"
-                           [date]="date"
-                           [dateFormat]="dateFormat"
-                           [message]="message"
-                           [quote]="quote">
-    </nb-chat-message-quote>
-    `,
-    standalone: false
+  selector: 'nb-chat-message-quote-test',
+  template: `
+    <nb-chat-message-quote [sender]="sender()"
+      [date]="date()"
+      [dateFormat]="dateFormat()"
+      [message]="message()"
+      [quote]="quote()"
+     />
+  `,
+  imports: [NbChatModule],
 })
 export class NbChatMessageQuoteTestComponent {
-  sender: string;
-  dateFormat: string;
-  message: string;
-  date: Date;
-  quote: string;
+  readonly sender = signal<string | undefined>(undefined);
+  readonly dateFormat = signal('shortTime');
+  readonly message = signal<string | undefined>(undefined);
+  readonly date = signal<Date | undefined>(undefined);
+  readonly quote = signal<string | undefined>(undefined);
 }
 
 describe('Chat-message-quote component: NbChatMessageQuoteTestComponent', () => {
@@ -28,8 +28,7 @@ describe('Chat-message-quote component: NbChatMessageQuoteTestComponent', () => 
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [NbThemeModule.forRoot(), NbChatModule],
-      declarations: [NbChatMessageQuoteTestComponent],
+      imports: [NbThemeModule.forRoot(), NbChatModule, NbChatMessageQuoteTestComponent],
     });
 
     fixture = TestBed.createComponent(NbChatMessageQuoteTestComponent);
@@ -42,23 +41,25 @@ describe('Chat-message-quote component: NbChatMessageQuoteTestComponent', () => 
   });
 
   it('quote should be created', () => {
-    component.message = 'some test message';
-    component.date = new Date();
-    component.dateFormat = 'shortTime';
-    component.quote = 'quote';
+    component.message.set('some test message');
+    component.date.set(new Date());
+    component.dateFormat.set('shortTime');
+    component.quote.set('quote');
     fixture.detectChanges();
     const quoteElement = fixture.nativeElement.querySelector('.quote');
     expect(quoteElement).toBeTruthy();
+    // The quote aligns by its own direction.
+    expect(quoteElement.getAttribute('dir')).toBe('auto');
+    expect(quoteElement.textContent?.trim()).toBe('quote');
   });
 
   it('should be created inner chat message', () => {
-    component.message = 'some test message';
-    component.date = new Date();
-    component.dateFormat = 'shortTime';
-    component.quote = 'quote';
+    component.message.set('some test message');
+    component.date.set(new Date());
+    component.dateFormat.set('shortTime');
+    component.quote.set('quote');
     fixture.detectChanges();
     const quoteElement = fixture.nativeElement.querySelector('nb-chat-message-text');
     expect(quoteElement).toBeTruthy();
   });
-
 });

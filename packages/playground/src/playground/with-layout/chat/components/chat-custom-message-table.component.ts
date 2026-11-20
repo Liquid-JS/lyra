@@ -1,34 +1,15 @@
-import { Component, HostBinding, Input } from '@angular/core';
+import { Component, input } from '@angular/core';
 
 @Component({
-    selector: 'nb-custom-message-table',
-    template: `
-    <table>
-      <thead>
-        <tr>
-          <th *ngFor="let column of columns">{{ column }}</th>
-        </tr>
-      </thead>
-
-      <tbody>
-        <tr *ngFor="let row of rows">
-          <td>{{ row.firstName }}</td>
-          <td>{{ row.lastName }}</td>
-          <td>{{ row.age }}</td>
-        </tr>
-      </tbody>
-    </table>
-  `,
-    styleUrls: ['./chat-custom-message-table.component.scss'],
-    standalone: false
+  selector: 'nb-custom-message-table',
+  templateUrl: './chat-custom-message-table.component.html',
+  styleUrls: ['./chat-custom-message-table.component.scss'],
+  host: { '[class.reply]': 'isReply()' },
 })
 export class ChatCustomMessageTableComponent {
+  readonly columns = input<string[]>([]);
 
-  @Input() columns = [];
+  readonly rows = input<{ firstName: string; lastName: string; age: number }[]>([]);
 
-  @Input() rows = [];
-
-  @Input()
-  @HostBinding('class.reply')
-  isReply: boolean;
+  readonly isReply = input<boolean>();
 }

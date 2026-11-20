@@ -1,14 +1,15 @@
-import { Directive, Input, OnDestroy, OnInit, TemplateRef } from '@angular/core';
+import { computed, Directive, inject, input, OnDestroy, OnInit, TemplateRef } from '@angular/core';
 
-import { convertToBoolProperty, NbBooleanInput } from '../helpers';
+import { ɵconvertToBoolProperty as convertToBoolProperty, NbBooleanInput } from '@liquid-js/lyr-core/base';
 import { NbChatCustomMessageService } from './chat-custom-message.service';
 
-function throwCustomMessageTypeIsRequired(): void {
+function throwCustomMessageTypeIsRequired(): never {
   throw new Error('[nbCustomMessage]: custom message type is required.');
 }
 
 /**
- * `[nbCustomMessage]` directive should be used as a structural directive or should be applied to the `ng-template`:
+ * A template for the messages of a custom `type` in an `nb-chat`, declared before them, as a structural directive or
+ * on an `ng-template`. It gets the message's `customMessageData` as `$implicit` and whether it's a reply as `isReply`:
  *
  * ```html
  * <div *nbCustomMessage="'my-custom-type'; let data">
@@ -22,58 +23,41 @@ function throwCustomMessageTypeIsRequired(): void {
  * </ng-template>
  * ```
  */
-@Directive({
-    selector: `[nbCustomMessage]`,
-    standalone: false
-})
+@Directive({ selector: `[nbCustomMessage]` })
 export class NbChatCustomMessageDirective implements OnInit, OnDestroy {
-  /**
-   * Defines a message type which should rendered with the custom message template.
-   * @type {string}
-   */
-  @Input()
-  get nbCustomMessage(): string {
-    return this._type;
-  }
-  set nbCustomMessage(value: string) {
-    this._type = value;
-  }
-  protected _type: string;
-
-  get type(): string {
-    return this._type;
-  }
+  readonly templateRef = inject<TemplateRef<unknown>>(TemplateRef);
+  protected readonly customMessageService = inject(NbChatCustomMessageService);
 
   /**
-   * Disables generic message styles, such as round corners, text color, background, etc.,
-   * so a custom message could be styled from the ground up.
-   *
-   * @type {boolean}
+   * The message type the template renders.
    */
-  @Input()
-  set nbCustomMessageNoStyles(value: boolean) {
-    this._noStyles = convertToBoolProperty(value);
-  }
-  get nbCustomMessageNoStyles(): boolean {
-    return this._noStyles;
-  }
-  protected _noStyles: boolean = false;
-  static ngAcceptInputType_noStyles: NbBooleanInput;
+  readonly nbCustomMessage = input.required<string>();
 
-  get noStyles(): boolean {
-    return this.nbCustomMessageNoStyles;
-  }
+  /**
+   * Drops the message styles, such as the rounded corners, text colour and background, so a custom message can be
+   * styled from the ground up.
+   */
+  readonly nbCustomMessageNoStyles = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
 
-  constructor(public templateRef: TemplateRef<any>, protected customMessageService: NbChatCustomMessageService) {}
+  /**
+   * The custom message type.
+   */
+  readonly type = computed(() => this.nbCustomMessage());
+
+  /**
+   * Whether the message is rendered without the default message styles.
+   */
+  readonly noStyles = computed(() => this.nbCustomMessageNoStyles());
 
   ngOnInit() {
-    if (!this._type) {
+    const type = this.type();
+    if (!type) {
       throwCustomMessageTypeIsRequired();
     }
-    this.customMessageService.register(this.type, this);
+    this.customMessageService.register(type, this);
   }
 
   ngOnDestroy() {
-    this.customMessageService.unregister(this.type);
+    this.customMessageService.unregister(this.type());
   }
 }

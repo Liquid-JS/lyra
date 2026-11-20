@@ -1,15 +1,8 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
+import { ModuleWithProviders, NgModule, EnvironmentProviders, makeEnvironmentProviders } from '@angular/core';
 
-import { ModuleWithProviders, NgModule } from '@angular/core';
-
-import { NbSharedModule } from '../shared/shared.module';
-import { NbButtonModule } from '../button/button.module';
-import { NbInputModule } from '../input/input.module';
-import { NbIconModule } from '../icon/icon.module';
+import { NbButtonModule } from '@liquid-js/lyr-core/button';
+import { NbInputModule } from '@liquid-js/lyr-core/input';
+import { NbIconModule } from '@liquid-js/lyr-core/icon';
 
 import { NbChatComponent } from './chat.component';
 import { NbChatMessageComponent } from './chat-message.component';
@@ -36,23 +29,23 @@ const NB_CHAT_COMPONENTS = [
 
 const NB_CHAT_DIRECTIVES = [NbChatCustomMessageDirective, NbChatTitleDirective];
 
+/**
+ * Provides the chat options, in place of `NbChatModule.forRoot()` or `forChild()`.
+ */
+export function provideNbChat(options?: NbChatOptions): EnvironmentProviders {
+  return makeEnvironmentProviders([{ provide: NbChatOptions, useValue: options || {} }]);
+}
+
 @NgModule({
-  imports: [NbSharedModule, NbIconModule, NbInputModule, NbButtonModule],
-  declarations: [...NB_CHAT_COMPONENTS, ...NB_CHAT_DIRECTIVES],
+  imports: [NbIconModule, NbInputModule, NbButtonModule, ...NB_CHAT_COMPONENTS, ...NB_CHAT_DIRECTIVES],
   exports: [...NB_CHAT_COMPONENTS, ...NB_CHAT_DIRECTIVES],
 })
 export class NbChatModule {
   static forRoot(options?: NbChatOptions): ModuleWithProviders<NbChatModule> {
-    return {
-      ngModule: NbChatModule,
-      providers: [{ provide: NbChatOptions, useValue: options || {} }],
-    };
+    return { ngModule: NbChatModule, providers: [provideNbChat(options)] };
   }
 
   static forChild(options?: NbChatOptions): ModuleWithProviders<NbChatModule> {
-    return {
-      ngModule: NbChatModule,
-      providers: [{ provide: NbChatOptions, useValue: options || {} }],
-    };
+    return { ngModule: NbChatModule, providers: [provideNbChat(options)] };
   }
 }

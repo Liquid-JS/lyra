@@ -1,104 +1,85 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input } from '@angular/core';
+import { Component, computed, inject, input } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
+import { NbChatMessageTextComponent } from './chat-message-text.component';
+import { NbIconComponent } from '@liquid-js/lyr-core/icon';
 
 export interface NbChatMessageFileIconPreview {
   url: string;
   icon: string;
+  /** Accessible name of the file link, the file name from the URL by default. */
+  name?: string;
 }
 export interface NbChatMessageFileImagePreview {
   url: string;
   type: string;
+  /** Accessible name of the file link, the file name from the URL by default. */
+  name?: string;
 }
 export type NbChatMessageFile = NbChatMessageFileIconPreview | NbChatMessageFileImagePreview;
 
 /**
- * Chat message component.
+ * A `file` message: its text, and each file as a link, images as previews and other files with their icon.
  */
 @Component({
-    selector: 'nb-chat-message-file',
-    template: `
-    <nb-chat-message-text [sender]="sender" [date]="date" [dateFormat]="dateFormat" [message]="message">
-      {{ message }}
-    </nb-chat-message-text>
-
-    <ng-container *ngIf="readyFiles?.length > 1">
-      <div class="message-content-group">
-        <a *ngFor="let file of readyFiles" [href]="file.url" target="_blank">
-          <nb-icon [icon]="file.icon" *ngIf="!file.urlStyle && file.icon"></nb-icon>
-          <div *ngIf="file.urlStyle" [style.background-image]="file.urlStyle"></div>
-        </a>
-      </div>
-    </ng-container>
-
-    <ng-container *ngIf="readyFiles?.length === 1">
-      <a [href]="readyFiles[0].url" target="_blank">
-        <nb-icon [icon]="readyFiles[0].icon" *ngIf="!readyFiles[0].urlStyle && readyFiles[0].icon"></nb-icon>
-        <div *ngIf="readyFiles[0].urlStyle" [style.background-image]="readyFiles[0].urlStyle"></div>
-      </a>
-    </ng-container>
-  `,
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  selector: 'nb-chat-message-file',
+  templateUrl: './chat-message-file.component.html',
+  imports: [NbChatMessageTextComponent, NbIconComponent],
 })
 export class NbChatMessageFileComponent {
-
-  readyFiles: any[];
-
-  /**
-   * Message sender
-   * @type {string}
-   */
-  @Input() message: string;
+  protected readonly domSanitizer = inject(DomSanitizer);
 
   /**
-   * Message sender
-   * @type {string}
+   * The message text.
    */
-  @Input() sender: string;
+  readonly message = input<string>();
 
   /**
-   * Message send date
-   * @type {Date}
+   * The sender's name.
    */
-  @Input() date: Date;
+  readonly sender = input<string>();
 
   /**
-   * Message send date format, default 'shortTime'
-   * @type {string}
+   * When the message was sent.
    */
-  @Input() dateFormat: string = 'shortTime';
+  readonly date = input<Date>();
 
   /**
-   * Message file path
-   * @type {Date}
+   * `DatePipe` format of the date; `shortTime` by default.
    */
-  @Input()
-  set files(files: NbChatMessageFile[]) {
-    this.readyFiles = (files || []).map((file: any) => {
+  readonly dateFormat = input<string>('shortTime');
+
+  /**
+   * The files: `{ url, type }` for an image shown as a preview, `{ url, icon }` for another file.
+   */
+  readonly files = input<NbChatMessageFile[]>();
+
+  readonly readyFiles = computed(() =>
+    (this.files() || []).map((file) => {
       const isImage = this.isImage(file);
       return {
         ...file,
+        icon: 'icon' in file ? file.icon : undefined,
         urlStyle: isImage && this.domSanitizer.bypassSecurityTrustStyle(`url(${file.url})`),
         isImage: isImage,
+        name: file.name ?? this.getFileName(file.url),
       };
-    });
-    this.cd.detectChanges();
-  }
+    }),
+  );
 
-  constructor(protected cd: ChangeDetectorRef, protected domSanitizer: DomSanitizer) {
+  protected getFileName(url: string): string {
+    const path = (url ?? '').split(/[?#]/)[0];
+    const name = path.slice(path.lastIndexOf('/') + 1);
+    try {
+      return decodeURIComponent(name) || url;
+    } catch {
+      return name || url;
+    }
   }
-
 
   isImage(file: NbChatMessageFile): boolean {
-    const type = (file as NbChatMessageFileImagePreview).type;
+    const type = 'type' in file ? file.type : undefined;
     if (type) {
-      return [ 'image/png', 'image/jpeg', 'image/gif' ].includes(type);
+      return ['image/png', 'image/jpeg', 'image/gif', 'image/webp', 'image/avif', 'image/svg+xml'].includes(type);
     }
     return false;
   }
