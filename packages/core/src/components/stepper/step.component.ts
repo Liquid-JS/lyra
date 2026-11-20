@@ -1,108 +1,59 @@
-import { Component, Inject, Input, TemplateRef, ViewChild } from '@angular/core';
+import { Component, computed, inject, input, signal, TemplateRef, viewChild } from '@angular/core';
 import { NbStepperComponent } from './stepper.component';
 import { NB_STEPPER } from './stepper-tokens';
-import { convertToBoolProperty, NbBooleanInput } from '../helpers';
+import { ɵconvertToBoolProperty as convertToBoolProperty, NbBooleanInput } from '@liquid-js/lyr-core/base';
 
 /**
- * Component intended to be used within  the `<nb-stepper>` component.
- * Container for a step
+ * A step of an `nb-stepper`: its label in the header, and its content, shown while it's selected.
  */
 @Component({
-    selector: 'nb-step',
-    template: `
-    <ng-template>
-      <ng-content></ng-content>
-    </ng-template>
-  `,
-    standalone: false
+  selector: 'nb-step',
+  templateUrl: './step.component.html',
 })
 export class NbStepComponent {
+  protected readonly stepper: NbStepperComponent = inject(NB_STEPPER);
 
-  protected stepper: NbStepperComponent;
+  /** The step's content, which the stepper renders while the step is selected. */
+  readonly content = viewChild.required(TemplateRef);
 
-  // TODO static must be false as of Angular 9.0.0, issues/1514
   /**
-   * Step content
-   *
-   * @type {TemplateRef}
+   * A form or control the step is completed by: the step counts as completed only while it's valid, and the
+   * stepper's `reset` resets it.
    */
-  @ViewChild(TemplateRef, { static: true }) content: TemplateRef<any>;
+  readonly stepControl = input<{ valid: boolean | null; reset: () => void }>();
+
+  /** The label in the header: text, or a template. */
+  readonly label = input<string | TemplateRef<unknown>>();
+
+  /** Leaves the step out: it isn't shown or numbered, and `next` and `previous` skip it. */
+  readonly hidden = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
+
+  readonly isLabelTemplate = computed(() => this.label() instanceof TemplateRef);
+
+  /** Marks the step as completed, whether or not it was visited or its `stepControl` is valid. */
+  readonly completed = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
+
+  /** Whether the step was visited and left. */
+  readonly interacted = signal(false);
 
   /**
-   * Top level abstract control of the step
+   * Whether the step is completed: marked `completed`, or visited with a valid step control. It reads the control's
+   * validity, so it isn't a signal.
    */
-  @Input() stepControl?: { valid: boolean | null, reset: () => void };
-
-  /**
-   * Step label
-   *
-   * @type {string|TemplateRef<any>}
-   */
-  @Input() label: string|TemplateRef<any>;
-
-  /**
-   * Whether step will be displayed in wizard
-   *
-   * @type {boolean}
-   */
-  @Input()
-  get hidden(): boolean {
-    return this._hidden;
-  }
-  set hidden(value: boolean) {
-    this._hidden = convertToBoolProperty(value);
-  }
-  protected _hidden = false;
-  static ngAcceptInputType_hidden: NbBooleanInput;
-
-  /**
-   * Check that label is a TemplateRef.
-   *
-   * @return boolean
-   * */
-  get isLabelTemplate(): boolean {
-    return this.label instanceof TemplateRef;
+  get isCompleted(): boolean {
+    const stepControl = this.stepControl();
+    const done = stepControl ? stepControl.valid && this.interacted() : this.interacted();
+    return this.completed() || !!done;
   }
 
-  /**
-   * Whether step is marked as completed.
-   *
-   * @type {boolean}
-   */
-  @Input()
-  get completed(): boolean {
-    return this._completed || this.isCompleted;
-  }
-  set completed(value: boolean) {
-    this._completed = convertToBoolProperty(value);
-  }
-  protected _completed: boolean = false;
-  static ngAcceptInputType_completed: NbBooleanInput;
-
-  protected get isCompleted() {
-    return this.stepControl ? this.stepControl.valid && this.interacted : this.interacted;
+  /** Selects the step, if the stepper allows it. */
+  select() {
+    this.stepper.selectStep(this);
   }
 
-  interacted = false;
-
-  constructor(@Inject(NB_STEPPER) stepper) {
-    this.stepper = stepper;
-  }
-
-  /**
-   * Mark step as selected
-   * */
-  select(): void {
-    this.stepper.selected = this;
-  }
-
-  /**
-   * Reset step and stepControl state
-   * */
-  reset(): void {
-    this.interacted = false;
-    if (this.stepControl) {
-      this.stepControl.reset();
-    }
+  /** Forgets the visit and resets the `stepControl`. */
+  reset() {
+    this.interacted.set(false);
+    this.stepControl()?.reset();
   }
 }

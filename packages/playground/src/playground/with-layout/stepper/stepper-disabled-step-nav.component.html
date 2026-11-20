@@ -1,0 +1,60 @@
+<nb-card>
+  <nb-card-body>
+    <nb-stepper orientation="horizontal"
+      disableStepNavigation>
+      <nb-step [label]="labelOne">
+        <ng-template #labelOne>First step</ng-template>
+        <h4>Step content #1</h4>
+        <p class="lorem">
+          Start by choosing what to set up. Each step covers one part of it, and you can go back to any of them.
+        </p>
+        <button class="prev-button"
+          nbButton
+          disabled
+          nbStepperPrevious>prev</button>
+        <button class="next-button"
+          nbButton
+          nbStepperNext>next</button>
+      </nb-step>
+      <nb-step [label]="labelTwo">
+        <ng-template #labelTwo>Second step</ng-template>
+        <h4>Step content #2</h4>
+        <p class="lorem">
+          Fill in the details for this part. Nothing is saved until the last step.
+        </p>
+        <button class="prev-button"
+          nbButton
+          nbStepperPrevious>prev</button>
+        <button class="next-button"
+          nbButton
+          nbStepperNext>next</button>
+      </nb-step>
+      <nb-step label="Third step">
+        <h4>Step content #3</h4>
+        <p class="lorem">
+          Check the options below and change any that don't suit you.
+        </p>
+        <button class="prev-button"
+          nbButton
+          nbStepperPrevious>prev</button>
+        <button class="next-button"
+          nbButton
+          nbStepperNext>next</button>
+      </nb-step>
+      <nb-step [label]="labelFour">
+        <ng-template #labelFour>Fourth step</ng-template>
+        <h4>Step content #4</h4>
+        <p class="lorem">
+          Review everything once more, then finish to save it.
+        </p>
+        <button class="prev-button"
+          nbButton
+          nbStepperPrevious>prev</button>
+        <button class="next-button"
+          nbButton
+          disabled
+          nbStepperNext>next</button>
+      </nb-step>
+    </nb-stepper>
+  </nb-card-body>
+</nb-card>

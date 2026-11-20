@@ -1,35 +1,67 @@
 import { NbStepperComponent } from './stepper.component';
-import { Directive, HostBinding, HostListener, Input } from '@angular/core';
+import { Directive, ElementRef, inject, input, OnDestroy } from '@angular/core';
 
+/**
+ * Moves its stepper to the next step when clicked. In a form, a submit button (the default `type`) moves on once the
+ * form is submitted, so the browser checks the form first.
+ */
 @Directive({
-    selector: 'button[nbStepperNext]',
-    standalone: false
+  selector: 'button[nbStepperNext]',
+  host: {
+    '[attr.type]': 'type()',
+    '(click)': 'onClick()',
+  },
 })
-export class NbStepperNextDirective {
+export class NbStepperNextDirective implements OnDestroy {
+  protected readonly stepper = inject(NbStepperComponent);
+  protected readonly hostRef = inject<ElementRef<HTMLButtonElement>>(ElementRef);
 
-  @Input() @HostBinding('attr.type') type: string = 'submit';
+  readonly type = input<string>('submit');
 
-  constructor(protected stepper: NbStepperComponent) {
+  protected removeSubmitListener?: () => void;
+
+  onClick() {
+    const form = this.type() === 'submit' ? this.hostRef.nativeElement.form : null;
+    if (!form) {
+      this.stepper.next();
+      return;
+    }
+
+    // The next step replaces the form, and the browser cancels the submission of a removed form,
+    // so the stepper moves on once the form is submitted.
+    this.removeSubmitListener?.();
+    const removeSubmitListener = () => {
+      form.removeEventListener('submit', onSubmit);
+      this.removeSubmitListener = undefined;
+    };
+    const onSubmit = () => {
+      removeSubmitListener();
+      this.stepper.next();
+    };
+    form.addEventListener('submit', onSubmit);
+    this.removeSubmitListener = removeSubmitListener;
   }
 
-  @HostListener('click')
-  onClick() {
-    this.stepper.next();
+  ngOnDestroy() {
+    this.removeSubmitListener?.();
   }
 }
 
+/**
+ * Moves its stepper to the previous step when clicked.
+ */
 @Directive({
-    selector: 'button[nbStepperPrevious]',
-    standalone: false
+  selector: 'button[nbStepperPrevious]',
+  host: {
+    '[attr.type]': 'type()',
+    '(click)': 'onClick()',
+  },
 })
 export class NbStepperPreviousDirective {
+  protected readonly stepper = inject(NbStepperComponent);
 
-  @Input() @HostBinding('attr.type') type: string = 'button';
+  readonly type = input<string>('button');
 
-  constructor(protected stepper: NbStepperComponent) {
-  }
-
-  @HostListener('click')
   onClick() {
     this.stepper.previous();
   }

@@ -5,6 +5,7 @@
     }
 
     .connector {
+      flex: auto;
       height: 2px;
     }
   }
@@ -18,8 +19,10 @@
   display: flex;
   height: 100%;
 
+  // The steps stay at the top with fixed-length connectors instead of spreading over the content's height.
   .header {
     flex-direction: column;
+    align-self: flex-start;
 
     .label {
       margin: 0 10px;
@@ -27,7 +30,14 @@
 
     .connector {
       width: 2px;
+      flex-grow: 0;
+      flex-shrink: 0;
     }
+  }
+
+  .step-content {
+    flex: 1;
+    min-width: 0;
   }
 }
 
@@ -36,10 +46,6 @@
   justify-content: space-between;
   align-items: flex-start;
   margin-bottom: 10px;
-
-  .connector {
-    flex: auto;
-  }
 
   .step {
     display: flex;
@@ -59,5 +65,22 @@
 
   .label {
     width: max-content;
+  }
+}
+
+// A step's content fades in as the step is selected.
+.step-enter {
+  animation: nb-step-fade 0.15s ease-out;
+}
+
+@keyframes nb-step-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .step-enter {
+    animation: none;
   }
 }

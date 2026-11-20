@@ -1,47 +1,58 @@
 <nb-card>
   <nb-card-body>
-    <p *ngIf="changeEvent">Previous step: {{ changeEvent.previouslySelectedIndex }}</p>
-    <p *ngIf="changeEvent">Current step: {{ changeEvent.index }}</p>
+    @if (changeEvent) {
+    <p>Previous step: {{ changeEvent.previouslySelectedIndex }}</p>
+    }
+    @if (changeEvent) {
+    <p>Current step: {{ changeEvent.index }}</p>
+    }
 
-    <nb-stepper orientation="horizontal" (stepChange)="handleStepChange($event)">
+    <nb-stepper orientation="horizontal"
+      (stepChange)="handleStepChange($event)">
       <nb-step [label]="labelOne">
         <ng-template #labelOne>First step</ng-template>
         <h4>Step content #1</h4>
         <p class="lorem">
-          Lorizzle ipsum dolizzle stuff fizzle, consectetuer adipiscing break it down. Nullizzle sapien velizzle, my
-          shizz pimpin', shizzle my nizzle crocodizzle shut the shizzle up, gravida vizzle, dang.
+          Start by choosing what to set up. Each step covers one part of it, and you can go back to any of them.
         </p>
-        <button nbButton disabled nbStepperNext>prev</button>
-        <button nbButton nbStepperNext>next</button>
+        <button nbButton
+          disabled
+          nbStepperPrevious>prev</button>
+        <button nbButton
+          nbStepperNext>next</button>
       </nb-step>
       <nb-step [label]="labelTwo">
         <ng-template #labelTwo>Second step</ng-template>
         <h4>Step content #2</h4>
         <p class="lorem">
-          Lorizzle ipsum dolizzle stuff fizzle, consectetuer adipiscing break it down. Nullizzle sapien velizzle, my
-          shizz pimpin', shizzle my nizzle crocodizzle shut the shizzle up, gravida vizzle, dang.
+          Fill in the details for this part. Nothing is saved until the last step.
         </p>
-        <button nbButton nbStepperPrevious>prev</button>
-        <button nbButton nbStepperNext>next</button>
+        <button nbButton
+          nbStepperPrevious>prev</button>
+        <button nbButton
+          nbStepperNext>next</button>
       </nb-step>
       <nb-step label="Third step">
         <h4>Step content #3</h4>
         <p class="lorem">
-          Lorizzle ipsum dolizzle stuff fizzle, consectetuer adipiscing break it down. Nullizzle sapien velizzle, my
-          shizz pimpin', shizzle my nizzle crocodizzle shut the shizzle up, gravida vizzle, dang.
+          Check the options below and change any that don't suit you.
         </p>
-        <button nbButton nbStepperPrevious>prev</button>
-        <button nbButton nbStepperNext>next</button>
+        <button nbButton
+          nbStepperPrevious>prev</button>
+        <button nbButton
+          nbStepperNext>next</button>
       </nb-step>
       <nb-step [label]="labelFour">
         <ng-template #labelFour>Fourth step</ng-template>
         <h4>Step content #4</h4>
         <p class="lorem">
-          Lorizzle ipsum dolizzle stuff fizzle, consectetuer adipiscing break it down. Nullizzle sapien velizzle, my
-          shizz pimpin', shizzle my nizzle crocodizzle shut the shizzle up, gravida vizzle, dang.
+          Review everything once more, then finish to save it.
         </p>
-        <button nbButton nbStepperPrevious>prev</button>
-        <button nbButton disabled nbStepperNext>next</button>
+        <button nbButton
+          nbStepperPrevious>prev</button>
+        <button nbButton
+          disabled
+          nbStepperNext>next</button>
       </nb-step>
     </nb-stepper>
   </nb-card-body>

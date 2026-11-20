@@ -1,15 +1,32 @@
 import { Component } from '@angular/core';
-import { NbStepChangeEvent } from '@nebular/theme';
+import {
+  NbStepChangeEvent,
+  NbCardComponent,
+  NbCardBodyComponent,
+  NbStepperComponent,
+  NbStepComponent,
+  NbButtonComponent,
+  NbStepperPreviousDirective,
+  NbStepperNextDirective,
+} from '@liquid-js/lyr-core';
 
 @Component({
-    templateUrl: './stepper-step-change-event.component.html',
-    styleUrls: ['./stepper-step-change-event.component.scss'],
-    standalone: false
+  templateUrl: './stepper-step-change-event.component.html',
+  styleUrls: ['./stepper-step-change-event.component.scss'],
+  imports: [
+    NbCardComponent,
+    NbCardBodyComponent,
+    NbStepperComponent,
+    NbStepComponent,
+    NbButtonComponent,
+    NbStepperPreviousDirective,
+    NbStepperNextDirective,
+  ],
 })
 export class StepperStepChangeEventComponent {
-  changeEvent: NbStepChangeEvent;
+  changeEvent?: NbStepChangeEvent;
 
-  handleStepChange(e: NbStepChangeEvent): void {
+  handleStepChange(e: NbStepChangeEvent) {
     this.changeEvent = e;
   }
 }

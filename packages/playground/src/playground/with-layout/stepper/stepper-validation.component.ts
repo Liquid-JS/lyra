@@ -1,35 +1,47 @@
-import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Component, inject } from '@angular/core';
+import { FormBuilder, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import {
+  NbCardComponent,
+  NbCardBodyComponent,
+  NbStepperComponent,
+  NbStepComponent,
+  NbInputDirective,
+  NbButtonComponent,
+  NbStepperNextDirective,
+  NbStepperPreviousDirective,
+} from '@liquid-js/lyr-core';
 
 @Component({
-    selector: 'nb-stepper-validation',
-    styleUrls: ['stepper-playground.component.scss'],
-    templateUrl: './stepper-validation.component.html',
-    standalone: false
+  selector: 'nb-stepper-validation',
+  styleUrls: ['stepper-playground.component.scss'],
+  templateUrl: './stepper-validation.component.html',
+  imports: [
+    NbCardComponent,
+    NbCardBodyComponent,
+    NbStepperComponent,
+    NbStepComponent,
+    FormsModule,
+    ReactiveFormsModule,
+    NbInputDirective,
+    NbButtonComponent,
+    NbStepperNextDirective,
+    NbStepperPreviousDirective,
+  ],
 })
+export class StepperValidationComponent {
+  private readonly fb = inject(FormBuilder);
 
-export class StepperValidationComponent implements OnInit {
+  readonly firstForm = this.fb.group({
+    firstCtrl: ['', Validators.required],
+  });
 
-  firstForm: FormGroup;
-  secondForm: FormGroup;
-  thirdForm: FormGroup;
+  readonly secondForm = this.fb.group({
+    secondCtrl: ['', Validators.required],
+  });
 
-  constructor(private fb: FormBuilder) {
-  }
-
-  ngOnInit() {
-    this.firstForm = this.fb.group({
-      firstCtrl: ['', Validators.required],
-    });
-
-    this.secondForm = this.fb.group({
-      secondCtrl: ['', Validators.required],
-    });
-
-    this.thirdForm = this.fb.group({
-      thirdCtrl: ['', Validators.required],
-    });
-  }
+  readonly thirdForm = this.fb.group({
+    thirdCtrl: ['', Validators.required],
+  });
 
   onFirstSubmit() {
     this.firstForm.markAsDirty();
@@ -42,5 +54,4 @@ export class StepperValidationComponent implements OnInit {
   onThirdSubmit() {
     this.thirdForm.markAsDirty();
   }
-
 }

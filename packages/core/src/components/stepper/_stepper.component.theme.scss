@@ -1,9 +1,3 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 @use '../../styles/theming' as *;
 
 @mixin nb-stepper-theme {
@@ -22,6 +16,7 @@
     &.vertical {
       .header .connector {
         margin: nb-theme(stepper-vertical-connector-margin);
+        flex-basis: nb-theme(stepper-vertical-connector-length);
       }
     }
 
@@ -71,11 +66,65 @@
             color: nb-theme(stepper-step-index-completed-text-color);
           }
         }
+
+        // The keyboard's step: the ring goes round its index, as a page indicator's round its dot.
+        &:focus {
+          outline: none;
+        }
+
+        &:focus-visible .label-index {
+          @include nb-outline(nb-theme(stepper-step-outline-width), nb-theme(stepper-step-outline-color));
+        }
       }
     }
 
     .step-content {
       padding: nb-theme(stepper-step-content-padding);
+    }
+
+    // Under the steps, the content starts where the first step does, at the stepper's edge, as the text around the
+    // stepper does; beside them, it keeps its padding from them.
+    &.horizontal .step-content {
+      padding-inline: 0;
+    }
+
+    // On a narrow screen, a horizontal stepper's steps are their indexes, side by side, and only the current step's
+    // label shows, under them all, so a stepper of any number of steps fits across a phone. The other labels are
+    // still there for assistive technologies.
+    @media screen and (max-width: $stepper-compact-breakpoint) {
+      // The content starts where the first step's index does, at the stepper's edge.
+      &.horizontal .step-content {
+        padding: nb-theme(stepper-step-content-small-padding);
+      }
+
+      &.horizontal .header {
+        position: relative;
+        padding-bottom: nb-theme(stepper-step-text-line-height);
+
+        .step {
+          margin: 0;
+        }
+
+        .step .label {
+          position: absolute;
+          width: 1px;
+          height: 1px;
+          overflow: hidden;
+          clip: rect(0 0 0 0);
+          white-space: nowrap;
+        }
+
+        .step.selected .label {
+          inset-inline: 0;
+          bottom: 0;
+          width: auto;
+          height: auto;
+          overflow: visible;
+          clip: auto;
+          white-space: normal;
+          text-align: center;
+        }
+      }
     }
   }
 }

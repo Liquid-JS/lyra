@@ -1,3 +1,5 @@
 import { InjectionToken } from '@angular/core';
 
-export const NB_STEPPER = new InjectionToken('Nebular Stepper Component');
+import type { NbStepperComponent } from './stepper.component';
+
+export const NB_STEPPER = new InjectionToken<NbStepperComponent>('Lyra Stepper Component');

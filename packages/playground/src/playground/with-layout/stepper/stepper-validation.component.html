@@ -1,51 +1,74 @@
 <nb-card>
   <nb-card-body>
     <nb-stepper #stepper>
-      <nb-step [stepControl]="firstForm" label="First step">
-        <form [formGroup]="firstForm" (ngSubmit)="onFirstSubmit()" class="step-container">
+      <nb-step [stepControl]="firstForm"
+        label="First step">
+        <form [formGroup]="firstForm"
+          (ngSubmit)="onFirstSubmit()"
+          class="step-container">
           <p class="lorem">
-            Lorizzle ipsum dolizzle stuff fizzle, consectetuer adipiscing break it down. Nullizzle sapien velizzle,
-            my shizz pimpin', shizzle my nizzle crocodizzle shut the shizzle up, gravida vizzle, dang.
+            Tell us who you are. The next step opens once your name is filled in.
           </p>
-          <div class="input-group">
-            <input nbInput type="text" placeholder="Enter your name" class="form-control" formControlName="firstCtrl"
-                   [ngClass]="{'form-control-danger': firstForm.invalid && (firstForm.dirty || firstForm.touched)}">
+          <div class="input-container">
+            <input nbInput
+              type="text"
+              placeholder="Enter your name"
+              formControlName="firstCtrl"
+              [status]="firstForm.invalid && (firstForm.dirty || firstForm.touched) ? 'danger' : 'basic'">
           </div>
-          <button nbButton nbStepperNext>next</button>
+          <button nbButton
+            nbStepperNext>next</button>
         </form>
       </nb-step>
-      <nb-step [stepControl]="secondForm" label="Second step">
-        <form [formGroup]="secondForm" (ngSubmit)="onSecondSubmit()" class="step-container">
+      <nb-step [stepControl]="secondForm"
+        label="Second step">
+        <form [formGroup]="secondForm"
+          (ngSubmit)="onSecondSubmit()"
+          class="step-container">
           <p class="lorem">
-            Pellentesque we gonna chung tortor.
-            Sizzle pizzle. Fizzle izzle dolor dapibus fo shizzle mah nizzle fo rizzle, mah home g-dizzle tempus tempor.
-            Maurizzle cool nibh owned turpizzle. My shizz fo shizzle tortor.
+            Pick a film to recommend to your team. You can go back and change your name at any point.
           </p>
-          <div class="input-group">
-            <input nbInput type="text" placeholder="Enter favorite movie" class="form-control" formControlName="secondCtrl"
-                   [ngClass]="{'form-control-danger': secondForm.invalid && (secondForm.dirty || secondForm.touched)}">
+          <div class="input-container">
+            <input nbInput
+              type="text"
+              placeholder="Enter favorite movie"
+              formControlName="secondCtrl"
+              [status]="secondForm.invalid && (secondForm.dirty || secondForm.touched) ? 'danger' : 'basic'">
           </div>
-          <button nbButton nbStepperPrevious>prev</button>
-          <button nbButton nbStepperNext>next</button>
+          <button nbButton
+            nbStepperPrevious>prev</button>
+          <button nbButton
+            nbStepperNext>next</button>
         </form>
       </nb-step>
-      <nb-step [stepControl]="thirdForm" label="Third step">
-        <form [formGroup]="thirdForm" (ngSubmit)="onThirdSubmit()" class="step-container">
+      <nb-step [stepControl]="thirdForm"
+        label="Third step">
+        <form [formGroup]="thirdForm"
+          (ngSubmit)="onThirdSubmit()"
+          class="step-container">
           <p class="lorem">
-            Things boom shackalack rhoncus yo. In fo shizzle my nizzle gangsta platea dictumst. Check it out pot.
+            Add a note for the team, then confirm to finish.
           </p>
-          <div class="input-group">
-            <input nbInput type="text" placeholder="Enter something" class="form-control" formControlName="thirdCtrl"
-                   [ngClass]="{'form-control-danger': thirdForm.invalid && (thirdForm.dirty || thirdForm.touched)}">
+          <div class="input-container">
+            <input nbInput
+              type="text"
+              placeholder="Enter something"
+              formControlName="thirdCtrl"
+              [status]="thirdForm.invalid && (thirdForm.dirty || thirdForm.touched) ? 'danger' : 'basic'">
           </div>
-          <button nbButton nbStepperPrevious>prev</button>
-          <button nbButton nbStepperNext>Confirm</button>
+          <button nbButton
+            nbStepperPrevious>prev</button>
+          <button nbButton
+            nbStepperNext>Confirm</button>
         </form>
       </nb-step>
-      <nb-step [stepControl]="thirdForm" [hidden]="true" label="Third step">
+      <nb-step [stepControl]="thirdForm"
+        [hidden]="true"
+        label="Third step">
         <div class="step-container">
           <h3>Wizard completed!</h3>
-          <button nbButton (click)="stepper.reset()">Try again</button>
+          <button nbButton
+            (click)="stepper.reset()">Try again</button>
         </div>
       </nb-step>
     </nb-stepper>
