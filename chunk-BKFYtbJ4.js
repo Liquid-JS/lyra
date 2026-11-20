@@ -1,1 +1,0 @@
-import{Hi as PC,Oi as K_,wi as J_}from"./main-HEU27YJU.js";var m=class t{static{this.ɵfac=function(o){return new(o||t)}}static{this.ɵcmp=(function(){return PC({type:t,selectors:[[`nb-input-group`]],hostAttrs:[`role`,`group`],ngContentSelectors:[`*`],decls:1,vars:0,template:function(r,s){r&1&&(K_(),J_(0))},encapsulation:2})})()}};export{m as t};

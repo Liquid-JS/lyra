@@ -1,0 +1,1 @@
+import{$ as Mr,Hi as PC,qr as Ay}from"./main-PWJREFY5.js";var r=class n{static{this.ɵfac=function(e){return new(e||n)}}static{this.ɵcmp=PC({type:n,selectors:[[`nb-firebase-playground`]],decls:1,vars:0,template:function(e,s){e&1&&Ay(0,`router-outlet`)},dependencies:[Mr],encapsulation:2})}};export{r as FirebasePlaygroundComponent};

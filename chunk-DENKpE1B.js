@@ -1,1 +1,0 @@
-var o=[{path:`table-showcase.component`,loadComponent:()=>import(`./chunk-eNzZ5wz6.js`).then(e=>e.TableShowcaseComponent)},{path:`table-server.component`,loadComponent:()=>import(`./chunk-Bqbt0BzS.js`).then(e=>e.TableServerComponent)},{path:`table-selection.component`,loadComponent:()=>import(`./chunk-CadKD-jg.js`).then(e=>e.TableSelectionComponent)}];export{o as TABLE_ROUTES};

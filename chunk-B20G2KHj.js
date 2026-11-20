@@ -1,1 +1,0 @@
-var o=[{path:`theme-select-showcase.component`,loadComponent:()=>import(`./chunk-zws65_mM.js`).then(e=>e.ThemeSelectShowcaseComponent)}];export{o as THEME_SELECT_ROUTES};
