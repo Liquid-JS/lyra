@@ -2,7 +2,7 @@
 @use '../form-field/form-field.component.theme' as form-field-theme;
 
 @mixin select-outline {
-  nb-select.appearance-outline .select-button {
+  nb-select:is(.appearance-outline, .appearance-ghost) .select-button {
     border-style: nb-theme(select-outline-border-style);
     border-width: nb-theme(select-outline-border-width);
 
@@ -17,7 +17,7 @@
   }
 
   @each $status in nb-get-statuses() {
-    nb-select.appearance-outline.status-#{$status} .select-button {
+    nb-select:is(.appearance-outline, .appearance-ghost).status-#{$status} .select-button {
       background-color: nb-theme(select-outline-#{$status}-background-color);
       border-color: nb-theme(select-outline-#{$status}-border-color);
       color: nb-theme(select-outline-#{$status}-text-color);
@@ -67,15 +67,27 @@
   }
 
   @each $size in nb-get-sizes() {
-    nb-select.appearance-outline.size-#{$size} .select-button {
+    nb-select:is(.appearance-outline, .appearance-ghost).size-#{$size} .select-button {
       padding: nb-theme(select-outline-#{$size}-padding);
+      padding-block: 0;
       @include nb-ltr(padding-right, nb-theme(select-icon-offset));
       @include nb-rtl(padding-left, nb-theme(select-icon-offset));
     }
 
     @include form-field-theme.nb-form-field-with-prefix(
-      'nb-select.appearance-outline.size-#{$size} .select-button',
+      'nb-select:is(.appearance-outline, .appearance-ghost).size-#{$size} .select-button',
       $size
     );
+  }
+
+  // Ghost is outline without a background or border at rest; under the pointer, with focus and open it looks the same.
+  @each $status in nb-get-statuses() {
+    nb-select.appearance-ghost.status-#{$status} .select-button {
+      &:not(:hover):not(:focus):not(.top):not(.bottom),
+      &[disabled] {
+        background-color: nb-theme(select-ghost-background-color);
+        border-color: nb-theme(select-ghost-border-color);
+      }
+    }
   }
 }

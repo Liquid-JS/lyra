@@ -10,6 +10,7 @@
   @each $size in nb-get-sizes() {
     nb-select.appearance-filled.size-#{$size} .select-button {
       padding: nb-theme(select-filled-#{$size}-padding);
+      padding-block: 0;
       @include nb-ltr(padding-right, nb-theme(select-icon-offset));
       @include nb-rtl(padding-left, nb-theme(select-icon-offset));
     }

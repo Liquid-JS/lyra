@@ -1,15 +1,9 @@
-/*
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 import { Component } from '@angular/core';
+import { NbCardComponent, NbCardBodyComponent, NbSelectComponent, NbOptionComponent } from '@liquid-js/lyr-core';
 
 @Component({
-    selector: 'nb-select-hero',
-    templateUrl: './select-hero.component.html',
-    standalone: false
+  selector: 'nb-select-hero',
+  templateUrl: './select-hero.component.html',
+  imports: [NbCardComponent, NbCardBodyComponent, NbSelectComponent, NbOptionComponent],
 })
-export class SelectHeroComponent {
-}
+export class SelectHeroComponent {}

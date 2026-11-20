@@ -1,68 +1,103 @@
-/*
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 import {
-  AfterContentInit,
+  AfterContentChecked,
+  afterRenderEffect,
   AfterViewInit,
-  ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
   ComponentRef,
-  ContentChild,
-  ContentChildren,
+  computed,
+  contentChild,
+  contentChildren,
+  DestroyRef,
+  effect,
   ElementRef,
-  EventEmitter,
   forwardRef,
-  HostBinding,
-  Inject,
-  Input,
+  inject,
+  Injector,
+  input,
+  linkedSignal,
+  numberAttribute,
   OnDestroy,
-  Output,
-  QueryList,
-  ViewChild,
-  SimpleChanges,
-  OnChanges,
-  Renderer2,
-  NgZone,
+  output,
+  signal,
+  untracked,
+  viewChild,
 } from '@angular/core';
-import { NgClass } from '@angular/common';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
-import { merge, Subject, BehaviorSubject, from } from 'rxjs';
-import { startWith, switchMap, takeUntil, filter, map, finalize, take } from 'rxjs/operators';
+import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
+import { BehaviorSubject, EMPTY, merge, Observable } from 'rxjs';
+import { filter, map, switchMap, take } from 'rxjs/operators';
 
-import { NbStatusService } from '../../services/status.service';
-import {
-  NbAdjustableConnectedPositionStrategy,
-  NbAdjustment,
-  NbPosition,
-  NbPositionBuilderService,
-} from '../cdk/overlay/overlay-position';
-import { NbOverlayRef, NbPortalDirective, NbScrollStrategy } from '../cdk/overlay/mapping';
-import { NbOverlayService } from '../cdk/overlay/overlay-service';
-import { NbTrigger, NbTriggerStrategy, NbTriggerStrategyBuilderService } from '../cdk/overlay/overlay-trigger';
-import { NbFocusKeyManager, NbFocusKeyManagerFactoryService } from '../cdk/a11y/focus-key-manager';
-import { ESCAPE } from '../cdk/keycodes/keycodes';
-import { NbComponentSize } from '../component-size';
-import { NbComponentShape } from '../component-shape';
-import { NbComponentOrCustomStatus } from '../component-status';
-import { NB_DOCUMENT } from '../../theme.options';
+import { injectNbDefaults } from '@liquid-js/lyr-core/base';
+import { NbStatusService } from '@liquid-js/lyr-core/base';
+import { NbAdjustableConnectedPositionStrategy, NbAdjustment, NbPosition, NbPositionBuilderService } from '@liquid-js/lyr-core/cdk';
+import { NbOverlayRef, NbPortalDirective, NbScrollStrategy } from '@liquid-js/lyr-core/cdk';
+import { NbOverlayService } from '@liquid-js/lyr-core/cdk';
+import { NbTrigger, NbTriggerStrategy, NbTriggerStrategyBuilderService } from '@liquid-js/lyr-core/cdk';
+import { NbFocusKeyManager, NbFocusKeyManagerFactoryService } from '@liquid-js/lyr-core/cdk';
+import { ɵNbActiveDescendantKeyManager as NbActiveDescendantKeyManager, ɵNbActiveDescendantKeyManagerFactoryService as NbActiveDescendantKeyManagerFactoryService } from '@liquid-js/lyr-core/cdk';
+import { NbInputDirective } from '@liquid-js/lyr-core/input';
+import { ɵisComposing as isComposing } from '@liquid-js/lyr-core/base';
+import { NbComponentSize } from '@liquid-js/lyr-core/base';
+import { NbComponentShape } from '@liquid-js/lyr-core/base';
+import { NbComponentOrCustomStatus } from '@liquid-js/lyr-core/base';
+import { NB_DOCUMENT } from '@liquid-js/lyr-core/base';
 import { NbOptionComponent } from '../option/option.component';
-import { convertToBoolProperty, NbBooleanInput } from '../helpers';
+import { NbOptionNestedComponent } from '../option/option-nested.component';
+import { NbOptionGroupComponent } from '../option/option-group.component';
+import { NB_OPTION_LIST_ITEM, NbOptionListItem } from '../option/option-list-item';
+import { NbLayoutDirectionService } from '@liquid-js/lyr-core/base';
+import { ɵconvertToBoolProperty as convertToBoolProperty, NbBooleanInput, ɵNbClassInput as NbClassInput } from '@liquid-js/lyr-core/base';
+import { NbValidationDirective } from '@liquid-js/lyr-core/validation';
 import { NB_SELECT_INJECTION_TOKEN } from './select-injection-tokens';
-import { NbFormFieldControl, NbFormFieldControlConfig } from '../form-field/form-field-control';
-import { NbFocusMonitor } from '../cdk/a11y/a11y.module';
-import { NbScrollStrategies } from '../cdk/adapter/block-scroll-strategy-adapter';
+import { NbFormFieldControl, NbFormFieldControlConfig } from '@liquid-js/lyr-core/form-field';
+import { NbFocusMonitor } from '@liquid-js/lyr-core/cdk';
+import { NbScrollStrategies } from '@liquid-js/lyr-core/cdk';
+import { NbIconComponent } from '@liquid-js/lyr-core/icon';
+import { NbTagComponent } from '../tag/tag.component';
+import { NbOptionListComponent } from '../option/option-list.component';
+import { ɵenableTransitionsAfterRender as enableTransitionsAfterRender } from '@liquid-js/lyr-core/base';
+import { injectNbTexts, NbLocalize } from '@liquid-js/lyr-core/base';
+import type { NbSelectAppearance } from '@liquid-js/lyr-core/base';
 
-export type NbSelectCompareFunction<T = any> = (v1: any, v2: any) => boolean;
-export type NbSelectAppearance = 'outline' | 'filled' | 'hero';
+/** @internal */
+declare const $localize: NbLocalize;
+
+let lastSelectId = 0;
+
+// Case and accents don't count when searching, so "creme" finds "Crème".
+const normalizeSearchText = (text: string) =>
+  text.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLocaleLowerCase().trim();
+
+/**
+ * Matches options whose text contains the query, ignoring case and accents.
+ */
+export function nbSelectSearchFn<T>(option: NbOptionComponent<T>, query: string): boolean {
+  return normalizeSearchText(option.content ?? '').includes(normalizeSearchText(query));
+}
+
+// An option or nested option, of any value type, by where it is in the tree.
+type NbNestedItem = Pick<NbOptionComponent | NbOptionNestedComponent, 'depth' | 'parentNested'>;
+
+export type NbSelectCompareFunction<T = unknown> = (v1: T, v2: T) => boolean;
+
+/**
+ * Whether a select's `multiple` isn't given. Angular's template type checker doesn't apply a type parameter's default:
+ * without a `multiple` binding it infers `M` as its whole constraint (or `any`), which no binding gives.
+ */
+type NbSelectMultipleUnset<M> = 0 extends 1 & M ? true : [NbBooleanInput] extends [M] ? true : false;
+
+/**
+ * What a select gives in `selectedChange`, for options of value `T` and a `multiple` of `M`: one value, or `null` when
+ * nothing is selected; with `multiple` (`true`, `''` or `'true'`), all selected values. A `multiple` bound to a
+ * `boolean` that may be either gives either.
+ */
+export type NbSelectValue<T, M extends NbBooleanInput = NbBooleanInput> =
+  NbSelectMultipleUnset<M> extends true ? T | null : M extends true | '' | 'true' ? T[] : T | null;
 
 @Component({
-    selector: 'nb-select-label',
-    template: '<ng-content></ng-content>',
-    standalone: false
+  selector: 'nb-select-label',
+  template: '<ng-content />',
 })
 export class NbSelectLabelComponent {}
 
@@ -73,11 +108,21 @@ export function nbSelectFormFieldControlConfigFactory() {
 }
 
 /**
- * The `NbSelectComponent` provides a capability to select one of the passed items.
+ * A dropdown that selects one of its `nb-option`s, or several with `multiple`.
  *
  * @stacked-example(Showcase, select/select-showcase.component)
  *
  * ### Installation
+ *
+ * Import `NbSelectComponent`, `NbOptionComponent` into your standalone component:
+ * ```ts
+ * @Component({
+ *   imports: [NbSelectComponent, NbOptionComponent],
+ * })
+ * export class PageComponent { }
+ * ```
+ *
+ * With NgModules:
  *
  * Import `NbSelectModule` to your feature module.
  * ```ts
@@ -91,52 +136,90 @@ export function nbSelectFormFieldControlConfigFactory() {
  * ```
  * ### Usage
  *
- * If you want to use it as the multi-select control you have to mark it as `multiple`.
- * In this case, `nb-select` will work only with arrays - accept arrays and propagate arrays.
+ * Marked `multiple`, the select works with arrays only: it accepts and emits arrays.
+ *
+ * Templates know which: `selectedChange` gives `T | null` for a single select and `T[]` for one marked `multiple`
+ * (or `[multiple]="true"`), where `T` is the options' value type, so a handler can take exactly that. A `multiple`
+ * bound to a `boolean` that may be either gives either. See `NbSelectValue`.
  *
  * @stacked-example(Multiple, select/select-multiple.component)
  *
- * Items without values will clean the selection. Both `null` and `undefined` values will also clean the selection.
+ * With `chips`, a multiple select shows its selected options as tags. The select keeps its background under the
+ * pointer while it shows them, as a tag list with an input does, so the tags stay apart from the field:
+ *
+ * @stacked-example(Chips, select/select-chips.component)
+ *
+ * With `searchable`, the open list has a search input that filters the options by their text, ignoring case and
+ * accents; `searchFn` changes how options match. Focus stays in the input, and the arrow keys, Home, End and Enter
+ * work the list:
+ *
+ * @stacked-example(Search, select/select-search.component)
+ *
+ * In a multiple select, `<nb-option selectAll>` selects all enabled options (the ones a search shows), or clears them
+ * when they're all selected; its checkbox shows when only some are. `maxSelections` caps how many options the user can
+ * select, disabling the rest until one is deselected:
+ *
+ * @stacked-example(Select all and limits, select/select-all.component)
+ *
+ * Long lists stay fast: with 100 or more options shown, the list lays out only the ones near its view, and the rest
+ * keep their place in the scroll. Options are still written as usual, e.g. with `@for`, can differ in height, and work
+ * with search, the keyboard and assistive technology; this applies to every list of `nb-option`s, including
+ * autocomplete.
+ *
+ * An option without a value clears the selection, as writing `null` or `undefined` does.
  *
  * @stacked-example(Clean selection, select/select-clean.component)
  *
- * Select may be bounded using `selected` input:
+ * With `nullable`, `null` is a value like any other: an option with a `null` value, e.g. "Auto", is selected and shown
+ * when the value is `null`, and only options without a value clear the selection.
+ *
+ * @stacked-example(Nullable, select/select-nullable.component)
+ *
+ * The `ghost` appearance shows no background or border until the select is hovered, focused or open:
+ * @stacked-example(Ghost, input/input-ghost.component)
+ *
+ * The selection can be bound with the `selected` input:
  *
  * ```html
- * <nb-select [(selected)]="selected"></nb-selected>
+ * <nb-select [(selected)]="selected"></nb-select>
  * ```
  *
- * Or you can bind control with form controls or ngModel:
+ * or with a form control or `ngModel`:
  *
  * @stacked-example(Select form binding, select/select-form.component)
  *
- * Options in the select may be grouped using `nb-option-group` component.
+ * `nb-option-group` groups options under a title:
  *
  * @stacked-example(Grouping, select/select-groups.component)
  *
- * Select may have a placeholder that will be shown when nothing selected:
+ * `nb-option-nested` puts options in a row that opens like a tree, as deep as needed; only options are selected, not
+ * the nested options. The list shows up to `nestedLevels` levels at once (3 by default), and drills into deeper ones,
+ * with a row to go back. The arrow keys move through the tree, Enter and Space open and close a row, and a search
+ * shows the matching options with the nested options they're in:
+ *
+ * @stacked-example(Nested options, select/select-nested.component)
+ *
+ * A `placeholder` shows while nothing is selected:
  *
  * @stacked-example(Placeholder, select/select-placeholder.component)
  *
- * You can disable select, options and whole groups.
+ * The select, single options and whole groups can be disabled:
  *
  * @stacked-example(Disabled select, select/select-disabled.component)
  *
- * Also, the custom label may be provided in select.
- * This custom label will be used for instead placeholder when something selected.
+ * An `nb-select-label` in the content replaces the selected options' text while something is selected:
  *
  * @stacked-example(Custom label, select/select-label.component)
  *
- * Default `nb-select` size is `medium` and status is `basic`.
- * Select is available in multiple colors using `status` property:
+ * The `status` colours the select; it's `basic` by default:
  *
  * @stacked-example(Select statuses, select/select-status.component)
  *
- * There are five select sizes:
+ * There are five sizes, `medium` by default:
  *
  * @stacked-example(Select sizes, select/select-sizes.component)
  *
- * And two additional style types - `filled`:
+ * Besides `outline`, the `appearance` can be `filled`:
  *
  * @stacked-example(Filled select, select/select-filled.component)
  *
@@ -144,16 +227,15 @@ export function nbSelectFormFieldControlConfigFactory() {
  *
  * @stacked-example(Select colors, select/select-hero.component)
  *
- * Select is available in different shapes, that could be combined with the other properties:
+ * The `shape` combines with the other properties:
  *
  * @stacked-example(Select shapes, select/select-shapes.component)
  *
- * By default, the component selects options whose values are strictly equal (`===`) with the select value.
- * To change such behavior, pass a custom comparator function to the `compareWith` attribute.
+ * Options match the value by strict equality (`===`); `compareWith` changes how they match:
  *
  * @stacked-example(Select custom comparator, select/select-compare-with.component)
  *
- * You can add an additional icon to the select via the `nb-form-field` component:
+ * An `nb-form-field` adds an icon to the select:
  * @stacked-example(Select with icon, select/select-icon.component)
  *
  * @additional-example(Interactive, select/select-interactive.component)
@@ -162,9 +244,18 @@ export function nbSelectFormFieldControlConfigFactory() {
  *
  * select-cursor:
  * select-disabled-cursor:
- * select-min-width:
- * select-outline-width:
- * select-outline-color:
+ * select-ghost-background-color:
+ * select-ghost-border-color:
+ * select-tiny-width:
+ * select-tiny-chips-margin:
+ * select-small-width:
+ * select-small-chips-margin:
+ * select-medium-width:
+ * select-medium-chips-margin:
+ * select-large-width:
+ * select-large-chips-margin:
+ * select-giant-width:
+ * select-giant-chips-margin:
  * select-icon-offset:
  * select-text-font-family:
  * select-placeholder-text-font-family:
@@ -214,6 +305,8 @@ export function nbSelectFormFieldControlConfigFactory() {
  * select-outline-basic-background-color:
  * select-outline-basic-border-color:
  * select-outline-basic-focus-background-color:
+ * select-outline-basic-focus-and-hover-background-color:
+ * select-outline-basic-focus-and-hover-border-color:
  * select-outline-basic-focus-border-color:
  * select-outline-basic-hover-background-color:
  * select-outline-basic-hover-border-color:
@@ -227,6 +320,8 @@ export function nbSelectFormFieldControlConfigFactory() {
  * select-outline-primary-background-color:
  * select-outline-primary-border-color:
  * select-outline-primary-focus-background-color:
+ * select-outline-primary-focus-and-hover-background-color:
+ * select-outline-primary-focus-and-hover-border-color:
  * select-outline-primary-focus-border-color:
  * select-outline-primary-hover-background-color:
  * select-outline-primary-hover-border-color:
@@ -240,6 +335,8 @@ export function nbSelectFormFieldControlConfigFactory() {
  * select-outline-success-background-color:
  * select-outline-success-border-color:
  * select-outline-success-focus-background-color:
+ * select-outline-success-focus-and-hover-background-color:
+ * select-outline-success-focus-and-hover-border-color:
  * select-outline-success-focus-border-color:
  * select-outline-success-hover-background-color:
  * select-outline-success-hover-border-color:
@@ -253,6 +350,8 @@ export function nbSelectFormFieldControlConfigFactory() {
  * select-outline-info-background-color:
  * select-outline-info-border-color:
  * select-outline-info-focus-background-color:
+ * select-outline-info-focus-and-hover-background-color:
+ * select-outline-info-focus-and-hover-border-color:
  * select-outline-info-focus-border-color:
  * select-outline-info-hover-background-color:
  * select-outline-info-hover-border-color:
@@ -266,6 +365,8 @@ export function nbSelectFormFieldControlConfigFactory() {
  * select-outline-warning-background-color:
  * select-outline-warning-border-color:
  * select-outline-warning-focus-background-color:
+ * select-outline-warning-focus-and-hover-background-color:
+ * select-outline-warning-focus-and-hover-border-color:
  * select-outline-warning-focus-border-color:
  * select-outline-warning-hover-background-color:
  * select-outline-warning-hover-border-color:
@@ -279,6 +380,8 @@ export function nbSelectFormFieldControlConfigFactory() {
  * select-outline-danger-background-color:
  * select-outline-danger-border-color:
  * select-outline-danger-focus-background-color:
+ * select-outline-danger-focus-and-hover-background-color:
+ * select-outline-danger-focus-and-hover-border-color:
  * select-outline-danger-focus-border-color:
  * select-outline-danger-hover-background-color:
  * select-outline-danger-hover-border-color:
@@ -292,6 +395,8 @@ export function nbSelectFormFieldControlConfigFactory() {
  * select-outline-control-background-color:
  * select-outline-control-border-color:
  * select-outline-control-focus-background-color:
+ * select-outline-control-focus-and-hover-background-color:
+ * select-outline-control-focus-and-hover-border-color:
  * select-outline-control-focus-border-color:
  * select-outline-control-hover-background-color:
  * select-outline-control-hover-border-color:
@@ -328,6 +433,8 @@ export function nbSelectFormFieldControlConfigFactory() {
  * select-filled-basic-text-color:
  * select-filled-basic-placeholder-text-color:
  * select-filled-basic-focus-background-color:
+ * select-filled-basic-focus-and-hover-background-color:
+ * select-filled-basic-focus-and-hover-border-color:
  * select-filled-basic-focus-border-color:
  * select-filled-basic-hover-background-color:
  * select-filled-basic-hover-border-color:
@@ -341,6 +448,8 @@ export function nbSelectFormFieldControlConfigFactory() {
  * select-filled-primary-text-color:
  * select-filled-primary-placeholder-text-color:
  * select-filled-primary-focus-background-color:
+ * select-filled-primary-focus-and-hover-background-color:
+ * select-filled-primary-focus-and-hover-border-color:
  * select-filled-primary-focus-border-color:
  * select-filled-primary-hover-background-color:
  * select-filled-primary-hover-border-color:
@@ -354,6 +463,8 @@ export function nbSelectFormFieldControlConfigFactory() {
  * select-filled-success-text-color:
  * select-filled-success-placeholder-text-color:
  * select-filled-success-focus-background-color:
+ * select-filled-success-focus-and-hover-background-color:
+ * select-filled-success-focus-and-hover-border-color:
  * select-filled-success-focus-border-color:
  * select-filled-success-hover-background-color:
  * select-filled-success-hover-border-color:
@@ -367,6 +478,8 @@ export function nbSelectFormFieldControlConfigFactory() {
  * select-filled-info-text-color:
  * select-filled-info-placeholder-text-color:
  * select-filled-info-focus-background-color:
+ * select-filled-info-focus-and-hover-background-color:
+ * select-filled-info-focus-and-hover-border-color:
  * select-filled-info-focus-border-color:
  * select-filled-info-hover-background-color:
  * select-filled-info-hover-border-color:
@@ -380,6 +493,8 @@ export function nbSelectFormFieldControlConfigFactory() {
  * select-filled-warning-text-color:
  * select-filled-warning-placeholder-text-color:
  * select-filled-warning-focus-background-color:
+ * select-filled-warning-focus-and-hover-background-color:
+ * select-filled-warning-focus-and-hover-border-color:
  * select-filled-warning-focus-border-color:
  * select-filled-warning-hover-background-color:
  * select-filled-warning-hover-border-color:
@@ -393,6 +508,8 @@ export function nbSelectFormFieldControlConfigFactory() {
  * select-filled-danger-text-color:
  * select-filled-danger-placeholder-text-color:
  * select-filled-danger-focus-background-color:
+ * select-filled-danger-focus-and-hover-background-color:
+ * select-filled-danger-focus-and-hover-border-color:
  * select-filled-danger-focus-border-color:
  * select-filled-danger-hover-background-color:
  * select-filled-danger-hover-border-color:
@@ -406,6 +523,8 @@ export function nbSelectFormFieldControlConfigFactory() {
  * select-filled-control-text-color:
  * select-filled-control-placeholder-text-color:
  * select-filled-control-focus-background-color:
+ * select-filled-control-focus-and-hover-background-color:
+ * select-filled-control-focus-and-hover-border-color:
  * select-filled-control-focus-border-color:
  * select-filled-control-hover-background-color:
  * select-filled-control-hover-border-color:
@@ -425,6 +544,8 @@ export function nbSelectFormFieldControlConfigFactory() {
  * select-hero-basic-placeholder-text-color:
  * select-hero-basic-focus-left-background-color:
  * select-hero-basic-focus-right-background-color:
+ * select-hero-basic-focus-and-hover-left-background-color:
+ * select-hero-basic-focus-and-hover-right-background-color:
  * select-hero-basic-hover-left-background-color:
  * select-hero-basic-hover-right-background-color:
  * select-hero-basic-disabled-background-color:
@@ -437,6 +558,8 @@ export function nbSelectFormFieldControlConfigFactory() {
  * select-hero-primary-placeholder-text-color:
  * select-hero-primary-focus-left-background-color:
  * select-hero-primary-focus-right-background-color:
+ * select-hero-primary-focus-and-hover-left-background-color:
+ * select-hero-primary-focus-and-hover-right-background-color:
  * select-hero-primary-hover-left-background-color:
  * select-hero-primary-hover-right-background-color:
  * select-hero-primary-disabled-background-color:
@@ -449,6 +572,8 @@ export function nbSelectFormFieldControlConfigFactory() {
  * select-hero-success-placeholder-text-color:
  * select-hero-success-focus-left-background-color:
  * select-hero-success-focus-right-background-color:
+ * select-hero-success-focus-and-hover-left-background-color:
+ * select-hero-success-focus-and-hover-right-background-color:
  * select-hero-success-hover-left-background-color:
  * select-hero-success-hover-right-background-color:
  * select-hero-success-disabled-background-color:
@@ -461,6 +586,8 @@ export function nbSelectFormFieldControlConfigFactory() {
  * select-hero-info-placeholder-text-color:
  * select-hero-info-focus-left-background-color:
  * select-hero-info-focus-right-background-color:
+ * select-hero-info-focus-and-hover-left-background-color:
+ * select-hero-info-focus-and-hover-right-background-color:
  * select-hero-info-hover-left-background-color:
  * select-hero-info-hover-right-background-color:
  * select-hero-info-disabled-background-color:
@@ -473,6 +600,8 @@ export function nbSelectFormFieldControlConfigFactory() {
  * select-hero-warning-placeholder-text-color:
  * select-hero-warning-focus-left-background-color:
  * select-hero-warning-focus-right-background-color:
+ * select-hero-warning-focus-and-hover-left-background-color:
+ * select-hero-warning-focus-and-hover-right-background-color:
  * select-hero-warning-hover-left-background-color:
  * select-hero-warning-hover-right-background-color:
  * select-hero-warning-disabled-background-color:
@@ -485,6 +614,8 @@ export function nbSelectFormFieldControlConfigFactory() {
  * select-hero-danger-placeholder-text-color:
  * select-hero-danger-focus-left-background-color:
  * select-hero-danger-focus-right-background-color:
+ * select-hero-danger-focus-and-hover-left-background-color:
+ * select-hero-danger-focus-and-hover-right-background-color:
  * select-hero-danger-hover-left-background-color:
  * select-hero-danger-hover-right-background-color:
  * select-hero-danger-disabled-background-color:
@@ -497,6 +628,8 @@ export function nbSelectFormFieldControlConfigFactory() {
  * select-hero-control-placeholder-text-color:
  * select-hero-control-focus-left-background-color:
  * select-hero-control-focus-right-background-color:
+ * select-hero-control-focus-and-hover-left-background-color:
+ * select-hero-control-focus-and-hover-right-background-color:
  * select-hero-control-hover-left-background-color:
  * select-hero-control-hover-right-background-color:
  * select-hero-control-disabled-background-color:
@@ -504,407 +637,528 @@ export function nbSelectFormFieldControlConfigFactory() {
  * select-hero-control-disabled-text-color:
  * */
 @Component({
-    selector: 'nb-select',
-    templateUrl: './select.component.html',
-    styleUrls: ['./select.component.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    providers: [
-        {
-            provide: NG_VALUE_ACCESSOR,
-            useExisting: forwardRef(() => NbSelectComponent),
-            multi: true,
-        },
-        { provide: NB_SELECT_INJECTION_TOKEN, useExisting: NbSelectComponent },
-        { provide: NbFormFieldControl, useExisting: NbSelectComponent },
-        { provide: NbFormFieldControlConfig, useFactory: nbSelectFormFieldControlConfigFactory },
-    ],
-    standalone: false
+  selector: 'nb-select',
+  templateUrl: './select.component.html',
+  styleUrls: ['./select.component.scss'],
+  providers: [
+    {
+      provide: NG_VALUE_ACCESSOR,
+      useExisting: forwardRef(() => NbSelectComponent),
+      multi: true,
+    },
+    { provide: NB_SELECT_INJECTION_TOKEN, useExisting: NbSelectComponent },
+    { provide: NbFormFieldControl, useExisting: NbSelectComponent },
+    { provide: NbFormFieldControlConfig, useFactory: nbSelectFormFieldControlConfigFactory },
+  ],
+  imports: [NbIconComponent, NbPortalDirective, NbOptionListComponent, NbTagComponent, NbInputDirective],
+  host: {
+    '[class]': 'hostClasses()',
+    '[class.full-width]': 'fullWidth()',
+    '[class.open]': 'isOpen()',
+    // The label goes to the button, which is what screen readers focus.
+    '[attr.aria-labelledby]': 'null',
+  },
 })
-export class NbSelectComponent
-  implements OnChanges, AfterViewInit, AfterContentInit, OnDestroy, ControlValueAccessor, NbFormFieldControl
-{
+// `M` defaults to a mode that isn't known, as a query gives it: typed as a single select, as an unset `multiple` is.
+// Code that holds a multiple select names it, e.g. `NbSelectComponent<City, true>`.
+export class NbSelectComponent<T = unknown, M extends NbBooleanInput = NbBooleanInput>
+implements AfterViewInit, AfterContentChecked, OnDestroy, ControlValueAccessor, NbFormFieldControl {
+  // The app's defaults for this type, which the inputs below start from.
+  protected readonly nbDefaults = injectNbDefaults('select');
+
+  protected readonly document = inject(NB_DOCUMENT);
+  protected readonly overlay = inject(NbOverlayService);
+  protected readonly hostRef = inject<ElementRef<HTMLElement>>(ElementRef);
+  protected readonly positionBuilder = inject(NbPositionBuilderService);
+  protected readonly triggerStrategyBuilder = inject(NbTriggerStrategyBuilderService);
+  protected readonly cd = inject(ChangeDetectorRef);
+  protected readonly focusKeyManagerFactoryService = inject<NbFocusKeyManagerFactoryService<NbOptionComponent<T>>>(
+    NbFocusKeyManagerFactoryService,
+  );
+  protected readonly focusMonitor = inject(NbFocusMonitor);
+  protected readonly statusService = inject(NbStatusService);
+  protected readonly injector = inject(Injector);
+  protected readonly destroyRef = inject(DestroyRef);
+
   /**
-   * Select size, available sizes:
-   * `tiny`, `small`, `medium` (default), `large`, `giant`
+   * `tiny`, `small`, `medium` (default), `large` or `giant`.
    */
-  @Input() size: NbComponentSize = 'medium';
+  readonly sizeInput = input<NbComponentSize | undefined>(undefined, { alias: 'size' });
+  /** The size in use: the input's, the app's default, or 'medium'. */
+  readonly size = linkedSignal<NbComponentSize>(() => this.sizeInput() ?? this.nbDefaults().size ?? 'medium');
+
+  protected readonly validation = inject(NbValidationDirective, { self: true, optional: true });
 
   /**
-   * Select status (adds specific styles):
-   * `basic`, `primary`, `info`, `success`, `warning`, `danger`, `control`
+   * `basic` (default), `primary`, `info`, `success`, `warning`, `danger`, `control` or a custom status. With
+   * `nbValidation`, the status it gives takes over while the control shows errors or success.
    */
-  @Input() status: NbComponentOrCustomStatus = 'basic';
+  readonly status = input<NbComponentOrCustomStatus>('basic');
+
+  // With `nbValidation`, the status it gives while the control shows errors or success.
+  protected readonly resolvedStatus = computed(() => this.validation?.status() ?? this.status());
 
   /**
-   * Select shapes: `rectangle` (default), `round`, `semi-round`
+   * `rectangle` (default), `round` or `semi-round`.
    */
-  @Input() shape: NbComponentShape = 'rectangle';
+  readonly shapeInput = input<NbComponentShape | undefined>(undefined, { alias: 'shape' });
+  /** The shape in use: the input's, the app's default, or 'rectangle'. */
+  readonly shape = linkedSignal<NbComponentShape>(() => this.shapeInput() ?? this.nbDefaults().shape ?? 'rectangle');
 
   /**
-   * Select appearances: `outline` (default), `filled`, `hero`
+   * `outline` (default), `filled`, `hero` or `ghost` (no background or border at rest; like `outline` under the
+   * pointer, with focus, and open). The `outline`, `filled`, `hero` and `ghost` attributes override it.
    */
-  @Input() appearance: NbSelectAppearance = 'outline';
+  readonly appearanceInput = input<NbSelectAppearance | undefined>(undefined, { alias: 'appearance' });
+  /** The appearance in use: the input's, the app's default, or 'outline'. */
+  readonly appearance = linkedSignal<NbSelectAppearance>(() => this.appearanceInput() ?? this.nbDefaults().appearance ?? 'outline');
 
   /**
-   * Specifies class to be set on `nb-option`s container (`nb-option-list`)
-   * */
-  @Input() optionsListClass: NgClass['ngClass'];
+   * Class of the options list (`nb-option-list`).
+   */
+  readonly optionsListClass = input<NbClassInput>();
 
   /**
-   * Specifies class for the overlay panel with options
-   * */
-  @Input() optionsPanelClass: string | string[];
+   * Class of the overlay pane the options open in.
+   */
+  readonly optionsPanelClass = input<string | string[]>();
 
   /**
-   * Specifies width (in pixels) to be set on `nb-option`s container (`nb-option-list`)
-   * */
-  @Input()
-  get optionsWidth(): number {
-    return this._optionsWidth ?? this.hostWidth;
+   * Tab index of the select button.
+   */
+  readonly tabIndex = input<number, unknown>(0, { transform: numberAttribute });
+
+  /**
+   * Width of the options list in pixels; the select's width by default.
+   */
+  readonly optionsWidth = input<number>();
+
+  /**
+   * `appearance="outline"` as an attribute.
+   */
+  readonly outline = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
+
+  /**
+   * `appearance="filled"` as an attribute.
+   */
+  readonly filled = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
+
+  /**
+   * `appearance="hero"` as an attribute.
+   */
+  readonly hero = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
+
+  /**
+   * `appearance="ghost"` as an attribute.
+   */
+  readonly ghost = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
+
+  /**
+   * Disables the select, until a form sets its disabled state; see `isDisabled`.
+   */
+  readonly disabled = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
+
+  /**
+   * Stretches the select to its container's width.
+   */
+  readonly fullWidth = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
+
+  /**
+   * Text shown while nothing is selected.
+   */
+  readonly placeholder = input<string>('');
+
+  /**
+   * Id of the element that labels the select, e.g. a `<label>` next to it. Screen readers announce the label and then
+   * the selected value.
+   * Bind it as `[aria-labelledby]` (or set it as a plain attribute); `[attr.aria-labelledby]` bypasses the select.
+   */
+  readonly ariaLabelledBy = input<string>(undefined, { alias: 'aria-labelledby' });
+
+  protected readonly buttonId = `nb-select-button-${lastSelectId++}`;
+  protected readonly listId = `${this.buttonId}-list`;
+  protected readonly buttonLabelledBy = computed(() => {
+    // Its own label and an `nbLabel` of its `nbValidation`, then the selected value.
+    const labelledBy = [this.ariaLabelledBy(), this.validation?.labelledBy()].filter(Boolean).join(' ');
+    return labelledBy ? `${labelledBy} ${this.buttonId}` : null;
+  });
+
+  /**
+   * Compares an option's value with the select's; strict equality (`===`) by default. `null` and `undefined` never
+   * reach it: they only match themselves.
+   */
+  readonly compareWith = input<NbSelectCompareFunction<T>>();
+
+  /**
+   * The selected value, or the selected values of a multiple select. It's written like a form value: a value whose
+   * options aren't rendered yet is kept until they are.
+   *
+   * It's typed as either in any mode, so that the options' value type `T` is the item's: `City` for
+   * `[selected]="city"` and for `[selected]="cities"` alike.
+   */
+  readonly selected = input<T | T[] | null>();
+
+  /**
+   * Lets several options be selected; the value is then an array, and the list stays open as options are picked.
+   * Its type `M` sets the type of `selectedChange`; see `NbSelectValue`.
+   */
+  readonly multiple = input<boolean, M>(false, { transform: convertToBoolProperty });
+
+  /**
+   * Treats `null` as a value: an option with a `null` value is selected and shown like any other, e.g. "Auto" or
+   * "None". Without it, `null` clears the selection and shows the placeholder. Options without a value (`undefined`)
+   * clear the selection either way.
+   */
+  readonly nullable = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
+
+  /**
+   * In a multiple select, shows the selected options as tags instead of a comma-separated list.
+   */
+  readonly chips = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
+
+  /**
+   * In a multiple select, the most options the user can select; once reached, the others are disabled until one is
+   * deselected. A value written with more is kept as it is.
+   */
+  readonly maxSelections = input<number>();
+
+  /**
+   * Whether a multiple select has as many options selected as `maxSelections` allows.
+   */
+  readonly isLimitReached = computed(() => {
+    const max = this.maxSelections();
+    return this.multiple() && max !== undefined && this.selectionModel().length >= max;
+  });
+
+  /**
+   * Adds a search input at the top of the open list that filters the options by their text. Focus stays in the
+   * input; the arrow keys, Home and End move through the matching options and Enter selects one.
+   */
+  readonly searchable = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
+
+  /**
+   * Decides whether an option matches the search query; by default its text contains it, ignoring case and accents.
+   */
+  readonly searchFn = input<(option: NbOptionComponent<T>, query: string) => boolean>(nbSelectSearchFn);
+
+  protected readonly texts = injectNbTexts('select', () => ({
+    search: $localize`:@@nb.select.search:Search`,
+    noMatches: $localize`:@@nb.select.noMatches:No matches`,
+    back: (title) => $localize`:@@nb.select.back:Back to ${title}:title:`,
+  }));
+  protected readonly searchKeyManagerFactory = inject(
+    NbActiveDescendantKeyManagerFactoryService,
+  ) as NbActiveDescendantKeyManagerFactoryService<NbOptionListItem>;
+  protected readonly itemKeyManagerFactory = inject(
+    NbFocusKeyManagerFactoryService,
+  ) as NbFocusKeyManagerFactoryService<NbOptionListItem>;
+  protected readonly query = signal('');
+  protected readonly searchInput = viewChild<ElementRef<HTMLInputElement>>('searchInput');
+  protected readonly activeOptionId = signal<string | undefined>(undefined);
+  // Moves the active option without taking focus from the search input.
+  protected searchKeyManager?: NbActiveDescendantKeyManager<NbOptionListItem>;
+
+  // Tags one size smaller than the select fit in its line, so a row of them doesn't make it taller.
+  protected readonly chipSize = computed<NbComponentSize>(() => {
+    const sizes: NbComponentSize[] = ['tiny', 'tiny', 'small', 'medium', 'large'];
+    return sizes[['tiny', 'small', 'medium', 'large', 'giant'].indexOf(this.size())] ?? 'small';
+  });
+
+  /**
+   * The options' distance from the select, in pixels.
+   */
+  readonly overlayOffset = input(8);
+
+  /**
+   * What scrolling the page does while the options are open: `block` (default) prevents it, `close` closes them,
+   * `reposition` moves them along, and `noop` nothing.
+   */
+  readonly scrollStrategy = input<NbScrollStrategies>('block');
+
+  /**
+   * Emits when the user changes the selection, not when a value is written: the selected option's value (or `null`),
+   * or with `multiple`, the values of all selected options. See `NbSelectValue`.
+   */
+  readonly selectedChange = output<NbSelectValue<T, M>>();
+
+  /**
+   * The options passed as content, at any depth.
+   */
+  // The options of a select carry values of the select's type.
+  readonly options = contentChildren<NbOptionComponent<T>>(NbOptionComponent, { descendants: true });
+
+  /**
+   * The nested options passed as content.
+   */
+  readonly nestedOptions = contentChildren(NbOptionNestedComponent, { descendants: true });
+
+  // The options and nested options, in the order they're in, which the keyboard moves through.
+  protected readonly items = contentChildren(NB_OPTION_LIST_ITEM, { descendants: true });
+
+  /**
+   * How many levels of nested options the list shows at once; opening a deeper one drills into it.
+   */
+  readonly nestedLevels = input<number, unknown>(3, { transform: (value) => Math.max(1, numberAttribute(value, 3)) });
+
+  /**
+   * The nested option the list is drilled into: only the options in it show, and a row at the top goes back.
+   */
+  readonly nestedRoot = signal<NbOptionNestedComponent | undefined>(undefined);
+
+  /**
+   * Whether the select has nested options, which make its list a tree.
+   */
+  readonly isTree = computed(() => this.nestedOptions().length > 0);
+
+  // A search shows the matching options in all nested options, wherever the list is drilled into.
+  protected readonly isNestedSearch = computed(() => this.searchable() && !!this.query().trim());
+  protected readonly directionService = inject(NbLayoutDirectionService);
+  // The nested option the back row goes back from; a search shows all, without one.
+  protected readonly backTo = computed(() => (this.isNestedSearch() ? undefined : this.nestedRoot()));
+
+  /**
+   * An `nb-select-label` passed as content, shown instead of the selected options' text.
+   */
+  readonly customLabel = contentChild(NbSelectLabelComponent);
+
+  // The options list, which the overlay attaches.
+  protected readonly portal = viewChild(NbPortalDirective);
+
+  protected readonly button = viewChild.required('selectButton', { read: ElementRef<HTMLButtonElement> });
+
+  protected readonly opened = signal(false);
+
+  /**
+   * Whether the options are open.
+   */
+  readonly isOpen = this.opened.asReadonly();
+
+  /**
+   * Whether the options are closed.
+   */
+  readonly isHidden = computed(() => !this.isOpen());
+
+  /**
+   * The selected options.
+   */
+  readonly selectionModel = signal<NbOptionComponent<T>[]>([]);
+
+  /**
+   * The selected value, or the values of the selected options in a multiple select.
+   */
+  readonly selectedValue = computed(() => {
+    const selection = this.selectionModel();
+    return this.multiple() ? this.optionValues(selection) : selection[0]?.value();
+  });
+
+  /**
+   * Whether the select is disabled: the `disabled` input, until a form changes it.
+   */
+  readonly isDisabled = linkedSignal(() => this.disabled());
+
+  // The position strategy can be replaced while the options are open, e.g. by a subclass.
+  protected readonly positionStrategy$ = new BehaviorSubject<NbAdjustableConnectedPositionStrategy | undefined>(
+    undefined,
+  );
+
+  get positionStrategy(): NbAdjustableConnectedPositionStrategy | undefined {
+    return this.positionStrategy$.value;
   }
-  set optionsWidth(value: number) {
-    this._optionsWidth = value;
-  }
-  protected _optionsWidth: number | undefined;
 
   /**
-   * Adds `outline` styles
+   * Current overlay position, which the options list and the button render with.
    */
-  @Input()
-  @HostBinding('class.appearance-outline')
-  get outline(): boolean {
-    return this.appearance === 'outline';
-  }
-  set outline(value: boolean) {
-    if (convertToBoolProperty(value)) {
-      this.appearance = 'outline';
+  readonly overlayPosition = signal<NbPosition>('' as NbPosition);
+
+  protected readonly focused = signal(false);
+
+  protected ref?: NbOverlayRef;
+
+  protected triggerStrategy?: NbTriggerStrategy;
+
+  protected alive = true;
+
+  protected keyManager?: NbFocusKeyManager<NbOptionListItem>;
+
+  // A value written before its options rendered, applied once they do; only the last one is kept.
+  protected queue?: T | T[] | null;
+  // Whether `queue` holds a value; `null` can be a queued value when the select is `nullable`.
+  protected queued = false;
+  protected lastSelectionView?: string;
+
+  protected onChange: (value: T | T[] | null) => void = () => {};
+  protected onTouched: () => void = () => {};
+
+  protected readonly compareFn = computed<NbSelectCompareFunction<T>>(() => {
+    const compareWith = this.compareWith();
+    return typeof compareWith === 'function' ? compareWith : (v1, v2) => v1 === v2;
+  });
+
+  readonly controlState = computed(() => ({
+    status: this.resolvedStatus(),
+    size: this.size(),
+    fullWidth: this.fullWidth(),
+    focused: this.focused(),
+    disabled: this.isDisabled(),
+  }));
+
+  protected readonly resolvedAppearance = computed<NbSelectAppearance>(() => {
+    if (this.ghost()) {
+      return 'ghost';
     }
-  }
-  static ngAcceptInputType_outline: NbBooleanInput;
-
-  /**
-   * Adds `filled` styles
-   */
-  @Input()
-  @HostBinding('class.appearance-filled')
-  get filled(): boolean {
-    return this.appearance === 'filled';
-  }
-  set filled(value: boolean) {
-    if (convertToBoolProperty(value)) {
-      this.appearance = 'filled';
+    if (this.hero()) {
+      return 'hero';
     }
-  }
-  static ngAcceptInputType_filled: NbBooleanInput;
-
-  /**
-   * Adds `hero` styles
-   */
-  @Input()
-  @HostBinding('class.appearance-hero')
-  get hero(): boolean {
-    return this.appearance === 'hero';
-  }
-  set hero(value: boolean) {
-    if (convertToBoolProperty(value)) {
-      this.appearance = 'hero';
+    if (this.filled()) {
+      return 'filled';
     }
-  }
-  static ngAcceptInputType_hero: NbBooleanInput;
-
-  /**
-   * Disables the select
-   */
-  @Input()
-  get disabled(): boolean {
-    return !!this._disabled;
-  }
-  set disabled(value: boolean) {
-    this._disabled = convertToBoolProperty(value);
-  }
-  protected _disabled: boolean;
-  static ngAcceptInputType_disabled: NbBooleanInput;
-
-  /**
-   * If set element will fill its container
-   */
-  @Input()
-  @HostBinding('class.full-width')
-  get fullWidth(): boolean {
-    return this._fullWidth;
-  }
-  set fullWidth(value: boolean) {
-    this._fullWidth = convertToBoolProperty(value);
-  }
-  protected _fullWidth: boolean = false;
-  static ngAcceptInputType_fullWidth: NbBooleanInput;
-
-  /**
-   * Renders select placeholder if nothing selected.
-   * */
-  @Input() placeholder: string = '';
-
-  /**
-   * A function to compare option value with selected value.
-   * By default, values are compared with strict equality (`===`).
-   */
-  @Input()
-  get compareWith(): NbSelectCompareFunction {
-    return this._compareWith;
-  }
-  set compareWith(fn: NbSelectCompareFunction) {
-    if (typeof fn !== 'function') {
-      return;
+    if (this.outline()) {
+      return 'outline';
     }
+    return this.appearance();
+  });
 
-    this._compareWith = fn;
+  protected readonly hostClasses = computed(() => [
+    `size-${this.size()}`,
+    this.statusService.getStatusClass(this.resolvedStatus()),
+    `shape-${this.shape()}`,
+    `appearance-${this.resolvedAppearance()}`,
+  ]);
 
-    if (this.selectionModel.length && this.canSelectValue()) {
-      this.setSelection(this.selected);
-    }
-  }
-  protected _compareWith: NbSelectCompareFunction = (v1: any, v2: any) => v1 === v2;
+  readonly selectButtonClasses = computed(() => {
+    const classes = new Array<string>();
+    const empty = !this.selectionModel().length;
 
-  /**
-   * Accepts selected item or array of selected items.
-   * */
-  @Input()
-  set selected(value) {
-    this.writeValue(value);
-  }
-  get selected() {
-    return this.multiple ? this.selectionModel.map((o) => o.value) : this.selectionModel[0].value;
-  }
-
-  /**
-   * Gives capability just write `multiple` over the element.
-   * */
-  @Input()
-  get multiple(): boolean {
-    return this._multiple;
-  }
-  set multiple(value: boolean) {
-    this._multiple = convertToBoolProperty(value);
-  }
-  protected _multiple: boolean = false;
-  static ngAcceptInputType_multiple: NbBooleanInput;
-
-  /**
-   * Determines options overlay offset (in pixels).
-   **/
-  @Input() optionsOverlayOffset = 8;
-
-  /**
-   * Determines options overlay scroll strategy.
-   **/
-  @Input() scrollStrategy: NbScrollStrategies = 'block';
-
-  @HostBinding('class')
-  get additionalClasses(): string[] {
-    if (this.statusService.isCustomStatus(this.status)) {
-      return [this.statusService.getStatusClass(this.status)];
-    }
-    return [];
-  }
-
-  /**
-   * Will be emitted when selected value changes.
-   * */
-  @Output() selectedChange: EventEmitter<any> = new EventEmitter();
-
-  /**
-   * List of `NbOptionComponent`'s components passed as content.
-   * TODO maybe it would be better provide wrapper
-   * */
-  @ContentChildren(NbOptionComponent, { descendants: true }) options: QueryList<NbOptionComponent>;
-
-  /**
-   * Custom select label, will be rendered instead of default enumeration with coma.
-   * */
-  @ContentChild(NbSelectLabelComponent) customLabel;
-
-  /**
-   * NbCard with options content.
-   * */
-  @ViewChild(NbPortalDirective) portal: NbPortalDirective;
-
-  @ViewChild('selectButton', { read: ElementRef }) button: ElementRef<HTMLButtonElement>;
-
-  /**
-   * Determines is select opened.
-   * */
-  @HostBinding('class.open')
-  get isOpen(): boolean {
-    return this.ref && this.ref.hasAttached();
-  }
-
-  /**
-   * List of selected options.
-   * */
-  selectionModel: NbOptionComponent[] = [];
-
-  positionStrategy: NbAdjustableConnectedPositionStrategy;
-
-  /**
-   * Current overlay position because of we have to toggle overlayPosition
-   * in [ngClass] direction and this directive can use only string.
-   */
-  overlayPosition: NbPosition = '' as NbPosition;
-
-  protected ref: NbOverlayRef;
-
-  protected triggerStrategy: NbTriggerStrategy;
-
-  protected alive: boolean = true;
-
-  protected destroy$ = new Subject<void>();
-
-  protected keyManager: NbFocusKeyManager<NbOptionComponent>;
-
-  /**
-   * If a user assigns value before content nb-options's rendered the value will be putted in this variable.
-   * And then applied after content rendered.
-   * Only the last value will be applied.
-   * */
-  protected queue;
-
-  /**
-   * Function passed through control value accessor to propagate changes.
-   * */
-  protected onChange: Function = () => {};
-  protected onTouched: Function = () => {};
-
-  /*
-   * @docs-private
-   **/
-  status$ = new BehaviorSubject<NbComponentOrCustomStatus>(this.status);
-
-  /*
-   * @docs-private
-   **/
-  size$ = new BehaviorSubject<NbComponentSize>(this.size);
-
-  /*
-   * @docs-private
-   **/
-  focused$ = new BehaviorSubject<boolean>(false);
-
-  /*
-   * @docs-private
-   **/
-  disabled$ = new BehaviorSubject<boolean>(this.disabled);
-
-  /*
-   * @docs-private
-   **/
-  fullWidth$ = new BehaviorSubject<boolean>(this.fullWidth);
-
-  constructor(
-    @Inject(NB_DOCUMENT) protected document,
-    protected overlay: NbOverlayService,
-    protected hostRef: ElementRef<HTMLElement>,
-    protected positionBuilder: NbPositionBuilderService,
-    protected triggerStrategyBuilder: NbTriggerStrategyBuilderService,
-    protected cd: ChangeDetectorRef,
-    protected focusKeyManagerFactoryService: NbFocusKeyManagerFactoryService<NbOptionComponent>,
-    protected focusMonitor: NbFocusMonitor,
-    protected renderer: Renderer2,
-    protected zone: NgZone,
-    protected statusService: NbStatusService,
-  ) {}
-
-  /**
-   * Determines is select hidden.
-   * */
-  get isHidden(): boolean {
-    return !this.isOpen;
-  }
-
-  /**
-   * Returns width of the select button.
-   * */
-  get hostWidth(): number {
-    return this.button.nativeElement.getBoundingClientRect().width;
-  }
-
-  get selectButtonClasses(): string[] {
-    const classes = [];
-
-    if (!this.selectionModel.length) {
+    if (empty) {
       classes.push('placeholder');
     }
-    if (!this.selectionModel.length && !this.placeholder) {
+    if (empty && !this.placeholder()) {
       classes.push('empty');
     }
-    if (this.isOpen) {
-      classes.push(this.overlayPosition);
+    if (this.isOpen()) {
+      classes.push(this.overlayPosition());
     }
 
     return classes;
+  });
+
+  constructor() {
+    // The focusable element is inside: the button or the native input gets aria-invalid and aria-describedby.
+    this.validation?.delegateAria();
+    enableTransitionsAfterRender(this.hostRef.nativeElement);
+
+    // Searching leaves out the options that don't match, and keeps the active option among the ones shown.
+    effect(() => {
+      const query = this.searchable() ? this.query().trim() : '';
+      const matches = this.searchFn();
+      const options = this.options();
+      untracked(() => {
+        const choices = options.filter((option) => !option.selectAll());
+        choices.forEach((option) => option.filtered.set(!!query && !matches(option, query)));
+        // A select-all option acts on the options the search shows, so it stays while there are any.
+        const nothingShown = choices.every((option) => option.filtered());
+        options
+          .filter((option) => option.selectAll())
+          .forEach((option) => option.filtered.set(!!query && nothingShown));
+        const active = this.searchKeyManager?.activeItem;
+        if (this.isSearching() && (!active || active.hidden)) {
+          this.searchKeyManager?.setFirstItemActive();
+        }
+      });
+    });
+
+    // Options added, a search, or a nested option opened from the app change which options show.
+    effect(() => {
+      this.options();
+      const nestedOptions = this.nestedOptions();
+      this.nestedRoot();
+      this.isNestedSearch();
+      nestedOptions.forEach((nested) => nested.expanded());
+      if (nestedOptions.length) {
+        untracked(() => this.syncNested());
+      }
+    });
+
+    this.destroyRef.onDestroy(() => (this.alive = false));
+
+    // A bound `selected` is written like a form value; an unbound one doesn't clear a form's value.
+    let firstSelected = true;
+    effect(() => {
+      const selected = this.selected();
+      untracked(() => {
+        if (!firstSelected || selected !== undefined) {
+          this.writeValue(selected);
+        }
+        firstSelected = false;
+      });
+    });
+
+    // Select the current value again with a new compare function.
+    effect(() => {
+      this.compareFn();
+      untracked(() => {
+        if (this.selectionModel().length && this.canSelectValue()) {
+          this.setSelection(this.selectedValue());
+        }
+      });
+    });
+
+    // A queued value, or a selection of options that were replaced (e.g. options loaded again),
+    // is selected among the current options once they render with their values bound.
+    afterRenderEffect(() => {
+      this.options().forEach((option) => option.value());
+      untracked(() => {
+        if ((this.queued || this.hasRemovedSelectedOptions()) && this.canSelectValue()) {
+          this.writeValue(this.queued ? this.queue : this.selectedValue());
+        }
+      });
+    });
+
+    // Options can change at runtime, so listen to the clicks of the current ones.
+    toObservable(this.options)
+      .pipe(
+        switchMap((options) => merge(...options.map((option) => option.click))),
+        takeUntilDestroyed(),
+      )
+      .subscribe((clickedOption) => this.handleOptionClick(clickedOption));
   }
 
   /**
-   * Content rendered in the label.
-   * */
+   * The select button's width, in pixels.
+   */
+  get hostWidth(): number {
+    return this.button().nativeElement.getBoundingClientRect().width;
+  }
+
+  /**
+   * The text of the selected options, which the button shows; it's read from the DOM.
+   */
   get selectionView() {
-    if (this.selectionModel.length > 1) {
-      return this.selectionModel.map((option: NbOptionComponent) => option.content).join(', ');
+    const selection = this.selectionModel();
+    if (selection.length > 1) {
+      return selection.map((option) => option.content).join(', ');
     }
 
-    return this.selectionModel[0].content;
+    return selection[0].content;
   }
 
-  ngOnChanges({ disabled, status, size, fullWidth }: SimpleChanges) {
-    if (disabled) {
-      this.disabled$.next(disabled.currentValue);
+  ngAfterContentChecked() {
+    // The label shows the text of the selected options, which their parent view renders (e.g. a translation).
+    const label = this.selectionModel().length ? this.selectionView : undefined;
+    if (label !== this.lastSelectionView) {
+      this.lastSelectionView = label;
+      this.cd.markForCheck();
     }
-    if (status) {
-      this.status$.next(status.currentValue);
-    }
-    if (size) {
-      this.size$.next(size.currentValue);
-    }
-    if (fullWidth) {
-      this.fullWidth$.next(this.fullWidth);
-    }
-  }
-
-  ngAfterContentInit() {
-    this.options.changes
-      .pipe(
-        startWith(this.options),
-        filter(() => this.queue != null && this.canSelectValue()),
-        // Call 'writeValue' when current change detection run is finished.
-        // When writing is finished, change detection starts again, since
-        // microtasks queue is empty.
-        // Prevents ExpressionChangedAfterItHasBeenCheckedError.
-        switchMap((options: QueryList<NbOptionComponent>) => from(Promise.resolve(options))),
-        takeUntil(this.destroy$),
-      )
-      .subscribe(() => this.writeValue(this.queue));
   }
 
   ngAfterViewInit() {
     this.triggerStrategy = this.createTriggerStrategy();
 
     this.subscribeOnButtonFocus();
-    this.subscribeOnTriggers();
-    this.subscribeOnOptionClick();
-
-    // TODO: #2254
-    this.zone.runOutsideAngular(() =>
-      setTimeout(() => {
-        this.renderer.addClass(this.hostRef.nativeElement, 'nb-transition');
-      }),
-    );
+    this.subscribeOnTriggers(this.triggerStrategy);
   }
 
   ngOnDestroy() {
-    this.alive = false;
-
-    this.destroy$.next();
-    this.destroy$.complete();
-
     if (this.ref) {
       this.ref.dispose();
     }
@@ -917,161 +1171,235 @@ export class NbSelectComponent
     if (this.shouldShow()) {
       this.attachToOverlay();
 
-      this.positionStrategy.positionChange.pipe(take(1), takeUntil(this.destroy$)).subscribe(() => {
-        this.setActiveOption();
-      });
-
-      this.cd.markForCheck();
+      this.positionChanges()
+        .pipe(take(1), takeUntilDestroyed(this.destroyRef))
+        .subscribe(() => this.onPositioned());
     }
   }
 
   hide() {
-    if (this.isOpen) {
-      this.ref.detach();
-      this.cd.markForCheck();
+    if (this.isOpen()) {
+      this.ref?.detach();
+      this.opened.set(false);
+      // The list opens with all its options again.
+      this.query.set('');
     }
   }
 
-  registerOnChange(fn: any): void {
+  registerOnChange(fn: (value: T | T[] | null) => void) {
     this.onChange = fn;
   }
 
-  registerOnTouched(fn: any): void {
+  registerOnTouched(fn: () => void) {
     this.onTouched = fn;
   }
 
-  setDisabledState(isDisabled: boolean): void {
-    this.disabled = isDisabled;
-    this.cd.markForCheck();
+  setDisabledState(isDisabled: boolean) {
+    this.isDisabled.set(isDisabled);
   }
 
-  writeValue(value): void {
+  writeValue(value?: T | T[] | null) {
     if (!this.alive) {
       return;
     }
 
     if (this.canSelectValue()) {
       this.setSelection(value);
-      if (this.selectionModel.length) {
-        this.queue = null;
-      }
+      // Keep a value whose options aren't all rendered yet (options loaded later), so they're selected once they
+      // appear.
+      this.queued = this.selectionModel().length < this.countValues(value);
+      this.queue = this.queued ? value : undefined;
     } else {
+      this.queued = true;
       this.queue = value;
     }
   }
 
   /**
-   * Selects option or clear all selected options if value is null.
-   * */
-  protected handleOptionClick(option: NbOptionComponent) {
-    this.queue = null;
-    if (option.value == null) {
+   * Selects the option; a select-all one toggles all, and one without a value clears the selection.
+   */
+  protected handleOptionClick(option: NbOptionComponent<T>) {
+    this.queue = undefined;
+    this.queued = false;
+    if (option.selectAll()) {
+      if (this.multiple()) {
+        this.toggleAll();
+      }
+    } else if (this.isEmptyValue(option.value())) {
       this.reset();
     } else {
       this.selectOption(option);
     }
-
-    this.cd.markForCheck();
+    // A multiple select stays open; searching goes on where it was.
+    if (this.isSearching() && this.isOpen()) {
+      this.searchKeyManager?.setActiveItem(option);
+      this.searchInput()?.nativeElement.focus();
+    }
   }
 
   /**
-   * Deselect all selected options.
-   * */
+   * Clears the selection, closes the options and emits an empty value.
+   */
   protected reset() {
-    this.selectionModel.forEach((option: NbOptionComponent) => option.deselect());
-    this.selectionModel = [];
+    this.selectionModel().forEach((option) => option.deselect());
+    this.selectionModel.set([]);
     this.hide();
-    this.button.nativeElement.focus();
-    this.emitSelected(this.multiple ? [] : null);
+    this.focusButton();
+    this.emitSelected(this.multiple() ? [] : null);
   }
 
-  /**
-   * Determines how to select option as multiple or single.
-   * */
-  protected selectOption(option: NbOptionComponent) {
-    if (this.multiple) {
+  protected selectOption(option: NbOptionComponent<T>) {
+    if (this.multiple()) {
       this.handleMultipleSelect(option);
     } else {
       this.handleSingleSelect(option);
     }
   }
 
-  /**
-   * Select single option.
-   * */
-  protected handleSingleSelect(option: NbOptionComponent) {
-    const selected = this.selectionModel.pop();
+  // Selects the option, closes the options and emits.
+  protected handleSingleSelect(option: NbOptionComponent<T>) {
+    const selected = this.selectionModel()[0];
 
-    if (selected && !this._compareWith(selected.value, option.value)) {
+    if (selected && !this.sameValue(selected.value(), option.value())) {
       selected.deselect();
     }
 
-    this.selectionModel = [option];
+    this.selectionModel.set([option]);
     option.select();
     this.hide();
-    this.button.nativeElement.focus();
+    this.focusButton();
 
-    this.emitSelected(option.value);
+    // An option without a value clears the selection instead, so it has one here.
+    this.emitSelected(option.value() ?? null);
   }
 
-  /**
-   * Select for multiple options.
-   * */
-  protected handleMultipleSelect(option: NbOptionComponent) {
-    if (option.selected) {
-      this.selectionModel = this.selectionModel.filter((s) => !this._compareWith(s.value, option.value));
+  // Toggles the option, unless `maxSelections` is reached; the options stay open.
+  protected handleMultipleSelect(option: NbOptionComponent<T>) {
+    if (this.isLimited(option)) {
+      return;
+    }
+    if (option.selected()) {
+      this.selectionModel.update((selection) =>
+        selection.filter((s) => !this.sameValue(s.value(), option.value())),
+      );
       option.deselect();
     } else {
-      this.selectionModel.push(option);
+      this.selectionModel.update((selection) => [...selection, option]);
       option.select();
     }
 
-    this.emitSelected(this.selectionModel.map((opt: NbOptionComponent) => opt.value));
+    this.emitSelected(this.optionValues(this.selectionModel()));
   }
 
   protected attachToOverlay() {
-    if (!this.ref) {
-      this.createOverlay();
+    let ref = this.ref;
+    if (!ref) {
+      ref = this.createOverlay();
       this.subscribeOnPositionChange();
       this.createKeyManager();
-      this.subscribeOnOverlayKeys();
+      this.subscribeOnOverlayKeys(ref);
     }
 
-    this.ref.attach(this.portal);
+    ref.attach(this.portal());
+    this.opened.set(true);
+  }
+
+  /**
+   * Runs once the open options are positioned.
+   */
+  protected onPositioned() {
+    this.setActiveOption();
+    if (this.isSearching()) {
+      this.searchInput()?.nativeElement.focus();
+    }
+  }
+
+  // Whether the open list is searched, with `searchable`.
+  protected isSearching(): boolean {
+    return this.searchable() && !!this.searchKeyManager;
+  }
+
+  protected readonly noMatches = computed(
+    () =>
+      this.searchable() &&
+      !!this.query().trim() &&
+      this.options().every((option) => option.selectAll() || option.filtered()),
+  );
+
+  protected onSearchInput(event: Event) {
+    this.query.set((event.target as HTMLInputElement).value);
+  }
+
+  protected positionChanges() {
+    return this.positionStrategy$.pipe(switchMap((positionStrategy) => positionStrategy?.positionChange ?? EMPTY));
+  }
+
+  protected focusButton() {
+    this.button().nativeElement.focus();
   }
 
   protected setActiveOption() {
-    if (this.selectionModel.length) {
-      this.keyManager.setActiveItem(this.selectionModel[0]);
+    const keyManager = this.isSearching() && this.searchKeyManager ? this.searchKeyManager : this.keyManager;
+    // A selected option in a collapsed nested option opens it.
+    if (this.selectionModel().length) {
+      this.revealNested(this.selectionModel()[0]);
+    }
+    const selection = this.selectionModel().filter((option) => !option.hidden);
+    if (selection.length) {
+      keyManager?.setActiveItem(selection[0]);
     } else {
-      this.keyManager.setFirstItemActive();
+      keyManager?.setFirstItemActive();
     }
   }
 
-  protected createOverlay() {
+  protected createOverlay(): NbOverlayRef {
     const scrollStrategy = this.createScrollStrategy();
-    this.positionStrategy = this.createPositionStrategy();
-    this.ref = this.overlay.create({
+    this.positionStrategy$.next(this.createPositionStrategy());
+    const ref = this.overlay.create({
       positionStrategy: this.positionStrategy,
       scrollStrategy,
-      panelClass: this.optionsPanelClass,
+      panelClass: this.optionsPanelClass(),
     });
+    this.ref = ref;
+    // The overlay can also detach itself, e.g. through its scroll strategy.
+    ref.detachments().pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => this.opened.set(false));
+    return ref;
   }
 
-  protected createKeyManager(): void {
-    this.keyManager = this.focusKeyManagerFactoryService.create(this.options).withTypeAhead(200);
+  protected createKeyManager() {
+    this.keyManager = this.itemKeyManagerFactory
+      .create(this.items, this.injector)
+      .withTypeAhead(200)
+      // Like a native select: Home, End, PageUp and PageDown move through the options.
+      .withHomeAndEnd()
+      .withPageUpDown()
+      // Collapsed in a nested option.
+      .skipPredicate((item) => item.disabled || item.hidden);
+
+    this.searchKeyManager = this.searchKeyManagerFactory
+      .create(this.items, this.injector)
+      .withHomeAndEnd()
+      .withPageUpDown()
+      .skipPredicate((option) => option.disabled || option.hidden);
+    this.searchKeyManager.change
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.activeOptionId.set(this.searchKeyManager?.activeItem?.id));
   }
 
   protected createPositionStrategy(): NbAdjustableConnectedPositionStrategy {
     return this.positionBuilder
-      .connectedTo(this.button)
+      .connectedTo(this.button())
       .position(NbPosition.BOTTOM)
-      .offset(this.optionsOverlayOffset)
-      .adjustment(NbAdjustment.VERTICAL);
+      .offset(this.overlayOffset())
+      .adjustment(NbAdjustment.VERTICAL)
+      // Where neither below nor above has room for the whole list, it gets the space there is and scrolls. The CDK
+      // shifts the list by the offset after sizing it, so the margin includes the offset to keep 8px from the edge.
+      .withFlexibleDimensions(true)
+      .withViewportMargin(8 + this.overlayOffset());
   }
 
   protected createScrollStrategy(): NbScrollStrategy {
-    return this.overlay.scrollStrategies[this.scrollStrategy]();
+    return this.overlay.scrollStrategies[this.scrollStrategy()]();
   }
 
   protected createTriggerStrategy(): NbTriggerStrategy {
@@ -1082,9 +1410,9 @@ export class NbSelectComponent
       .build();
   }
 
-  protected subscribeOnTriggers() {
-    this.triggerStrategy.show$.subscribe(() => this.show());
-    this.triggerStrategy.hide$.pipe(filter(() => this.isOpen)).subscribe(($event: Event) => {
+  protected subscribeOnTriggers(triggerStrategy: NbTriggerStrategy) {
+    triggerStrategy.show$.subscribe(() => this.show());
+    triggerStrategy.hide$.pipe(filter(() => this.isOpen())).subscribe(($event: Event) => {
       this.hide();
       if (!this.isClickedWithinComponent($event)) {
         this.onTouched();
@@ -1093,145 +1421,426 @@ export class NbSelectComponent
   }
 
   protected subscribeOnPositionChange() {
-    this.positionStrategy.positionChange.pipe(takeUntil(this.destroy$)).subscribe((position: NbPosition) => {
-      this.overlayPosition = position;
-      this.cd.detectChanges();
-    });
+    this.positionChanges()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((position: NbPosition) => this.overlayPosition.set(position));
   }
 
-  protected subscribeOnOptionClick() {
-    /**
-     * If the user changes provided options list in the runtime we have to handle this
-     * and resubscribe on options selection changes event.
-     * Otherwise, the user will not be able to select new options.
-     * */
-    this.options.changes
-      .pipe(
-        startWith(this.options),
-        switchMap((options: QueryList<NbOptionComponent>) => {
-          return merge(...options.map((option) => option.click));
-        }),
-        takeUntil(this.destroy$),
-      )
-      .subscribe((clickedOption: NbOptionComponent) => this.handleOptionClick(clickedOption));
-  }
-
-  protected subscribeOnOverlayKeys(): void {
-    this.ref
+  protected subscribeOnOverlayKeys(ref: NbOverlayRef) {
+    ref
       .keydownEvents()
       .pipe(
-        filter(() => this.isOpen),
-        takeUntil(this.destroy$),
+        filter(() => this.isOpen()),
+        takeUntilDestroyed(this.destroyRef),
       )
       .subscribe((event: KeyboardEvent) => {
-        if (event.keyCode === ESCAPE) {
-          this.button.nativeElement.focus();
+        const keyManager = this.isSearching() && this.searchKeyManager ? this.searchKeyManager : this.keyManager;
+        if (event.key === 'Escape' && !isComposing(event)) {
+          // Only the options close, not a dialog or window the select is in.
+          event.preventDefault();
+          event.stopPropagation();
+          this.focusButton();
           this.hide();
+        } else if (this.onNestedKeydown(event, keyManager)) {
+          event.preventDefault();
+        } else if (this.isSearching() && this.searchKeyManager) {
+          this.onSearchKeydown(event, this.searchKeyManager);
         } else {
-          this.keyManager.onKeydown(event);
+          this.keyManager?.onKeydown(event);
         }
       });
 
-    this.keyManager.tabOut.pipe(takeUntil(this.destroy$)).subscribe(() => {
-      this.hide();
-      this.onTouched();
-    });
+    const tabOuts = new Array<Observable<void>>();
+    if (this.keyManager) {
+      tabOuts.push(this.keyManager.tabOut);
+    }
+    if (this.searchKeyManager) {
+      tabOuts.push(this.searchKeyManager.tabOut);
+    }
+    merge(...tabOuts)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
+        this.hide();
+        this.onTouched();
+      });
+  }
+
+  protected onSearchKeydown(event: KeyboardEvent, keyManager: NbActiveDescendantKeyManager<NbOptionListItem>) {
+    if (event.key === 'Enter' && !isComposing(event)) {
+      const active = keyManager.activeItem;
+      if (active instanceof NbOptionComponent) {
+        event.preventDefault();
+        this.handleOptionClick(active);
+      }
+    } else {
+      // Arrows, Home and End move the active option; other keys type into the input.
+      keyManager.onKeydown(event);
+    }
+  }
+
+  /**
+   * Opens or closes a nested option. Opening one deeper than `nestedLevels` drills into it.
+   */
+  toggleNested(nested: NbOptionNestedComponent) {
+    if (nested.expanded()) {
+      nested.expanded.set(false);
+    } else {
+      nested.expanded.set(true);
+      // Its options would be one level too deep: start the list lower, so they're at the last level shown.
+      if (this.nestedLevel(nested) + 1 > this.nestedLevels()) {
+        this.setNestedRoot(this.nestedAncestor(nested, nested.depth + 1 - this.nestedLevels()));
+      }
+    }
+    this.syncNested();
+    // Clicking a row focuses it; searching goes on in the input.
+    if (this.isSearching() && this.isOpen()) {
+      this.searchInput()?.nativeElement.focus();
+    }
+    const keyManager = this.isSearching() && this.searchKeyManager ? this.searchKeyManager : this.keyManager;
+    if (nested.hidden) {
+      // Drilled into it, with one level shown: its first option is in its place. Making it active would reveal it,
+      // going back out.
+      keyManager?.updateActiveItem(nested);
+      keyManager?.setNextItemActive();
+    } else if (keyManager?.activeItem !== nested) {
+      keyManager?.setActiveItem(nested);
+    }
+  }
+
+  /**
+   * Opens the nested options an option or nested option is in, and drills in or back as needed, so it shows.
+   */
+  revealNested(item: NbNestedItem) {
+    if (!this.isTree() || this.isNestedSearch()) {
+      return;
+    }
+    for (let nested = item.parentNested; nested; nested = nested.parentNested) {
+      nested.expanded.set(true);
+    }
+    const root = this.nestedRoot();
+    if (!this.isInNested(item, root) || this.nestedLevel(item) > this.nestedLevels()) {
+      this.setNestedRoot(this.nestedAncestor(item, item.depth - this.nestedLevels()));
+    }
+    this.syncNested();
+  }
+
+  /**
+   * Goes back from the nested option the list is drilled into, to the one it's in.
+   */
+  nestedBack() {
+    const root = this.nestedRoot();
+    if (root) {
+      this.setNestedRoot(root.parentNested ?? undefined);
+      this.syncNested();
+      if (this.isSearching()) {
+        this.searchInput()?.nativeElement.focus();
+      }
+      (this.isSearching() && this.searchKeyManager ? this.searchKeyManager : this.keyManager)?.setActiveItem(root);
+    }
+  }
+
+  protected setNestedRoot(root?: NbOptionNestedComponent) {
+    this.nestedRoot.set(root);
+    // Nested options whose options would be deeper than the levels shown close.
+    for (const nested of this.nestedOptions()) {
+      if (nested.expanded() && this.nestedLevel(nested) >= this.nestedLevels() && this.isInNested(nested, root)) {
+        nested.expanded.set(false);
+      }
+    }
+  }
+
+  // How deep an option or nested option is in the view: 1 at its top.
+  protected nestedLevel(item: NbNestedItem): number {
+    return item.depth - (this.nestedRoot()?.depth ?? 0);
+  }
+
+  // Whether an option or nested option is in a nested option, or anywhere for none.
+  protected isInNested(item: NbNestedItem, root?: NbOptionNestedComponent) {
+    for (let nested = item.parentNested; nested; nested = nested.parentNested) {
+      if (nested === root) {
+        return true;
+      }
+    }
+    return !root;
+  }
+
+  // The nested option an item is in at a depth, or the item itself if it's there; none above the top.
+  protected nestedAncestor(item: NbNestedItem, depth: number) {
+    let nested = item instanceof NbOptionNestedComponent ? item : item.parentNested;
+    while (nested && nested.depth > depth) {
+      nested = nested.parentNested;
+    }
+    return depth > 0 ? (nested ?? undefined) : undefined;
+  }
+
+  /**
+   * Shows the options and nested options in view, and indents them by how deep they are in it. It sets them at once,
+   * not on the next render, so an option can take focus and scroll into view as soon as it's revealed.
+   */
+  protected syncNested() {
+    const root = this.nestedRoot();
+    const search = this.isNestedSearch();
+    const base = search ? 0 : (root?.depth ?? 0);
+    const shows = (item: NbNestedItem) => {
+      if (search) {
+        return true;
+      }
+      let nested = item.parentNested;
+      while (nested && nested !== root) {
+        if (!nested.expanded()) {
+          return false;
+        }
+        nested = nested.parentNested;
+      }
+      return (nested ?? undefined) === root;
+    };
+    // Groups with nothing in view hide, with their title; a group holding the nested option the list is drilled into
+    // hides only its title.
+    const groups = new Map<NbOptionGroupComponent, boolean>();
+    const drilledGroups = new Set<NbOptionGroupComponent>();
+    for (const option of this.options()) {
+      const shown = shows(option);
+      option.setNestedView(!shown, option.depth - base);
+      if (option.group) {
+        groups.set(option.group, shown || !!groups.get(option.group));
+      }
+    }
+    for (const nested of this.nestedOptions()) {
+      const shown = shows(nested);
+      const drilledInto = !search && !!root && (nested === root || this.isInNested(root, nested));
+      nested.setNestedView(!shown, nested.depth - base, search || nested.expanded(), drilledInto);
+      if (nested.group) {
+        groups.set(nested.group, shown || drilledInto || !!groups.get(nested.group));
+        if (drilledInto) {
+          drilledGroups.add(nested.group);
+        }
+      }
+    }
+    groups.forEach((shown, group) => group.setNestedView(!shown, drilledGroups.has(group)));
+  }
+
+  /**
+   * Moves through nested options like a tree: ArrowRight (ArrowLeft in RTL) opens one, or moves into it when it's
+   * open; ArrowLeft closes one, moves to the one it's in, or goes back from where the list is drilled into; Enter and
+   * Space open and close one. Typing into the search input keeps the arrows, so they move through the tree only while
+   * it's empty.
+   */
+  protected onNestedKeydown(
+    event: KeyboardEvent,
+    keyManager?: NbFocusKeyManager<NbOptionListItem> | NbActiveDescendantKeyManager<NbOptionListItem>,
+  ): boolean {
+    const active = keyManager?.activeItem;
+    if (!this.isTree() || !keyManager || !active || isComposing(event)) {
+      return false;
+    }
+    const searching = this.isSearching();
+    if (event.key === 'Enter' || (event.key === ' ' && !searching)) {
+      if (active instanceof NbOptionNestedComponent) {
+        if (!active.disabled) {
+          this.toggleNested(active);
+        }
+        return true;
+      }
+      return false;
+    }
+    const rtl = this.directionService.isRtl();
+    const forward = event.key === (rtl ? 'ArrowLeft' : 'ArrowRight');
+    const backward = event.key === (rtl ? 'ArrowRight' : 'ArrowLeft');
+    if ((!forward && !backward) || (searching && this.query())) {
+      return false;
+    }
+    if (!(active instanceof NbOptionComponent || active instanceof NbOptionNestedComponent)) {
+      return false;
+    }
+    if (forward) {
+      if (active instanceof NbOptionNestedComponent && !active.disabled) {
+        if (active.expanded()) {
+          keyManager.setNextItemActive();
+        } else {
+          this.toggleNested(active);
+        }
+      }
+    } else if (active instanceof NbOptionNestedComponent && active.expanded() && !active.hidden) {
+      this.toggleNested(active);
+    } else if (active.parentNested && active.parentNested !== this.nestedRoot()) {
+      keyManager.setActiveItem(active.parentNested);
+    } else {
+      this.nestedBack();
+    }
+    return true;
   }
 
   protected subscribeOnButtonFocus() {
+    const button = this.button();
     this.focusMonitor
-      .monitor(this.button)
+      .monitor(button)
       .pipe(
         map((origin) => !!origin),
-        finalize(() => this.focusMonitor.stopMonitoring(this.button)),
-        takeUntil(this.destroy$),
+        takeUntilDestroyed(this.destroyRef),
       )
-      .subscribe(this.focused$);
+      // Focus can change while the select renders: hiding a focused button blurs it once the layout is measured.
+      .subscribe((focused) => untracked(() => this.focused.set(focused)));
+    this.destroyRef.onDestroy(() => this.focusMonitor.stopMonitoring(button));
   }
 
-  protected getContainer() {
-    return (
-      this.ref &&
-      this.ref.hasAttached() &&
-      <ComponentRef<any>>{
+  protected getContainer(): ComponentRef<unknown> | undefined {
+    return this.ref && this.ref.hasAttached()
+      ? <ComponentRef<unknown>>{
         location: {
           nativeElement: this.ref.overlayElement,
         },
       }
-    );
+      : undefined;
   }
 
   /**
-   * Propagate selected value.
-   * */
-  protected emitSelected(selected) {
+   * Emits the value to the form and `selectedChange`.
+   */
+  protected emitSelected(selected: T | T[] | null) {
     this.onChange(selected);
-    this.selectedChange.emit(selected);
+    // An array in a multiple select, one value (or null) otherwise, which is what NbSelectValue says for `M`.
+    this.selectedChange.emit(selected as NbSelectValue<T, M>);
+  }
+
+  protected countValues(value: unknown): number {
+    if (this.isEmptyValue(value) || (this.multiple() && value === '')) {
+      return 0;
+    }
+    return this.multiple() && Array.isArray(value) ? value.length : 1;
   }
 
   /**
-   * Set selected value in model.
-   * */
-  protected setSelection(value) {
-    const isResetValue = value == null;
+   * Whether an option can't be selected because `maxSelections` is reached.
+   */
+  isLimited(option: Pick<NbOptionComponent, 'selected' | 'selectAll'>): boolean {
+    return this.isLimitReached() && !option.selected() && !option.selectAll();
+  }
+
+  // The options a select-all option acts on: the enabled ones a search shows.
+  protected readonly selectAllCandidates = computed(() =>
+    this.options().filter((option) => !option.selectAll() && !option.ownDisabled() && !option.filtered()),
+  );
+
+  /**
+   * How many of the options a select-all option acts on are selected: `all`, `some` or `none`.
+   */
+  readonly selectAllState = computed<'all' | 'some' | 'none'>(() => {
+    const candidates = this.selectAllCandidates();
+    const selected = candidates.filter((option) => option.selected()).length;
+    if (selected && selected === candidates.length) {
+      return 'all';
+    }
+    return selected ? 'some' : 'none';
+  });
+
+  // Selects the options it acts on, up to `maxSelections`, or clears them when all are selected or the limit is
+  // reached.
+  protected toggleAll() {
+    const candidates = this.selectAllCandidates();
+    if (this.selectAllState() === 'all' || this.isLimitReached()) {
+      candidates.forEach((option) => option.deselect());
+      this.selectionModel.update((selection) =>
+        selection.filter((selected) => !candidates.some((option) => this.sameValue(option.value(), selected.value()))),
+      );
+    } else {
+      const room = (this.maxSelections() ?? Infinity) - this.selectionModel().length;
+      const added = candidates.filter((option) => !option.selected()).slice(0, room);
+      added.forEach((option) => option.select());
+      this.selectionModel.update((selection) => [...selection, ...added]);
+    }
+    this.emitSelected(this.optionValues(this.selectionModel()));
+  }
+
+  /**
+   * Whether a value means "nothing selected": `undefined`, and `null` unless the select is `nullable`.
+   */
+  isEmptyValue(value: unknown): boolean {
+    return value === undefined || (value === null && !this.nullable());
+  }
+
+  // Compares values with `compareWith`; `null` and `undefined` only match themselves.
+  protected sameValue(v1?: T | null, v2?: T | null): boolean {
+    return v1 == null || v2 == null ? v1 === v2 : this.compareFn()(v1, v2);
+  }
+
+  // The values of options; options without a value clear the selection, so they aren't among them.
+  protected optionValues(options: readonly NbOptionComponent<T>[]): T[] {
+    return options.map((option) => option.value()).filter((value): value is T => value !== undefined);
+  }
+
+  protected hasRemovedSelectedOptions(): boolean {
+    const options = this.options();
+    return this.selectionModel().some((option) => !options.includes(option));
+  }
+
+  /**
+   * Selects the options matching the value and deselects the others. Throws when the value's shape doesn't match
+   * `multiple`: an array for a single select, or a single value for a multiple one.
+   */
+  protected setSelection(value?: T | T[] | null) {
+    const multiple = this.multiple();
+    // A bare `ngModel` writes '' initially; a multiple select treats it like no value.
+    const isResetValue = this.isEmptyValue(value) || (multiple && value === '');
     let safeValue = value;
 
-    if (this.multiple) {
-      safeValue = value ?? [];
+    if (multiple) {
+      safeValue = isResetValue ? [] : value;
     }
 
     const isArray: boolean = Array.isArray(safeValue);
 
-    if (this.multiple && !isArray && !isResetValue) {
+    if (multiple && !isArray && !isResetValue) {
       throw new Error("Can't assign single value if select is marked as multiple");
     }
-    if (!this.multiple && isArray) {
+    if (!multiple && isArray) {
       throw new Error("Can't assign array if select is not marked as multiple");
     }
 
-    const previouslySelectedOptions = this.selectionModel;
-    this.selectionModel = [];
+    const previouslySelectedOptions = this.selectionModel();
+    const selection = new Array<NbOptionComponent<T>>();
 
-    if (this.multiple) {
-      safeValue.forEach((option) => this.selectValue(option));
+    // A multiple select has an array by now, and a single one doesn't.
+    if (Array.isArray(safeValue)) {
+      safeValue.forEach((option) => this.selectValue(option, selection));
     } else {
-      this.selectValue(safeValue);
+      this.selectValue(safeValue, selection);
     }
+    this.selectionModel.set(selection);
 
     // find options which were selected before and trigger deselect
     previouslySelectedOptions
-      .filter((option: NbOptionComponent) => !this.selectionModel.includes(option))
-      .forEach((option: NbOptionComponent) => option.deselect());
-
-    this.cd.markForCheck();
+      .filter((option) => !selection.includes(option))
+      .forEach((option) => option.deselect());
   }
 
   /**
-   * Selects value.
-   * */
-  protected selectValue(value) {
-    if (value == null) {
+   * Adds the option matching the value to the selection, if there is one.
+   */
+  protected selectValue(value: T | null | undefined, selection: NbOptionComponent<T>[]) {
+    if (this.isEmptyValue(value)) {
       return;
     }
 
-    const corresponding = this.options.find((option: NbOptionComponent) => this._compareWith(option.value, value));
+    const corresponding = this.options().find((option) => this.sameValue(option.value(), value));
 
     if (corresponding) {
       corresponding.select();
-      this.selectionModel.push(corresponding);
+      selection.push(corresponding);
     }
   }
 
   protected shouldShow(): boolean {
-    return this.isHidden && this.options?.length > 0;
+    // A disabled select, or one inside a disabled <fieldset>, stays closed.
+    const disabled = this.isDisabled() || !!this.button()?.nativeElement.matches(':disabled');
+    return !disabled && this.isHidden() && this.options().length > 0;
   }
 
   /**
-   * Sets touched if focus moved outside of button and overlay,
-   * ignoring the case when focus moved to options overlay.
+   * Marks the control touched when the button loses focus while the options are closed; focus moving into the
+   * open options doesn't count.
    */
   trySetTouched() {
-    if (this.isHidden) {
+    if (this.isHidden()) {
       this.onTouched();
     }
   }
@@ -1241,67 +1850,6 @@ export class NbSelectComponent
   }
 
   protected canSelectValue(): boolean {
-    return !!(this.options && this.options.length);
-  }
-
-  @HostBinding('class.size-tiny')
-  get tiny(): boolean {
-    return this.size === 'tiny';
-  }
-  @HostBinding('class.size-small')
-  get small(): boolean {
-    return this.size === 'small';
-  }
-  @HostBinding('class.size-medium')
-  get medium(): boolean {
-    return this.size === 'medium';
-  }
-  @HostBinding('class.size-large')
-  get large(): boolean {
-    return this.size === 'large';
-  }
-  @HostBinding('class.size-giant')
-  get giant(): boolean {
-    return this.size === 'giant';
-  }
-  @HostBinding('class.status-primary')
-  get primary(): boolean {
-    return this.status === 'primary';
-  }
-  @HostBinding('class.status-info')
-  get info(): boolean {
-    return this.status === 'info';
-  }
-  @HostBinding('class.status-success')
-  get success(): boolean {
-    return this.status === 'success';
-  }
-  @HostBinding('class.status-warning')
-  get warning(): boolean {
-    return this.status === 'warning';
-  }
-  @HostBinding('class.status-danger')
-  get danger(): boolean {
-    return this.status === 'danger';
-  }
-  @HostBinding('class.status-basic')
-  get basic(): boolean {
-    return this.status === 'basic';
-  }
-  @HostBinding('class.status-control')
-  get control(): boolean {
-    return this.status === 'control';
-  }
-  @HostBinding('class.shape-rectangle')
-  get rectangle(): boolean {
-    return this.shape === 'rectangle';
-  }
-  @HostBinding('class.shape-round')
-  get round(): boolean {
-    return this.shape === 'round';
-  }
-  @HostBinding('class.shape-semi-round')
-  get semiRound(): boolean {
-    return this.shape === 'semi-round';
+    return this.options().length > 0;
   }
 }

@@ -2,13 +2,17 @@
 @use '../form-field/form-field.component.theme' as form-field-theme;
 
 @mixin select-hero {
+  // A transparent border as wide as the other selects', so its text, a prefix's and the arrow are as far in as theirs;
+  // the gradient runs under it.
   nb-select.appearance-hero .select-button {
-    border: none;
+    border: nb-theme(select-outline-border-width) solid transparent;
+    background-origin: border-box;
   }
 
   @each $size in nb-get-sizes() {
     nb-select.appearance-hero.size-#{$size} .select-button {
       padding: nb-theme(select-hero-#{$size}-padding);
+      padding-block: 0;
       @include nb-ltr(padding-right, nb-theme(select-icon-offset));
       @include nb-rtl(padding-left, nb-theme(select-icon-offset));
     }

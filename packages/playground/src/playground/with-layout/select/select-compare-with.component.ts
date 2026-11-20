@@ -1,28 +1,12 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { Component } from '@angular/core';
+import { NbCardComponent, NbCardBodyComponent, NbSelectComponent, NbOptionComponent } from '@liquid-js/lyr-core';
 
 @Component({
-    template: `
-    <nb-card size="small">
-      <nb-card-body>
-        <nb-select [selected]="{ id: 1 }" [compareWith]="compareById">
-          <nb-option [value]="{ id: 1 }">1</nb-option>
-          <nb-option [value]="{ id: 2 }">2</nb-option>
-          <nb-option [value]="{ id: 3 }">3</nb-option>
-        </nb-select>
-      </nb-card-body>
-    </nb-card>
-  `,
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  templateUrl: './select-compare-with.component.html',
+  imports: [NbCardComponent, NbCardBodyComponent, NbSelectComponent, NbOptionComponent],
 })
 export class SelectCompareWithComponent {
-  compareById(v1, v2): boolean {
+  compareById(v1: { id: number }, v2: { id: number }): boolean {
     return v1.id === v2.id;
   }
 }

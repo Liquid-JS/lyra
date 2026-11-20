@@ -1,0 +1,28 @@
+<nb-card>
+  <nb-card-body class="example-items-rows">
+    <nb-select searchable
+      placeholder="Country"
+      [formControl]="country">
+      @for (region of regions; track region.name) {
+      <nb-option-group [title]="region.name">
+        @for (country of region.countries; track country) {
+        <nb-option [value]="country">{{ country }}</nb-option>
+        }
+      </nb-option-group>
+      }
+    </nb-select>
+    <nb-select searchable
+      multiple
+      chips
+      placeholder="Countries"
+      [formControl]="countries">
+      @for (region of regions; track region.name) {
+      <nb-option-group [title]="region.name">
+        @for (country of region.countries; track country) {
+        <nb-option [value]="country">{{ country }}</nb-option>
+        }
+      </nb-option-group>
+      }
+    </nb-select>
+  </nb-card-body>
+</nb-card>

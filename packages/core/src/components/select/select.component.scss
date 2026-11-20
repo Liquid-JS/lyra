@@ -1,14 +1,10 @@
-/*!
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 @use '../../styles/theming' as *;
 
 :host {
   display: inline-block;
   max-width: 100%;
+  // Lines up with fields and buttons of its size by its middle, as they do.
+  vertical-align: middle;
 
   .select-button {
     @include nb-ltr(text-align, left) {
@@ -34,7 +30,10 @@
   }
 }
 
+// A block, so the select is as tall as its button, whatever the line height around it; a button keeps its content in
+// the middle.
 .select-button {
+  display: block;
   position: relative;
   width: 100%;
   overflow: hidden;
@@ -43,7 +42,8 @@
   white-space: nowrap;
 }
 
-nb-icon {
+// The toggle icon; the list has icons of its own (e.g. the back row of nested options).
+.select-button nb-icon {
   font-size: 1.5em;
   position: absolute;
   top: 50%;
@@ -53,6 +53,29 @@ nb-icon {
   @include nb-component-animation(transform);
 }
 
-:host(.open) nb-icon {
+:host(.open) .select-button nb-icon {
   transform: translateY(-50%) rotate(180deg);
+}
+
+// The label is at least a line tall (see the theme), so a row of tags is centered in it without making the select taller.
+.select-label-chips {
+  display: flex;
+  align-items: center;
+}
+
+// Tags wrap onto more rows; the theme's negative margin lets a single row fit the select's line.
+.select-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  white-space: normal;
+}
+
+// The search sits above the options, its text lined up with theirs; the list scrolls under it.
+.select-search {
+  flex-shrink: 0;
+}
+
+.select-no-matches:empty {
+  display: none;
 }

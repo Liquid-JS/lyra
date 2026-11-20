@@ -1,18 +1,17 @@
 import { Component } from '@angular/core';
-import { NbComponentSize } from '@nebular/theme';
+import { NbComponentSize, NbSelectComponent } from '@liquid-js/lyr-core';
 
 @Component({
-    template: `
-    <h1>Empty select height test</h1>
-    <nb-select *ngFor="let size of sizes" [size]="size"></nb-select>
-  `,
-    styles: [`
-    nb-select {
-      display: block;
-    }
-  `],
-    standalone: false
+  templateUrl: './select-test.component.html',
+  styles: [
+    `
+      nb-select {
+        display: block;
+      }
+    `,
+  ],
+  imports: [NbSelectComponent],
 })
 export class SelectTestComponent {
-  sizes: NbComponentSize[] = [ 'tiny', 'small', 'medium', 'large', 'giant' ];
+  sizes: NbComponentSize[] = ['tiny', 'small', 'medium', 'large', 'giant'];
 }

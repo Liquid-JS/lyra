@@ -1,40 +1,91 @@
-<button
-  [disabled]="disabled"
-  [ngClass]="selectButtonClasses"
+<button [disabled]="isDisabled()"
+  [class]="selectButtonClasses()"
+  [id]="buttonId"
+  [attr.aria-labelledby]="buttonLabelledBy()"
+  aria-haspopup="listbox"
+  [attr.aria-expanded]="isOpen()"
+  [attr.aria-controls]="isOpen() ? listId : null"
+  [attr.aria-invalid]="validation?.ariaInvalid()"
+  [attr.aria-describedby]="validation?.describedBy()"
+  [attr.aria-required]="validation?.ariaRequired()"
+  [tabIndex]="tabIndex()"
   (blur)="trySetTouched()"
   (keydown.arrowDown)="show()"
   (keydown.arrowUp)="show()"
   class="select-button"
   type="button"
-  #selectButton
->
-  <span (click)="disabled && $event.stopPropagation()">
-    <ng-container *ngIf="selectionModel.length; else placeholderTemplate">
-      <ng-container *ngIf="customLabel; else defaultSelectionTemplate">
-        <ng-content select="nb-select-label"></ng-content>
-      </ng-container>
-
-      <ng-template #defaultSelectionTemplate>{{ selectionView }}</ng-template>
-    </ng-container>
-
-    <ng-template #placeholderTemplate>{{ placeholder }}</ng-template>
+  #selectButton>
+  <span [class.select-label-chips]="chips() && multiple() && !customLabel() && selectionModel().length"
+    (click)="isDisabled() && $event.stopPropagation()">
+    @if (selectionModel().length) {
+    @if (customLabel()) {
+    <ng-content select="nb-select-label" />
+    } @else if (chips() && multiple()) {
+    <span class="select-chips">
+      @for (option of selectionModel(); track option) {
+      <nb-tag [text]="option.content.trim()"
+        [size]="chipSize()" />
+      }
+    </span>
+    } @else {
+    <span dir="auto">{{ selectionView }}</span>
+    }
+    } @else {
+    <span dir="auto">{{ placeholder() }}</span>
+    }
   </span>
 
-  <nb-icon
-    icon="chevron-down-outline"
-    pack="nebular-essentials"
-    (click)="disabled && $event.stopPropagation()"
-    aria-hidden="true"
-  >
-  </nb-icon>
+  <nb-icon icon="chevron-down-outline"
+    pack="essentials"
+    (click)="isDisabled() && $event.stopPropagation()"
+    aria-hidden="true" />
 </button>
 
-<nb-option-list
-  *nbPortal
-  [size]="size"
-  [position]="overlayPosition"
-  [style.width.px]="optionsWidth"
-  [ngClass]="optionsListClass"
->
-  <ng-content select="nb-option, nb-option-group"></ng-content>
+<nb-option-list *nbPortal
+  [size]="size()"
+  [multiple]="multiple()"
+  [listId]="listId"
+  [listRole]="isTree() ? 'tree' : 'listbox'"
+  [position]="overlayPosition()"
+  [style.width.px]="optionsWidth() ?? hostWidth"
+  [class]="optionsListClass()">
+  @if (searchable()) {
+  <div nbOptionListHeader
+    class="select-search">
+    <input nbInput
+      ghost
+      fullWidth
+      #searchInput
+      autocomplete="off"
+      role="combobox"
+      aria-autocomplete="list"
+      aria-expanded="true"
+      [attr.aria-controls]="listId"
+      [attr.aria-activedescendant]="activeOptionId()"
+      [attr.aria-label]="texts().search"
+      [placeholder]="texts().search"
+      [fieldSize]="size()"
+      [value]="query()"
+      (input)="onSearchInput($event)" />
+    <div class="select-no-matches"
+      role="status">
+      @if (noMatches()) {{{ texts().noMatches }}}
+    </div>
+  </div>
+  }
+  @if (backTo(); as root) {
+  <button nbOptionListHeader
+    class="option-nested-back"
+    type="button"
+    tabindex="-1"
+    [attr.aria-label]="texts().back(root.title() ?? '')"
+    (click)="nestedBack()">
+    <nb-icon icon="chevron-left-outline"
+      pack="essentials"
+      aria-hidden="true" />
+    <span><span dir="auto">{{ root.title() }}</span></span>
+  </button>
+  }
+  <!-- Everything but the label, so options also come in nested control flow, e.g. an @if in a @for. -->
+  <ng-content />
 </nb-option-list>

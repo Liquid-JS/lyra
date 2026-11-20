@@ -1,16 +1,23 @@
-/*
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 import { Component } from '@angular/core';
+import {
+  NbCardComponent,
+  NbCardBodyComponent,
+  NbSelectComponent,
+  NbSelectLabelComponent,
+  NbOptionComponent,
+} from '@liquid-js/lyr-core';
 
 @Component({
-    selector: 'nb-select-label-showcase',
-    templateUrl: './select-label.component.html',
-    standalone: false
+  selector: 'nb-select-label-showcase',
+  templateUrl: './select-label.component.html',
+  imports: [
+    NbCardComponent,
+    NbCardBodyComponent,
+    NbSelectComponent,
+    NbSelectLabelComponent,
+    NbOptionComponent,
+  ],
 })
 export class SelectLabelShowcaseComponent {
-  selectedItem;
+  selectedItem?: string;
 }
