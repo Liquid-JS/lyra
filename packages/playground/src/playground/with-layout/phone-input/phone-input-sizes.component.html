@@ -1,0 +1,17 @@
+<nb-card>
+  <nb-card-body class="fields">
+    @for (size of sizes; track size) {
+    <nb-phone-input [size]="size"
+      [aria-label]="size + ' phone number'"
+      [(ngModel)]="phone" />
+    }
+    @for (status of statuses; track status) {
+    <nb-phone-input [status]="status"
+      [aria-label]="status + ' phone number'"
+      [(ngModel)]="phone" />
+    }
+    <nb-phone-input aria-label="Disabled phone number"
+      disabled
+      [(ngModel)]="phone" />
+  </nb-card-body>
+</nb-card>
