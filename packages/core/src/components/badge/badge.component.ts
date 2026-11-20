@@ -1,18 +1,28 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
+import { Component, computed, inject, input } from '@angular/core';
 
-import { Component, HostBinding, Input } from '@angular/core';
+import { NbStatusService } from '@liquid-js/lyr-core/base';
+import { NbComponentOrCustomStatus } from '@liquid-js/lyr-core/base';
+import { ɵconvertToBoolProperty as convertToBoolProperty, NbBooleanInput } from '@liquid-js/lyr-core/base';
 
-import { NbStatusService } from '../../services/status.service';
-import { NbComponentOrCustomStatus } from '../component-status';
-import { convertToBoolProperty } from '../helpers';
-
-export type NbBadgePhysicalPosition = 'top left' | 'top right' | 'bottom left' | 'bottom right' | 'center right' | 'center left';
-export type NbBadgeLogicalPosition = 'top start' | 'top end' | 'bottom start' | 'bottom end' | 'center start'| 'center end';
+export type NbBadgePhysicalPosition =
+  | 'top left'
+  | 'top right'
+  | 'bottom left'
+  | 'bottom right'
+  | 'center right'
+  | 'center left';
+export type NbBadgeLogicalPosition =
+  | 'top start'
+  | 'top end'
+  | 'bottom start'
+  | 'bottom end'
+  | 'center start'
+  | 'center end';
 export type NbBadgePosition = NbBadgePhysicalPosition | NbBadgeLogicalPosition;
+/**
+ * Shows the badge in the flow of text, e.g. as a status dot before a label.
+ */
+export type NbBadgeInlinePosition = 'inline';
 
 export interface NbBadge {
   text?: string;
@@ -31,6 +41,16 @@ export interface NbBadge {
  * `absolute`, `fixed`, or `sticky`.
  *
  * ### Installation
+ *
+ * Import `NbBadgeComponent` into your standalone component:
+ * ```ts
+ * @Component({
+ *   imports: [NbBadgeComponent],
+ * })
+ * export class PageComponent { }
+ * ```
+ *
+ * With NgModules:
  *
  * Import `NbBadgeModule` to your feature module.
  * ```ts
@@ -60,15 +80,25 @@ export interface NbBadge {
  * </nb-badge>
  * ```
  *
+ * With `position="inline"` the badge is part of the text instead, so its parent doesn't need to be positioned.
+ * In dot mode it's centred on the text, e.g. to show a status before a label:
+ *
+ * ```html
+ * <nb-badge dotMode status="success" position="inline" /> Paid
+ * ```
+ * @stacked-example(Inline, badge/badge-inline.component)
+ *
  * @styles
  *
  * badge-border-radius:
  * badge-text-font-family:
+ * badge-dot-mode-padding:
  * badge-text-font-size:
  * badge-text-font-weight:
  * badge-text-line-height:
  * badge-padding:
  * badge-basic-background-color:
+ * badge-dot-mode-border-radius:
  * badge-basic-text-color:
  * badge-primary-background-color:
  * badge-primary-text-color:
@@ -84,135 +114,50 @@ export interface NbBadge {
  * badge-control-text-color:
  */
 @Component({
-    selector: 'nb-badge',
-    styleUrls: ['./badge.component.scss'],
-    template: `{{dotMode ? '' : text}}`,
-    standalone: false
+  selector: 'nb-badge',
+  styleUrls: ['./badge.component.scss'],
+  template: `{{ dotMode() ? '' : text() }}`,
+  host: {
+    '[class]': 'statusClass()',
+    '[class.dot-mode]': 'dotMode()',
+    '[class.position-top]': "position().includes('top')",
+    '[class.position-right]': "position().includes('right')",
+    '[class.position-bottom]': "position().includes('bottom')",
+    '[class.position-left]': "position().includes('left')",
+    '[class.position-start]': "position().includes('start')",
+    '[class.position-end]': "position().includes('end')",
+    '[class.position-center]': "position().includes('center')",
+    '[class.position-inline]': "position() === 'inline'",
+  },
 })
-export class NbBadgeComponent implements NbBadge {
+export class NbBadgeComponent {
+  protected readonly statusService = inject(NbStatusService);
 
   /**
-   * Text to display
-   * @type string
+   * Text to show; hidden in `dotMode`.
    */
-  @Input() text: string = '';
+  readonly text = input<string | undefined>('');
 
   /**
-   * Badge position
-   *
-   * Can be set to any class or to one of predefined positions:
-   * 'top left', 'top right', 'bottom left', 'bottom right',
-   * 'top start', 'top end', 'bottom start', 'bottom end'
-   * @type string
+   * Badge position, `top right` by default (also for an empty value): a physical corner or side such as
+   * `bottom left` or `center right`, a logical one such as `top end`, or `inline` to show it in the flow of text.
    */
-  @Input()
-  get position(): NbBadgePosition {
-    return this._position;
-  }
-  set position(value: NbBadgePosition) {
-    this._position = value || this._defaultPosition;
-  }
-  protected _defaultPosition: NbBadgePosition = 'top right';
-  protected _position: NbBadgePosition = this._defaultPosition;
+  readonly position = input<
+    NbBadgePosition | NbBadgeInlinePosition,
+    NbBadgePosition | NbBadgeInlinePosition | '' | null | undefined
+  >('top right', {
+    transform: (position) => position || 'top right',
+  });
 
   /**
-   * Shows badge as a dot. No text is shown.
-   * @type boolean
+   * Shows the badge as a dot, without text.
    */
-  @Input()
-  @HostBinding('class.dot-mode')
-  get dotMode(): boolean {
-    return this._dotMode;
-  }
-  set dotMode(value: boolean) {
-    this._dotMode = convertToBoolProperty(value);
-  }
-  protected _dotMode: boolean;
+  readonly dotMode = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
 
   /**
-   * Badge status (adds specific styles):
-   * 'basic', 'primary', 'info', 'success', 'warning', 'danger', 'control'
+   * Badge status: `basic` (default), `primary`, `info`, `success`, `warning`, `danger`, `control` or a custom one.
    */
-  @Input() status: NbComponentOrCustomStatus = 'basic';
+  readonly status = input<NbComponentOrCustomStatus | undefined>('basic');
 
-  @HostBinding('class')
-  get additionalClasses(): string[] {
-    if (this.statusService.isCustomStatus(this.status)) {
-      return [this.statusService.getStatusClass(this.status)];
-    }
-    return [];
-  }
-
-  @HostBinding('class.status-primary')
-  get primary(): boolean {
-    return this.status === 'primary';
-  }
-
-  @HostBinding('class.status-success')
-  get success(): boolean {
-    return this.status === 'success';
-  }
-
-  @HostBinding('class.status-info')
-  get info(): boolean {
-    return this.status === 'info';
-  }
-
-  @HostBinding('class.status-warning')
-  get warning(): boolean {
-    return this.status === 'warning';
-  }
-
-  @HostBinding('class.status-danger')
-  get danger(): boolean {
-    return this.status === 'danger';
-  }
-
-  @HostBinding('class.status-basic')
-  get basic(): boolean {
-    return this.status === 'basic';
-  }
-
-  @HostBinding('class.status-control')
-  get control(): boolean {
-    return this.status === 'control';
-  }
-
-  @HostBinding('class.position-top')
-  get top(): boolean {
-    return this.position.includes('top');
-  }
-
-  @HostBinding('class.position-right')
-  get right(): boolean {
-    return this.position.includes('right');
-  }
-
-  @HostBinding('class.position-bottom')
-  get bottom(): boolean {
-    return this.position.includes('bottom');
-  }
-
-  @HostBinding('class.position-left')
-  get left(): boolean {
-    return this.position.includes('left');
-  }
-
-  @HostBinding('class.position-start')
-  get start(): boolean {
-    return this.position.includes('start');
-  }
-
-  @HostBinding('class.position-end')
-  get end(): boolean {
-    return this.position.includes('end');
-  }
-
-  @HostBinding('class.position-center')
-  get center(): boolean {
-    return this.position.includes('center');
-  }
-
-  constructor(protected statusService: NbStatusService) {
-  }
+  protected readonly statusClass = computed(() => this.statusService.getStatusClass(this.status()));
 }

@@ -1,0 +1,10 @@
+// The default theme's badge styles, which specs don't load otherwise.
+@use '@liquid-js/lyr-core/styles/all' as *;
+@use 'badge.component.theme' as badge;
+
+$nb-enabled-themes: (default);
+
+@include nb-install() {
+  @include nb-theme-base();
+  @include badge.nb-badge-theme();
+}

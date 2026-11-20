@@ -1,0 +1,21 @@
+<nb-card>
+  <nb-card-header>
+    Orders
+    <nb-badge text="3 new"
+      status="primary"
+      position="inline" />
+  </nb-card-header>
+  <nb-list>
+    @for (order of orders; track order.id) {
+    <nb-list-item>
+      <span class="order">#{{ order.id }}</span>
+      <span>
+        <nb-badge dotMode
+          [status]="order.status"
+          position="inline" />
+        {{ order.label }}
+      </span>
+    </nb-list-item>
+    }
+  </nb-list>
+</nb-card>
