@@ -1,26 +1,25 @@
-import { Component, NgModule, OnInit, ViewChild } from '@angular/core';
+import { Component, NgModule, OnInit, viewChild } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { NbComponentPortal, NbOverlayContainerComponent, NbOverlayModule } from '@nebular/theme';
+import { NbComponentPortal, NbOverlayContainerComponent, NbOverlayModule } from '@liquid-js/lyr-core';
+import { NbOverlayContainerComponent as NbOverlayContainerComponent_1 } from './overlay-container';
 
 @Component({
-    template: `
-    <nb-overlay-container></nb-overlay-container>
-  `,
-    standalone: false
+  template: ` <nb-overlay-container /> `,
+  imports: [NbOverlayContainerComponent_1, NbOverlayModule],
 })
 export class NbOverlayContainerTestComponent {
-  @ViewChild(NbOverlayContainerComponent) overlayContainer: NbOverlayContainerComponent;
+  readonly overlayContainer = viewChild.required(NbOverlayContainerComponent);
 }
 
 @Component({
-    template: `{{ contextProperty }}`,
-    standalone: false
+  template: `{{ contextProperty }}`,
+  imports: [NbOverlayModule],
 })
 export class NbOverlayTestComponent implements OnInit {
-  contextProperty;
+  contextProperty?: string;
 
   isFirstOnChangesCall = true;
-  contextPropertyValueOnFirstCdRun;
+  contextPropertyValueOnFirstCdRun?: string;
   ngOnInit() {
     if (this.isFirstOnChangesCall) {
       this.contextPropertyValueOnFirstCdRun = this.contextProperty;
@@ -32,8 +31,7 @@ export class NbOverlayTestComponent implements OnInit {
 // Has to define test module since there is no way to specify entry components
 // in 'TestBed.configureTestingModule'.
 @NgModule({
-  imports: [ NbOverlayModule.forRoot() ],
-  declarations: [ NbOverlayContainerTestComponent, NbOverlayTestComponent ],
+  imports: [NbOverlayModule.forRoot(), NbOverlayContainerTestComponent, NbOverlayTestComponent],
 })
 export class NbOverlayTestModule {}
 
@@ -42,11 +40,11 @@ describe('NbOverlayContainerComponent', () => {
   let overlayContainer: NbOverlayContainerComponent;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({ imports: [ NbOverlayTestModule ] });
+    TestBed.configureTestingModule({ imports: [NbOverlayTestModule] });
 
     fixture = TestBed.createComponent(NbOverlayContainerTestComponent);
     fixture.detectChanges();
-    overlayContainer = fixture.componentInstance.overlayContainer;
+    overlayContainer = fixture.componentInstance.overlayContainer();
   });
 
   it('should set context before change detection run', () => {

@@ -1,41 +1,42 @@
-import { Component, OnInit, TemplateRef, ViewChild, ViewContainerRef } from '@angular/core';
-import { NbOverlayRef, NbOverlayService, NbPositionBuilderService, NbTemplatePortal } from '@nebular/theme';
+import {
+  Component,
+  TemplateRef,
+  ViewContainerRef,
+  inject,
+  viewChild,
+} from '@angular/core';
+import {
+  NbOverlayService,
+  NbPositionBuilderService,
+  NbTemplatePortal,
+  NbCardComponent,
+  NbCardHeaderComponent,
+  NbCardBodyComponent,
+  NbButtonComponent,
+} from '@liquid-js/lyr-core';
 
 @Component({
-    selector: 'nb-overlay-showcase',
-    template: `
-    <ng-template #overlay>
-      <nb-card>
-        <nb-card-header>This is overlay</nb-card-header>
-        <nb-card-body>
-          <button nbButton status="success" (click)="dismissOverlay()">Dismiss overlay</button>
-        </nb-card-body>
-      </nb-card>
-    </ng-template>
-    <button nbButton status="primary" (click)="createOverlay()">Create overlay</button>
-  `,
-    standalone: false
+  selector: 'nb-overlay-showcase',
+  templateUrl: './overlay-showcase.component.html',
+  imports: [NbCardComponent, NbCardHeaderComponent, NbCardBodyComponent, NbButtonComponent],
 })
-export class OverlayShowcaseComponent implements OnInit {
-  @ViewChild('overlay') overlayTemplate: TemplateRef<any>;
-  protected ref: NbOverlayRef;
+export class OverlayShowcaseComponent {
+  protected readonly overlay = inject(NbOverlayService);
+  protected readonly positionBuilder = inject(NbPositionBuilderService);
+  protected readonly vcr = inject(ViewContainerRef);
 
-  constructor(protected overlay: NbOverlayService,
-              protected positionBuilder: NbPositionBuilderService,
-              protected vcr: ViewContainerRef) {
-  }
-
-  ngOnInit() {
-    const positionStrategy = this.positionBuilder.global().centerHorizontally().centerVertically();
-    this.ref = this.overlay.create({ positionStrategy, hasBackdrop: true });
-  }
+  readonly overlayTemplate = viewChild.required<TemplateRef<any>>('overlay');
+  protected readonly ref = this.overlay.create({
+    positionStrategy: this.positionBuilder.global().centerHorizontally().centerVertically(),
+    hasBackdrop: true,
+  });
 
   createOverlay() {
     if (this.ref.hasAttached()) {
       return;
     }
 
-    this.ref.attach(new NbTemplatePortal(this.overlayTemplate, this.vcr));
+    this.ref.attach(new NbTemplatePortal(this.overlayTemplate(), this.vcr));
   }
 
   dismissOverlay() {

@@ -1,6 +1,6 @@
+import { assert } from 'vitest';
 import { TestBed } from '@angular/core/testing';
-import { Component, Injectable, NgModule } from '@angular/core';
-import { RouterTestingModule } from '@angular/router/testing';
+import { Component, NgModule, Service } from '@angular/core';
 import { OverlayRef } from '@angular/cdk/overlay';
 import {
   NbThemeModule,
@@ -15,23 +15,24 @@ import {
   NbAdjustment,
   NbViewportRulerAdapter,
   NbLayoutDirectionService,
-} from '@nebular/theme';
+} from '@liquid-js/lyr-core';
+import { RouterModule } from '@angular/router';
 
-@Injectable()
+@Service({ autoProvided: false })
 export class MockViewportRulerAdapter extends NbViewportRulerAdapter {
-  getViewportScrollPosition(): { left: number; top: number } {
+  override getViewportScrollPosition(): { left: number; top: number } {
     return { top: 0, left: 0 };
   }
 }
 
 @Component({
-    template: `portal-component`,
-    standalone: false
+  template: `portal-component`,
+  imports: [NbOverlayModule, RouterModule],
 })
 export class PortalComponent {}
 
 @NgModule({
-  declarations: [PortalComponent],
+  imports: [PortalComponent],
   exports: [PortalComponent],
 })
 export class PortalModule {}
@@ -39,7 +40,7 @@ export class PortalModule {}
 describe('NbAdjustableConnectedPositionStrategy', () => {
   let strategy: NbAdjustableConnectedPositionStrategy;
   let overlayHostElement: HTMLDivElement;
-  let overlayRef: OverlayRef;
+  let overlayRef: OverlayRef | undefined;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
@@ -48,7 +49,7 @@ describe('NbAdjustableConnectedPositionStrategy', () => {
         NbOverlayModule.forRoot(),
         NbLayoutModule,
         PortalModule,
-        RouterTestingModule.withRoutes([]),
+        RouterModule.forRoot([]),
       ],
       providers: [{ provide: NbViewportRulerAdapter, useClass: MockViewportRulerAdapter }],
     });
@@ -65,16 +66,27 @@ describe('NbAdjustableConnectedPositionStrategy', () => {
 
     const positionBuilderService: NbPositionBuilderService = TestBed.inject(NbPositionBuilderService);
     strategy = positionBuilderService.connectedTo({ nativeElement: overlayHostElement });
-    overlayRef = null;
+    overlayRef = undefined;
   });
 
   afterEach(() => {
+    assert(overlayRef, 'the test did not create an overlay');
     overlayRef.detach();
-    overlayHostElement.parentElement.removeChild(overlayHostElement);
+    overlayHostElement.remove();
+  });
+
+  it('should give the element it places the overlay against', () => {
+    expect(strategy.originElement).toBe(overlayHostElement);
+    strategy.setOrigin({ x: 10, y: 20 });
+    expect(strategy.originElement).toBeUndefined();
+
+    const overlayService: NbOverlayService = TestBed.inject(NbOverlayService);
+    overlayRef = overlayService.create({ positionStrategy: strategy.setOrigin({ nativeElement: overlayHostElement }) });
+    expect(strategy.originElement).toBe(overlayHostElement);
   });
 
   it('should create strategy with position start and adjustment noop', () => {
-    const withPositionsSpy = spyOn(strategy, 'withPositions').and.callThrough();
+    const withPositionsSpy = vi.spyOn(strategy, 'withPositions');
 
     strategy.position(NbPosition.START).adjustment(NbAdjustment.NOOP);
 
@@ -84,7 +96,7 @@ describe('NbAdjustableConnectedPositionStrategy', () => {
 
     expect(withPositionsSpy).toHaveBeenCalledTimes(1);
     expect(withPositionsSpy).toHaveBeenCalledWith(
-      jasmine.objectContaining([
+      expect.objectContaining([
         {
           originX: 'start',
           originY: 'center',
@@ -97,7 +109,7 @@ describe('NbAdjustableConnectedPositionStrategy', () => {
   });
 
   it('should create strategy with position end and adjustment noop', () => {
-    const withPositionsSpy = spyOn(strategy, 'withPositions').and.callThrough();
+    const withPositionsSpy = vi.spyOn(strategy, 'withPositions');
 
     strategy.position(NbPosition.END).adjustment(NbAdjustment.NOOP);
 
@@ -107,7 +119,7 @@ describe('NbAdjustableConnectedPositionStrategy', () => {
 
     expect(withPositionsSpy).toHaveBeenCalledTimes(1);
     expect(withPositionsSpy).toHaveBeenCalledWith(
-      jasmine.objectContaining([
+      expect.objectContaining([
         {
           originX: 'end',
           originY: 'center',
@@ -120,7 +132,7 @@ describe('NbAdjustableConnectedPositionStrategy', () => {
   });
 
   it('should apply center positions first', () => {
-    const withPositionsSpy = spyOn(strategy, 'withPositions').and.callThrough();
+    const withPositionsSpy = vi.spyOn(strategy, 'withPositions');
 
     strategy.position(NbPosition.START).adjustment(NbAdjustment.CLOCKWISE);
 
@@ -129,7 +141,7 @@ describe('NbAdjustableConnectedPositionStrategy', () => {
     overlayRef.attach(new NbComponentPortal(PortalComponent));
 
     expect(withPositionsSpy).toHaveBeenCalledWith(
-      jasmine.objectContaining([
+      expect.objectContaining([
         { originX: 'start', originY: 'center', overlayX: 'end', overlayY: 'center', offsetX: -15 },
         { originX: 'start', originY: 'top', overlayX: 'end', overlayY: 'top', offsetX: -15 },
         { originX: 'start', originY: 'bottom', overlayX: 'end', overlayY: 'bottom', offsetX: -15 },
@@ -147,7 +159,7 @@ describe('NbAdjustableConnectedPositionStrategy', () => {
   });
 
   it('should map left position to start', () => {
-    const withPositionsSpy = spyOn(strategy, 'withPositions').and.callThrough();
+    const withPositionsSpy = vi.spyOn(strategy, 'withPositions');
     const directionChangeService: NbLayoutDirectionService = TestBed.inject(NbLayoutDirectionService);
 
     strategy
@@ -160,7 +172,7 @@ describe('NbAdjustableConnectedPositionStrategy', () => {
     overlayRef.attach(new NbComponentPortal(PortalComponent));
 
     expect(withPositionsSpy).toHaveBeenCalledWith(
-      jasmine.objectContaining([
+      expect.objectContaining([
         { originX: 'start', originY: 'center', overlayX: 'end', overlayY: 'center', offsetX: -15 },
         { originX: 'end', originY: 'center', overlayX: 'start', overlayY: 'center', offsetX: 15 },
       ]),
@@ -168,7 +180,7 @@ describe('NbAdjustableConnectedPositionStrategy', () => {
   });
 
   it('should map right position to end', () => {
-    const withPositionsSpy = spyOn(strategy, 'withPositions').and.callThrough();
+    const withPositionsSpy = vi.spyOn(strategy, 'withPositions');
     const directionChangeService: NbLayoutDirectionService = TestBed.inject(NbLayoutDirectionService);
 
     strategy
@@ -181,7 +193,7 @@ describe('NbAdjustableConnectedPositionStrategy', () => {
     overlayRef.attach(new NbComponentPortal(PortalComponent));
 
     expect(withPositionsSpy).toHaveBeenCalledWith(
-      jasmine.objectContaining([
+      expect.objectContaining([
         { originX: 'end', originY: 'center', overlayX: 'start', overlayY: 'center', offsetX: 15 },
         { originX: 'start', originY: 'center', overlayX: 'end', overlayY: 'center', offsetX: -15 },
       ]),

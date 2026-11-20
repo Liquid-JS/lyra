@@ -1,4 +1,4 @@
-import { Directive, Injectable, ModuleWithProviders, NgModule, TemplateRef, ViewContainerRef } from '@angular/core';
+import { Directive, ModuleWithProviders, NgModule, TemplateRef, ViewContainerRef, Service } from '@angular/core';
 import {
   CdkPortal,
   CdkPortalOutlet,
@@ -24,42 +24,38 @@ import {
 } from '@angular/cdk/overlay';
 import { NbScrollStrategyOptions } from '../adapter/block-scroll-strategy-adapter';
 
-@Directive({
-    selector: '[nbPortal]',
-    standalone: false
-})
+@Directive({ selector: '[nbPortal]' })
 export class NbPortalDirective extends CdkPortal {}
 
-@Directive({
-    selector: '[nbPortalOutlet]',
-    standalone: false
-})
+@Directive({ selector: '[nbPortalOutlet]' })
 export class NbPortalOutletDirective extends CdkPortalOutlet {}
 
-export class NbComponentPortal<T = any> extends ComponentPortal<T> {}
+export class NbComponentPortal<T = unknown> extends ComponentPortal<T> {}
 
-@Injectable()
+@Service()
 export class NbOverlay extends Overlay {
-  scrollStrategies: NbScrollStrategyOptions;
+  declare scrollStrategies: NbScrollStrategyOptions;
 }
 
-@Injectable()
+@Service()
 export class NbOverlayPositionBuilder extends OverlayPositionBuilder {}
 
-export class NbTemplatePortal<T = any> extends TemplatePortal<T> {
+export class NbTemplatePortal<T = unknown> extends TemplatePortal<T> {
   constructor(template: TemplateRef<T>, viewContainerRef?: ViewContainerRef, context?: T) {
-    super(template, viewContainerRef, context);
+    // The CDK types it as required, but the overlay containers' portal outlets stamp the template into their own
+    // view container when there's none.
+    super(template, viewContainerRef as ViewContainerRef, context);
   }
 }
 
-@Injectable()
+@Service({ autoProvided: false })
 export class NbOverlayContainer extends OverlayContainer {}
 
 export class NbFlexibleConnectedPositionStrategy extends FlexibleConnectedPositionStrategy {}
 
-export type NbPortal<T = any> = Portal<T>;
+export type NbPortal<T = unknown> = Portal<T>;
 export type NbOverlayRef = OverlayRef;
-export type NbComponentType<T = any> = ComponentType<T>;
+export type NbComponentType<T = unknown> = ComponentType<T>;
 export type NbPositionStrategy = PositionStrategy;
 export type NbConnectedPosition = ConnectedPosition;
 export type NbConnectedOverlayPositionChange = ConnectedOverlayPositionChange;
@@ -70,16 +66,15 @@ export type NbScrollStrategy = ScrollStrategy;
 const CDK_MODULES = [OverlayModule, PortalModule];
 
 /**
- * This module helps us to keep all angular/cdk deps inside our cdk module via providing aliases.
- * Approach will help us move cdk in separate npm package and refactor nebular/theme code.
- * */
+ * The CDK's overlay and portal modules under Lyra's names, so the rest of the library doesn't import `@angular/cdk`
+ * directly.
+ */
 @NgModule({
-  imports: [...CDK_MODULES],
+  imports: [...CDK_MODULES, NbPortalDirective, NbPortalOutletDirective],
   exports: [...CDK_MODULES, NbPortalDirective, NbPortalOutletDirective],
-  declarations: [NbPortalDirective, NbPortalOutletDirective],
 })
 export class NbCdkMappingModule {
-  static forRoot(): ModuleWithProviders<NbCdkMappingModule> {
+  static forRoot(): Required<ModuleWithProviders<NbCdkMappingModule>> {
     return {
       ngModule: NbCdkMappingModule,
       providers: [NbOverlay, NbOverlayPositionBuilder],

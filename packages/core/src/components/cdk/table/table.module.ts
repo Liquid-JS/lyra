@@ -1,30 +1,14 @@
 import {
-  Attribute,
-  ChangeDetectorRef,
-  ElementRef,
-  Inject,
-  IterableDiffers,
   NgModule,
   Component,
-  Optional,
   Provider,
-  SkipSelf,
+  InjectionToken,
+  ChangeDetectionStrategy,
 } from '@angular/core';
-import {
-  CdkTable,
-  CdkTableModule,
-  RenderRow,
-  RowContext,
-  StickyPositioningListener,
-} from '@angular/cdk/table';
-import { _DisposeViewRepeaterStrategy, _VIEW_REPEATER_STRATEGY, _ViewRepeater } from '@angular/cdk/collections';
+import { CdkTable, CdkTableModule } from '@angular/cdk/table';
+import { _DisposeViewRepeaterStrategy } from '@angular/cdk/collections';
 
-import { NbBidiModule } from '../bidi/bidi.module';
-import { NbDirectionality } from '../bidi/bidi-service';
-import { NbPlatform } from '../platform/platform-service';
-import { NB_DOCUMENT } from '../../../theme.options';
-import { NbViewportRulerAdapter } from '../adapter/viewport-ruler-adapter';
-import { NB_STICKY_POSITIONING_LISTENER } from '../../cdk/table/type-mappings';
+import { NbBidiModule } from '@liquid-js/lyr-core/base';
 import {
   NbCellDefDirective,
   NbCellDirective,
@@ -55,38 +39,21 @@ export const NB_TABLE_TEMPLATE = `
   <ng-container nbFooterRowOutlet></ng-container>
 `;
 
-export const NB_VIEW_REPEATER_STRATEGY = _VIEW_REPEATER_STRATEGY;
+export const NB_VIEW_REPEATER_STRATEGY = new InjectionToken('NB_VIEW_REPEATER_STRATEGY');
 
 export const NB_TABLE_PROVIDERS: Provider[] = [
   { provide: NB_VIEW_REPEATER_STRATEGY, useClass: _DisposeViewRepeaterStrategy },
 ];
 
 @Component({
-    selector: 'nb-table-not-implemented',
-    template: ``,
-    providers: NB_TABLE_PROVIDERS,
-    standalone: false
+  selector: 'nb-table-not-implemented',
+  template: ``,
+  providers: NB_TABLE_PROVIDERS,
+  // As in the CDK table, rows and the cells rendered into them are checked on every change detection.
+  changeDetection: ChangeDetectionStrategy.Eager,
 })
-// eslint-disable-next-line @angular-eslint/component-class-suffix
-export class NbTable<T> extends CdkTable<T> {
-  constructor(
-    differs: IterableDiffers,
-    changeDetectorRef: ChangeDetectorRef,
-    elementRef: ElementRef,
-    @Attribute('role') role: string,
-    dir: NbDirectionality,
-    @Inject(NB_DOCUMENT) document: any,
-    platform: NbPlatform,
-    @Inject(_VIEW_REPEATER_STRATEGY)
-    protected readonly _viewRepeater: _ViewRepeater<T, RenderRow<T>, RowContext<T>>,
-    _viewportRuler: NbViewportRulerAdapter,
-    @Optional() @SkipSelf() @Inject(NB_STICKY_POSITIONING_LISTENER)
-    protected readonly _stickyPositioningListener: StickyPositioningListener,
-  ) {
-    super(differs, changeDetectorRef, elementRef, role, dir, document, platform, _viewRepeater,
-          _viewportRuler, _stickyPositioningListener);
-  }
-}
+
+export class NbTable<T> extends CdkTable<T> {}
 
 const COMPONENTS = [
   NbTable,
@@ -119,8 +86,7 @@ const COMPONENTS = [
 ];
 
 @NgModule({
-  imports: [ NbBidiModule ],
-  declarations: [ ...COMPONENTS ],
-  exports: [ ...COMPONENTS ],
+  imports: [NbBidiModule, ...COMPONENTS],
+  exports: [...COMPONENTS],
 })
 export class NbTableModule extends CdkTableModule {}

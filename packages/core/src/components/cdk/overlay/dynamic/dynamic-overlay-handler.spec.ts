@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { Subject } from 'rxjs';
-import { Component, ComponentRef, ElementRef, Injectable, Input, Type } from '@angular/core';
+import { Component, ComponentRef, ElementRef, Type, input, Service } from '@angular/core';
 import { takeUntil } from 'rxjs/operators';
 import {
   NbOverlayConfig,
@@ -17,40 +17,38 @@ import {
   NbTriggerStrategy,
   NbTriggerStrategyBuilderService,
   NbLayoutDirectionService,
-} from '@nebular/theme';
+} from '@liquid-js/lyr-core';
 
 @Component({
-    template: '',
-    standalone: false
+  template: '',
 })
 export class NbDynamicOverlayMockComponent implements NbRenderableContainer {
-  @Input() content: any;
-  @Input() context: Object;
+  readonly content = input<any>();
+  readonly context = input<object>();
 
   renderContent() {}
 }
 
 @Component({
-    template: '',
-    standalone: false
+  template: '',
 })
 export class NbDynamicOverlayMock2Component extends NbDynamicOverlayMockComponent {}
 
-@Injectable()
+@Service({ autoProvided: false })
 export class NbMockDynamicOverlay {
-  _container: string = 'container';
-  _componentType: Type<NbRenderableContainer>;
-  _context: Object = {};
-  _content: NbOverlayContent;
-  _positionStrategy: NbAdjustableConnectedPositionStrategy;
-  _overlayConfig: NbOverlayConfig;
+  _container = 'container';
+  _componentType?: Type<NbRenderableContainer>;
+  _context: object = {};
+  _content?: NbOverlayContent;
+  _positionStrategy?: NbAdjustableConnectedPositionStrategy;
+  _overlayConfig?: NbOverlayConfig;
 
   constructor() {}
 
   create(
     componentType: Type<NbRenderableContainer>,
     content: NbOverlayContent,
-    context: Object,
+    context: object,
     positionStrategy: NbAdjustableConnectedPositionStrategy,
     overlayConfig: NbOverlayConfig,
   ) {
@@ -67,7 +65,7 @@ export class NbMockDynamicOverlay {
     this._content = content;
   }
 
-  setContext(context: Object) {
+  setContext(context: object) {
     this._context = context;
   }
 
@@ -79,7 +77,7 @@ export class NbMockDynamicOverlay {
     this._overlayConfig = overlayConfig;
   }
 
-  setContentAndContext(content: NbOverlayContent, context: Object) {
+  setContentAndContext(content: NbOverlayContent, context: object) {
     this._content = content;
     this._context = context;
   }
@@ -101,13 +99,13 @@ export class NbMockDynamicOverlay {
   }
 }
 
-@Injectable()
+@Service({ autoProvided: false })
 export class MockPositionBuilder {
   positionChange = new Subject();
-  _connectedTo: ElementRef<any>;
-  _position: NbPosition;
-  _adjustment: NbAdjustment;
-  _offset: number;
+  _connectedTo?: ElementRef<any>;
+  _position?: NbPosition;
+  _adjustment?: NbAdjustment;
+  _offset?: number;
 
   connectedTo(connectedTo: ElementRef<any>) {
     this._connectedTo = connectedTo;
@@ -124,7 +122,7 @@ export class MockPositionBuilder {
     return this;
   }
 
-  offset(offset) {
+  offset(offset: number) {
     this._offset = offset;
     return this;
   }
@@ -140,11 +138,11 @@ export class MockPositionBuilder {
   dispose() {}
 }
 
-@Injectable()
+@Service({ autoProvided: false })
 export class MockTriggerStrategyBuilder {
-  _host: HTMLElement;
-  _container: () => ComponentRef<any>;
-  _trigger: NbTrigger;
+  _host?: HTMLElement;
+  _container?: () => ComponentRef<any>;
+  _trigger?: NbTrigger;
 
   show$ = new Subject<any>();
   hide$ = new Subject<any>();
@@ -211,7 +209,7 @@ describe('dynamic-overlay-handler', () => {
   let triggerStrategyBuilder: any;
   let positionBuilder: any;
 
-  const configure = (host?): any => {
+  const configure = (host?: ElementRef): any => {
     host = host ? host : new ElementRef(document.createElement('b'));
     return overlayHandler.componentType(NbDynamicOverlayMockComponent).host(host);
   };
@@ -219,7 +217,7 @@ describe('dynamic-overlay-handler', () => {
   beforeEach(() => {
     TestBed.resetTestingModule();
     const bed = TestBed.configureTestingModule({
-      declarations: [NbDynamicOverlayMockComponent, NbDynamicOverlayMock2Component],
+      imports: [NbDynamicOverlayMockComponent, NbDynamicOverlayMock2Component],
       providers: [
         NbLayoutDirectionService,
         NbDynamicOverlayHandler,
@@ -272,8 +270,8 @@ describe('dynamic-overlay-handler', () => {
   it('should show/hide overlay when trigger strategy first', () => {
     const dynamic: any = configure().build();
 
-    const showSpy = spyOn(dynamic, 'show').and.callThrough();
-    const hideSpy = spyOn(dynamic, 'hide').and.callThrough();
+    const showSpy = vi.spyOn(dynamic, 'show');
+    const hideSpy = vi.spyOn(dynamic, 'hide');
 
     triggerStrategyBuilder.show$.next(true);
 
@@ -289,9 +287,9 @@ describe('dynamic-overlay-handler', () => {
   it('should destroy overlay and disconnect from trigger strategy', () => {
     const dynamic: any = configure().build();
 
-    const showSpy = spyOn(dynamic, 'show').and.callThrough();
-    const hideSpy = spyOn(dynamic, 'hide').and.callThrough();
-    const disposeSpy = spyOn(dynamic, 'dispose').and.callThrough();
+    const showSpy = vi.spyOn(dynamic, 'show');
+    const hideSpy = vi.spyOn(dynamic, 'hide');
+    const disposeSpy = vi.spyOn(dynamic, 'dispose');
 
     triggerStrategyBuilder.show$.next(true);
     triggerStrategyBuilder.hide$.next(true);
@@ -311,7 +309,7 @@ describe('dynamic-overlay-handler', () => {
   });
 
   it('should not destroy if nothing to destroy', () => {
-    const disposeSpy = spyOn(dynamicOverlay, 'dispose').and.callThrough();
+    const disposeSpy = vi.spyOn(dynamicOverlay, 'dispose');
 
     overlayHandler.destroy();
     expect(disposeSpy).toHaveBeenCalledTimes(0);
@@ -320,8 +318,8 @@ describe('dynamic-overlay-handler', () => {
   it('should not listen when disconnected', () => {
     const dynamic: any = configure().build();
 
-    const showSpy = spyOn(dynamic, 'show').and.callThrough();
-    const hideSpy = spyOn(dynamic, 'hide').and.callThrough();
+    const showSpy = vi.spyOn(dynamic, 'show');
+    const hideSpy = vi.spyOn(dynamic, 'hide');
 
     triggerStrategyBuilder.show$.next(true);
     triggerStrategyBuilder.hide$.next(true);
@@ -370,8 +368,8 @@ describe('dynamic-overlay-handler', () => {
     triggerStrategyBuilder.hide$ = triggerHide1$;
 
     let dynamic: any = configure().build();
-    const showSpy = spyOn(dynamic, 'show').and.callThrough();
-    const hideSpy = spyOn(dynamic, 'hide').and.callThrough();
+    const showSpy = vi.spyOn(dynamic, 'show');
+    const hideSpy = vi.spyOn(dynamic, 'hide');
 
     triggerShow1$.next();
     triggerHide1$.next();
@@ -513,10 +511,10 @@ describe('dynamic-overlay-handler', () => {
     let overlayConfig: NbOverlayConfig = { panelClass: 'custom-class' };
 
     let dynamic = configure().overlayConfig(overlayConfig).build();
-    expect(dynamic._overlayConfig).toEqual(jasmine.objectContaining(overlayConfig));
+    expect(dynamic._overlayConfig).toEqual(expect.objectContaining(overlayConfig));
 
     overlayConfig = { panelClass: 'other-custom-class' };
     dynamic = configure().overlayConfig(overlayConfig).rebuild();
-    expect(dynamic._overlayConfig).toEqual(jasmine.objectContaining(overlayConfig));
+    expect(dynamic._overlayConfig).toEqual(expect.objectContaining(overlayConfig));
   });
 });

@@ -1,25 +1,21 @@
-import { Inject, Injectable, NgZone } from '@angular/core';
-import { CdkScrollable, ScrollDispatcher } from '@angular/cdk/overlay';
+import { inject, Service } from '@angular/core';
+import { ScrollDispatcher } from '@angular/cdk/overlay';
+import { ScrollDispatcherTarget } from '@angular/cdk/scrolling';
 import { merge, Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 
-import { NbPlatform } from '../platform/platform-service';
-import { NbLayoutScrollService } from '../../../services/scroll.service';
-import { NB_DOCUMENT } from '../../../theme.options';
+import { NbLayoutScrollService } from '@liquid-js/lyr-core/base';
 
-@Injectable()
+/** The CDK's scroll dispatcher, reporting the layout's scrolls too, so overlays follow a layout that scrolls. */
+@Service({ autoProvided: false })
 export class NbScrollDispatcherAdapter extends ScrollDispatcher {
-  constructor(ngZone: NgZone,
-              platform: NbPlatform,
-              protected scrollService: NbLayoutScrollService,
-              @Inject(NB_DOCUMENT) document: any) {
-    super(ngZone, platform, document);
-  }
+  protected readonly scrollService = inject(NbLayoutScrollService);
 
-  scrolled(auditTimeInMs?: number): Observable<CdkScrollable | void> {
+  // The layout's scrolls come without a target, like the CDK's own window scrolls.
+  override scrolled(auditTimeInMs?: number): Observable<ScrollDispatcherTarget | void> {
     return merge(
       super.scrolled(auditTimeInMs),
-      this.scrollService.onScroll(),
+      this.scrollService.onScroll().pipe(map(() => undefined)),
     );
   }
 }
-

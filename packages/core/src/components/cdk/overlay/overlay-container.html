@@ -1,0 +1,5 @@
+@if (isStringContent()) {
+<!-- The app's text takes its own direction, without changing the overlay's alignment. -->
+<div class="primitive-overlay"><span dir="auto">{{ content() }}</span></div>
+}
+<ng-template nbPortalOutlet />

@@ -1,4 +1,4 @@
-@use '@angular/cdk/overlay-prebuilt';
+@use '@angular/cdk' as cdk;
 @use '../../../styles/theming' as *;
 
 @mixin nb-overlay-theme {
@@ -6,18 +6,49 @@
     background: nb-theme(overlay-backdrop-background-color);
   }
 
+  // Above the fixed layout header (1040), so overlays opened from it aren't covered by it.
   .cdk-overlay-container {
-    z-index: 1040;
+    z-index: 1045;
   }
 }
 
-/**
- * In case when Nebular Layout custom scroll `withScroll` mode is enabled
- * we need to disable default CDK scroll blocker (@link NbBlockScrollStrategyAdapter) on HTML element
- * so that it won't add additional positioning.
- */
-.nb-global-scrollblock {
-  position: static;
-  width: auto;
-  overflow: hidden;
+/// The CDK's overlay structure, and Lyra's scroll block: written once by nb-theme-base(), outside any theme.
+@mixin nb-overlay-base() {
+  @include cdk.overlay();
+
+  // With the layout's own scroll (`withScroll`), the CDK's scroll blocker (NbBlockScrollStrategyAdapter) leaves the
+  // html element's position alone.
+  .nb-global-scrollblock {
+    position: static;
+    width: auto;
+    overflow: hidden;
+  }
+
+  // A backdrop fades at the pace of the pane over it (the CDK's is 400ms).
+  .cdk-overlay-backdrop {
+    transition-duration: 0.15s;
+  }
+
+  // Overlays fade in, rising a little, and fade out: lists, pickers, popovers and context menus.
+  .nb-overlay-enter {
+    animation: nb-overlay-fade 0.12s ease-out;
+  }
+
+  .nb-overlay-leave {
+    animation: nb-overlay-fade 0.1s ease-in reverse forwards;
+  }
+
+  @keyframes nb-overlay-fade {
+    from {
+      opacity: 0;
+      transform: translateY(-0.25rem);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .nb-overlay-enter,
+    .nb-overlay-leave {
+      animation: none;
+    }
+  }
 }

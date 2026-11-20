@@ -1,10 +1,5 @@
-/*
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license infornbion.
- */
-
-import { Directive, ElementRef, InjectionToken, Input } from '@angular/core';
+import { Directive, ElementRef, InjectionToken, Input, inject, input } from '@angular/core';
+import { DataSource } from '@angular/cdk/collections';
 import {
   CdkCell,
   CdkCellDef,
@@ -16,71 +11,90 @@ import {
 } from '@angular/cdk/table';
 import { coerceBooleanProperty } from '@angular/cdk/coercion';
 
-/**
- * Cell definition for the nb-table.
- * Captures the template of a column's data row cell as well as cell-specific properties.
- */
-@Directive({
-    selector: '[nbCellDef]',
-    providers: [{ provide: CdkCellDef, useExisting: NbCellDefDirective }],
-    standalone: false
-})
-export class NbCellDefDirective extends CdkCellDef {}
+/** Where a table's rows come from, which gives its row and cell templates their type. */
+export type NbTableRowsOf<T> = DataSource<T> | readonly T[];
+
+/** What a table's row and cell templates get: the row, and where it is. */
+export interface NbTableRowContext<T> {
+  $implicit: T;
+  index?: number;
+  /** The row's index in the data, with detail rows. */
+  dataIndex?: number;
+  /** The rendered row's index, with detail rows. */
+  renderIndex?: number;
+  count?: number;
+  first?: boolean;
+  last?: boolean;
+  even?: boolean;
+  odd?: boolean;
+}
 
 /**
- * Header cell definition for the nb-table.
- * Captures the template of a column's header cell and as well as cell-specific properties.
+ * A column's cell template. `of` names where the rows come from, so the row is typed:
+ * `<td nbCell *nbCellDef="let user; of: source">{{ user.name }}</td>`.
  */
 @Directive({
-    selector: '[nbHeaderCellDef]',
-    providers: [{ provide: CdkHeaderCellDef, useExisting: NbHeaderCellDefDirective }],
-    standalone: false
+  selector: '[nbCellDef]',
+  providers: [{ provide: CdkCellDef, useExisting: NbCellDefDirective }],
+})
+export class NbCellDefDirective<T = unknown> extends CdkCellDef {
+  /** Where the rows come from, for the row's type in the template only. */
+  readonly of = input<NbTableRowsOf<T> | undefined>(undefined, { alias: 'nbCellDefOf' });
+
+  static ngTemplateContextGuard<T>(
+    _directive: NbCellDefDirective<T>,
+    _context: unknown,
+  ): _context is NbTableRowContext<T> {
+    return true;
+  }
+}
+
+/** A column's header cell template: `<th nbHeaderCell *nbHeaderCellDef>Name</th>`. */
+@Directive({
+  selector: '[nbHeaderCellDef]',
+  providers: [{ provide: CdkHeaderCellDef, useExisting: NbHeaderCellDefDirective }],
 })
 export class NbHeaderCellDefDirective extends CdkHeaderCellDef {}
 
-/**
- * Footer cell definition for the nb-table.
- * Captures the template of a column's footer cell and as well as cell-specific properties.
- */
+/** A column's footer cell template: `<td nbFooterCell *nbFooterCellDef>Total</td>`. */
 @Directive({
-    selector: '[nbFooterCellDef]',
-    providers: [{ provide: CdkFooterCellDef, useExisting: NbFooterCellDefDirective }],
-    standalone: false
+  selector: '[nbFooterCellDef]',
+  providers: [{ provide: CdkFooterCellDef, useExisting: NbFooterCellDefDirective }],
 })
 export class NbFooterCellDefDirective extends CdkFooterCellDef {}
 
 export const NB_SORT_HEADER_COLUMN_DEF = new InjectionToken('NB_SORT_HEADER_COLUMN_DEF');
 
 /**
- * Column definition for the nb-table.
- * Defines a set of cells available for a table column.
+ * A table column, named by `nbColumnDef`, holding its header, data and footer cell templates. Its cells get the
+ * class `nb-column-<name>`.
  */
 @Directive({
-    selector: '[nbColumnDef]',
-    providers: [
-        { provide: CdkColumnDef, useExisting: NbColumnDefDirective },
-        { provide: NB_SORT_HEADER_COLUMN_DEF, useExisting: NbColumnDefDirective },
-    ],
-    standalone: false
+  selector: '[nbColumnDef]',
+  providers: [
+    { provide: CdkColumnDef, useExisting: NbColumnDefDirective },
+    { provide: NB_SORT_HEADER_COLUMN_DEF, useExisting: NbColumnDefDirective },
+  ],
 })
 export class NbColumnDefDirective extends CdkColumnDef {
+  // The CDK table reads these as plain properties of its base class, so they stay decorated inputs.
   private _hasStickyCellChanged = false;
 
-  /** Unique name for this column. */
+  /** The column's name, unique in the table; the row definitions list the columns to show by it. */
   @Input('nbColumnDef')
-  get name(): string {
+  override get name(): string {
     return this._name;
   }
-  set name(value: string) {
+  override set name(value: string) {
     this._setNameInput(value);
   }
 
-  /** Whether this column should be sticky positioned at the start of the row */
+  /** Whether the column stays in view at the start of the row as the table scrolls sideways. */
   @Input()
-  get sticky(): boolean {
+  override get sticky(): boolean {
     return this._stickyCell;
   }
-  set sticky(value: boolean) {
+  override set sticky(value: boolean) {
     if (value !== this._stickyCell) {
       this._stickyCell = value;
       this._hasStickyCellChanged = true;
@@ -88,74 +102,76 @@ export class NbColumnDefDirective extends CdkColumnDef {
   }
   private _stickyCell = false;
 
-  /** Whether this column should be sticky positioned on the end of the row */
+  /** Whether the column stays in view at the end of the row as the table scrolls sideways. */
   @Input()
-  get stickyEnd(): boolean {
+  override get stickyEnd(): boolean {
     return this._stickyEnd;
   }
-  set stickyEnd(value: boolean) {
+  override set stickyEnd(value: boolean) {
     const prevValue = this._stickyEnd;
     this._stickyEnd = coerceBooleanProperty(value);
     this._hasStickyCellChanged = prevValue !== this._stickyEnd;
   }
 
-  /** Whether the sticky state has changed. */
-  hasStickyChanged(): boolean {
+  /** Whether `sticky` or `stickyEnd` changed since last asked; asking resets it. */
+  override hasStickyChanged(): boolean {
     const hasStickyChanged = this._hasStickyCellChanged;
     this.resetStickyChanged();
     return hasStickyChanged;
   }
 
-  /** Resets the sticky changed state. */
-  resetStickyChanged(): void {
+  override resetStickyChanged() {
     this._hasStickyCellChanged = false;
   }
 }
 
-/** Header cell template container that adds the right classes and role. */
+/** A header cell, with the `nb-header-cell` and `nb-column-<name>` classes and the `columnheader` role. */
 @Directive({
-    selector: 'nb-header-cell, th[nbHeaderCell]',
-    host: {
-        class: 'nb-header-cell',
-        role: 'columnheader',
-    },
-    standalone: false
+  selector: 'nb-header-cell, th[nbHeaderCell]',
+  host: {
+    class: 'nb-header-cell',
+    role: 'columnheader',
+  },
 })
 export class NbHeaderCellDirective extends CdkHeaderCell {
-  constructor(columnDef: NbColumnDefDirective, elementRef: ElementRef<HTMLElement>) {
-    super(columnDef, elementRef);
+  constructor() {
+    super();
+    const columnDef = inject(NbColumnDefDirective);
+    const elementRef = inject(ElementRef);
     elementRef.nativeElement.classList.add(`nb-column-${columnDef.cssClassFriendlyName}`);
   }
 }
 
-/** Footer cell template container that adds the right classes and role. */
+/** A footer cell, with the `nb-footer-cell` and `nb-column-<name>` classes and the `gridcell` role. */
 @Directive({
-    selector: 'nb-footer-cell, td[nbFooterCell]',
-    host: {
-        class: 'nb-footer-cell',
-        role: 'gridcell',
-    },
-    standalone: false
+  selector: 'nb-footer-cell, td[nbFooterCell]',
+  host: {
+    class: 'nb-footer-cell',
+    role: 'gridcell',
+  },
 })
 export class NbFooterCellDirective extends CdkFooterCell {
-  constructor(columnDef: NbColumnDefDirective, elementRef: ElementRef) {
-    super(columnDef, elementRef);
+  constructor() {
+    super();
+    const columnDef = inject(NbColumnDefDirective);
+    const elementRef = inject(ElementRef);
     elementRef.nativeElement.classList.add(`nb-column-${columnDef.cssClassFriendlyName}`);
   }
 }
 
-/** Cell template container that adds the right classes and role. */
+/** A data cell, with the `nb-cell` and `nb-column-<name>` classes and the `gridcell` role. */
 @Directive({
-    selector: 'nb-cell, td[nbCell]',
-    host: {
-        class: 'nb-cell',
-        role: 'gridcell',
-    },
-    standalone: false
+  selector: 'nb-cell, td[nbCell]',
+  host: {
+    class: 'nb-cell',
+    role: 'gridcell',
+  },
 })
 export class NbCellDirective extends CdkCell {
-  constructor(columnDef: NbColumnDefDirective, elementRef: ElementRef<HTMLElement>) {
-    super(columnDef, elementRef);
+  constructor() {
+    super();
+    const columnDef = inject(NbColumnDefDirective);
+    const elementRef = inject(ElementRef);
     elementRef.nativeElement.classList.add(`nb-column-${columnDef.cssClassFriendlyName}`);
   }
 }

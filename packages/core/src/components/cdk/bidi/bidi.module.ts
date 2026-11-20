@@ -1,10 +1,5 @@
 import { NgModule } from '@angular/core';
-import { BidiModule, Directionality } from '@angular/cdk/bidi';
-import { NbDirectionality } from './bidi-service';
+import { BidiModule } from '@angular/cdk/bidi';
 
-@NgModule({
-  providers: [
-    { provide: NbDirectionality, useExisting: Directionality },
-  ],
-})
+@NgModule({})
 export class NbBidiModule extends BidiModule {}

@@ -1,6 +1,5 @@
 import { ModuleWithProviders, NgModule } from '@angular/core';
 
-import { NbSharedModule } from '../../shared/shared.module';
 import { NbA11yModule } from '../a11y/a11y.module';
 import { NbCdkMappingModule } from './mapping';
 import { NbPositionBuilderService } from './overlay-position';
@@ -10,24 +9,12 @@ import { NbCdkAdapterModule } from '../adapter/adapter.module';
 import { NbPositionHelper } from './position-helper';
 import { NbTriggerStrategyBuilderService } from './overlay-trigger';
 
-
 @NgModule({
-  imports: [
-    NbCdkMappingModule,
-    NbSharedModule,
-  ],
-  declarations: [
-    NbPositionedContainerComponent,
-    NbOverlayContainerComponent,
-  ],
-  exports: [
-    NbCdkMappingModule,
-    NbCdkAdapterModule,
-    NbOverlayContainerComponent,
-  ],
+  imports: [NbCdkMappingModule, NbPositionedContainerComponent, NbOverlayContainerComponent],
+  exports: [NbCdkMappingModule, NbCdkAdapterModule, NbOverlayContainerComponent],
 })
 export class NbOverlayModule {
-  static forRoot(): ModuleWithProviders<NbOverlayModule> {
+  static forRoot(): Required<ModuleWithProviders<NbOverlayModule>> {
     return {
       ngModule: NbOverlayModule,
       providers: [

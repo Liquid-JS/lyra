@@ -1,43 +1,32 @@
-import { Inject, Injectable, NgZone } from '@angular/core';
+import { inject, Service } from '@angular/core';
 import { ViewportRuler } from '@angular/cdk/overlay';
 import { map } from 'rxjs/operators';
 
-import { NbPlatform } from '../platform/platform-service';
-import { NbLayoutRulerService } from '../../../services/ruler.service';
-import { NbLayoutScrollService, NbScrollPosition } from '../../../services/scroll.service';
-import { NB_DOCUMENT } from '../../../theme.options';
+import { NbLayoutRulerService } from '@liquid-js/lyr-core/base';
+import { NbLayoutScrollService, NbScrollPosition } from '@liquid-js/lyr-core/base';
 
-
-@Injectable()
+/** The CDK's viewport ruler, measuring the layout's scroll container instead of the window when there's a layout. */
+@Service({ autoProvided: false })
 export class NbViewportRulerAdapter extends ViewportRuler {
-  constructor(platform: NbPlatform, ngZone: NgZone,
-              protected ruler: NbLayoutRulerService,
-              protected scroll: NbLayoutScrollService,
-              @Inject(NB_DOCUMENT) document: any) {
-    super(platform, ngZone, document);
-  }
+  protected readonly ruler = inject(NbLayoutRulerService);
+  protected readonly scroll = inject(NbLayoutScrollService);
 
-  getViewportSize(): Readonly<{ width: number; height: number; }> {
+  override getViewportSize(): Readonly<{ width: number; height: number }> {
     let res;
-    /*
-    * getDimensions call is really synchronous operation.
-    * And we have to conform with the interface of the original service.
-    * */
+    // The layout answers getDimensions() synchronously, which the CDK's synchronous interface relies on.
     this.ruler.getDimensions()
-      .pipe(map(dimensions => ({ width: dimensions.clientWidth, height: dimensions.clientHeight })))
-      .subscribe(rect => res = rect);
-    return res;
+      .pipe(map((dimensions) => ({ width: dimensions.clientWidth, height: dimensions.clientHeight })))
+      .subscribe((rect) => res = rect);
+    // Without a layout to measure, the window is the viewport.
+    return res ?? super.getViewportSize();
   }
 
-  getViewportScrollPosition(): { left: number; top: number } {
+  override getViewportScrollPosition(): { left: number; top: number } {
     let res;
-    /*
-    * getPosition call is really synchronous operation.
-    * And we have to conform with the interface of the original service.
-    * */
+    // The layout answers getPosition() synchronously, which the CDK's synchronous interface relies on.
     this.scroll.getPosition()
       .pipe(map((position: NbScrollPosition) => ({ top: position.y, left: position.x })))
-      .subscribe(position => res = position);
-    return res;
+      .subscribe((position) => res = position);
+    return res ?? super.getViewportScrollPosition();
   }
 }

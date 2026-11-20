@@ -1,6 +1,6 @@
-import { Injectable } from '@angular/core';
+import { inject, Service } from '@angular/core';
 
-import { NbLayoutDirectionService } from '../../../services/direction.service';
+import { NbLayoutDirectionService } from '@liquid-js/lyr-core/base';
 
 export enum NbGlobalLogicalPosition {
   TOP_START = 'top-start',
@@ -16,11 +16,16 @@ export enum NbGlobalPhysicalPosition {
   BOTTOM_LEFT = 'bottom-left',
 }
 
-export type NbGlobalPosition = NbGlobalPhysicalPosition | NbGlobalLogicalPosition;
+/** A place on the screen: a member of either enum, or its value, e.g. `'bottom-end'`. */
+export type NbGlobalPosition =
+  | NbGlobalPhysicalPosition
+  | NbGlobalLogicalPosition
+  | `${NbGlobalPhysicalPosition}`
+  | `${NbGlobalLogicalPosition}`;
 
-@Injectable()
+@Service()
 export class NbPositionHelper {
-  constructor(protected layoutDirection: NbLayoutDirectionService) {}
+  protected readonly layoutDirection = inject(NbLayoutDirectionService);
 
   toLogicalPosition(position: NbGlobalPosition): NbGlobalLogicalPosition {
     if (Object.values(NbGlobalLogicalPosition).includes(position as NbGlobalLogicalPosition)) {

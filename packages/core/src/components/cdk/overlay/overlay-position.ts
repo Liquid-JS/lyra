@@ -1,10 +1,10 @@
-import { ElementRef, Inject, Injectable } from '@angular/core';
-import { GlobalPositionStrategy } from '@angular/cdk/overlay';
+import { ElementRef, inject, Service } from '@angular/core';
+import { FlexibleConnectedPositionStrategyOrigin, GlobalPositionStrategy } from '@angular/cdk/overlay';
 
 import { map } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 
-import { NB_DOCUMENT } from '../../../theme.options';
+import { NB_DOCUMENT } from '@liquid-js/lyr-core/base';
 import {
   NbConnectedOverlayPositionChange,
   NbConnectedPosition,
@@ -14,11 +14,11 @@ import {
   NbOverlayRef,
   NbPositionStrategy,
 } from './mapping';
-import { NbPlatform } from '../platform/platform-service';
+import { NbPlatform } from '@liquid-js/lyr-core/base';
 import { NbOverlayContainerAdapter } from '../adapter/overlay-container-adapter';
 import { NbViewportRulerAdapter } from '../adapter/viewport-ruler-adapter';
 import { NbGlobalLogicalPosition } from './position-helper';
-import { NbLayoutDirection } from '../../../services/direction.service';
+import { NbLayoutDirection } from '@liquid-js/lyr-core/base';
 
 export type NbAdjustmentValues = 'noop' | 'clockwise' | 'counterclockwise' | 'vertical' | 'horizontal';
 export enum NbAdjustment {
@@ -61,63 +61,66 @@ export enum NbPosition {
   START_BOTTOM = 'start-bottom',
 }
 
-const POSITIONS = {
-  [NbPosition.RIGHT](offset) {
+/** The connected position for each position, at the given offset from the host. */
+type NbPositionGrid = Record<NbPosition, (offset: number) => NbConnectedPosition>;
+
+const POSITIONS: NbPositionGrid = {
+  [NbPosition.RIGHT](offset: number) {
     return { originX: 'end', originY: 'center', overlayX: 'start', overlayY: 'center', offsetX: offset };
   },
-  [NbPosition.BOTTOM](offset) {
+  [NbPosition.BOTTOM](offset: number) {
     return { originX: 'center', originY: 'bottom', overlayX: 'center', overlayY: 'top', offsetY: offset };
   },
-  [NbPosition.LEFT](offset) {
+  [NbPosition.LEFT](offset: number) {
     return { originX: 'start', originY: 'center', overlayX: 'end', overlayY: 'center', offsetX: -offset };
   },
-  [NbPosition.TOP](offset) {
+  [NbPosition.TOP](offset: number) {
     return { originX: 'center', originY: 'top', overlayX: 'center', overlayY: 'bottom', offsetY: -offset };
   },
-  [NbPosition.START](offset) {
+  [NbPosition.START](offset: number) {
     return this[NbPosition.LEFT](offset);
   },
-  [NbPosition.END](offset) {
+  [NbPosition.END](offset: number) {
     return this[NbPosition.RIGHT](offset);
   },
-  [NbPosition.END_TOP](offset) {
+  [NbPosition.END_TOP](offset: number) {
     return { originX: 'end', originY: 'bottom', overlayX: 'start', overlayY: 'bottom', offsetX: offset };
   },
-  [NbPosition.END_BOTTOM](offset) {
+  [NbPosition.END_BOTTOM](offset: number) {
     return { originX: 'end', originY: 'top', overlayX: 'start', overlayY: 'top', offsetX: offset };
   },
-  [NbPosition.BOTTOM_START](offset) {
+  [NbPosition.BOTTOM_START](offset: number) {
     return { originX: 'end', originY: 'bottom', overlayX: 'end', overlayY: 'top', offsetY: offset };
   },
-  [NbPosition.BOTTOM_END](offset) {
+  [NbPosition.BOTTOM_END](offset: number) {
     return { originX: 'start', originY: 'bottom', overlayX: 'start', overlayY: 'top', offsetY: offset };
   },
-  [NbPosition.START_TOP](offset) {
+  [NbPosition.START_TOP](offset: number) {
     return { originX: 'start', originY: 'bottom', overlayX: 'end', overlayY: 'bottom', offsetX: -offset };
   },
-  [NbPosition.START_BOTTOM](offset) {
+  [NbPosition.START_BOTTOM](offset: number) {
     return { originX: 'start', originY: 'top', overlayX: 'end', overlayY: 'top', offsetX: -offset };
   },
-  [NbPosition.TOP_START](offset) {
+  [NbPosition.TOP_START](offset: number) {
     return { originX: 'end', originY: 'top', overlayX: 'end', overlayY: 'bottom', offsetY: -offset };
   },
-  [NbPosition.TOP_END](offset) {
+  [NbPosition.TOP_END](offset: number) {
     return { originX: 'start', originY: 'top', overlayX: 'start', overlayY: 'bottom', offsetY: -offset };
   },
 };
 
-const RTL_PHYSICAL_POSITIONS = {
+const RTL_PHYSICAL_POSITIONS: NbPositionGrid = {
   ...POSITIONS,
-  [NbPosition.RIGHT](offset) {
+  [NbPosition.RIGHT](offset: number) {
     return { originX: 'start', originY: 'center', overlayX: 'end', overlayY: 'center', offsetX: offset };
   },
-  [NbPosition.LEFT](offset) {
+  [NbPosition.LEFT](offset: number) {
     return { originX: 'end', originY: 'center', overlayX: 'start', overlayY: 'center', offsetX: -offset };
   },
-  [NbPosition.START](offset) {
+  [NbPosition.START](offset: number) {
     return this[NbPosition.RIGHT](offset);
   },
-  [NbPosition.END](offset) {
+  [NbPosition.END](offset: number) {
     return this[NbPosition.LEFT](offset);
   },
 };
@@ -160,34 +163,51 @@ function comparePositions(p1: NbConnectedPosition, p2: NbConnectedPosition): boo
 }
 
 /**
- * The main idea of the adjustable connected strategy is to provide predefined set of positions for your overlay.
- * You have to provide adjustment and appropriate strategy will be chosen in runtime.
- * */
+ * A connected position strategy with Lyra's named positions: the overlay takes `position`, or with an `adjustment`
+ * the first of the positions it tries, in order, that fits. `positionChange` tells which one was applied.
+ *
+ * `left` and `right` are physical; `start` and `end` and the adjustments follow the layout `direction`.
+ */
 export class NbAdjustableConnectedPositionStrategy
   extends NbFlexibleConnectedPositionStrategy
-  implements NbPositionStrategy
-{
-  protected _position: NbPosition;
-  protected _offset: number = 15;
-  protected _adjustment: NbAdjustment;
-  protected _direction: NbLayoutDirection | undefined;
+  implements NbPositionStrategy {
+  protected _position = NbPosition.TOP;
+  protected _offset = 15;
+  protected _adjustment = NbAdjustment.NOOP;
+  protected _direction?: NbLayoutDirection;
 
-  protected appliedPositions: { key: NbPosition; connectedPosition: NbConnectedPosition }[];
+  protected appliedPositions = new Array<{ key: NbPosition; connectedPosition: NbConnectedPosition }>();
+
+  // Set while the base class constructs, which calls setOrigin(); a declared field isn't reset after it.
+  protected declare originElementValue?: Element;
+
+  /** The element the overlay is placed against, when it's an element rather than a point. */
+  get originElement(): Element | undefined {
+    return this.originElementValue;
+  }
+
+  override setOrigin(origin: FlexibleConnectedPositionStrategyOrigin): this {
+    // An ElementRef, or an object like one.
+    const element: unknown = typeof origin === 'object' && 'nativeElement' in origin ? origin.nativeElement : origin;
+    this.originElementValue = typeof Element !== 'undefined' && element instanceof Element ? element : undefined;
+    return super.setOrigin(origin);
+  }
 
   readonly positionChange: Observable<NbPosition> = this.positionChanges.pipe(
     map((positionChange: NbConnectedOverlayPositionChange) => positionChange.connectionPair),
     map((connectionPair: NbConnectionPositionPair) => {
-      return this.appliedPositions.find(({ connectedPosition }) => {
+      const applied = this.appliedPositions.find(({ connectedPosition }) => {
         return comparePositions(connectedPosition, connectionPair);
-      }).key;
+      });
+      if (!applied) {
+        throw new Error('NbAdjustableConnectedPositionStrategy: the overlay moved to a position it wasn\'t given.');
+      }
+      return applied.key;
     }),
   );
 
-  attach(overlayRef: NbOverlayRef) {
-    /**
-     * We have to apply positions before attach because super.attach() validates positions and crashes app
-     * if no positions provided.
-     * */
+  override attach(overlayRef: NbOverlayRef) {
+    // Before super.attach(), which throws without positions.
     this.applyPositions();
     super.attach(overlayRef);
   }
@@ -197,7 +217,7 @@ export class NbAdjustableConnectedPositionStrategy
     return this;
   }
 
-  apply() {
+  override apply() {
     this.applyPositions();
     super.apply();
   }
@@ -253,7 +273,7 @@ export class NbAdjustableConnectedPositionStrategy
 
     this.appliedPositions = positions.map((position) => ({
       key: position,
-      connectedPosition: positionGrid[position](this._offset) as NbConnectedPosition,
+      connectedPosition: positionGrid[position](this._offset),
     }));
   }
 
@@ -268,32 +288,31 @@ export class NbAdjustableConnectedPositionStrategy
 }
 
 export class NbGlobalPositionStrategy extends GlobalPositionStrategy {
+  // `start()` and `end()`, not `left()` and `right()`, which are physical: the overlay resolves them for its direction.
   position(position: NbGlobalLogicalPosition): this {
     switch (position) {
       case NbGlobalLogicalPosition.TOP_START:
-        return this.top().left();
+        return this.top().start();
 
       case NbGlobalLogicalPosition.TOP_END:
-        return this.top().right();
+        return this.top().end();
 
       case NbGlobalLogicalPosition.BOTTOM_START:
-        return this.bottom().left();
+        return this.bottom().start();
 
       case NbGlobalLogicalPosition.BOTTOM_END:
-        return this.bottom().right();
+        return this.bottom().end();
     }
   }
 }
 
-@Injectable()
+@Service()
 export class NbPositionBuilderService {
-  constructor(
-    @Inject(NB_DOCUMENT) protected document,
-    protected viewportRuler: NbViewportRulerAdapter,
-    protected platform: NbPlatform,
-    protected positionBuilder: NbOverlayPositionBuilder,
-    protected overlayContainer: NbOverlayContainerAdapter,
-  ) {}
+  protected readonly document = inject(NB_DOCUMENT);
+  protected readonly viewportRuler = inject(NbViewportRulerAdapter);
+  protected readonly platform = inject(NbPlatform);
+  protected readonly positionBuilder = inject(NbOverlayPositionBuilder);
+  protected readonly overlayContainer = inject(NbOverlayContainerAdapter);
 
   global(): NbGlobalPositionStrategy {
     return new NbGlobalPositionStrategy();

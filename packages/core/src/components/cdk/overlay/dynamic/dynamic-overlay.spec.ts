@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { Component, EventEmitter, Input, NgZone } from '@angular/core';
+import { ApplicationRef, Component, input } from '@angular/core';
 import { Subject } from 'rxjs';
 import { ScrollStrategy } from '@angular/cdk/overlay';
 import {
@@ -9,44 +9,22 @@ import {
   NbComponentPortal,
   NbOverlayConfig,
   NbOverlayContainer,
-} from '@nebular/theme';
+} from '@liquid-js/lyr-core';
 
 @Component({
-    template: '',
-    standalone: false
+  template: '',
 })
 export class NbDynamicOverlayMockComponent implements NbRenderableContainer {
-  @Input() content: any;
-  @Input() context: Object;
+  readonly content = input<any>();
+  readonly context = input<object>();
 
   renderContent() {}
 }
 
 @Component({
-    template: '',
-    standalone: false
+  template: '',
 })
 export class NbDynamicOverlayMock2Component extends NbDynamicOverlayMockComponent {}
-
-export class MockNgZone extends NgZone {
-  onStable: EventEmitter<any> = new EventEmitter(false);
-
-  constructor() {
-    super({ enableLongStackTrace: false });
-  }
-
-  run(fn: Function): any {
-    return fn();
-  }
-
-  runOutsideAngular(fn: Function): any {
-    return fn();
-  }
-
-  simulateZoneExit(): void {
-    this.onStable.emit(null);
-  }
-}
 
 const instance = {
   position: '',
@@ -58,11 +36,11 @@ const instance = {
 
 const container: any = {
   instance,
-  changeDetectorRef: { detectChanges: () => {} },
+  changeDetectorRef: { detectChanges: () => {}, markForCheck: () => {} },
 };
 
 const ref = {
-  portal: null,
+  portal: undefined as NbComponentPortal | undefined,
 
   hasAttached(): boolean {
     return false;
@@ -94,7 +72,7 @@ export class NbOverlayContainerMock {
 }
 
 export class NbOverlayServiceMock {
-  _config: NbOverlayConfig;
+  _config: NbOverlayConfig = {};
 
   get scrollStrategies() {
     return scrollStrategies;
@@ -110,6 +88,7 @@ export class NbOverlayServiceMock {
 class PositionStrategy {
   constructor(public position: string) {}
   positionChange = new Subject<any>();
+  originElement?: Element;
 }
 
 const bottomPositionStrategy: any = new PositionStrategy('bottom');
@@ -119,24 +98,21 @@ describe('dynamic-overlay', () => {
   let dynamicOverlayService: NbDynamicOverlay;
   let dynamicOverlay: NbDynamicOverlay;
   let overlayService: NbOverlayServiceMock;
-  let zone: MockNgZone;
   const content = 'Overlay Content';
   const context = {};
 
   beforeEach(() => {
     TestBed.resetTestingModule();
     const bed = TestBed.configureTestingModule({
-      declarations: [NbDynamicOverlayMockComponent, NbDynamicOverlayMock2Component],
+      imports: [NbDynamicOverlayMockComponent, NbDynamicOverlayMock2Component],
       providers: [
         NbDynamicOverlay,
         { provide: NbOverlayService, useClass: NbOverlayServiceMock },
-        { provide: NgZone, useClass: MockNgZone },
         { provide: NbOverlayContainer, useClass: NbOverlayContainerMock },
       ],
     });
     overlayService = bed.inject(NbOverlayService) as unknown as NbOverlayServiceMock;
     dynamicOverlayService = bed.inject(NbDynamicOverlay);
-    zone = bed.inject(NgZone) as unknown as MockNgZone;
   });
 
   beforeEach(() => {
@@ -153,12 +129,12 @@ describe('dynamic-overlay', () => {
   });
 
   it('should create overlay when show called', () => {
-    const createOverlaySpy = spyOn(overlayService, 'create').and.callThrough();
-    const renderSpy = spyOn(instance, 'renderContent').and.callThrough();
-    const repositionSpy = spyOn(scrollStrategies, 'reposition').and.callThrough();
-    const attachSpy = spyOn(ref, 'attach').and.callThrough();
+    const createOverlaySpy = vi.spyOn(overlayService, 'create');
+    const renderSpy = vi.spyOn(instance, 'renderContent');
+    const repositionSpy = vi.spyOn(scrollStrategies, 'reposition');
+    const attachSpy = vi.spyOn(ref, 'attach');
     dynamicOverlay.show();
-    spyOn(ref, 'hasAttached').and.returnValue(true);
+    vi.spyOn(ref, 'hasAttached').mockReturnValue(true);
 
     expect(createOverlaySpy).toHaveBeenCalledTimes(1);
     expect(renderSpy).toHaveBeenCalledTimes(1);
@@ -169,29 +145,29 @@ describe('dynamic-overlay', () => {
     expect(overlayService._config.scrollStrategy as any).toBe(repositionRes);
     expect(dynamicOverlay.isAttached).toBe(true);
 
-    expect(ref.portal.component).toBe(NbDynamicOverlayMockComponent);
+    expect(ref.portal?.component).toBe(NbDynamicOverlayMockComponent);
     expect(instance.content).toBe(content);
     expect(instance.context).toBe(context);
   });
 
   it('should destroy overlay when hide called', () => {
-    const detachSpy = spyOn(ref, 'detach').and.callThrough();
+    const detachSpy = vi.spyOn(ref, 'detach');
     dynamicOverlay.show();
     dynamicOverlay.hide();
-    spyOn(ref, 'hasAttached').and.returnValue(false);
+    vi.spyOn(ref, 'hasAttached').mockReturnValue(false);
 
     expect(detachSpy).toHaveBeenCalledTimes(1);
     expect(dynamicOverlay.isAttached).toBe(false);
-    expect(dynamicOverlay.getContainer()).toBe(null);
+    expect(dynamicOverlay.getContainer()).toBeUndefined();
   });
 
   it('should not create ref on the second time', () => {
-    const detachSpy = spyOn(ref, 'detach').and.callThrough();
-    const createOverlaySpy = spyOn(overlayService, 'create').and.callThrough();
-    const hasAttacheSpy = spyOn(ref, 'hasAttached');
+    const detachSpy = vi.spyOn(ref, 'detach');
+    const createOverlaySpy = vi.spyOn(overlayService, 'create');
+    const hasAttacheSpy = vi.spyOn(ref, 'hasAttached').mockImplementation(() => false);
 
     dynamicOverlay.show();
-    hasAttacheSpy.and.returnValue(true);
+    hasAttacheSpy.mockReturnValue(true);
 
     expect(detachSpy).toHaveBeenCalledTimes(0);
     expect(dynamicOverlay.isAttached).toBe(true);
@@ -199,15 +175,15 @@ describe('dynamic-overlay', () => {
     expect(createOverlaySpy).toHaveBeenCalledTimes(1);
 
     dynamicOverlay.hide();
-    hasAttacheSpy.and.returnValue(false);
+    hasAttacheSpy.mockReturnValue(false);
 
     expect(detachSpy).toHaveBeenCalledTimes(1);
     expect(dynamicOverlay.isAttached).toBe(false);
-    expect(dynamicOverlay.getContainer()).toBe(null);
+    expect(dynamicOverlay.getContainer()).toBeUndefined();
     expect(createOverlaySpy).toHaveBeenCalledTimes(1);
 
     dynamicOverlay.show();
-    hasAttacheSpy.and.returnValue(true);
+    hasAttacheSpy.mockReturnValue(true);
 
     expect(detachSpy).toHaveBeenCalledTimes(1);
     expect(dynamicOverlay.isAttached).toBe(true);
@@ -216,11 +192,11 @@ describe('dynamic-overlay', () => {
   });
 
   it('should not attach to ref if already shown', () => {
-    const attachSpy = spyOn(ref, 'attach').and.callThrough();
-    const hasAttacheSpy = spyOn(ref, 'hasAttached');
+    const attachSpy = vi.spyOn(ref, 'attach');
+    const hasAttacheSpy = vi.spyOn(ref, 'hasAttached').mockImplementation(() => false);
 
     dynamicOverlay.show();
-    hasAttacheSpy.and.returnValue(true);
+    hasAttacheSpy.mockReturnValue(true);
 
     expect(attachSpy).toHaveBeenCalledTimes(1);
 
@@ -230,14 +206,14 @@ describe('dynamic-overlay', () => {
   });
 
   it('should create/destroy overlay when toggle called', () => {
-    const createOverlaySpy = spyOn(overlayService, 'create').and.callThrough();
-    const renderSpy = spyOn(instance, 'renderContent').and.callThrough();
-    const repositionSpy = spyOn(scrollStrategies, 'reposition').and.callThrough();
-    const attachSpy = spyOn(ref, 'attach').and.callThrough();
-    const detachSpy = spyOn(ref, 'detach').and.callThrough();
-    const hasAttacheSpy = spyOn(ref, 'hasAttached');
+    const createOverlaySpy = vi.spyOn(overlayService, 'create');
+    const renderSpy = vi.spyOn(instance, 'renderContent');
+    const repositionSpy = vi.spyOn(scrollStrategies, 'reposition');
+    const attachSpy = vi.spyOn(ref, 'attach');
+    const detachSpy = vi.spyOn(ref, 'detach');
+    const hasAttacheSpy = vi.spyOn(ref, 'hasAttached').mockImplementation(() => false);
 
-    hasAttacheSpy.and.returnValue(false);
+    hasAttacheSpy.mockReturnValue(false);
 
     dynamicOverlay.toggle();
 
@@ -247,7 +223,7 @@ describe('dynamic-overlay', () => {
     expect(attachSpy).toHaveBeenCalledTimes(1);
     expect(detachSpy).toHaveBeenCalledTimes(0);
 
-    hasAttacheSpy.and.returnValue(true);
+    hasAttacheSpy.mockReturnValue(true);
 
     dynamicOverlay.toggle();
 
@@ -259,8 +235,8 @@ describe('dynamic-overlay', () => {
   });
 
   it('should dispose ref', () => {
-    const detachSpy = spyOn(ref, 'detach').and.callThrough();
-    const disposeSpy = spyOn(ref, 'dispose').and.callThrough();
+    const detachSpy = vi.spyOn(ref, 'detach');
+    const disposeSpy = vi.spyOn(ref, 'dispose');
     dynamicOverlay.show();
     dynamicOverlay.dispose();
 
@@ -278,12 +254,12 @@ describe('dynamic-overlay', () => {
 
   it('should set overlay config', () => {
     const overlayConfig: NbOverlayConfig = { panelClass: 'additional-overlay-class' };
-    const createOverlaySpy = spyOn(overlayService, 'create').and.callThrough();
+    const createOverlaySpy = vi.spyOn(overlayService, 'create');
 
     dynamicOverlay.setOverlayConfig(overlayConfig);
     dynamicOverlay.show();
 
-    expect(createOverlaySpy).toHaveBeenCalledWith(jasmine.objectContaining(overlayConfig));
+    expect(createOverlaySpy).toHaveBeenCalledWith(expect.objectContaining(overlayConfig));
   });
 
   it('should return container', () => {
@@ -291,13 +267,79 @@ describe('dynamic-overlay', () => {
     expect(dynamicOverlay.getContainer()).toBe(container as any);
   });
 
+  it('should not apply the position while hidden', () => {
+    const updatePositionSpy = vi.spyOn(ref, 'updatePosition');
+    vi.spyOn(ref, 'hasAttached').mockReturnValue(false);
+
+    dynamicOverlay.show();
+    dynamicOverlay.hide();
+    dynamicOverlay.setContentAndContext('new content', { some: 'thing' });
+
+    expect(updatePositionSpy).not.toHaveBeenCalled();
+  });
+
+  it('should position the container again when its size changes while shown', async () => {
+    const element = document.createElement('div');
+    document.body.appendChild(element);
+    container.location = { nativeElement: element };
+    const updatePositionSpy = vi.spyOn(ref, 'updatePosition');
+    vi.spyOn(ref, 'hasAttached').mockReturnValue(true);
+    const frame = () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+
+    dynamicOverlay.show();
+    await frame();
+    updatePositionSpy.mockClear();
+    element.style.height = '100px';
+    await frame();
+    expect(updatePositionSpy).toHaveBeenCalled();
+
+    dynamicOverlay.hide();
+    await frame();
+    updatePositionSpy.mockClear();
+    element.style.height = '200px';
+    await frame();
+    expect(updatePositionSpy).not.toHaveBeenCalled();
+
+    delete container.location;
+    element.remove();
+  });
+
+  it('should position the container again when the element it is placed against moves', async () => {
+    const host = document.createElement('div');
+    host.style.cssText = 'position: absolute; top: 50px; left: 50px; width: 40px; height: 20px;';
+    document.body.appendChild(host);
+    bottomPositionStrategy.originElement = host;
+    const updatePositionSpy = vi.spyOn(ref, 'updatePosition');
+    vi.spyOn(ref, 'hasAttached').mockReturnValue(true);
+    const frame = () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+
+    dynamicOverlay.show();
+    await frame();
+    updatePositionSpy.mockClear();
+    // Moved without scrolling or resizing, as when a sidebar opens beside it.
+    host.style.left = '150px';
+    await expect.poll(() => updatePositionSpy.mock.calls.length).toBeGreaterThan(0);
+
+    dynamicOverlay.hide();
+    await frame();
+    updatePositionSpy.mockClear();
+    host.style.left = '250px';
+    await frame();
+    await frame();
+    expect(updatePositionSpy).not.toHaveBeenCalled();
+
+    delete bottomPositionStrategy.originElement;
+    host.remove();
+  });
+
   it('should set content when shown', () => {
-    const renderContentSpy = spyOn(instance, 'renderContent').and.callThrough();
-    const updatePositionSpy = spyOn(ref, 'updatePosition').and.callThrough();
+    const renderContentSpy = vi.spyOn(instance, 'renderContent');
+    const updatePositionSpy = vi.spyOn(ref, 'updatePosition');
+    vi.spyOn(ref, 'hasAttached').mockReturnValue(true);
 
     dynamicOverlay.show();
     const newContent = 'new content';
-    zone.simulateZoneExit();
+    TestBed.inject(ApplicationRef).tick();
     dynamicOverlay.setContent(newContent);
 
     expect(instance.content).toBe(newContent);
@@ -306,12 +348,13 @@ describe('dynamic-overlay', () => {
   });
 
   it('should set context when shown', () => {
-    const renderContentSpy = spyOn(instance, 'renderContent').and.callThrough();
-    const updatePositionSpy = spyOn(ref, 'updatePosition').and.callThrough();
+    const renderContentSpy = vi.spyOn(instance, 'renderContent');
+    const updatePositionSpy = vi.spyOn(ref, 'updatePosition');
+    vi.spyOn(ref, 'hasAttached').mockReturnValue(true);
 
     dynamicOverlay.show();
     const newContext = { some: 'thing' };
-    zone.simulateZoneExit();
+    TestBed.inject(ApplicationRef).tick();
     dynamicOverlay.setContext(newContext);
 
     expect(instance.context).toBe(newContext);
@@ -320,15 +363,16 @@ describe('dynamic-overlay', () => {
   });
 
   it('should set context & content when shown', () => {
-    const renderContentSpy = spyOn(instance, 'renderContent').and.callThrough();
-    const updatePositionSpy = spyOn(ref, 'updatePosition').and.callThrough();
+    const renderContentSpy = vi.spyOn(instance, 'renderContent');
+    const updatePositionSpy = vi.spyOn(ref, 'updatePosition');
+    vi.spyOn(ref, 'hasAttached').mockReturnValue(true);
 
     dynamicOverlay.show();
     const newContext = { some: 'thing' };
     const newContent = 'new content';
-    zone.simulateZoneExit();
+    TestBed.inject(ApplicationRef).tick();
     dynamicOverlay.setContent(newContent);
-    zone.simulateZoneExit();
+    TestBed.inject(ApplicationRef).tick();
     dynamicOverlay.setContext(newContext);
 
     expect(instance.context).toBe(newContext);
@@ -338,9 +382,9 @@ describe('dynamic-overlay', () => {
   });
 
   it('should set component', () => {
-    const disposeSpy = spyOn(ref, 'dispose').and.callThrough();
-    const attachSpy = spyOn(ref, 'attach').and.callThrough();
-    const hasAttacheSpy = spyOn(ref, 'hasAttached');
+    const disposeSpy = vi.spyOn(ref, 'dispose');
+    const attachSpy = vi.spyOn(ref, 'attach');
+    const hasAttacheSpy = vi.spyOn(ref, 'hasAttached').mockImplementation(() => false);
 
     dynamicOverlay.setComponent(NbDynamicOverlayMock2Component);
 
@@ -348,20 +392,20 @@ describe('dynamic-overlay', () => {
     expect(attachSpy).toHaveBeenCalledTimes(0);
 
     dynamicOverlay.show();
-    hasAttacheSpy.and.returnValue(true);
+    hasAttacheSpy.mockReturnValue(true);
 
-    expect(ref.portal.component).toBe(NbDynamicOverlayMock2Component);
+    expect(ref.portal?.component).toBe(NbDynamicOverlayMock2Component);
     expect(disposeSpy).toHaveBeenCalledTimes(0);
     expect(attachSpy).toHaveBeenCalledTimes(1);
 
     dynamicOverlay.setComponent(NbDynamicOverlayMockComponent);
 
-    expect(ref.portal.component).toBe(NbDynamicOverlayMockComponent);
+    expect(ref.portal?.component).toBe(NbDynamicOverlayMockComponent);
     expect(disposeSpy).toHaveBeenCalledTimes(1);
     expect(attachSpy).toHaveBeenCalledTimes(2);
 
     dynamicOverlay.hide();
-    hasAttacheSpy.and.returnValue(false);
+    hasAttacheSpy.mockReturnValue(false);
 
     dynamicOverlay.setComponent(NbDynamicOverlayMock2Component);
 
@@ -376,7 +420,7 @@ describe('dynamic-overlay', () => {
   });
 
   it('should set position strategy', () => {
-    const updatePositionSpy = spyOn(ref, 'updatePositionStrategy').and.callThrough();
+    const updatePositionSpy = vi.spyOn(ref, 'updatePositionStrategy');
     dynamicOverlay.setPositionStrategy(topPositionStrategy);
     dynamicOverlay.show();
 
@@ -401,18 +445,15 @@ describe('dynamic-overlay', () => {
     dynamicOverlay.hide();
 
     const overlayContainer = TestBed.inject(NbOverlayContainer);
-    const getContainerElementSpy = spyOn(overlayContainer, 'getContainerElement').and.returnValues(
-      {
-        contains() {
-          return false;
-        },
-      } as unknown as HTMLElement,
-      {
-        contains() {
-          return true;
-        },
-      } as unknown as HTMLElement,
-    );
+    const getContainerElementSpy = vi.spyOn(overlayContainer, 'getContainerElement').mockReturnValueOnce({
+      contains() {
+        return false;
+      },
+    } as unknown as HTMLElement).mockReturnValueOnce({
+      contains() {
+        return true;
+      },
+    } as unknown as HTMLElement);
 
     dynamicOverlay.show();
 
@@ -420,7 +461,7 @@ describe('dynamic-overlay', () => {
   });
 
   it(`should dispose overlay ref when recreating overlay`, () => {
-    const disposeSpy = spyOn(ref, 'dispose').and.callThrough();
+    const disposeSpy = vi.spyOn(ref, 'dispose');
 
     dynamicOverlay.show();
     dynamicOverlay.hide();

@@ -1,0 +1,33 @@
+<nb-card>
+  <nb-card-body>
+    <button nbButton
+      status="primary"
+      (click)="dialog.showModal()">Choose a fruit</button>
+    @if (fruit(); as fruit) {
+    <span class="choice">{{ fruit }}</span>
+    }
+  </nb-card-body>
+</nb-card>
+
+<dialog #dialog
+  nbOverlayHost
+  aria-labelledby="fruit-dialog-title">
+  <nb-card>
+    <nb-card-header id="fruit-dialog-title">Choose a fruit</nb-card-header>
+    <nb-card-body>
+      <nb-select placeholder="Fruit"
+        [(selected)]="fruit">
+        @for (option of fruits; track option) {
+        <nb-option [value]="option">{{ option }}</nb-option>
+        }
+      </nb-select>
+    </nb-card-body>
+    <nb-card-footer>
+      <nb-card-actions>
+        <button nbButton
+          size="small"
+          (click)="dialog.close()">Done</button>
+      </nb-card-actions>
+    </nb-card-footer>
+  </nb-card>
+</dialog>

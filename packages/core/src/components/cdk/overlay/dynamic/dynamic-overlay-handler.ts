@@ -1,8 +1,9 @@
-import { ElementRef, Injectable, SimpleChange, Type } from '@angular/core';
-import { Subject } from 'rxjs';
+import { ElementRef, inject, Injectable, SimpleChange, Type, Injector } from '@angular/core';
+import { Subject, Subscription } from 'rxjs';
 import { skip, takeUntil } from 'rxjs/operators';
 
 import { NbTrigger, NbTriggerStrategy, NbTriggerStrategyBuilderService } from '../overlay-trigger';
+import { NbEscapeEntry, NbEscapeStack } from '../overlay-escape';
 import {
   NbAdjustableConnectedPositionStrategy,
   NbAdjustment,
@@ -10,13 +11,13 @@ import {
   NbPositionBuilderService,
 } from '../overlay-position';
 import { NbRenderableContainer } from '../overlay-container';
-import { NbOverlayContent } from '../overlay-service';
+import { NbOverlayContent, NbOverlayService } from '../overlay-service';
 import { NbDynamicOverlay } from './dynamic-overlay';
-import { NbOverlayConfig } from '../mapping';
-import { NbLayoutDirectionService } from '../../../../services/direction.service';
+import { NbOverlayConfig, NbOverlayContainer } from '../mapping';
+import { NbLayoutDirectionService } from '@liquid-js/lyr-core/base';
 
 export class NbDynamicOverlayChange extends SimpleChange {
-  constructor(previousValue: any, currentValue: any, firstChange: boolean = false) {
+  constructor(previousValue: unknown, currentValue: unknown, firstChange: boolean = false) {
     super(previousValue, currentValue, firstChange);
   }
 
@@ -25,34 +26,59 @@ export class NbDynamicOverlayChange extends SimpleChange {
   }
 }
 
+/** The handler settings changed since the overlay was last built or rebuilt. */
+export interface NbDynamicOverlayChanges {
+  host?: NbDynamicOverlayChange;
+  trigger?: NbDynamicOverlayChange;
+  disabled?: NbDynamicOverlayChange;
+  position?: NbDynamicOverlayChange;
+  adjustment?: NbDynamicOverlayChange;
+  componentType?: NbDynamicOverlayChange;
+  content?: NbDynamicOverlayChange;
+  context?: NbDynamicOverlayChange;
+  offset?: NbDynamicOverlayChange;
+  overlayConfig?: NbDynamicOverlayChange;
+}
+
+/**
+ * Builds and keeps up a dynamic overlay from the settings the overlay directives give it: `build()` creates the
+ * overlay once `componentType` and `host` are set, and `rebuild()` applies the settings changed since, replacing
+ * only what they affect (the position strategy, the trigger, the content or the container component).
+ */
+// Provided with constructor injection, which @Service doesn't support.
 @Injectable()
 export class NbDynamicOverlayHandler {
-  protected _componentType: Type<NbRenderableContainer>;
-  protected _host: ElementRef;
-  protected _context: Object = {};
-  protected _content: NbOverlayContent;
+  protected _componentType?: Type<NbRenderableContainer>;
+  protected _host?: ElementRef;
+  protected _context: object = {};
+  protected _content?: NbOverlayContent;
   protected _trigger: NbTrigger = NbTrigger.NOOP;
-  protected _disabled: boolean = false;
+  protected _disabled = false;
   protected _position: NbPosition = NbPosition.TOP;
   protected _adjustment: NbAdjustment = NbAdjustment.NOOP;
-  protected _offset: number = 15;
+  protected _offset = 15;
   protected _overlayConfig: NbOverlayConfig = {};
 
-  protected dynamicOverlay: NbDynamicOverlay;
-  protected triggerStrategy: NbTriggerStrategy;
+  protected dynamicOverlay?: NbDynamicOverlay;
+  protected triggerStrategy?: NbTriggerStrategy;
+  protected escapeEntry?: NbEscapeEntry;
+  protected escapeSubscription?: Subscription;
 
-  protected positionStrategy: NbAdjustableConnectedPositionStrategy;
+  protected positionStrategy?: NbAdjustableConnectedPositionStrategy;
 
-  protected changes: { [key: string]: NbDynamicOverlayChange } = {};
+  protected changes: NbDynamicOverlayChanges = {};
 
   protected destroy$ = new Subject<void>();
 
+  /* eslint-disable @angular-eslint/prefer-inject -- constructor injection on purpose, see the note on the class */
   constructor(
     private positionBuilder: NbPositionBuilderService,
     private triggerStrategyBuilder: NbTriggerStrategyBuilderService,
     private dynamicOverlayService: NbDynamicOverlay,
     private directionService: NbLayoutDirectionService,
+    private escapeStack?: NbEscapeStack,
   ) {}
+  /* eslint-enable @angular-eslint/prefer-inject */
 
   host(host: ElementRef) {
     this.changes.host = new NbDynamicOverlayChange(this._host, host);
@@ -90,13 +116,13 @@ export class NbDynamicOverlayHandler {
     return this;
   }
 
-  content(content: NbOverlayContent) {
+  content(content?: NbOverlayContent) {
     this.changes.content = new NbDynamicOverlayChange(this._content, content);
     this._content = content;
     return this;
   }
 
-  context(context: {}) {
+  context(context: object) {
     this.changes.context = new NbDynamicOverlayChange(this._context, context);
     this._context = context;
     return this;
@@ -115,12 +141,13 @@ export class NbDynamicOverlayHandler {
   }
 
   build() {
-    if (!this._componentType || !this._host) {
+    const componentType = this._componentType;
+    if (!componentType || !this._host) {
       throw Error(`NbDynamicOverlayHandler: at least 'componentType' and 'host' should be
       passed before building a dynamic overlay.`);
     }
     this.dynamicOverlay = this.dynamicOverlayService.create(
-      this._componentType,
+      componentType,
       this._content,
       this._context,
       this.createPositionStrategy(),
@@ -135,12 +162,7 @@ export class NbDynamicOverlayHandler {
   }
 
   rebuild() {
-    /**
-     * we should not throw here
-     * as we use rebuilt in lifecycle hooks
-     * which it could be called before the build
-     * so we just ignore this call
-     */
+    // Directives call it from lifecycle hooks that may run before build(), so nothing to rebuild is no error.
     if (!this.dynamicOverlay) {
       return undefined;
     }
@@ -157,7 +179,7 @@ export class NbDynamicOverlayHandler {
       this.dynamicOverlay.setContentAndContext(this._content, this._context);
     }
 
-    if (this.isComponentTypeUpdateRequired()) {
+    if (this.isComponentTypeUpdateRequired() && this._componentType) {
       this.dynamicOverlay.setComponent(this._componentType);
     }
 
@@ -187,6 +209,9 @@ export class NbDynamicOverlayHandler {
     if (this.triggerStrategy) {
       this.triggerStrategy.destroy();
     }
+    this.escapeSubscription?.unsubscribe();
+    this.escapeEntry?.remove();
+    this.escapeEntry = undefined;
   }
 
   destroy() {
@@ -202,7 +227,7 @@ export class NbDynamicOverlayHandler {
 
   protected createPositionStrategy() {
     return this.positionBuilder
-      .connectedTo(this._host)
+      .connectedTo(this.requireHost())
       .position(this._position)
       .adjustment(this._adjustment)
       .offset(this._offset)
@@ -212,12 +237,30 @@ export class NbDynamicOverlayHandler {
   protected subscribeOnTriggers(dynamicOverlay: NbDynamicOverlay) {
     this.triggerStrategy = this.triggerStrategyBuilder
       .trigger(this._trigger)
-      .host(this._host.nativeElement)
+      .host(this.requireHost().nativeElement)
       .container(() => dynamicOverlay.getContainer())
       .build();
 
     this.triggerStrategy.show$.subscribe(() => dynamicOverlay.show());
     this.triggerStrategy.hide$.subscribe(() => dynamicOverlay.hide());
+
+    // While it's shown, it's the first to close on Escape, unless something opened after it, e.g. a popover from it.
+    const escapeStack = this.escapeStack;
+    if (this.triggerStrategy.closesOnEscape && escapeStack) {
+      const host = this.requireHost().nativeElement;
+      this.escapeSubscription = dynamicOverlay.isShown.subscribe((shown) => {
+        this.escapeEntry?.remove();
+        this.escapeEntry = shown
+          ? escapeStack.add(() => {
+            // Focus in the container goes back to the host.
+            if (dynamicOverlay.getContainer()?.location.nativeElement.contains(host.ownerDocument.activeElement)) {
+              host.focus();
+            }
+            dynamicOverlay.hide();
+          })
+          : undefined;
+      });
+    }
   }
 
   protected subscribeOnDirectionChange() {
@@ -225,8 +268,15 @@ export class NbDynamicOverlayHandler {
       .onDirectionChange()
       .pipe(skip(1), takeUntil(this.destroy$))
       .subscribe(() => {
-        this.dynamicOverlay.setPositionStrategy(this.createPositionStrategy());
+        this.dynamicOverlay?.setPositionStrategy(this.createPositionStrategy());
       });
+  }
+
+  protected requireHost(): ElementRef {
+    if (!this._host) {
+      throw Error(`NbDynamicOverlayHandler: 'host' should be passed before building a dynamic overlay.`);
+    }
+    return this._host;
   }
 
   protected isContainerRerenderRequired() {
@@ -250,46 +300,62 @@ export class NbDynamicOverlayHandler {
   }
 
   protected isComponentTypeUpdated(): boolean {
-    return this.changes.componentType && this.changes.componentType.isChanged();
+    return !!this.changes.componentType?.isChanged();
   }
 
   protected isContentUpdated(): boolean {
-    return this.changes.content && this.changes.content.isChanged();
+    return !!this.changes.content?.isChanged();
   }
 
   protected isContextUpdated(): boolean {
-    return this.changes.context && this.changes.context.isChanged();
+    return !!this.changes.context?.isChanged();
   }
 
   protected isAdjustmentUpdated(): boolean {
-    return this.changes.adjustment && this.changes.adjustment.isChanged();
+    return !!this.changes.adjustment?.isChanged();
   }
 
   protected isPositionUpdated(): boolean {
-    return this.changes.position && this.changes.position.isChanged();
+    return !!this.changes.position?.isChanged();
   }
 
   protected isHostUpdated(): boolean {
-    return this.changes.host && this.changes.host.isChanged();
+    return !!this.changes.host?.isChanged();
   }
 
   protected isTriggerUpdated(): boolean {
-    return this.changes.trigger && this.changes.trigger.isChanged();
+    return !!this.changes.trigger?.isChanged();
   }
 
   protected isOffsetUpdated(): boolean {
-    return this.changes.offset && this.changes.offset.isChanged();
+    return !!this.changes.offset?.isChanged();
   }
 
   protected isOverlayConfigUpdated(): boolean {
-    return this.changes.overlayConfig && this.changes.overlayConfig.isChanged();
+    return !!this.changes.overlayConfig?.isChanged();
   }
 
   protected isDisabledUpdated(): boolean {
-    return this.changes.disabled && this.changes.disabled.isChanged();
+    return !!this.changes.disabled?.isChanged();
   }
 
   protected clearChanges() {
     this.changes = {};
   }
+}
+
+/**
+ * Creates a handler with its own dynamic overlay. Overlay directives call it while they are constructed, so the
+ * overlay picks up the injector of the module that declares them. Declaring the handler in the directives'
+ * `providers` instead would make a popover, tooltip and context menu on the same element share one overlay.
+ */
+export function nbCreateDynamicOverlayHandler(): NbDynamicOverlayHandler {
+  const overlay = new NbDynamicOverlay(inject(NbOverlayService), inject(NbOverlayContainer), inject(Injector));
+  return new NbDynamicOverlayHandler(
+    inject(NbPositionBuilderService),
+    inject(NbTriggerStrategyBuilderService),
+    overlay,
+    inject(NbLayoutDirectionService),
+    inject(NbEscapeStack),
+  );
 }
