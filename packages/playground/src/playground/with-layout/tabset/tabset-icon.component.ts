@@ -1,23 +1,22 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { NbIconConfig } from '@nebular/theme';
+import { Component } from '@angular/core';
+import {
+  NbIconConfig,
+  NbCardComponent,
+  NbCardBodyComponent,
+  NbTabsetComponent,
+  NbTabComponent,
+} from '@liquid-js/lyr-core';
 
 @Component({
-    selector: 'nb-tabset-icon',
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    templateUrl: './tabset-icon.component.html',
-    styles: [`
+  selector: 'nb-tabset-icon',
+  templateUrl: './tabset-icon.component.html',
+  styles: [`
     :host nb-tab {
       padding: 1.25rem;
     }
   `],
-    standalone: false
+  imports: [NbCardComponent, NbCardBodyComponent, NbTabsetComponent, NbTabComponent],
 })
 export class TabsetIconComponent {
-  bellIconConfig: NbIconConfig = { icon: 'bell-outline', pack: 'eva' };
+  bellIconConfig: NbIconConfig = { icon: 'bell-outline', pack: 'icons' };
 }

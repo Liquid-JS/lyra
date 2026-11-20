@@ -1,0 +1,44 @@
+<ul class="tabset"
+  role="tablist">
+  @for (tab of tabs(); track tab) {
+  <li (click)="selectTab(tab)"
+    (keydown)="onKeydown($event, tab)"
+    role="tab"
+    [id]="tab.labelId"
+    [attr.aria-controls]="tab.panelId"
+    [attr.aria-selected]="tab.isActive()"
+    [attr.aria-disabled]="tab.disabled() || null"
+    [class.responsive]="tab.responsive()"
+    [class.active]="tab.isActive()"
+    [class.disabled]="tab.disabled()"
+    [attr.tabindex]="isTabbable(tab) ? 0 : -1"
+    [attr.data-tab-id]="tab.tabId()"
+    class="tab">
+    <a class="tab-link">
+      @if (tab.tabIcon()) {
+      <nb-icon [config]="tab.tabIcon()" />
+      }
+      @if (tab.tabTitleDirective(); as tabTitle) {
+      <ng-container [ngTemplateOutlet]="tabTitle.templateRef" />
+      } @else {
+      <span class="tab-text"
+        dir="auto">{{ tab.tabTitle() }}</span>
+      }
+      <!-- A count without a position of its own follows the title, so it never covers it. -->
+      @if (tab.badgeText() && !tab.badgeDot() && !tab.badgePosition()) {
+      <nb-badge class="tab-count"
+        position="inline"
+        [text]="tab.badgeText()"
+        [status]="tab.badgeStatus()" />
+      }
+    </a>
+    @if (tab.badgeDot() || (tab.badgeText() && tab.badgePosition())) {
+    <nb-badge [text]="tab.badgeText()"
+      [dotMode]="tab.badgeDot()"
+      [status]="tab.badgeStatus()"
+      [position]="tab.badgePosition()" />
+    }
+  </li>
+  }
+</ul>
+<ng-content select="nb-tab" />

@@ -1,9 +1,3 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 @use '../../styles/theming' as *;
 
 :host {
@@ -15,7 +9,6 @@
 
   ::ng-deep nb-tab {
     flex: 1;
-    overflow: auto;
     display: none;
     &.content-active {
       display: block;
@@ -29,7 +22,10 @@
     margin: 0;
     padding: 0;
 
+    // Tabs shrink, their labels wrapping, rather than run past a narrow tabset.
     .tab {
+      flex: 0 1 auto;
+      min-width: 0;
       margin-bottom: -1px;
       text-align: center;
       position: relative;
@@ -59,6 +55,13 @@
         nb-icon + span {
           @include nb-ltr(margin-left, 0.5rem);
           @include nb-rtl(margin-right, 0.5rem);
+        }
+
+        // Beside the title without making the tab taller than its neighbours, so their underlines line up.
+        .tab-count {
+          align-self: center;
+          margin-block: -0.25rem;
+          margin-inline-start: 0.5rem;
         }
       }
     }

@@ -1,0 +1,8 @@
+<!-- nbTabContent is lazy: it's created when the tab is first activated and then kept. -->
+@if (tabContentDirective(); as tabContent) {
+@if (init()) {
+<ng-container [ngTemplateOutlet]="tabContent.templateRef" />
+}
+} @else {
+<ng-content />
+}

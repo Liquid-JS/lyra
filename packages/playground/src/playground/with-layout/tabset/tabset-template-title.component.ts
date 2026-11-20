@@ -1,21 +1,27 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { Component } from '@angular/core';
+import {
+  NbCardComponent,
+  NbCardBodyComponent,
+  NbTabsetComponent,
+  NbTabComponent,
+  NbTabTitleDirective,
+} from '@liquid-js/lyr-core';
 
 @Component({
-    templateUrl: './tabset-template-title.component.html',
-    styles: [
-        `
+  templateUrl: './tabset-template-title.component.html',
+  styles: [
+    `
       :host nb-tab {
         padding: 1.25rem;
       }
     `,
-    ],
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  ],
+  imports: [
+    NbCardComponent,
+    NbCardBodyComponent,
+    NbTabsetComponent,
+    NbTabComponent,
+    NbTabTitleDirective,
+  ],
 })
 export class TabsetTemplateTitleComponent {}
