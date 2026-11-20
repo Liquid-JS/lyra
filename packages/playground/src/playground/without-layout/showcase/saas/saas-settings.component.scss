@@ -1,0 +1,88 @@
+@use '../../../styles/themes' as *;
+
+:host {
+  display: block;
+  max-width: 56rem;
+}
+
+h1 {
+  margin: 0 0 1.5rem;
+}
+
+nb-card {
+  margin: 0;
+}
+
+.profile {
+  display: flex;
+  gap: 2rem;
+  align-items: flex-start;
+
+  @media (max-width: 767.98px) {
+    flex-direction: column;
+  }
+}
+
+.fields {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.25rem 1.5rem;
+
+  @media (max-width: 991.98px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+
+  // The label's margin is the only space above the field.
+  > .label {
+    margin-bottom: 0.5rem;
+  }
+}
+
+nb-list-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.item-title {
+  display: block;
+  font-weight: 600;
+}
+
+.hint {
+  color: nb-theme(text-hint-color);
+}
+
+.plan {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  max-width: 28rem;
+
+  p {
+    margin: 0;
+  }
+}
+
+.usage {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.buttons,
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.footer {
+  justify-content: flex-end;
+}

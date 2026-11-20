@@ -1,0 +1,70 @@
+import { all, type NgdExampleApp } from '../example-app';
+
+/** Booking one service at a wellness studio: pick it, pick a day and a time on a large calendar, leave your details, and see your bookings. */
+export const BOOK_APP: NgdExampleApp = {
+  id: 'book',
+  name: 'Book',
+  brand: 'Still',
+  summary:
+    'Booking one service at a wellness studio: pick it, pick a day and a time on a large calendar, leave your details, and keep an eye on your bookings. Light, airy and very round.',
+  showcase: true,
+  theme: {
+    id: 'book',
+    name: 'Book',
+    base: 'default',
+    colors: { primary: '#8b5cf6', info: '#0ea5e9', success: '#2dd4a0', warning: '#fb923c', danger: '#f43f5e' },
+    fontPrimary: 'Nunito, system-ui, sans-serif',
+    fontSecondary: 'Nunito, system-ui, sans-serif',
+    fonts: ['Nunito:wght@400;600;700;800'],
+    radius: 1.5,
+    defaults: { shape: 'round', button: { shape: 'round' } },
+    variables: {
+      // Greys with a touch of lilac, from the page to the text.
+      'color-basic-100': '#ffffff',
+      'color-basic-200': '#faf8ff',
+      'color-basic-300': '#f4f0fc',
+      'color-basic-400': '#e9e3f6',
+      'color-basic-500': '#d8cfeb',
+      'color-basic-600': '#a59bbf',
+      'color-basic-700': '#645a80',
+      'color-basic-800': '#312a48',
+      'color-basic-900': '#241e37',
+      'color-basic-1000': '#191429',
+      'color-basic-1100': '#110d1d',
+      'text-hint-color': 'var(--color-basic-700)',
+      'layout-background-color': 'var(--color-basic-200)',
+      // A see-through top bar, with no line under it.
+      'header-background-color': 'rgba(250, 248, 255, 0.85)',
+      'header-shadow': 'none',
+      // Borderless cards that float on a soft lilac shadow.
+      'card-border-width': '0',
+      'card-shadow': '0 1rem 2.5rem -1.25rem rgba(99, 72, 190, 0.28)',
+      'input-basic-background-color': 'var(--color-basic-100)',
+      'input-basic-border-color': 'var(--color-basic-500)',
+      'text-heading-1-font-weight': '800',
+      'text-heading-2-font-weight': '800',
+      'text-heading-3-font-weight': '800',
+      'text-heading-4-font-weight': '800',
+      'text-heading-5-font-weight': '800',
+      'text-heading-6-font-weight': '800',
+      'text-button-font-weight': '700',
+      'button-filled-text-transform': 'none',
+      'button-outline-text-transform': 'none',
+      'button-ghost-text-transform': 'none',
+      'button-hero-text-transform': 'none',
+    },
+  },
+  devices: ['laptop', 'phone'],
+  screens: [
+    { id: 'showcase/book/home', title: 'Home', pageTitle: 'Massage, physio and yoga', files: all('showcase/book/book-home.component') },
+    { id: 'showcase/book/book', title: 'Book', pageTitle: 'Book an appointment', files: all('showcase/book/book-book.component') },
+    { id: 'showcase/book/confirmed', title: 'Confirmed', pageTitle: 'Booking confirmed', files: all('showcase/book/book-confirmed.component') },
+    { id: 'showcase/book/bookings', title: 'My bookings', files: all('showcase/book/book-bookings.component') },
+  ],
+  files: [
+    'showcase/book/book.routes.ts',
+    ...all('showcase/book/book-shell.component'),
+    'showcase/book/book-booking.service.ts',
+    'showcase/book/book-data.ts',
+  ],
+};

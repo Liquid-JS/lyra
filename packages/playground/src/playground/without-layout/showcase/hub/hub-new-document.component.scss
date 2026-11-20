@@ -1,0 +1,64 @@
+@use '../../../styles/themes' as *;
+
+:host {
+  display: block;
+  max-width: 76rem;
+  margin: 0 auto;
+}
+
+.page-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+
+  h1 {
+    margin: 0;
+  }
+}
+
+// Back to the documents, above the title.
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-bottom: 0.5rem;
+  color: nb-theme(text-hint-color);
+  font-weight: 600;
+  text-decoration: none;
+
+  &:hover {
+    color: nb-theme(text-primary-color);
+  }
+}
+
+.actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+nb-card {
+  margin: 0;
+}
+
+// The title, and the folder beside it where there's room.
+.details {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0 1.5rem;
+
+  @media (min-width: 768px) {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  }
+}
+
+.field {
+  margin-bottom: 1.25rem;
+}
+
+.error {
+  margin: 0.25rem 0 0;
+  color: nb-theme(text-danger-color);
+}

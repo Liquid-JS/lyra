@@ -1,0 +1,111 @@
+@use '../../../styles/themes' as *;
+
+:host {
+  display: block;
+  width: 100%;
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 3rem 1.5rem 5rem;
+  box-sizing: border-box;
+
+  @media (max-width: 767.98px) {
+    padding: 2rem 1rem 4rem;
+  }
+}
+
+.page-header {
+  margin-bottom: 2.5rem;
+
+  h1 {
+    margin: 0 0 1rem;
+    font-size: clamp(3rem, 8vw, 5rem);
+    letter-spacing: -0.04em;
+    text-transform: uppercase;
+  }
+}
+
+.eyebrow {
+  margin: 0 0 0.5rem;
+  color: nb-theme(text-primary-color);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.lead {
+  max-width: 40rem;
+  margin: 0;
+  color: nb-theme(text-hint-color);
+  font-size: 1.125rem;
+}
+
+.search {
+  max-width: 24rem;
+  margin-top: 1.5rem;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+  gap: 2rem 1.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+// A card without a card: the speaker, their topics, and a line that fills in on hover.
+.speaker {
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  gap: 1rem;
+  width: 100%;
+  padding: 0 0 1rem;
+  border: 0;
+  border-bottom: 2px solid nb-theme(divider-color);
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+
+  &:hover,
+  &:focus-visible {
+    border-bottom-color: nb-theme(color-primary-default);
+    outline: none;
+  }
+
+  &:focus-visible nb-user ::ng-deep .user-name {
+    text-decoration: underline;
+  }
+
+  // The speaker within the column, the role and company on as many lines as they need.
+  nb-user {
+    max-width: 100%;
+  }
+
+  nb-user ::ng-deep .user-title {
+    white-space: normal;
+  }
+}
+
+.empty {
+  padding: 3rem 0;
+  color: nb-theme(text-hint-color);
+  text-align: center;
+}
+
+.call {
+  margin-top: 5rem;
+  padding: 3rem 0 0;
+  border-top: 2px solid nb-theme(text-basic-color);
+
+  h2 {
+    margin: 0 0 0.75rem;
+  }
+
+  .lead {
+    margin-bottom: 1.5rem;
+  }
+}

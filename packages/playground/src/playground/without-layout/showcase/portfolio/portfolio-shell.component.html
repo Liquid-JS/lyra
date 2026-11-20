@@ -1,0 +1,32 @@
+<nb-layout>
+  <nb-layout-column class="column">
+    <div class="ground">
+      <aside class="rail">
+        <a class="name"
+          routerLink="home">{{ photographer.name }}</a>
+        <span class="role">{{ photographer.role }}, {{ photographer.city }}</span>
+        <nav aria-label="Site">
+          @for (page of pages; track page.path) {
+          <a [routerLink]="page.path"
+            routerLinkActive="active"
+            [routerLinkActiveOptions]="{ exact: false }">{{ page.title }}</a>
+          }
+        </nav>
+        <p class="availability"><span class="dot"
+            aria-hidden="true"></span>{{ photographer.availability }}</p>
+        <ul class="socials"
+          aria-label="Elsewhere">
+          @for (social of photographer.socials; track social.name) {
+          <li><a href="#"
+              (click)="$event.preventDefault()">{{ social.name }}</a></li>
+          }
+        </ul>
+        <small class="copyright">© {{ year }} {{ photographer.name }}</small>
+      </aside>
+      <main class="page">
+        <router-outlet />
+      </main>
+      <npg-showcase-grain [opacity]="0.09" />
+    </div>
+  </nb-layout-column>
+</nb-layout>

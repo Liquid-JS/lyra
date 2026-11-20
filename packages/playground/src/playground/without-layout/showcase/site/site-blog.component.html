@@ -1,0 +1,47 @@
+<header class="intro">
+  <h1>The Acme blog</h1>
+  <p class="lead">Stories from our customers, guides to running a small business, and what's new in Acme.</p>
+  <nb-tag-list aria-label="Topics">
+    @for (name of topics; track name) {
+    <nb-tag appearance="outline"
+      [text]="name"
+      [selected]="topic() === name"
+      (selectedChange)="$event.selected && topic.set(name)" />
+    }
+  </nb-tag-list>
+</header>
+
+<div class="posts">
+  @for (post of posts(); track post.title; let first = $first) {
+  <!-- A post with a photo or an icon has a cover; one without leads with its text, on an accent. -->
+  <nb-card [class.lead-post]="first"
+    [class.text-post]="!post.image && !post.icon"
+    [accent]="!post.image && !post.icon ? post.status : ''">
+    @if (post.image) {
+    <img nbCardMedia
+      class="cover"
+      alt=""
+      loading="lazy"
+      [src]="post.image" />
+    } @else if (post.icon) {
+    <div nbCardMedia
+      aria-hidden="true"
+      [class]="'cover status-' + post.status">
+      <nb-icon [icon]="post.icon" />
+    </div>
+    }
+    <nb-card-body>
+      <span class="meta">{{ post.tag }} · {{ post.minutes }} min read</span>
+      <h2><a nbCardLink
+          routerLink="../article">{{ post.title }}</a></h2>
+      <p>{{ post.excerpt }}</p>
+    </nb-card-body>
+    <nb-card-footer>
+      <nb-user size="small"
+        [picture]="post.avatar"
+        [name]="post.author"
+        [title]="(post.date | date: 'd MMMM y') ?? ''" />
+    </nb-card-footer>
+  </nb-card>
+  }
+</div>

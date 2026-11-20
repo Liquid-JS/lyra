@@ -1,0 +1,147 @@
+<h1 class="h2">Trips</h1>
+
+<ng-template #cancelDialog
+  let-trip
+  let-ref="dialogRef">
+  <nb-card class="cancel-dialog">
+    <nb-card-header>Cancel this trip?</nb-card-header>
+    <nb-card-body>
+      <p>Your stay at <strong>{{ trip.listing.name }}</strong>, {{ trip.checkIn | date: 'd MMM' }} to {{ trip.checkOut
+        | date: 'd MMM' }}, will be cancelled.</p>
+      <p>It's more than 7 days away, so you'll get a full refund.</p>
+    </nb-card-body>
+    <nb-card-footer>
+      <button nbButton
+        ghost
+        type="button"
+        (click)="ref.close()">Keep the trip</button>
+      <button nbButton
+        status="danger"
+        type="button"
+        (click)="confirmCancel(trip); ref.close()">Cancel the trip</button>
+    </nb-card-footer>
+  </nb-card>
+</ng-template>
+
+<ng-template #tripCard
+  let-trip
+  let-past="past">
+  <nb-card class="trip">
+    <img [src]="trip.listing.image"
+      [alt]="trip.listing.name"
+      width="800"
+      height="600" />
+    <nb-card-body>
+      <div class="trip-heading">
+        <div>
+          <p class="where">{{ trip.listing.type }} in {{ trip.listing.place }}, {{ trip.listing.region }}</p>
+          <h2 class="h5">
+            <a [routerLink]="['../listing', trip.listing.id]">{{ trip.listing.name }}</a>
+          </h2>
+        </div>
+        <nb-tag [text]="trip.status"
+          [status]="statusOf(trip)"
+          appearance="filled"
+          size="tiny" />
+      </div>
+      <dl class="details">
+        <div>
+          <dt><nb-icon icon="calendar-outline" /> Dates</dt>
+          <dd>{{ trip.checkIn | date: 'EEE d MMM' }} – {{ trip.checkOut | date: 'EEE d MMM yyyy' }}
+            <span class="hint">({{ nights(trip.checkIn, trip.checkOut) }} nights)</span>
+          </dd>
+        </div>
+        <div>
+          <dt><nb-icon icon="people-outline" /> Guests</dt>
+          <dd>{{ trip.guests }}</dd>
+        </div>
+        <div>
+          <dt><nb-icon icon="hash-outline" /> Reference</dt>
+          <dd><code>{{ trip.reference }}</code></dd>
+        </div>
+      </dl>
+      <div class="host">
+        <nb-user [name]="trip.listing.host"
+          title="Your host"
+          [picture]="hostPhoto(trip.listing.host)"
+          size="small" />
+        <npg-stay-rating [rating]="trip.listing.rating"
+          [reviews]="trip.listing.reviews" />
+      </div>
+    </nb-card-body>
+    <nb-card-footer>
+      @if (past) {
+      @if (trip.status === 'Completed') {
+      <button nbButton
+        outline
+        size="small"
+        status="primary"
+        type="button"
+        (click)="review(trip)">
+        <nb-icon icon="star-outline" />
+        Write a review
+      </button>
+      }
+      <a nbButton
+        ghost
+        size="small"
+        [routerLink]="['../listing', trip.listing.id]">Book again</a>
+      } @else {
+      <button nbButton
+        edge="start"
+        ghost
+        size="small"
+        type="button"
+        (click)="message(trip)">
+        <nb-icon icon="message-circle-outline" />
+        Message host
+      </button>
+      <button nbButton
+        ghost
+        size="small"
+        type="button"
+        (click)="directions(trip)">
+        <nb-icon icon="navigation-2-outline" />
+        Directions
+      </button>
+      <button nbButton
+        outline
+        size="small"
+        status="danger"
+        class="cancel"
+        type="button"
+        (click)="cancel(cancelDialog, trip)">Cancel</button>
+      }
+    </nb-card-footer>
+  </nb-card>
+</ng-template>
+
+<nb-tabset>
+  <nb-tab tabTitle="Upcoming"
+    [badgeText]="'' + upcoming().length"
+    badgeStatus="primary">
+    @if (upcoming().length) {
+    <div class="list">
+      @for (trip of upcoming(); track trip.id) {
+      <ng-container *ngTemplateOutlet="tripCard; context: { $implicit: trip, past: false }" />
+      }
+    </div>
+    } @else {
+    <div class="empty">
+      <nb-icon icon="map-outline" />
+      <h2 class="h5">No trips booked</h2>
+      <p>When you book a place, it shows up here with everything you need for the trip.</p>
+      <a nbButton
+        status="primary"
+        routerLink="../search">Find a place</a>
+    </div>
+    }
+  </nb-tab>
+  <nb-tab tabTitle="Past">
+    <div class="list">
+      @for (trip of past(); track trip.id) {
+      <ng-container *ngTemplateOutlet="tripCard; context: { $implicit: trip, past: true }" />
+      }
+    </div>
+  </nb-tab>
+</nb-tabset>

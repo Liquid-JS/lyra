@@ -1,0 +1,47 @@
+<section class="hero">
+  <p class="eyebrow">{{ photographer.role }}</p>
+  <h1>{{ photographer.name }}</h1>
+  <p class="statement">{{ photographer.statement }}</p>
+</section>
+
+<section class="grid"
+  aria-label="Selected work">
+  @for (item of grid; track item.file; let i = $index) {
+  <a class="tile"
+    routerLink="../work"
+    [class.wide]="item.columns === 4"
+    [class.tall]="item.rows === 2">
+    <img [src]="picture(item.file)"
+      [alt]="item.alt"
+      [attr.loading]="i < 2 ? null : 'lazy'" />
+    <span class="overlay">
+      <span class="number">{{ index(i) }}</span>
+      <span class="title">{{ item.title }}</span>
+      <span class="client">{{ item.client }}</span>
+    </span>
+  </a>
+  }
+</section>
+
+<section class="clients"
+  aria-label="Selected clients">
+  <p class="eyebrow">Selected clients</p>
+  <ul>
+    @for (client of clients; track client.logo) {
+    <li><npg-showcase-logo colour="mono"
+        [name]="client.logo"
+        [label]="client.name" /></li>
+    }
+  </ul>
+</section>
+
+<section class="closing">
+  <h2>Have a building, or a face, that needs photographing?</h2>
+  <p>{{ photographer.availability }}. Tell me about it and I’ll reply within two working days.</p>
+  <a nbButton
+    status="primary"
+    routerLink="../contact">
+    Get in touch
+    <nb-icon icon="arrow-forward-outline" />
+  </a>
+</section>

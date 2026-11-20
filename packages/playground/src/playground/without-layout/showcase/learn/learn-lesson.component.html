@@ -1,0 +1,136 @@
+<div class="columns">
+  <div class="main">
+    <nav class="crumbs caption"
+      aria-label="Breadcrumb">
+      <a routerLink="../course">{{ course.title }}</a>
+      <nb-icon icon="chevron-right-outline" />
+      <span>Chapter {{ chapterIndex + 1 }} · {{ chapter.title }}</span>
+    </nav>
+
+    <!-- The lesson's video, with captions from its transcript; finishing it marks the lesson complete. -->
+    <nb-video src="assets/showcase/learn/lesson.mp4"
+      [poster]="poster"
+      [tracks]="captions"
+      [aria-label]="lesson.title"
+      (timeUpdate)="position.set($event)"
+      (ended)="complete.set(true)" />
+
+    <div class="title-row">
+      <div>
+        <p class="caption-2 eyebrow">Lesson {{ lessonIndex + 1 }} of {{ chapter.lessons.length }} · {{ lesson.minutes }} min</p>
+        <h1 class="h2">{{ lesson.title }}</h1>
+      </div>
+      <nb-toggle status="success"
+        [checked]="complete()"
+        (checkedChange)="complete.set($event)">Mark complete</nb-toggle>
+    </div>
+
+    <nb-tabset fullWidth>
+      <nb-tab tabTitle="Overview">
+        <div class="overview">
+          <p>Documentation is the part of a design system most teams leave for last, and the part people use most. This
+            lesson builds a component's page from scratch, in the order readers need it: when to use it, how it's put
+            together, and only then what it can do.</p>
+          <p>By the end you'll have a page template you can apply to every component, and a short checklist for reviewing
+            the pages others write.</p>
+          <h2 class="h5">Resources</h2>
+          <ul class="resources">
+            @for (resource of resources; track resource.name) {
+            <li>
+              <nb-icon [icon]="resource.icon" />
+              <span class="name">{{ resource.name }}</span>
+              <span class="caption">{{ resource.meta }}</span>
+              <button nbButton
+                edge="end"
+                ghost
+                size="tiny"
+                type="button"
+                [attr.aria-label]="'Download ' + resource.name">
+                <nb-icon icon="download-outline" />
+              </button>
+            </li>
+            }
+          </ul>
+        </div>
+      </nb-tab>
+      <nb-tab tabTitle="Notes">
+        <nb-markdown-viewer class="notes"
+          [markdown]="notes" />
+      </nb-tab>
+      <nb-tab tabTitle="Transcript">
+        <ol class="transcript">
+          @for (line of transcript; track line.time; let i = $index) {
+          <li [class.current]="i === currentLine()"
+            [attr.aria-current]="i === currentLine() ? 'time' : null">
+            <button nbButton
+              ghost
+              size="tiny"
+              type="button"
+              [attr.aria-label]="'Jump to ' + line.time"
+              (click)="jump(line.time)">{{ line.time }}</button>
+            <p>{{ line.text }}</p>
+          </li>
+          }
+        </ol>
+      </nb-tab>
+    </nb-tabset>
+
+    <div class="pager">
+      <a nbButton
+        ghost
+        routerLink="../lesson">
+        <nb-icon icon="arrow-back-outline" />
+        Accessibility by default
+      </a>
+      <a nbButton
+        status="primary"
+        routerLink="../lesson">
+        Versioning and change
+        <nb-icon icon="arrow-forward-outline" />
+      </a>
+    </div>
+  </div>
+
+  <!-- The chapter beside the lesson: where this one sits, and what's next. -->
+  <aside class="side"
+    aria-label="This chapter">
+    <nb-card>
+      <nb-card-header>
+        <div>
+          <p class="caption-2 eyebrow">Chapter {{ chapterIndex + 1 }}</p>
+          <span class="subtitle">{{ chapter.title }}</span>
+        </div>
+        <span class="caption">{{ done() }} of {{ chapter.lessons.length }}</span>
+      </nb-card-header>
+      <nb-card-body class="chapter-body">
+        <nb-progress-bar size="tiny"
+          status="primary"
+          [value]="chapterProgress()"
+          aria-label="Chapter progress" />
+        <nb-list>
+          @for (item of chapter.lessons; track item.id; let i = $index) {
+          <nb-list-item class="chapter-lesson"
+            [class.current]="i === lessonIndex"
+            [class.done]="item.done">
+            <nb-icon [icon]="item.done ? 'checkmark-circle-2' : i === lessonIndex ? 'play-circle' : 'play-circle-outline'"
+              [status]="item.done ? 'success' : i === lessonIndex ? 'primary' : 'basic'" />
+            <a routerLink="../lesson"
+              [attr.aria-current]="i === lessonIndex ? 'page' : null">{{ item.title }}</a>
+            <span class="caption">{{ item.minutes }} min</span>
+          </nb-list-item>
+          }
+          <nb-list-item class="chapter-lesson quiz">
+            <nb-icon icon="checkmark-square-2-outline"
+              status="primary" />
+            <a routerLink="../quiz">Chapter quiz</a>
+            <span class="caption">8 questions</span>
+          </nb-list-item>
+        </nb-list>
+      </nb-card-body>
+      <nb-card-footer class="next">
+        <p class="caption-2 eyebrow">Up next</p>
+        <a routerLink="../course">Chapter {{ chapterIndex + 2 }} · {{ nextChapter.title }}</a>
+      </nb-card-footer>
+    </nb-card>
+  </aside>
+</div>

@@ -1,0 +1,308 @@
+<div class="booking">
+  <div class="flow">
+    <h1>Book an appointment</h1>
+    <nb-card>
+      <nb-card-body>
+        <nb-stepper #stepper
+          linear>
+          <nb-step label="Service"
+            [stepControl]="serviceStep">
+            <h2 class="step-title">What would you like?</h2>
+            <nb-radio-group class="choices"
+              name="service"
+              [value]="booking.serviceId()"
+              (valueChange)="pickService($event)">
+              @for (service of services; track service.id) {
+              <nb-radio class="choice"
+                [value]="service.id">
+                <span class="choice-body">
+                  <span [class]="'tile status-' + service.status"><nb-icon [icon]="service.icon" /></span>
+                  <span class="choice-text">
+                    <strong>{{ service.name }}</strong>
+                    <span class="hint">{{ service.duration }} min · £{{ service.price }}</span>
+                  </span>
+                </span>
+              </nb-radio>
+              }
+            </nb-radio-group>
+            <div class="step-actions">
+              <button nbButton
+                status="primary"
+                type="button"
+                nbStepperNext
+                [disabled]="!booking.serviceId()">
+                Continue
+                <nb-icon icon="arrow-forward-outline" />
+              </button>
+            </div>
+          </nb-step>
+
+          <nb-step label="Practitioner"
+            [stepControl]="practitionerStep">
+            <h2 class="step-title">Who would you like to see?</h2>
+            <nb-radio-group class="choices people"
+              name="practitioner"
+              [value]="booking.practitioner()"
+              (valueChange)="booking.practitioner.set($event)">
+              <nb-radio class="choice"
+                [value]="anyone">
+                <span class="choice-body">
+                  <span class="tile status-primary"><nb-icon icon="people-outline" /></span>
+                  <span class="choice-text">
+                    <strong>Anyone available</strong>
+                    <span class="hint">The first free practitioner</span>
+                  </span>
+                </span>
+              </nb-radio>
+              @for (person of practitioners(); track person.name) {
+              <nb-radio class="choice"
+                [value]="person.name">
+                <span class="choice-body">
+                  <img class="tile photo"
+                    alt=""
+                    width="40"
+                    height="40"
+                    [src]="portrait(person.name)">
+                  <span class="choice-text">
+                    <strong>{{ person.name }}</strong>
+                    <span class="hint">{{ person.title }}</span>
+                  </span>
+                </span>
+              </nb-radio>
+              }
+            </nb-radio-group>
+            <div class="step-actions">
+              <button nbButton
+                ghost
+                type="button"
+                nbStepperPrevious>Back</button>
+              <button nbButton
+                status="primary"
+                type="button"
+                nbStepperNext
+                [disabled]="!booking.practitioner()">
+                Continue
+                <nb-icon icon="arrow-forward-outline" />
+              </button>
+            </div>
+          </nb-step>
+
+          <nb-step label="Date and time"
+            [stepControl]="timeStep">
+            <h2 class="step-title">When suits you?</h2>
+            <div class="when">
+              <nb-calendar size="large"
+                [min]="today"
+                [max]="lastDay"
+                [filter]="openDay"
+                [date]="booking.date()"
+                (dateChange)="pickDate($event)" />
+              <div class="slots">
+                @if (booking.date(); as date) {
+                <h3>{{ date | date: 'EEEE d MMMM' }}</h3>
+                <nb-button-group class="slot-grid"
+                  separate
+                  outline
+                  aria-label="Start time"
+                  (valueChange)="pickTime($event)">
+                  @for (slot of daySlots(); track slot.time) {
+                  <button nbButtonToggle
+                    [value]="slot.time"
+                    [pressed]="booking.time() === slot.time"
+                    [disabled]="slot.taken">{{ slot.time }}</button>
+                  }
+                </nb-button-group>
+                <p class="hint">Greyed-out times are taken. Appointments can be moved up to 24 hours before.</p>
+                } @else {
+                <h3>Pick a day</h3>
+                <p class="hint">We're open Monday to Saturday. Choose a day to see the free times.</p>
+                }
+              </div>
+            </div>
+            <div class="step-actions">
+              <button nbButton
+                ghost
+                type="button"
+                nbStepperPrevious>Back</button>
+              <button nbButton
+                status="primary"
+                type="button"
+                nbStepperNext
+                [disabled]="!booking.time()">
+                Continue
+                <nb-icon icon="arrow-forward-outline" />
+              </button>
+            </div>
+          </nb-step>
+
+          <nb-step label="Your details"
+            [stepControl]="details">
+            <h2 class="step-title">Who's coming?</h2>
+            <form class="form"
+              [formGroup]="details"
+              (ngSubmit)="saveDetails()">
+              <div class="fields">
+                <div class="field">
+                  <label class="label"
+                    for="book-name">Full name</label>
+                  <input nbInput
+                    fullWidth
+                    id="book-name"
+                    autocomplete="name"
+                    formControlName="name"
+                    nbValidation
+                    #name="nbValidation" />
+                  <nb-validation-errors [for]="name" />
+                </div>
+                <div class="field">
+                  <label class="label"
+                    for="book-email">Email</label>
+                  <input nbInput
+                    fullWidth
+                    id="book-email"
+                    type="email"
+                    autocomplete="email"
+                    formControlName="email"
+                    nbValidation
+                    #email="nbValidation" />
+                  <nb-validation-errors [for]="email" />
+                </div>
+                <div class="field">
+                  <label class="label"
+                    id="book-phone">Mobile</label>
+                  <nb-phone-input fullWidth
+                    country="GB"
+                    aria-labelledby="book-phone"
+                    formControlName="phone"
+                    nbValidation
+                    #phone="nbValidation" />
+                  <nb-validation-errors [for]="phone" />
+                  <span class="hint">We'll text you a reminder the day before.</span>
+                </div>
+                <div class="field wide">
+                  <label class="label"
+                    for="book-notes">Anything we should know?</label>
+                  <textarea nbInput
+                    fullWidth
+                    id="book-notes"
+                    rows="3"
+                    formControlName="notes"
+                    placeholder="Injuries, allergies, a preference for firmer or lighter work…"></textarea>
+                </div>
+                <div class="field wide">
+                  <nb-checkbox formControlName="consent"
+                    nbValidation
+                    #consent="nbValidation">I agree to the cancellation policy: 24 hours' notice, or the session is charged.</nb-checkbox>
+                  <nb-validation-errors [for]="consent" />
+                </div>
+              </div>
+              <div class="step-actions">
+                <button nbButton
+                  ghost
+                  type="button"
+                  nbStepperPrevious>Back</button>
+                <button nbButton
+                  status="primary"
+                  type="submit"
+                  nbStepperNext>
+                  Review
+                  <nb-icon icon="arrow-forward-outline" />
+                </button>
+              </div>
+            </form>
+          </nb-step>
+
+          <nb-step label="Confirm">
+            <h2 class="step-title">Everything right?</h2>
+            @if (booking.service(); as service) {
+            <dl class="review">
+              <div>
+                <dt>Service</dt>
+                <dd>{{ service.name }}, {{ service.duration }} min</dd>
+              </div>
+              <div>
+                <dt>With</dt>
+                <dd>{{ booking.practitioner() === anyone ? 'Anyone available' : booking.practitioner() }}</dd>
+              </div>
+              <div>
+                <dt>When</dt>
+                <dd>{{ booking.date() | date: 'EEEE d MMMM' }} at {{ booking.time() }}</dd>
+              </div>
+              <div>
+                <dt>For</dt>
+                <dd>{{ booking.details()?.name }}, {{ booking.details()?.email }}</dd>
+              </div>
+              <div>
+                <dt>To pay at the studio</dt>
+                <dd><strong>£{{ service.price }}</strong></dd>
+              </div>
+            </dl>
+            }
+            <div class="step-actions">
+              <button nbButton
+                ghost
+                type="button"
+                nbStepperPrevious>Back</button>
+              <button nbButton
+                status="primary"
+                size="large"
+                type="button"
+                (click)="confirm()">
+                <nb-icon icon="checkmark-outline" />
+                Confirm booking
+              </button>
+            </div>
+          </nb-step>
+        </nb-stepper>
+      </nb-card-body>
+    </nb-card>
+  </div>
+
+  <aside class="summary">
+    <nb-card>
+      <nb-card-header>Your booking</nb-card-header>
+      <nb-card-body>
+        <ul class="picks">
+          <li>
+            <nb-icon [icon]="booking.service() ? 'checkmark-circle-2' : 'droplet-outline'"
+              [class.done]="booking.service()" />
+            <span>
+              <span class="hint">Service</span>
+              <strong>{{ booking.service()?.name ?? 'Not picked yet' }}</strong>
+            </span>
+          </li>
+          <li>
+            <nb-icon [icon]="booking.practitioner() ? 'checkmark-circle-2' : 'person-outline'"
+              [class.done]="booking.practitioner()" />
+            <span>
+              <span class="hint">With</span>
+              <strong>{{ booking.practitioner() === anyone ? 'Anyone available' : (booking.practitioner() ?? 'Not picked yet') }}</strong>
+            </span>
+          </li>
+          <li>
+            <nb-icon [icon]="booking.time() ? 'checkmark-circle-2' : 'calendar-outline'"
+              [class.done]="booking.time()" />
+            <span>
+              <span class="hint">When</span>
+              <strong>
+                @if (booking.date(); as date) {
+                {{ date | date: 'EEE d MMM' }}{{ booking.time() ? ', ' + booking.time() : '' }}
+                } @else {
+                Not picked yet
+                }
+              </strong>
+            </span>
+          </li>
+        </ul>
+        <div class="total">
+          <span>To pay at the studio</span>
+          <strong>£{{ booking.service()?.price ?? 0 }}</strong>
+        </div>
+      </nb-card-body>
+    </nb-card>
+    <p class="hint aside-note">
+      <nb-icon icon="info-outline" />
+      Nothing is charged online. Pay at the front desk by card or cash.
+    </p>
+  </aside>
+</div>

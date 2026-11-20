@@ -1,0 +1,59 @@
+<nb-layout windowMode>
+  <nb-layout-header fixed>
+    <npg-showcase-grain [opacity]="0.18" />
+    <div class="header-start">
+      <button nbButton
+        ghost
+        status="control"
+        type="button"
+        aria-label="Show or hide the menu"
+        (click)="toggleSidebar()">
+        <nb-icon icon="menu-2-outline" />
+      </button>
+      <a class="brand"
+        routerLink="home">
+        <span class="mark"
+          aria-hidden="true">A</span>
+        Acme <strong>Hub</strong>
+      </a>
+    </div>
+
+    <nb-form-field class="search">
+      <nb-icon nbPrefix
+        icon="search-outline" />
+      <input nbInput
+        fullWidth
+        type="search"
+        placeholder="Search people, documents, tickets…"
+        aria-label="Search" />
+      <kbd nbSuffix
+        aria-hidden="true">⌘K</kbd>
+    </nb-form-field>
+
+    <nb-actions>
+      <nb-action icon="bell-outline"
+        title="Notifications"
+        badgeText="3"
+        badgeStatus="danger" />
+      <nb-action class="help"
+        icon="question-mark-circle-outline"
+        title="Help" />
+      <nb-action>
+        <nb-user name="Jane Doe"
+          title="Head of design"
+          [picture]="userPhoto"
+          [nbContextMenu]="userMenu" />
+      </nb-action>
+    </nb-actions>
+  </nb-layout-header>
+
+  <nb-sidebar responsive
+    tag="hub">
+    <nb-menu tag="hub-menu"
+      [items]="menu" />
+  </nb-sidebar>
+
+  <nb-layout-column>
+    <router-outlet />
+  </nb-layout-column>
+</nb-layout>

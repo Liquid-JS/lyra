@@ -1,0 +1,98 @@
+@use '../../../styles/themes' as *;
+
+:host {
+  display: block;
+}
+
+h1 {
+  margin-bottom: 1.5rem;
+}
+
+.cart {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 20rem;
+  gap: 1.5rem;
+  align-items: start;
+
+  @media (max-width: 991.98px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+nb-card {
+  margin: 0;
+}
+
+.line {
+  display: grid;
+  grid-template-columns: 5rem minmax(0, 1fr) auto 5rem;
+  gap: 1rem;
+  align-items: center;
+  padding: 1rem 1.5rem;
+
+  & + .line {
+    border-top: nb-theme(card-divider-width) nb-theme(card-divider-style) nb-theme(card-divider-color);
+  }
+
+  @media (max-width: 575.98px) {
+    grid-template-columns: 4rem minmax(0, 1fr) auto;
+    padding: 1rem;
+
+    .amount {
+      grid-column: 2;
+    }
+  }
+}
+
+.thumb {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: nb-theme(border-radius);
+}
+
+.what {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.125rem;
+}
+
+.name {
+  color: nb-theme(text-basic-color);
+  text-decoration: none;
+}
+
+.amount {
+  text-align: end;
+}
+
+.summary nb-card-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.empty nb-card-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 3rem 1.5rem;
+  text-align: center;
+
+  nb-icon {
+    width: 3rem;
+    height: 3rem;
+    font-size: 3rem;
+    color: nb-theme(text-hint-color);
+  }
+
+  h2,
+  p {
+    margin: 0;
+  }
+
+  p {
+    color: nb-theme(text-hint-color);
+  }
+}

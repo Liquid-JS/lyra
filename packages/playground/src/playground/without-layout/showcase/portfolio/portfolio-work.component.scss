@@ -1,0 +1,268 @@
+@use '../../../styles/themes' as *;
+
+:host {
+  display: block;
+}
+
+article {
+  padding: 5rem 3rem 6rem;
+}
+
+.eyebrow {
+  margin: 0;
+  color: nb-theme(text-hint-color);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+// The project's number, in the serif.
+.number {
+  font-family: nb-theme(font-family-secondary);
+  font-size: 1.25em;
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+// The title beside what the project was.
+.head {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: 2rem 4rem;
+  align-items: end;
+  margin-bottom: 2.5rem;
+
+  h1 {
+    margin: 0.5rem 0 1rem;
+    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    font-style: italic;
+    text-wrap: balance;
+  }
+}
+
+.subtitle {
+  max-width: 30rem;
+  margin: 0;
+  font-size: 1.125rem;
+  line-height: 1.5;
+}
+
+.meta {
+  margin: 0;
+  border-top: 1px solid nb-theme(divider-color);
+
+  div {
+    display: grid;
+    grid-template-columns: 7rem 1fr;
+    gap: 1rem;
+    padding: 0.625rem 0;
+    border-bottom: 1px solid nb-theme(divider-color);
+  }
+
+  dt {
+    color: nb-theme(text-hint-color);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  dd {
+    margin: 0;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+figure {
+  margin: 0;
+  background: nb-theme(color-basic-400);
+
+  img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+}
+
+// The lead reaches the window's edge on the right.
+.lead {
+  margin-inline-end: -3rem;
+}
+
+.text {
+  columns: 2;
+  column-gap: 3rem;
+  max-width: 64rem;
+  margin: 3rem 0;
+  font-size: 1.0625rem;
+
+  p {
+    margin: 0 0 1rem;
+    break-inside: avoid;
+  }
+
+  p:first-child::first-letter {
+    float: left;
+    margin: 0.25rem 0.5rem 0 0;
+    font-family: nb-theme(font-family-secondary);
+    font-size: 3.5rem;
+    font-style: italic;
+    line-height: 0.8;
+  }
+}
+
+// Pictures of mixed shape on one line, the second a step down: a grid that breaks on purpose.
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 1rem;
+  align-items: start;
+
+  figure:nth-child(1) {
+    grid-column: 1 / span 4;
+  }
+
+  figure:nth-child(2) {
+    grid-column: 5 / span 5;
+    margin-top: 4rem;
+  }
+
+  figure:nth-child(3) {
+    grid-column: 10 / span 3;
+  }
+
+  figure:nth-child(4) {
+    grid-column: 3 / span 8;
+    margin-top: 1rem;
+  }
+}
+
+.neighbours {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-top: 5rem;
+  border-top: 1px solid nb-theme(divider-color);
+
+  a {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0 0.75rem;
+    align-items: center;
+    padding: 1.5rem 0;
+    color: inherit;
+    text-decoration: none;
+
+    nb-icon {
+      grid-row: span 2;
+      font-size: 1.5rem;
+      transition: transform 0.3s ease;
+    }
+
+    &:hover nb-icon,
+    &:focus-visible nb-icon {
+      transform: translateX(-0.25rem);
+    }
+
+    &.next {
+      grid-template-columns: 1fr auto;
+      text-align: end;
+
+      // The icon comes first, so the rows are set to mirror the previous link's.
+      nb-icon {
+        grid-row: 1 / span 2;
+        grid-column: 2;
+      }
+
+      .label,
+      .name {
+        grid-column: 1;
+      }
+
+      .label {
+        grid-row: 1;
+      }
+
+      .name {
+        grid-row: 2;
+      }
+
+      &:hover nb-icon,
+      &:focus-visible nb-icon {
+        transform: translateX(0.25rem);
+      }
+    }
+  }
+
+  .label {
+    color: nb-theme(text-hint-color);
+    font-size: 0.8125rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .name {
+    font-family: nb-theme(font-family-secondary);
+    font-size: 1.375rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .neighbours nb-icon {
+    transition: none;
+  }
+}
+
+@media (max-width: 991.98px) {
+  article {
+    padding: 2.5rem 1.25rem 4rem;
+  }
+
+  .head {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.5rem;
+  }
+
+  .lead {
+    margin-inline: -1.25rem;
+  }
+
+  .text {
+    columns: 1;
+    margin: 2rem 0;
+  }
+
+  .gallery {
+    gap: 0.5rem;
+
+    figure:nth-child(1) {
+      grid-column: 1 / span 6;
+    }
+
+    figure:nth-child(2) {
+      grid-column: 7 / span 6;
+      margin-top: 2rem;
+    }
+
+    figure:nth-child(3) {
+      grid-column: 1 / span 5;
+      margin-top: 0;
+    }
+
+    figure:nth-child(4) {
+      grid-column: 6 / span 7;
+      margin-top: 0;
+    }
+  }
+
+  .neighbours {
+    margin-top: 3rem;
+
+    .name {
+      font-size: 1.125rem;
+    }
+  }
+}

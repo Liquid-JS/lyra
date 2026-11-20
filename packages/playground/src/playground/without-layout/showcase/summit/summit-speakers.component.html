@@ -1,0 +1,54 @@
+<header class="page-header">
+  <p class="eyebrow">48 speakers · 11 announced</p>
+  <h1>Speakers</h1>
+  <p class="lead">Founders, heads of product and design, and the engineers who ship it. The rest are announced every
+    Tuesday until March.</p>
+  <nb-form-field class="search">
+    <nb-icon nbPrefix
+      icon="search-outline" />
+    <input nbInput
+      fullWidth
+      type="search"
+      placeholder="Search by name, company or topic"
+      aria-label="Search speakers"
+      #search
+      [value]="query()"
+      (input)="query.set(search.value)" />
+  </nb-form-field>
+</header>
+
+@if (speakers().length) {
+<ul class="grid">
+  @for (speaker of speakers(); track speaker.id) {
+  <li>
+    <button type="button"
+      class="speaker"
+      (click)="open(speaker)">
+      <nb-user size="giant"
+        shape="rectangle"
+        [name]="speaker.name"
+        [title]="speaker.role + ', ' + speaker.company"
+        [picture]="portrait(speaker.name)" />
+      <nb-tag-list>
+        @for (topic of speaker.topics; track topic) {
+        <nb-tag appearance="outline"
+          size="tiny"
+          [text]="topic" />
+        }
+      </nb-tag-list>
+    </button>
+  </li>
+  }
+</ul>
+} @else {
+<p class="empty">Nobody matches “{{ query() }}” yet. The line-up grows every week.</p>
+}
+
+<section class="call">
+  <h2>Have something to say?</h2>
+  <p class="lead">The call for talks is open until 15 January. Forty minutes, one idea, no slides required.</p>
+  <button nbButton
+    status="primary"
+    size="large"
+    type="button">Propose a talk</button>
+</section>

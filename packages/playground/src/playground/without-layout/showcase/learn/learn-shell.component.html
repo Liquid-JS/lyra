@@ -1,0 +1,56 @@
+<nb-layout>
+  <nb-layout-header fixed>
+    <a class="brand"
+      routerLink="catalogue"><span class="logo"
+        aria-hidden="true"></span>Acme <em>Learn</em></a>
+    <div class="sections"
+      role="navigation"
+      aria-label="Sections">
+      <a routerLink="catalogue"
+        routerLinkActive="active">Catalogue</a>
+      <a routerLink="course"
+        routerLinkActive="active">My learning</a>
+    </div>
+    <nb-form-field class="search">
+      <nb-icon nbPrefix
+        icon="search-outline" />
+      <input nbInput
+        fullWidth
+        type="search"
+        placeholder="Search courses"
+        aria-label="Search courses" />
+    </nb-form-field>
+    <div class="actions">
+      <nb-user class="user"
+        name="Jane Doe"
+        title="Product designer"
+        size="small"
+        [picture]="userPhoto"
+        [nbContextMenu]="userMenu" />
+      <button nbButton
+        ghost
+        class="menu"
+        type="button"
+        aria-label="Menu"
+        [nbContextMenu]="sections">
+        <nb-icon icon="menu-outline" />
+      </button>
+    </div>
+  </nb-layout-header>
+
+  <nb-layout-column class="page">
+    <router-outlet />
+  </nb-layout-column>
+
+  <nb-layout-footer>
+    <p class="footer">
+      <span>© {{ year }} Acme Learn</span>
+      <a href="#"
+        (click)="$event.preventDefault()">Help centre</a>
+      <a href="#"
+        (click)="$event.preventDefault()">Privacy</a>
+      <a href="#"
+        (click)="$event.preventDefault()">Terms</a>
+    </p>
+  </nb-layout-footer>
+</nb-layout>

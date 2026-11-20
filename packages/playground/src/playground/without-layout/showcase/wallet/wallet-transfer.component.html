@@ -1,0 +1,233 @@
+<header class="page-header">
+  <h1 class="h4">Send money</h1>
+  <p class="hint">Between your accounts at once and free; to anyone else by the next working day.</p>
+</header>
+
+<div class="layout">
+  <nb-card class="steps">
+    <nb-card-body>
+      <nb-stepper #stepper
+        disableStepNavigation>
+        <nb-step label="Who"
+          [stepControl]="parties">
+          <form [formGroup]="parties">
+            <label class="label"
+              for="transfer-from">From</label>
+            <nb-select fullWidth
+              id="transfer-from"
+              formControlName="from">
+              @for (account of accounts; track account.id) {
+              <nb-option [value]="account.id">
+                {{ account.name }} · {{ account.balance | currency: 'USD' : 'symbol' : '1.2-2' }}
+              </nb-option>
+              }
+            </nb-select>
+
+            <p class="label">To</p>
+            <nb-radio-group class="destinations"
+              formControlName="to"
+              aria-label="Recipient">
+              @for (item of destinations; track item.id) {
+              <nb-radio [value]="item.id"
+                [disabled]="item.destination.kind === 'own' && item.destination.account.id === parties.controls.from.value">
+                @if (item.destination.kind === 'own') {
+                <span class="destination">
+                  <span class="tile"
+                    [class]="'tile status-' + item.destination.account.status"><nb-icon [icon]="item.destination.account.icon" /></span>
+                  <span class="destination-text">
+                    <span class="destination-name">{{ item.destination.account.name }}</span>
+                    <span class="caption hint">Your account · ••••&nbsp;{{ item.destination.account.number }}</span>
+                  </span>
+                </span>
+                } @else {
+                <span class="destination">
+                  <nb-user size="medium"
+                    onlyPicture
+                    [name]="item.destination.recipient.name"
+                    [picture]="photoOf(item.destination.recipient.name)" />
+                  <span class="destination-text">
+                    <span class="destination-name">{{ item.destination.recipient.name }}</span>
+                    <span class="caption hint">{{ item.destination.recipient.bank }} · ••••&nbsp;{{ item.destination.recipient.number }}</span>
+                  </span>
+                </span>
+                }
+              </nb-radio>
+              }
+            </nb-radio-group>
+
+            <div class="step-actions">
+              <button nbButton
+                status="primary"
+                type="button"
+                nbStepperNext
+                [disabled]="parties.invalid">Continue</button>
+            </div>
+          </form>
+        </nb-step>
+
+        <nb-step label="How much"
+          [stepControl]="details">
+          <form [formGroup]="details">
+            <label class="label"
+              for="transfer-amount">Amount</label>
+            <nb-form-field class="amount-field">
+              <span nbPrefix
+                class="currency">$</span>
+              <input nbInput
+                fullWidth
+                id="transfer-amount"
+                type="number"
+                min="1"
+                step="0.01"
+                placeholder="0.00"
+                formControlName="amount" />
+            </nb-form-field>
+            <nb-button-group size="small"
+              class="quick"
+              aria-label="Quick amounts"
+              (valueChange)="pickAmount($event)">
+              @for (quick of quickAmounts; track quick) {
+              <button nbButtonToggle
+                [value]="quick"
+                [pressed]="details.controls.amount.value === quick">{{ quick | currency: 'USD' : 'symbol' : '1.0-0' }}</button>
+              }
+            </nb-button-group>
+            @if (details.controls.amount.hasError('insufficient')) {
+            <nb-alert status="danger"
+              class="warning">
+              That's more than {{ fromAccount().name }} holds:
+              {{ fromAccount().balance | currency: 'USD' : 'symbol' : '1.2-2' }} is available.
+            </nb-alert>
+            } @else {
+            <p class="caption hint">{{ fromAccount().balance | currency: 'USD' : 'symbol' : '1.2-2' }} available in {{ fromAccount().name }}</p>
+            }
+
+            <div class="fields">
+              <div>
+                <label class="label"
+                  for="transfer-note">Note</label>
+                <input nbInput
+                  fullWidth
+                  id="transfer-note"
+                  placeholder="What's it for?"
+                  maxlength="60"
+                  formControlName="note" />
+              </div>
+              <div>
+                <label class="label"
+                  for="transfer-date">Send on</label>
+                <nb-form-field>
+                  <nb-icon nbPrefix
+                    icon="calendar-outline" />
+                  <input nbInput
+                    fullWidth
+                    id="transfer-date"
+                    formControlName="date"
+                    [nbDatepicker]="datePicker" />
+                  <nb-datepicker #datePicker />
+                </nb-form-field>
+              </div>
+            </div>
+
+            <div class="step-actions">
+              <button nbButton
+                ghost
+                type="button"
+                nbStepperPrevious>Back</button>
+              <button nbButton
+                status="primary"
+                type="button"
+                nbStepperNext
+                [disabled]="details.invalid">Review</button>
+            </div>
+          </form>
+        </nb-step>
+
+        <nb-step label="Review">
+          @if (destination(); as to) {
+          <nb-card class="review"
+            accent="primary">
+            <nb-card-body>
+              <p class="review-amount">{{ amount() | currency: 'USD' : 'symbol' : '1.2-2' }}</p>
+              <dl class="review-list">
+                <dt>From</dt>
+                <dd>{{ fromAccount().name }} · ••••&nbsp;{{ fromAccount().number }}</dd>
+                <dt>To</dt>
+                <dd>{{ nameOf(to) }}</dd>
+                @if (details.controls.note.value) {
+                <dt>Note</dt>
+                <dd>{{ details.controls.note.value }}</dd>
+                }
+                <dt>Sends on</dt>
+                <dd>{{ details.controls.date.value | date: 'EEEE, d MMMM' }}</dd>
+                <dt>Arrives</dt>
+                <dd>{{ external() ? 'Next working day' : 'At once' }}, {{ arrives() | date: 'd MMM' }}</dd>
+                <dt>Fee</dt>
+                <dd>{{ fee() ? (fee() | currency: 'USD' : 'symbol' : '1.2-2') : 'Free' }}</dd>
+              </dl>
+            </nb-card-body>
+          </nb-card>
+          }
+          <div class="step-actions">
+            <button nbButton
+              ghost
+              type="button"
+              nbStepperPrevious>Back</button>
+            <button nbButton
+              status="primary"
+              type="button"
+              nbStepperNext
+              (click)="confirm()">
+              <nb-icon icon="paper-plane-outline" />
+              Send {{ amount() | currency: 'USD' : 'symbol' : '1.2-2' }}
+            </button>
+          </div>
+        </nb-step>
+
+        <nb-step label="Done">
+          <div class="done">
+            <span class="done-icon"><nb-icon icon="checkmark-outline" /></span>
+            <p class="subtitle">{{ external() ? 'On its way' : 'Sent' }}</p>
+            <p class="hint">
+              {{ amount() | currency: 'USD' : 'symbol' : '1.2-2' }}
+              @if (destination(); as to) { to {{ nameOf(to) }} }
+              · Reference {{ reference() }}
+            </p>
+            <div class="step-actions centred">
+              <a nbButton
+                appearance="outline"
+                [routerLink]="link('transactions')">See transactions</a>
+              <button nbButton
+                status="primary"
+                type="button"
+                (click)="another(stepper)">Make another</button>
+            </div>
+          </div>
+        </nb-step>
+      </nb-stepper>
+    </nb-card-body>
+  </nb-card>
+
+  <aside class="aside">
+    <nb-card>
+      <nb-card-header>Limits</nb-card-header>
+      <nb-card-body>
+        <dl class="limits">
+          <dt>Daily limit</dt>
+          <dd>$10,000</dd>
+          <dt>Used today</dt>
+          <dd>$0</dd>
+          <dt>Transfers to others</dt>
+          <dd>$1.50 each</dd>
+        </dl>
+      </nb-card-body>
+    </nb-card>
+    <nb-card>
+      <nb-card-header>Keep in mind</nb-card-header>
+      <nb-card-body>
+        <p class="caption">Check the account number with the person you're paying. A transfer to the wrong account can't
+          always be returned.</p>
+      </nb-card-body>
+    </nb-card>
+  </aside>
+</div>

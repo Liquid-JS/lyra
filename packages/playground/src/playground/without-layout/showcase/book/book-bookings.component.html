@@ -1,0 +1,122 @@
+<div class="bookings">
+  <header class="top">
+    <div>
+      <h1>My bookings</h1>
+      <p class="hint">Move or cancel an appointment up to 24 hours before it starts.</p>
+    </div>
+    <a nbButton
+      status="primary"
+      routerLink="../book">
+      <nb-icon icon="plus-outline" />
+      New booking
+    </a>
+  </header>
+
+  <nb-tabset>
+    <nb-tab tabTitle="Upcoming"
+      [badgeText]="upcoming().length.toString()"
+      badgeStatus="primary">
+      @if (upcoming().length) {
+      <ul class="list">
+        @for (booking of upcoming(); track booking.reference) {
+        <li>
+          <nb-card>
+            <nb-card-body>
+              <time class="date"
+                [attr.datetime]="booking.date | date: 'yyyy-MM-dd'">
+                <span class="day">{{ booking.date | date: 'd' }}</span>
+                <span class="month">{{ booking.date | date: 'MMM' }}</span>
+              </time>
+              <div class="what">
+                <h2>{{ serviceOf(booking.serviceId)?.name }}</h2>
+                <p class="hint">
+                  {{ booking.date | date: 'EEEE' }}, {{ booking.time }} · {{ serviceOf(booking.serviceId)?.duration }} min ·
+                  <code>{{ booking.reference }}</code>
+                </p>
+                @if (booking.practitioner !== anyone) {
+                <nb-user size="small"
+                  [name]="booking.practitioner"
+                  [picture]="portrait(booking.practitioner)"
+                  [showTitle]="false" />
+                } @else {
+                <span class="hint">With whoever is free</span>
+                }
+              </div>
+              <nb-tag size="small"
+                appearance="filled"
+                [status]="tagOf(booking.status).status"
+                [text]="tagOf(booking.status).text" />
+              <div class="actions">
+                <button nbButton
+                  ghost
+                  size="small"
+                  type="button"
+                  (click)="rebook(booking)">
+                  <nb-icon icon="edit-2-outline" />
+                  Reschedule
+                </button>
+                <button nbButton
+                  edge="end"
+                  ghost
+                  status="danger"
+                  size="small"
+                  type="button"
+                  (click)="cancel(booking)">
+                  <nb-icon icon="close-outline" />
+                  Cancel
+                </button>
+              </div>
+            </nb-card-body>
+          </nb-card>
+        </li>
+        }
+      </ul>
+      } @else {
+      <div class="empty">
+        <nb-icon icon="calendar-outline" />
+        <h2>Nothing booked</h2>
+        <p class="hint">When you book an appointment, it shows up here.</p>
+        <a nbButton
+          status="primary"
+          routerLink="../book">Book an appointment</a>
+      </div>
+      }
+    </nb-tab>
+    <nb-tab tabTitle="Past">
+      <ul class="list">
+        @for (booking of past(); track booking.reference) {
+        <li>
+          <nb-card class="past">
+            <nb-card-body>
+              <time class="date"
+                [attr.datetime]="booking.date | date: 'yyyy-MM-dd'">
+                <span class="day">{{ booking.date | date: 'd' }}</span>
+                <span class="month">{{ booking.date | date: 'MMM' }}</span>
+              </time>
+              <div class="what">
+                <h2>{{ serviceOf(booking.serviceId)?.name }}</h2>
+                <p class="hint">{{ booking.date | date: 'EEEE d MMMM' }}, {{ booking.time }} · with {{ booking.practitioner }}</p>
+              </div>
+              <nb-tag size="small"
+                appearance="outline"
+                [status]="tagOf(booking.status).status"
+                [text]="tagOf(booking.status).text" />
+              <div class="actions">
+                <button nbButton
+                  outline
+                  status="primary"
+                  size="small"
+                  type="button"
+                  (click)="rebook(booking)">
+                  <nb-icon icon="refresh-outline" />
+                  Book again
+                </button>
+              </div>
+            </nb-card-body>
+          </nb-card>
+        </li>
+        }
+      </ul>
+    </nb-tab>
+  </nb-tabset>
+</div>

@@ -1,0 +1,73 @@
+<div class="grid">
+  <nb-card class="channels">
+    <nb-card-header class="channels-header">
+      Chat
+      <button nbButton
+        edge="end"
+        ghost
+        inline
+        size="small"
+        type="button"
+        aria-label="New conversation">
+        <nb-icon icon="edit-2-outline" />
+      </button>
+    </nb-card-header>
+    <p class="group caption hint">Channels</p>
+    <nb-list>
+      @for (channel of channelsOnly; track channel.name) {
+      <nb-list-item class="channel"
+        [class.open]="channel === open()"
+        tabindex="0"
+        role="button"
+        [attr.aria-current]="channel === open() ? 'true' : null"
+        (click)="select(channel)"
+        (keydown.enter)="select(channel)">
+        <span class="channel-name"><span class="hash">#</span>{{ channel.name }}</span>
+        @if (channel.unread) {
+        <nb-badge class="unread"
+          status="primary"
+          position="top right"
+          [text]="'' + channel.unread" />
+        }
+      </nb-list-item>
+      }
+    </nb-list>
+    <p class="group caption hint">Direct messages</p>
+    <nb-list>
+      @for (channel of direct; track channel.name) {
+      <nb-list-item class="channel"
+        [class.open]="channel === open()"
+        tabindex="0"
+        role="button"
+        [attr.aria-current]="channel === open() ? 'true' : null"
+        (click)="select(channel)"
+        (keydown.enter)="select(channel)">
+        <nb-user size="tiny"
+          [name]="channel.name"
+          [picture]="photoOf(channel.name)" />
+        @if (channel.unread) {
+        <nb-badge class="unread"
+          status="primary"
+          position="top right"
+          [text]="'' + channel.unread" />
+        }
+      </nb-list-item>
+      }
+    </nb-list>
+  </nb-card>
+
+  <nb-chat class="conversation"
+    [title]="(open().direct ? '' : '#') + open().name">
+    @for (message of messages(); track $index) {
+    <nb-chat-message type="text"
+      [message]="message.text"
+      [reply]="!!message.reply"
+      [sender]="message.sender"
+      [date]="message.date"
+      dateFormat="HH:mm"
+      [avatar]="message.reply ? undefined : photoOf(message.sender)" />
+    }
+    <nb-chat-form dropFiles
+      (send)="send($event)" />
+  </nb-chat>
+</div>

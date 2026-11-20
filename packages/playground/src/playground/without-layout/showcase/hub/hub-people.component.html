@@ -1,0 +1,166 @@
+<header class="page-header">
+  <div>
+    <h1 class="h4">People</h1>
+    <p class="hint">{{ count() }} of 412 people</p>
+  </div>
+  <button nbButton
+    status="primary"
+    type="button">
+    <nb-icon icon="person-add-outline" />
+    Invite
+  </button>
+</header>
+
+<div class="tools">
+  <nb-form-field class="search">
+    <nb-icon nbPrefix
+      icon="search-outline" />
+    <input nbInput
+      fullWidth
+      type="search"
+      placeholder="Search by name or role"
+      aria-label="Search people"
+      (input)="search.set($any($event.target).value)" />
+  </nb-form-field>
+  <nb-select placeholder="Department"
+    aria-label="Department"
+    [selected]="department()"
+    (selectedChange)="department.set($event ?? '')">
+    <nb-option value="">All departments</nb-option>
+    @for (item of departments; track item) {
+    <nb-option [value]="item">{{ item }}</nb-option>
+    }
+  </nb-select>
+  <nb-select placeholder="Office"
+    aria-label="Office"
+    [selected]="office()"
+    (selectedChange)="office.set($event ?? '')">
+    <nb-option value="">All offices</nb-option>
+    @for (item of offices; track item) {
+    <nb-option [value]="item">{{ item }}</nb-option>
+    }
+  </nb-select>
+  <nb-button-group class="view"
+    aria-label="View"
+    [value]="view()"
+    (valueChange)="setView($event)">
+    <button nbButtonToggle
+      value="table"
+      aria-label="Table"><nb-icon icon="list-outline" /></button>
+    <button nbButtonToggle
+      value="cards"
+      aria-label="Cards"><nb-icon icon="grid-outline" /></button>
+  </nb-button-group>
+</div>
+
+<div class="grid">
+  @if (view() === 'table') {
+  <nb-card class="directory">
+    <div class="table">
+      <table nbTable
+        [dataSource]="source"
+        [nbSort]="source">
+        <ng-container nbColumnDef="name">
+          <th nbHeaderCell
+            nbSortHeader
+            *nbHeaderCellDef>Name</th>
+          <td nbCell
+            *nbCellDef="let person; of: source">
+            <nb-user [name]="person.name"
+              [title]="person.role"
+              [picture]="person.photo" />
+          </td>
+        </ng-container>
+        <ng-container nbColumnDef="role">
+          <th nbHeaderCell
+            nbSortHeader
+            *nbHeaderCellDef>Role</th>
+          <td nbCell
+            *nbCellDef="let person; of: source">{{ person.role }}</td>
+        </ng-container>
+        <ng-container nbColumnDef="department">
+          <th nbHeaderCell
+            nbSortHeader
+            *nbHeaderCellDef>Team</th>
+          <td nbCell
+            *nbCellDef="let person; of: source">
+            <nb-tag appearance="outline"
+              size="tiny"
+              status="basic"
+              [text]="person.department" />
+          </td>
+        </ng-container>
+        <ng-container nbColumnDef="office">
+          <th nbHeaderCell
+            nbSortHeader
+            *nbHeaderCellDef>Office</th>
+          <td nbCell
+            *nbCellDef="let person; of: source">{{ person.office }}</td>
+        </ng-container>
+        <ng-container nbColumnDef="email">
+          <th nbHeaderCell
+            *nbHeaderCellDef>Email</th>
+          <td nbCell
+            *nbCellDef="let person; of: source"><a [href]="'mailto:' + person.email">{{ person.email }}</a></td>
+        </ng-container>
+
+        <tr nbHeaderRow
+          *nbHeaderRowDef="columns"></tr>
+        <tr nbRow
+          *nbRowDef="let person; of: source; columns: columns"></tr>
+      </table>
+    </div>
+    <nb-card-footer>
+      <nb-pagination [for]="source" />
+    </nb-card-footer>
+  </nb-card>
+  } @else {
+  <div class="cards">
+    @for (person of people(); track person.id) {
+    <nb-card class="person">
+      <nb-card-body>
+        <nb-user size="large"
+          [name]="person.name"
+          [title]="person.role"
+          [picture]="person.photo" />
+        <div class="person-meta">
+          <nb-tag appearance="outline"
+            size="tiny"
+            status="basic"
+            [text]="person.department" />
+          <span class="caption hint">{{ person.office }}</span>
+        </div>
+      </nb-card-body>
+    </nb-card>
+    }
+  </div>
+  }
+
+  <nb-card class="org">
+    <nb-card-header>Design team</nb-card-header>
+    <nb-card-body>
+      <table [nbTreeGrid]="tree">
+        <tr nbTreeGridRow
+          *nbTreeGridRowDef="let row; columns: treeColumns"></tr>
+        <ng-container nbTreeGridColumnDef="name">
+          <td nbTreeGridCell
+            *nbTreeGridCellDef="let row">
+            <span class="node">
+              <nb-tree-grid-row-toggle [expanded]="row.expanded"
+                [style.visibility]="row.hasChildren() ? null : 'hidden'" />
+              <nb-user size="small"
+                [name]="row.data.name"
+                [title]="row.data.role"
+                [picture]="row.data.photo" />
+            </span>
+          </td>
+        </ng-container>
+        <ng-container nbTreeGridColumnDef="office">
+          <td nbTreeGridCell
+            class="office"
+            *nbTreeGridCellDef="let row">{{ row.data.office }}</td>
+        </ng-container>
+      </table>
+    </nb-card-body>
+  </nb-card>
+</div>

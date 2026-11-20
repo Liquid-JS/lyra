@@ -1,0 +1,118 @@
+@use '../../../styles/themes' as *;
+
+:host {
+  display: block;
+  max-width: 76rem;
+  margin: 0 auto;
+}
+
+.page-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+
+  h1 {
+    margin: 0 0 0.25rem;
+  }
+
+  p {
+    margin: 0;
+  }
+}
+
+.hint {
+  color: nb-theme(text-hint-color);
+}
+
+.tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+
+  .search {
+    flex: 1 1 14rem;
+    max-width: 24rem;
+  }
+
+  .view {
+    margin-inline-start: auto;
+  }
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.5rem;
+
+  @media (min-width: 1400px) {
+    grid-template-columns: minmax(0, 1fr) 24rem;
+  }
+}
+
+nb-card {
+  margin: 0;
+}
+
+// Scrolls sideways where it must.
+.table {
+  overflow-x: auto;
+}
+
+td {
+  white-space: nowrap;
+}
+
+nb-card-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+  gap: 1rem;
+  align-content: start;
+}
+
+.person-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.org {
+  align-self: start;
+
+  nb-card-body {
+    padding: 0.5rem;
+  }
+
+  // The tree's rows are the people; the level shows as an indent.
+  table {
+    width: 100%;
+  }
+
+  // The toggle and the person side by side.
+  .node {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+
+  .office {
+    color: nb-theme(text-hint-color);
+    font-size: 0.8125rem;
+    text-align: end;
+    white-space: nowrap;
+  }
+}

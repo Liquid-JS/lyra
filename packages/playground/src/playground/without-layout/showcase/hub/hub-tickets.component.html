@@ -1,0 +1,106 @@
+<header class="page-header">
+  <div>
+    <h1 class="h4">IT tickets</h1>
+    <p class="hint">{{ tickets().length }} tickets · 2 people on support this week</p>
+  </div>
+  <button nbButton
+    status="primary"
+    type="button"
+    (click)="open()">
+    <nb-icon icon="plus-outline" />
+    New ticket
+  </button>
+</header>
+
+<div class="tools">
+  <nb-form-field class="search">
+    <nb-icon nbPrefix
+      icon="search-outline" />
+    <input nbInput
+      fullWidth
+      type="search"
+      placeholder="Search tickets"
+      aria-label="Search tickets"
+      (input)="search.set($any($event.target).value)" />
+  </nb-form-field>
+  <nb-select placeholder="Priority"
+    aria-label="Priority"
+    [selected]="priority()"
+    (selectedChange)="priority.set($event ?? '')">
+    <nb-option value="">Any priority</nb-option>
+    <nb-option value="urgent">Urgent</nb-option>
+    <nb-option value="high">High</nb-option>
+    <nb-option value="medium">Medium</nb-option>
+    <nb-option value="low">Low</nb-option>
+  </nb-select>
+  <nb-select placeholder="Assignee"
+    aria-label="Assignee"
+    [selected]="assignee()"
+    (selectedChange)="assignee.set($event ?? '')">
+    <nb-option value="">Anyone</nb-option>
+    @for (person of assignees; track person) {
+    <nb-option [value]="person">{{ person }}</nb-option>
+    }
+  </nb-select>
+</div>
+
+<div class="board">
+  @for (column of board(); track column.id) {
+  <section class="column"
+    [attr.aria-label]="column.title">
+    <header class="column-header">
+      <h2 class="subtitle">{{ column.title }}</h2>
+      <nb-badge class="count"
+        status="basic"
+        position="top right"
+        [text]="'' + column.tickets.length" />
+    </header>
+    <!-- Tickets move by dragging, between columns and within them, or with Alt and the arrow keys. -->
+    <div class="column-body"
+      role="list"
+      [attr.aria-label]="column.title"
+      [nxtSortablejs]
+      [config]="sortable"
+      [attr.data-column]="column.id">
+      @for (ticket of column.tickets; track ticket.id; let i = $index) {
+      <nb-card class="ticket"
+        role="listitem"
+        tabindex="0"
+        aria-keyshortcuts="Alt+ArrowLeft Alt+ArrowRight Alt+ArrowUp Alt+ArrowDown"
+        [attr.data-ticket]="ticket.id"
+        [class.done]="column.id === 'done'"
+        (keydown)="onKeydown($event, ticket, column.id, i)">
+        <nb-card-body>
+          <div class="ticket-head">
+            <nb-tag size="tiny"
+              [appearance]="ticket.priority === 'urgent' ? 'filled' : 'outline'"
+              [status]="priorityStatus[ticket.priority]"
+              [text]="ticket.priority" />
+            <span class="caption hint">#{{ ticket.id }}</span>
+          </div>
+          <p class="ticket-title">{{ ticket.title }}</p>
+          <div class="ticket-foot">
+            <span class="caption hint">{{ ticket.category }}</span>
+            <span class="ticket-meta">
+              @if (ticket.comments) {
+              <span class="caption hint comments"><nb-icon icon="message-circle-outline" /> {{ ticket.comments }}</span>
+              }
+              @if (ticket.assignee) {
+              <nb-user size="tiny"
+                onlyPicture
+                [name]="ticket.assignee"
+                [picture]="photoOf(ticket.assignee)" />
+              } @else {
+              <span class="unassigned caption">Unassigned</span>
+              }
+            </span>
+          </div>
+        </nb-card-body>
+      </nb-card>
+      } @empty {
+      <p class="empty caption hint">Nothing here</p>
+      }
+    </div>
+  </section>
+  }
+</div>

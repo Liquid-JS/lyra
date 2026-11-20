@@ -1,0 +1,47 @@
+@use '../../../styles/themes' as *;
+
+nb-button-group button {
+  flex: 1;
+  text-transform: capitalize;
+}
+
+.customer {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.25rem;
+  min-width: 0;
+
+  a {
+    color: nb-theme(text-basic-color);
+    font-weight: 600;
+    text-decoration: none;
+  }
+}
+
+.caption {
+  color: nb-theme(text-hint-color);
+}
+
+nb-tag {
+  text-transform: capitalize;
+}
+
+// Above the card's link, so they're buttons of their own.
+.actions {
+  position: relative;
+  z-index: 1;
+  display: flex;
+}
+
+.empty {
+  color: nb-theme(text-hint-color);
+  text-align: center;
+}

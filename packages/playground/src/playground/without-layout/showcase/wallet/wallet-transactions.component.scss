@@ -1,0 +1,189 @@
+@use '../../../styles/themes' as *;
+
+:host {
+  display: block;
+  font-variant-numeric: tabular-nums;
+}
+
+.page-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+
+  h1,
+  p {
+    margin: 0;
+  }
+}
+
+.hint {
+  color: nb-theme(text-hint-color);
+}
+
+.in {
+  color: nb-theme(text-success-color);
+  font-weight: 600;
+}
+
+nb-card {
+  margin: 0;
+}
+
+// The filters wrap into rows; the search takes what's left of the first.
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+
+  .search {
+    flex: 1 1 14rem;
+  }
+
+  .date {
+    flex: 0 1 10rem;
+  }
+
+  nb-select {
+    flex: 0 1 11rem;
+  }
+
+  @media (max-width: 767.98px) {
+    .date,
+    nb-select {
+      flex: 1 1 calc(50% - 0.375rem);
+    }
+  }
+}
+
+.table {
+  overflow-x: auto;
+}
+
+td {
+  white-space: nowrap;
+}
+
+// A phone has three columns, which fit when the cells are tighter, the merchant wraps, and the time goes.
+@media (max-width: 767.98px) {
+  table {
+    table-layout: fixed;
+  }
+
+  th:first-child {
+    width: 4.25rem;
+  }
+
+  th:last-child {
+    width: 6.5rem;
+  }
+
+  th,
+  td {
+    padding-inline: 0.625rem;
+    white-space: normal;
+  }
+
+  .date-cell {
+    white-space: nowrap;
+
+    .caption {
+      display: none;
+    }
+  }
+
+  .merchant {
+    align-items: flex-start;
+  }
+
+  .merchant-name {
+    flex-wrap: wrap;
+    row-gap: 0.125rem;
+  }
+
+  .initial {
+    flex: none;
+  }
+}
+
+.date-cell,
+.account {
+  .caption {
+    display: block;
+  }
+}
+
+.account {
+  display: block;
+}
+
+.merchant {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+}
+
+.merchant-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+}
+
+// A merchant shows its initial on a tinted square, as it has no logo of its own.
+.initial {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: calc(#{nb-theme(border-radius)} * 0.5);
+  background: nb-theme(color-basic-transparent-200);
+  color: nb-theme(text-basic-color);
+  font-family: nb-theme(text-heading-1-font-family);
+  font-weight: 600;
+}
+
+.number {
+  text-align: end;
+}
+
+.amount {
+  font-weight: 600;
+
+  &.credit {
+    color: nb-theme(text-success-color);
+  }
+}
+
+.actions {
+  text-align: end;
+}
+
+nb-card-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 3rem 1.5rem;
+  text-align: center;
+
+  nb-icon {
+    font-size: 2.5rem;
+    color: nb-theme(text-hint-color);
+  }
+
+  p {
+    margin: 0;
+  }
+}

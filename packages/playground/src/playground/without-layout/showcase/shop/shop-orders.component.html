@@ -1,0 +1,60 @@
+<div class="heading">
+  <h1 class="h4">Your orders</h1>
+  <nb-user name="Jane Doe"
+    title="jane.doe@example.com" />
+</div>
+
+<div class="orders">
+  @for (order of cart.orders(); track order.number) {
+  <nb-card>
+    <nb-card-header class="order-header">
+      <span class="order-title">
+        <span class="subtitle">Order #{{ order.number }}</span>
+        <span class="caption">Placed {{ order.date | date: 'd MMMM y' }}</span>
+      </span>
+      <span class="status"
+        [class]="'status-' + statuses[order.status]">{{ order.status }}</span>
+    </nb-card-header>
+    <nb-card-body>
+      <ul class="items">
+        @for (line of order.lines; track line.product.id + line.colour) {
+        <li>
+          <npg-shop-picture class="thumb"
+            [product]="line.product" />
+          <span class="item">
+            <a class="subtitle-2 name"
+              [routerLink]="['../products', line.product.id]">{{ line.product.name }}</a>
+            <span class="caption">{{ line.colour }} · {{ line.quantity }} ×
+              {{ line.product.price | currency: 'USD' : 'symbol' : '1.0-0' }}</span>
+          </span>
+        </li>
+        }
+      </ul>
+    </nb-card-body>
+    <nb-card-footer class="order-footer">
+      <span>Total <strong>{{ total(order) | currency: 'USD' }}</strong></span>
+      <span class="buttons">
+        @if (order.status === 'Shipped') {
+        <button nbButton
+          ghost
+          size="small"
+          type="button">
+          <nb-icon icon="paper-plane-outline" />
+          Track parcel
+        </button>
+        }
+        <button nbButton
+          outline
+          status="primary"
+          size="small"
+          type="button"
+          [attr.aria-label]="'Buy order ' + order.number + ' again'"
+          (click)="reorder(order)">
+          <nb-icon [icon]="reordered() === order.number ? 'checkmark-outline' : 'refresh-outline'" />
+          {{ reordered() === order.number ? 'Added to cart' : 'Buy again' }}
+        </button>
+      </span>
+    </nb-card-footer>
+  </nb-card>
+  }
+</div>

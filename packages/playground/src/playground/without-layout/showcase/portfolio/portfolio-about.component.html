@@ -1,0 +1,55 @@
+<section class="intro">
+  <figure class="portrait">
+    <img [src]="portrait"
+      [alt]="photographer.name + ', photographed in her studio'" />
+    <figcaption>{{ photographer.name }}, {{ photographer.city }}</figcaption>
+  </figure>
+  <div class="story">
+    <p class="eyebrow">About</p>
+    <h1>Buildings, and the people in them.</h1>
+    <div class="bio">
+      @for (paragraph of bio; track paragraph) {
+      <p>{{ paragraph }}</p>
+      }
+    </div>
+    <nb-tag-list aria-label="Services">
+      @for (service of services; track service) {
+      <nb-tag appearance="outline"
+        [text]="service" />
+      }
+    </nb-tag-list>
+  </div>
+</section>
+
+<blockquote class="quote">
+  <p>“{{ quote.text }}”</p>
+  <footer>{{ quote.author }}, {{ quote.role }}</footer>
+</blockquote>
+
+<section class="cv"
+  aria-label="CV">
+  <p class="eyebrow">CV</p>
+  <nb-accordion multi>
+    @for (section of cv; track section.title; let first = $first) {
+    <nb-accordion-item [expanded]="first">
+      <nb-accordion-item-header>{{ section.title }}</nb-accordion-item-header>
+      <nb-accordion-item-body>
+        <ul>
+          @for (entry of section.entries; track entry.text) {
+          <li>
+            <span class="years">{{ entry.years }}</span>
+            <span class="what">{{ entry.text }}</span>
+            @if (entry.where) {
+            <span class="where">{{ entry.where }}</span>
+            }
+          </li>
+          }
+        </ul>
+      </nb-accordion-item-body>
+    </nb-accordion-item>
+    }
+  </nb-accordion>
+  <a nbButton
+    outline
+    routerLink="../contact">Request the full CV</a>
+</section>

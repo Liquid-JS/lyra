@@ -1,0 +1,73 @@
+<section class="hero">
+  <div>
+    <p class="caption-2 eyebrow">Autumn edit</p>
+    <h1 class="h3">Everyday things, made to last</h1>
+    <p>Free delivery on orders over $50, and 30 days to change your mind.</p>
+  </div>
+  <nb-icon icon="gift-outline"
+    class="hero-icon" />
+</section>
+
+<div class="toolbar">
+  <nb-tag-list aria-label="Categories"
+    size="small">
+    @for (item of categories; track item) {
+    <nb-tag [text]="item"
+      [selected]="item === category()"
+      appearance="outline"
+      (selectedChange)="$event.selected && category.set(item)" />
+    }
+  </nb-tag-list>
+  <nb-select aria-label="Sort by"
+    size="small"
+    [selected]="sort()"
+    (selectedChange)="sort.set($event ?? 'popular')">
+    <nb-option value="popular">Most popular</nb-option>
+    <nb-option value="price">Lowest price</nb-option>
+    <nb-option value="rating">Best rated</nb-option>
+  </nb-select>
+</div>
+
+<div class="products">
+  @for (product of shown(); track product.id) {
+  <nb-card>
+    <div nbCardMedia
+      class="picture">
+      <npg-shop-picture [product]="product"
+        [eager]="$index < 4" />
+    </div>
+    <!-- On the card's corner rather than the picture's, which the card's rounding would cut off. -->
+    @if (product.badge; as badge) {
+    <nb-badge [text]="badge.text"
+      [status]="badge.status"
+      position="top end" />
+    }
+    <nb-card-body>
+      <a nbCardLink
+        class="subtitle name"
+        [routerLink]="['../products', product.id]">{{ product.name }}</a>
+      <npg-shop-rating [rating]="product.rating"
+        [reviews]="product.reviews" />
+    </nb-card-body>
+    <nb-card-footer>
+      <span class="h6">{{ product.price | currency: 'USD' : 'symbol' : '1.0-0' }}</span>
+      <button nbButton
+        type="button"
+        status="primary"
+        size="small"
+        [attr.aria-label]="'Add ' + product.name + ' to cart'"
+        (click)="add(product.id)">
+        <nb-icon [icon]="added() === product.id ? 'checkmark-outline' : 'shopping-cart-outline'" />
+        {{ added() === product.id ? 'Added' : 'Add' }}
+      </button>
+    </nb-card-footer>
+  </nb-card>
+  }
+</div>
+
+@if (products().length > pageSize) {
+<nb-pagination [length]="products().length"
+  [pageSize]="pageSize"
+  [(page)]="page"
+  size="small" />
+}

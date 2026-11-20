@@ -1,0 +1,150 @@
+@use '../../../styles/themes' as *;
+
+:host {
+  display: block;
+  max-width: 76rem;
+  margin: 0 auto;
+}
+
+.page-header {
+  margin-bottom: 1.5rem;
+
+  h1 {
+    margin: 0 0 0.25rem;
+  }
+
+  p {
+    margin: 0;
+  }
+}
+
+.hint {
+  color: nb-theme(text-hint-color);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.5rem;
+
+  @media (min-width: 992px) {
+    grid-template-columns: minmax(0, 1fr) 20rem;
+  }
+}
+
+.side {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+nb-card {
+  margin: 0;
+}
+
+// The kinds as cards to pick from, the chosen one in the brand's colour.
+.kinds {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
+  gap: 0.75rem;
+}
+
+.kind {
+  margin: 0;
+  padding: 0.875rem 1rem;
+  border: 1px solid nb-theme(border-basic-color-4);
+  border-radius: nb-theme(border-radius);
+  transition: border-color 0.15s ease;
+
+  &:has(input:checked) {
+    border-color: nb-theme(color-primary-default);
+    background: nb-theme(color-primary-transparent-100);
+  }
+
+  // The radio and the icon's tile in the middle of the item, beside its title and description.
+  ::ng-deep label {
+    align-items: center;
+  }
+}
+
+.kind-body {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+
+  > span:last-child {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+  }
+}
+
+.kind-icon {
+  flex: none;
+  box-sizing: content-box;
+  padding: 0.625rem;
+  border-radius: nb-theme(border-radius);
+  background: nb-theme(color-primary-transparent-100);
+  color: nb-theme(text-primary-color);
+  font-size: 1.25rem;
+}
+
+.kind-title {
+  font-weight: 600;
+}
+
+.field {
+  margin-bottom: 1rem;
+}
+
+.days {
+  margin: 1rem 0 0;
+  color: nb-theme(text-hint-color);
+}
+
+.step-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+}
+
+.review {
+  display: grid;
+  grid-template-columns: 7rem minmax(0, 1fr);
+  gap: 0.75rem 1rem;
+  margin: 0;
+
+  dt {
+    color: nb-theme(text-hint-color);
+  }
+
+  dd {
+    margin: 0;
+  }
+
+  .reason {
+    text-transform: capitalize;
+  }
+}
+
+.balance {
+  margin: 0 0 0.5rem;
+
+  strong {
+    font-size: 1.5rem;
+  }
+}
+
+.request {
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.request-title {
+  display: block;
+}
+
+nb-tag {
+  text-transform: capitalize;
+}

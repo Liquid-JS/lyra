@@ -1,0 +1,56 @@
+<nb-layout>
+  <nb-layout-header fixed>
+    <a class="brand"
+      routerLink="home">{{ summit.name }}<span class="year">’{{ summit.year % 100 }}</span></a>
+    <nav class="pages"
+      aria-label="Pages">
+      @for (page of pages; track page.path) {
+      <a [routerLink]="page.path"
+        routerLinkActive="active">{{ page.title }}</a>
+      }
+    </nav>
+    <div class="actions">
+      <a nbButton
+        status="primary"
+        class="tickets"
+        routerLink="tickets">Get tickets</a>
+      <button nbButton
+        ghost
+        class="menu"
+        type="button"
+        aria-label="Menu"
+        nbContextMenuTag="summit-pages"
+        [nbContextMenu]="menu">
+        <nb-icon icon="menu-outline" />
+      </button>
+    </div>
+  </nb-layout-header>
+
+  <nb-layout-column class="page">
+    <router-outlet />
+  </nb-layout-column>
+
+  <nb-layout-footer>
+    <div class="footer">
+      <div class="about">
+        <span class="brand">{{ summit.name }}<span class="year">’{{ summit.year % 100 }}</span></span>
+        <p>{{ summit.dates }}<br />{{ summit.venue }}, {{ summit.city }}</p>
+        <p class="hint">{{ summit.tagline }}</p>
+      </div>
+      @for (column of footer; track column.title) {
+      <div role="navigation"
+        [attr.aria-label]="column.title">
+        <h2 class="label">{{ column.title }}</h2>
+        <ul>
+          @for (link of column.links; track link) {
+          <li><a href="#"
+              (click)="$event.preventDefault()">{{ link }}</a></li>
+          }
+        </ul>
+      </div>
+      }
+    </div>
+    <p class="copyright">© {{ summit.year }} Summit Conferences Ltd. All talks are recorded; by attending you agree to the code of
+      conduct.</p>
+  </nb-layout-footer>
+</nb-layout>

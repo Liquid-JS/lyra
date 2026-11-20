@@ -1,0 +1,106 @@
+<nb-card class="profile">
+  <nb-card-body class="row">
+    <nb-user size="large"
+      name="Jane Doe"
+      title="Member since March"
+      [picture]="photo" />
+    <button nbButton
+      edge="end"
+      ghost
+      size="small"
+      type="button">
+      Edit
+      <nb-icon icon="edit-2-outline" />
+    </button>
+  </nb-card-body>
+</nb-card>
+
+<nb-card>
+  <nb-card-header>Daily goals</nb-card-header>
+  <nb-card-body class="goals">
+    <label class="goal">
+      <span class="row">
+        <span class="goal-title">Move</span>
+        <span class="goal-value">{{ move() }} kcal</span>
+      </span>
+      <nb-slider status="primary"
+        [min]="300"
+        [max]="1200"
+        [step]="50"
+        [labels]="false"
+        [showValue]="false"
+        [(value)]="move"
+        aria-label="Move goal, in kilocalories" />
+    </label>
+    <label class="goal">
+      <span class="row">
+        <span class="goal-title">Steps</span>
+        <span class="goal-value">{{ steps()?.toLocaleString('en-GB') }}</span>
+      </span>
+      <nb-slider status="info"
+        [min]="4000"
+        [max]="20000"
+        [step]="500"
+        [labels]="false"
+        [showValue]="false"
+        [(value)]="steps"
+        aria-label="Steps goal" />
+    </label>
+    <label class="goal">
+      <span class="row">
+        <span class="goal-title">Sleep</span>
+        <span class="goal-value">{{ sleep() }} h</span>
+      </span>
+      <nb-slider status="success"
+        [min]="5"
+        [max]="10"
+        [step]="0.5"
+        [labels]="false"
+        [showValue]="false"
+        [(value)]="sleep"
+        aria-label="Sleep goal, in hours" />
+    </label>
+  </nb-card-body>
+</nb-card>
+
+<nb-card>
+  <nb-card-header>Reminders</nb-card-header>
+  <nb-card-body class="switches">
+    @for (item of reminders; track item.id) {
+    <nb-toggle status="primary"
+      labelPosition="start"
+      [checked]="item.on">
+      <span class="switch-text">
+        <span class="switch-title">{{ item.title }}</span>
+        <span class="hint">{{ item.detail }}</span>
+      </span>
+    </nb-toggle>
+    }
+  </nb-card-body>
+</nb-card>
+
+<nb-card>
+  <nb-card-header>Units</nb-card-header>
+  <nb-card-body>
+    <nb-select fullWidth
+      aria-label="Units"
+      [selected]="units()"
+      (selectedChange)="units.set($event ?? 'metric')">
+      <nb-option value="metric">Metric: km, kg, °C</nb-option>
+      <nb-option value="imperial">Imperial: miles, lb, °F</nb-option>
+    </nb-select>
+  </nb-card-body>
+</nb-card>
+
+<nb-card class="danger">
+  <nb-card-body class="row">
+    <span class="hint">Signed in as jane.doe&#64;example.com</span>
+    <button nbButton
+      edge="end"
+      ghost
+      inline
+      status="danger"
+      size="small"
+      type="button">Sign out</button>
+  </nb-card-body>
+</nb-card>

@@ -1,0 +1,80 @@
+@use '../../../styles/themes' as *;
+
+// The figures as tiles in two columns.
+.stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.375rem;
+  padding: 1rem;
+  border: 1px solid nb-theme(border-basic-color-3);
+  border-radius: calc(#{nb-theme(border-radius)} * 1.25);
+  background: nb-theme(background-basic-color-1);
+
+  .tile {
+    margin-bottom: 0.25rem;
+  }
+
+  .figure {
+    font-size: 1.5rem;
+  }
+}
+
+.change {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: nb-theme(text-danger-color);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+
+  nb-icon {
+    color: nb-theme(color-danger-default);
+  }
+
+  &.up {
+    color: nb-theme(text-success-color);
+
+    nb-icon {
+      color: nb-theme(color-success-default);
+    }
+  }
+}
+
+.count {
+  color: nb-theme(text-hint-color);
+  font-weight: 600;
+}
+
+nb-bar-chart,
+nb-line-chart {
+  max-height: 12rem;
+}
+
+.best {
+  gap: 0.875rem;
+
+  .best-text {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 0.125rem;
+    min-width: 0;
+  }
+
+  .best-title {
+    font-weight: 700;
+  }
+
+  .best-value {
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+  }
+}

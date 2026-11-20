@@ -1,0 +1,87 @@
+@use '../../../styles/themes' as *;
+
+$tabs-height: 4.25rem;
+
+nb-layout-header ::ng-deep nav {
+  // The header's chrome matches the tab bar's: a hairline, no shadow.
+  border-bottom: 1px solid nb-theme(divider-color);
+}
+
+.title {
+  flex: 1;
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.screen {
+  // Room for the tabs, which the screen scrolls under.
+  padding-bottom: calc(#{$tabs-height} + 1.5rem) !important;
+}
+
+// The tabs along the bottom: glass over the screen, so what scrolls under them shows through.
+.tabs {
+  position: fixed;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: 1040;
+  display: flex;
+  height: $tabs-height;
+  border-top: 1px solid nb-theme(border-basic-color-3);
+  background: color-mix(in srgb, nb-theme(background-basic-color-2) 78%, transparent);
+  padding-bottom: env(safe-area-inset-bottom);
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    background: nb-theme(background-basic-color-2);
+  }
+
+  a {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    color: nb-theme(text-hint-color);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-decoration: none;
+
+    nb-icon {
+      display: grid;
+      place-items: center;
+      width: 3rem;
+      height: 1.75rem;
+      border-radius: 1rem;
+      font-size: 1.375rem;
+      transition: background-color 0.2s ease;
+    }
+
+    // The current tab's icon sits on a lime pill.
+    &.active {
+      color: nb-theme(text-primary-color);
+
+      nb-icon {
+        background: nb-theme(color-primary-transparent-200);
+      }
+    }
+
+    &:focus-visible {
+      outline: none;
+
+      nb-icon {
+        box-shadow: 0 0 0 nb-theme(outline-width) nb-theme(outline-color);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      nb-icon {
+        transition: none;
+      }
+    }
+  }
+}

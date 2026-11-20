@@ -1,0 +1,192 @@
+@use '../../../styles/themes' as *;
+@use 'relay-page' as *;
+
+:host {
+  display: block;
+}
+
+// Guides, the page, and its outline, in three columns; the outline goes first, and the guides second, on narrow screens.
+.docs {
+  display: grid;
+  grid-template-columns: 13rem minmax(0, 1fr) 12rem;
+  gap: 3rem;
+  align-items: start;
+  max-width: 76rem;
+
+  // The outline only beside a page wide enough to read, as the console's sidebar takes room too.
+  @media (max-width: 1439.98px) {
+    grid-template-columns: 13rem minmax(0, 1fr);
+
+    .outline {
+      display: none;
+    }
+  }
+
+  @media (max-width: 767.98px) {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2rem;
+
+    .guides {
+      position: static;
+    }
+  }
+}
+
+.label {
+  margin: 0 0 0.5rem;
+  color: nb-theme(text-hint-color);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.guides,
+.outline {
+  position: sticky;
+  top: calc(#{nb-theme(header-height)} + 1.5rem);
+  font-size: 0.875rem;
+}
+
+.guides {
+  ul {
+    margin: 0 0 1.5rem;
+    padding: 0;
+    list-style: none;
+  }
+
+  li + li {
+    margin-top: 0.125rem;
+  }
+
+  a {
+    display: block;
+    padding: 0.3125rem 0.625rem;
+    border-radius: nb-theme(border-radius);
+    color: nb-theme(text-hint-color);
+    text-decoration: none;
+
+    &:hover {
+      color: nb-theme(text-basic-color);
+    }
+
+    &.current {
+      background: nb-theme(color-primary-transparent-100);
+      color: nb-theme(text-primary-color);
+      font-weight: 500;
+    }
+  }
+}
+
+.breadcrumb {
+  margin: 0 0 1rem;
+  color: nb-theme(text-hint-color);
+  font-size: 0.8125rem;
+
+  span {
+    margin: 0 0.375rem;
+  }
+}
+
+// The page's own type: tighter headings, mono code on the darkest surface.
+.page {
+  max-width: 44rem;
+  line-height: 1.65;
+
+  ::ng-deep {
+    h1 {
+      margin: 0 0 1rem;
+      font-size: 2rem;
+      letter-spacing: -0.02em;
+    }
+
+    // Below the fixed header when a link scrolls to them, and when the outline marks the section they start.
+    h2,
+    h3 {
+      scroll-margin-top: calc(#{nb-theme(header-height)} + 1rem);
+    }
+
+    h2 {
+      margin: 2.25rem 0 0.75rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid nb-theme(divider-color);
+      font-size: 1.25rem;
+    }
+
+    p {
+      margin: 0 0 1rem;
+      color: nb-theme(text-hint-color);
+    }
+
+    strong {
+      color: nb-theme(text-basic-color);
+    }
+
+    // Inline code in mono, in the strongest text colour, on the darkest surface.
+    :not(pre) > code {
+      @include relay-mono();
+
+      padding: 0.125rem 0.375rem;
+      border-radius: 0.25rem;
+      background: nb-theme(background-basic-color-3);
+      color: nb-theme(text-basic-color);
+      font-size: 0.8125rem;
+    }
+
+    pre {
+      @include relay-code-block();
+
+      margin: 0 0 1rem;
+
+      code {
+        padding: 0;
+        background: none;
+      }
+    }
+
+    table {
+      width: 100%;
+      margin: 0 0 1rem;
+      border-collapse: collapse;
+      font-size: 0.875rem;
+    }
+
+    th,
+    td {
+      padding: 0.5rem 0.75rem;
+      border-bottom: 1px solid nb-theme(divider-color);
+      text-align: start;
+    }
+
+    th {
+      color: nb-theme(text-hint-color);
+      font-weight: 600;
+    }
+
+    blockquote {
+      margin: 0 0 1rem;
+      padding: 0.75rem 1rem;
+      border-inline-start: 3px solid nb-theme(color-primary-default);
+      border-radius: 0 nb-theme(border-radius) nb-theme(border-radius) 0;
+      background: nb-theme(color-primary-transparent-100);
+
+      p {
+        margin: 0;
+      }
+    }
+  }
+}
+
+.page-footer {
+  display: flex;
+  gap: 1rem;
+  margin-top: 2.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid nb-theme(divider-color);
+  color: nb-theme(text-hint-color);
+  font-size: 0.875rem;
+
+  a {
+    font-weight: 500;
+  }
+}

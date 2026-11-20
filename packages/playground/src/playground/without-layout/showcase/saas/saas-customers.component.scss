@@ -1,0 +1,76 @@
+@use '../../../styles/themes' as *;
+
+:host {
+  display: block;
+}
+
+.page-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+
+  h1 {
+    margin: 0;
+  }
+}
+
+.tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+nb-card {
+  margin: 0;
+}
+
+.table {
+  overflow-x: auto;
+}
+
+td {
+  white-space: nowrap;
+}
+
+.company {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+
+  npg-showcase-logo,
+  .company-initial {
+    width: 1.5rem;
+    height: 1.5rem;
+    color: nb-theme(text-hint-color);
+  }
+}
+
+// A company without a logo shows its initial.
+.company-initial {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid nb-theme(border-basic-color-4);
+  border-radius: nb-theme(border-radius);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.actions {
+  text-align: end;
+}
+
+nb-tag {
+  text-transform: capitalize;
+}
+
+nb-card-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}

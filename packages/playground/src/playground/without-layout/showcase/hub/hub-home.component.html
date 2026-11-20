@@ -1,0 +1,131 @@
+<header class="page-header">
+  <div>
+    <h1 class="h4">Good morning, Jane</h1>
+    <p class="hint">{{ today | date: 'EEEE d MMMM' }} · 3 meetings, 1 request waiting for you</p>
+  </div>
+  <a nbButton
+    status="primary"
+    routerLink="../requests">
+    <nb-icon icon="plus-outline" />
+    New request
+  </a>
+</header>
+
+<div class="grid">
+  <div class="main">
+    <section aria-labelledby="announcements">
+      <h2 class="subtitle section-title"
+        id="announcements">Announcements</h2>
+      @for (item of announcements; track item.title) {
+      <nb-card class="announcement">
+        @if (item.image) {
+        <img nbCardMedia
+          class="cover"
+          [src]="item.image"
+          alt="A street of yellow houses in Lisbon" />
+        }
+        <nb-card-body>
+          <div class="announcement-head">
+            <nb-tag-list>
+              @for (tag of item.tags; track tag) {
+              <nb-tag appearance="outline"
+                size="tiny"
+                status="primary"
+                [text]="tag" />
+              }
+            </nb-tag-list>
+            @if (item.pinned) {
+            <span class="pinned caption"><nb-icon icon="pin-outline" /> Pinned</span>
+            }
+          </div>
+          <h3 class="subtitle">{{ item.title }}</h3>
+          <p>{{ item.text }}</p>
+          <div class="announcement-foot">
+            <nb-user size="small"
+              [name]="item.author"
+              [title]="(item.date | date: 'EEE d MMM, HH:mm') ?? ''"
+              [picture]="photoOf(item.author)" />
+            <button nbButton
+              edge="end"
+              ghost
+              size="small"
+              type="button">
+              <nb-icon icon="message-circle-outline" />
+              4 comments
+            </button>
+          </div>
+        </nb-card-body>
+      </nb-card>
+      }
+    </section>
+
+    <section aria-labelledby="feed">
+      <h2 class="subtitle section-title"
+        id="feed">Around the company</h2>
+      <nb-card>
+        <nb-list>
+          @for (item of feed; track item.text) {
+          <nb-list-item class="feed-item">
+            <span class="feed-icon"
+              [class]="'feed-icon status-' + item.status"><nb-icon [icon]="item.icon" /></span>
+            <span class="feed-text">
+              <strong>{{ item.author }}</strong> {{ item.text }}
+              <span class="caption hint">{{ item.date | date: 'EEE HH:mm' }}</span>
+            </span>
+          </nb-list-item>
+          }
+        </nb-list>
+      </nb-card>
+    </section>
+  </div>
+
+  <aside class="side">
+    <nb-card>
+      <nb-card-header>Today <nb-badge class="inline-badge"
+          status="primary"
+          position="top right"
+          text="4" /></nb-card-header>
+      <nb-list>
+        @for (event of events; track event.title) {
+        <nb-list-item class="event">
+          <span class="event-time caption">{{ event.allDay ? 'All day' : (event.time | date: 'HH:mm') }}</span>
+          <span>
+            <span class="event-title">{{ event.title }}</span>
+            <span class="caption hint">{{ event.where }}</span>
+          </span>
+        </nb-list-item>
+        }
+      </nb-list>
+    </nb-card>
+
+    <nb-card>
+      <nb-card-header>Quick actions</nb-card-header>
+      <nb-card-body class="actions">
+        @for (action of actions; track action.title) {
+        <a nbButton
+          outline
+          status="basic"
+          [routerLink]="action.link">
+          <nb-icon [icon]="action.icon" />
+          {{ action.title }}
+        </a>
+        }
+      </nb-card-body>
+    </nb-card>
+
+    <nb-card>
+      <nb-card-header>Celebrations</nb-card-header>
+      <nb-list>
+        @for (item of celebrations; track item.name) {
+        <nb-list-item class="celebration">
+          <nb-user size="small"
+            [name]="item.name"
+            [title]="item.what"
+            [picture]="photoOf(item.name)" />
+          <span class="caption hint">{{ item.when }}</span>
+        </nb-list-item>
+        }
+      </nb-list>
+    </nb-card>
+  </aside>
+</div>

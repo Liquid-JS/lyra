@@ -1,0 +1,166 @@
+@use '../../../styles/themes' as *;
+
+// The session's figures on a lit panel: the timer huge, the readouts under it, the controls at the bottom.
+.session {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1.5rem 1.25rem 1.25rem;
+  border: 1px solid nb-theme(border-basic-color-3);
+  border-radius: calc(#{nb-theme(border-radius)} * 1.5);
+  background:
+    radial-gradient(60% 50% at 50% 0%, nb-theme(color-primary-transparent-200), transparent),
+    nb-theme(background-basic-color-1);
+  text-align: center;
+
+  &.paused {
+    background:
+      radial-gradient(60% 50% at 50% 0%, nb-theme(color-basic-transparent-200), transparent),
+      nb-theme(background-basic-color-1);
+  }
+}
+
+.session-head {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.timer {
+  margin: 1rem 0 0;
+  font-size: 4.5rem;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.05em;
+  font-variant-numeric: tabular-nums;
+}
+
+.state {
+  margin-top: 0.375rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.readouts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
+  width: 100%;
+  margin-top: 1.5rem;
+}
+
+.readout {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.75rem 0.25rem;
+  border-radius: 1rem;
+  background: nb-theme(background-basic-color-2);
+
+  .figure {
+    font-size: 1.5rem;
+  }
+}
+
+// A beating dot beside the heart rate.
+.beat {
+  position: absolute;
+  inset-block-start: 0.625rem;
+  inset-inline-end: 0.625rem;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: nb-theme(color-danger-default);
+  animation: beat 0.85s ease-in-out infinite;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+@keyframes beat {
+  50% {
+    transform: scale(1.5);
+    opacity: 0.6;
+  }
+}
+
+.controls {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
+
+  [nbButton] {
+    width: 4.5rem;
+    height: 4.5rem;
+    padding: 0;
+    font-size: 2rem;
+
+    // Its icon at the size above, which an icon doesn't take from what holds it.
+    nb-icon {
+      font-size: inherit;
+      width: 1em;
+      height: 1em;
+    }
+  }
+}
+
+.next {
+  .next-text {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 0.125rem;
+  }
+
+  .next-title {
+    font-weight: 700;
+  }
+}
+
+.count {
+  color: nb-theme(text-hint-color);
+  font-weight: 600;
+}
+
+// The exercises as a checklist, the one under way lit.
+.exercises {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding-top: 0.5rem;
+
+  nb-checkbox {
+    padding: 0.625rem 0.75rem;
+    margin: 0 -0.75rem;
+    border-radius: 1rem;
+
+    &.current {
+      background: nb-theme(color-primary-transparent-100);
+    }
+  }
+
+  .exercise {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+  }
+
+  .exercise-title {
+    font-weight: 700;
+  }
+}
+
+// Room above the slider for its value, which shows over the thumb while it moves.
+.effort {
+  padding-top: 2.5rem;
+
+  .effort-ends {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 0.25rem;
+  }
+}

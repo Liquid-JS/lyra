@@ -1,0 +1,83 @@
+<npg-showcase-glow class="glow"
+  color="var(--color-primary-500)"
+  [opacity]="40" />
+
+<header class="greeting">
+  <p class="hint">Thursday 12 November</p>
+  <h2>Good morning, Jane</h2>
+</header>
+
+<section class="rings"
+  aria-label="Today's goals">
+  @for (ring of rings; track ring.id) {
+  <div class="ring">
+    <nb-progress-bar shape="ring"
+      size="giant"
+      [status]="ring.status"
+      [value]="percent(ring.value, ring.goal)"
+      [attr.aria-label]="ring.label + ': ' + ring.value + ' of ' + ring.goal + ' ' + ring.unit">
+      <span class="figure">{{ ring.value }}<small>{{ ring.unit }}</small></span>
+    </nb-progress-bar>
+    <span class="ring-label">{{ ring.label }}</span>
+    <span class="ring-goal">of {{ ring.goal }} {{ ring.unit }}</span>
+  </div>
+  }
+</section>
+
+<ol class="week"
+  aria-label="This week">
+  @for (day of week; track day.date) {
+  <li [class.today]="day.today"
+    [attr.aria-current]="day.today ? 'date' : null">
+    <span class="day">{{ day.short }}</span>
+    <nb-progress-bar shape="ring"
+      size="tiny"
+      status="primary"
+      [value]="day.done"
+      [attr.aria-label]="day.done + '% of the move goal'" />
+    <span class="date">{{ day.date }}</span>
+  </li>
+  }
+</ol>
+
+<nb-card>
+  <nb-card-header class="row">
+    Today's plan
+    <span class="count">{{ done }} of {{ plan.length }} done</span>
+  </nb-card-header>
+  <nb-list>
+    @for (item of plan; track item.id) {
+    <nb-list-item>
+      <button type="button"
+        class="plan-item"
+        [class.done]="item.done"
+        (click)="open(item)">
+        <span class="tile"
+          [class]="'tile status-' + item.status"><nb-icon [icon]="item.done ? 'checkmark-outline' : item.icon" /></span>
+        <span class="plan-text">
+          <span class="plan-title">{{ item.title }}</span>
+          <span class="hint">{{ item.time }} · {{ item.duration }}</span>
+        </span>
+        <nb-icon class="chevron"
+          icon="chevron-right-outline" />
+      </button>
+    </nb-list-item>
+    }
+  </nb-list>
+</nb-card>
+
+<nb-card class="insight">
+  <nb-card-body>
+    <nb-tag status="primary"
+      appearance="filled"
+      size="tiny"
+      text="Streak" />
+    <h3>Two more days to a 14-day move streak</h3>
+    <p class="hint">Close your Move ring today and tomorrow. Tonight's strength session alone gets you there.</p>
+    <a nbButton
+      size="small"
+      status="primary"
+      appearance="outline"
+      routerLink="../trends">See the trend</a>
+  </nb-card-body>
+</nb-card>

@@ -1,0 +1,49 @@
+@let placed = order();
+<nb-card class="thanks">
+  <nb-card-body>
+    <span class="tick"
+      aria-hidden="true"><nb-icon icon="checkmark-outline" /></span>
+    <h1 class="h3">Thank you, Jane!</h1>
+    <p>
+      Your order <strong>#{{ placed.number }}</strong> is placed. We've sent a confirmation to
+      <strong>jane.doe&#64;example.com</strong>, and we'll let you know when it's on its way.
+    </p>
+
+    <ol class="progress"
+      aria-label="Order progress">
+      @for (step of steps; track step.title) {
+      <li [class.done]="step.done">
+        <span class="dot"><nb-icon [icon]="step.icon" /></span>
+        <span class="caption">{{ step.title }}</span>
+      </li>
+      }
+    </ol>
+
+    <ul class="items">
+      @for (line of placed.lines; track line.product.id + line.colour) {
+      <li>
+        <npg-shop-picture class="thumb"
+          [product]="line.product" />
+        <span class="item">
+          <span class="subtitle-2">{{ line.product.name }}</span>
+          <span class="caption">{{ line.colour }} · {{ line.quantity }} ×
+            {{ line.product.price | currency: 'USD' : 'symbol' : '1.0-0' }}</span>
+        </span>
+      </li>
+      }
+    </ul>
+    <p class="total">
+      <span>Total paid</span>
+      <span class="h6">{{ total() | currency: 'USD' }}</span>
+    </p>
+
+    <div class="buttons">
+      <a nbButton
+        status="primary"
+        routerLink="../orders">View your orders</a>
+      <a nbButton
+        ghost
+        routerLink="../products">Continue shopping</a>
+    </div>
+  </nb-card-body>
+</nb-card>

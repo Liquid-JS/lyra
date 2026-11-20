@@ -1,0 +1,308 @@
+<h1 class="h4">Checkout</h1>
+
+@if (cart.lines().length) {
+<div class="checkout">
+  <nb-card>
+    <nb-card-body>
+      <nb-stepper #stepper>
+        <nb-step label="Delivery"
+          [stepControl]="delivery">
+          <form class="form"
+            [formGroup]="delivery">
+            <div class="fields">
+              <div class="field wide">
+                <label class="label"
+                  for="checkout-name">Full name</label>
+                <input nbInput
+                  fullWidth
+                  id="checkout-name"
+                  autocomplete="name"
+                  formControlName="name"
+                  nbValidation
+                  #name="nbValidation" />
+                <nb-validation-errors [for]="name" />
+              </div>
+              <div class="field wide">
+                <label class="label"
+                  for="checkout-email">Email</label>
+                <input nbInput
+                  fullWidth
+                  id="checkout-email"
+                  type="email"
+                  autocomplete="email"
+                  formControlName="email"
+                  nbValidation
+                  #email="nbValidation" />
+                <nb-validation-errors [for]="email" />
+              </div>
+              <div class="field wide">
+                <label class="label"
+                  for="checkout-address">Address</label>
+                <input nbInput
+                  fullWidth
+                  id="checkout-address"
+                  autocomplete="street-address"
+                  formControlName="address"
+                  nbValidation
+                  #address="nbValidation" />
+                <nb-validation-errors [for]="address" />
+              </div>
+              <div class="field">
+                <label class="label"
+                  for="checkout-city">City</label>
+                <input nbInput
+                  fullWidth
+                  id="checkout-city"
+                  autocomplete="address-level2"
+                  formControlName="city"
+                  nbValidation
+                  #city="nbValidation" />
+                <nb-validation-errors [for]="city" />
+              </div>
+              <div class="field">
+                <label class="label"
+                  for="checkout-postcode">Postcode</label>
+                <input nbInput
+                  fullWidth
+                  id="checkout-postcode"
+                  autocomplete="postal-code"
+                  formControlName="postcode"
+                  nbValidation
+                  #postcode="nbValidation" />
+                <nb-validation-errors [for]="postcode" />
+              </div>
+              <div class="field wide">
+                <label class="label"
+                  id="checkout-country">Country</label>
+                <nb-select fullWidth
+                  aria-labelledby="checkout-country"
+                  formControlName="country">
+                  <nb-option value="gb">United Kingdom</nb-option>
+                  <nb-option value="ie">Ireland</nb-option>
+                  <nb-option value="us">United States</nb-option>
+                </nb-select>
+              </div>
+            </div>
+
+            <span class="label"
+              id="checkout-delivery">Delivery</span>
+            <nb-radio-group class="choices"
+              name="delivery"
+              aria-labelledby="checkout-delivery"
+              formControlName="option">
+              @for (choice of deliveryOptions; track choice.id) {
+              <nb-radio [value]="choice.id">
+                <span class="choice">
+                  <span class="subtitle-2">{{ choice.name }}</span>
+                  <span class="caption">{{ choice.time }}</span>
+                </span>
+                <span class="choice-price">{{ price(choice.id) ? (price(choice.id) | currency: 'USD') : 'Free' }}</span>
+              </nb-radio>
+              }
+            </nb-radio-group>
+
+            <div class="step-buttons">
+              <a nbButton
+                edge="start"
+                ghost
+                routerLink="../cart">
+                <nb-icon icon="arrow-back-outline" />
+                Back to cart
+              </a>
+              <button nbButton
+                status="primary"
+                type="button"
+                nbStepperNext>Continue to payment</button>
+            </div>
+          </form>
+        </nb-step>
+
+        <nb-step label="Payment"
+          [stepControl]="payment">
+          <form class="form"
+            [formGroup]="payment">
+            <span class="label"
+              id="checkout-method">Pay with</span>
+            <nb-radio-group class="choices"
+              name="method"
+              aria-labelledby="checkout-method"
+              formControlName="method">
+              <nb-radio value="card">
+                <span class="choice">
+                  <span class="subtitle-2">Card</span>
+                  <span class="caption">Visa, Mastercard or American Express</span>
+                </span>
+                <nb-icon icon="credit-card-outline" />
+              </nb-radio>
+              <nb-radio value="paypal">
+                <span class="choice">
+                  <span class="subtitle-2">PayPal</span>
+                  <span class="caption">You'll sign in to PayPal to pay</span>
+                </span>
+                <nb-icon icon="globe-outline" />
+              </nb-radio>
+            </nb-radio-group>
+
+            @if (method() === 'card') {
+            <div class="fields">
+              <div class="field wide">
+                <label class="label"
+                  for="checkout-holder">Name on card</label>
+                <input nbInput
+                  fullWidth
+                  id="checkout-holder"
+                  autocomplete="cc-name"
+                  formControlName="holder"
+                  nbValidation
+                  #holder="nbValidation" />
+                <nb-validation-errors [for]="holder" />
+              </div>
+              <div class="field wide">
+                <label class="label"
+                  for="checkout-number">Card number</label>
+                <input nbInput
+                  fullWidth
+                  id="checkout-number"
+                  inputmode="numeric"
+                  autocomplete="cc-number"
+                  nbMask="#### #### #### ####"
+                  formControlName="number"
+                  nbValidation
+                  #number="nbValidation" />
+                <nb-validation-errors [for]="number" />
+              </div>
+              <div class="field">
+                <label class="label"
+                  for="checkout-expiry">Expiry (MM/YY)</label>
+                <input nbInput
+                  fullWidth
+                  id="checkout-expiry"
+                  inputmode="numeric"
+                  autocomplete="cc-exp"
+                  nbMask="##/##"
+                  formControlName="expiry"
+                  nbValidation
+                  #expiry="nbValidation" />
+                <nb-validation-errors [for]="expiry" />
+              </div>
+              <div class="field">
+                <label class="label"
+                  for="checkout-cvc">Security code</label>
+                <input nbInput
+                  fullWidth
+                  id="checkout-cvc"
+                  inputmode="numeric"
+                  autocomplete="cc-csc"
+                  nbMask="###"
+                  formControlName="cvc"
+                  nbValidation
+                  #cvc="nbValidation" />
+                <nb-validation-errors [for]="cvc" />
+              </div>
+            </div>
+            }
+
+            <div class="step-buttons">
+              <button nbButton
+                edge="start"
+                ghost
+                type="button"
+                nbStepperPrevious>
+                <nb-icon icon="arrow-back-outline" />
+                Back
+              </button>
+              <button nbButton
+                status="primary"
+                type="button"
+                nbStepperNext>Review order</button>
+            </div>
+          </form>
+        </nb-step>
+
+        <nb-step label="Review">
+          <div class="review">
+            <section>
+              <h2 class="label">Delivery to</h2>
+              <p>
+                {{ delivery.value.name }}<br />
+                {{ delivery.value.address }}, {{ delivery.value.city }} {{ delivery.value.postcode }}
+              </p>
+              <button nbButton
+                edge="start"
+                ghost
+                size="tiny"
+                type="button"
+                (click)="stepper.selectedIndex.set(0)">Change</button>
+            </section>
+            <section>
+              <h2 class="label">Payment</h2>
+              <p>
+                @if (method() === 'card') {
+                Card ending {{ lastDigits() }}
+                } @else {
+                PayPal
+                }
+              </p>
+              <button nbButton
+                edge="start"
+                ghost
+                size="tiny"
+                type="button"
+                (click)="stepper.selectedIndex.set(1)">Change</button>
+            </section>
+          </div>
+          <p class="terms">By placing your order you agree to our terms of sale and returns policy.</p>
+          <div class="step-buttons">
+            <button nbButton
+              edge="start"
+              ghost
+              type="button"
+              nbStepperPrevious>
+              <nb-icon icon="arrow-back-outline" />
+              Back
+            </button>
+            <button nbButton
+              status="primary"
+              size="large"
+              type="button"
+              (click)="place()">
+              <nb-icon icon="lock-outline" />
+              Place order
+            </button>
+          </div>
+        </nb-step>
+      </nb-stepper>
+    </nb-card-body>
+  </nb-card>
+
+  <nb-card class="summary">
+    <nb-card-header>Your order</nb-card-header>
+    <nb-card-body>
+      <ul class="items">
+        @for (line of cart.lines(); track line.product.id + line.colour) {
+        <li>
+          <npg-shop-picture class="thumb"
+            [product]="line.product" />
+          <span class="item">
+            <span class="subtitle-2">{{ line.product.name }}</span>
+            <span class="caption">{{ line.colour }} · {{ line.quantity }} ×
+              {{ line.product.price | currency: 'USD' : 'symbol' : '1.0-0' }}</span>
+          </span>
+        </li>
+        }
+      </ul>
+      <npg-shop-order-summary [subtotal]="cart.subtotal()"
+        [option]="option()" />
+    </nb-card-body>
+  </nb-card>
+</div>
+} @else {
+<nb-card>
+  <nb-card-body class="empty">
+    <p>There's nothing to check out yet.</p>
+    <a nbButton
+      status="primary"
+      routerLink="../products">Browse the shop</a>
+  </nb-card-body>
+</nb-card>
+}

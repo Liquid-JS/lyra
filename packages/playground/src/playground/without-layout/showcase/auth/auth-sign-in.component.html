@@ -1,0 +1,78 @@
+@if (frame === 'card') {
+<nb-card>
+  <nb-card-body>
+    <ng-container *ngTemplateOutlet="content" />
+  </nb-card-body>
+</nb-card>
+} @else {
+<div class="plain">
+  <ng-container *ngTemplateOutlet="content" />
+</div>
+}
+
+<ng-template #content>
+  <a class="brand"
+    routerLink="../sign-in"><span class="logo"
+      aria-hidden="true"></span> Acme</a>
+
+  <header>
+    <h1 class="h4">Welcome back</h1>
+    <p>Sign in to continue to your account</p>
+  </header>
+
+  <div class="providers">
+    @for (provider of providers; track provider.name) {
+    <button nbButton
+      appearance="outline"
+      type="button"
+      [attr.aria-label]="'Sign in with ' + provider.name">
+      <nb-icon [icon]="provider.icon" />
+    </button>
+    }
+  </div>
+
+  <p class="divider">or with your email</p>
+
+  <form (submit)="$event.preventDefault()">
+    <div class="field">
+      <label class="label"
+        for="sign-in-email">Email</label>
+      <input nbInput
+        fullWidth
+        id="sign-in-email"
+        type="email"
+        autocomplete="email"
+        placeholder="you@example.com" />
+    </div>
+    <div class="field">
+      <span class="label-row">
+        <label class="label"
+          for="sign-in-password">Password</label>
+        <a routerLink="../forgot-password">Forgot password?</a>
+      </span>
+      <nb-form-field>
+        <input nbInput
+          fullWidth
+          id="sign-in-password"
+          autocomplete="current-password"
+          placeholder="Your password"
+          [type]="showPassword() ? 'text' : 'password'" />
+        <button nbSuffix
+          nbButton
+          ghost
+          type="button"
+          [attr.aria-label]="showPassword() ? 'Hide the password' : 'Show the password'"
+          (click)="showPassword.set(!showPassword())">
+          <nb-icon [icon]="showPassword() ? 'eye-off-outline' : 'eye-outline'" />
+        </button>
+      </nb-form-field>
+    </div>
+    <nb-checkbox>Keep me signed in</nb-checkbox>
+    <button nbButton
+      fullWidth
+      status="primary"
+      type="submit">Sign in</button>
+  </form>
+
+  <p class="footer">New here? <a routerLink="../sign-up">Create an account</a></p>
+</ng-template>

@@ -1,0 +1,67 @@
+<h1 class="h4">Your cart</h1>
+
+@if (cart.lines().length) {
+<div class="cart">
+  <nb-card class="lines">
+    @for (line of cart.lines(); track line.product.id + line.colour) {
+    <div class="line">
+      <npg-shop-picture class="thumb"
+        [product]="line.product" />
+      <div class="what">
+        <a class="subtitle name"
+          [routerLink]="['../products', line.product.id]">{{ line.product.name }}</a>
+        <span class="caption">{{ line.colour }}</span>
+        <button nbButton
+          ghost
+          size="tiny"
+          status="danger"
+          type="button"
+          edge="start"
+          [attr.aria-label]="'Remove ' + line.product.name"
+          (click)="cart.setQuantity(line, 0)">
+          <nb-icon icon="trash-2-outline" />
+          Remove
+        </button>
+      </div>
+      <npg-shop-quantity [min]="1"
+        [label]="line.product.name"
+        [quantity]="line.quantity"
+        (quantityChange)="cart.setQuantity(line, $event)" />
+      <span class="subtitle amount">{{ line.product.price * line.quantity | currency: 'USD' : 'symbol' : '1.0-0' }}</span>
+    </div>
+    }
+  </nb-card>
+
+  <nb-card class="summary">
+    <nb-card-header>Order summary</nb-card-header>
+    <nb-card-body>
+      <npg-shop-order-summary [subtotal]="cart.subtotal()" />
+    </nb-card-body>
+    <nb-card-footer>
+      <a nbButton
+        fullWidth
+        status="primary"
+        size="large"
+        routerLink="../checkout">
+        Checkout
+        <nb-icon icon="arrow-forward-outline" />
+      </a>
+      <a nbButton
+        fullWidth
+        ghost
+        routerLink="../products">Continue shopping</a>
+    </nb-card-footer>
+  </nb-card>
+</div>
+} @else {
+<nb-card class="empty">
+  <nb-card-body>
+    <nb-icon icon="shopping-cart-outline" />
+    <h2 class="h5">Your cart is empty</h2>
+    <p>Have a look around: there's free delivery on orders over $50.</p>
+    <a nbButton
+      status="primary"
+      routerLink="../products">Browse the shop</a>
+  </nb-card-body>
+</nb-card>
+}

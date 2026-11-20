@@ -1,0 +1,161 @@
+@use '../../../styles/themes' as *;
+
+:host {
+  display: block;
+}
+
+h1 {
+  margin-bottom: 1.5rem;
+}
+
+.checkout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 20rem;
+  gap: 1.5rem;
+  align-items: start;
+
+  @media (max-width: 991.98px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+nb-card {
+  margin: 0;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  padding-top: 1.5rem;
+}
+
+.fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.25rem 1rem;
+  margin-bottom: 1.5rem;
+
+  @media (max-width: 575.98px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+
+  &.wide {
+    grid-column: 1 / -1;
+  }
+}
+
+// The label's margin is the only space above its field or choices.
+.label {
+  margin-bottom: 0.5rem;
+}
+
+.choices {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+
+  nb-radio {
+    padding: 0.75rem 1rem;
+    border: 1px solid nb-theme(border-basic-color-4);
+    border-radius: nb-theme(border-radius);
+  }
+
+  ::ng-deep label {
+    width: 100%;
+  }
+
+  ::ng-deep .text {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+}
+
+.choice {
+  display: flex;
+  flex-direction: column;
+}
+
+.choice-price {
+  font-weight: 600;
+}
+
+.step-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.review {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: 1rem;
+  padding-top: 1.5rem;
+
+  section {
+    padding: 1rem;
+    border: 1px solid nb-theme(border-basic-color-4);
+    border-radius: nb-theme(border-radius);
+  }
+
+  h2 {
+    margin: 0;
+  }
+
+  p {
+    margin: 0 0 0.5rem;
+  }
+}
+
+.terms {
+  margin: 1.5rem 0;
+  color: nb-theme(text-hint-color);
+  font-size: 0.875rem;
+}
+
+.items {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin: 0 0 1.25rem;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+}
+
+.thumb {
+  flex: none;
+  width: 3rem;
+  height: 3rem;
+  border-radius: nb-theme(border-radius);
+}
+
+.item {
+  display: flex;
+  flex-direction: column;
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1rem;
+
+  p {
+    margin: 0;
+  }
+}

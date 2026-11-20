@@ -1,0 +1,78 @@
+@use '../../../styles/themes' as *;
+@use 'relay-page' as *;
+
+@include relay-page-header();
+
+:host {
+  display: block;
+}
+
+.mono {
+  @include relay-mono();
+}
+
+.hint {
+  margin: 0.25rem 0 0;
+  color: nb-theme(text-hint-color);
+  font-size: 0.875rem;
+}
+
+nb-card {
+  margin: 0;
+}
+
+.created {
+  margin-bottom: 1rem;
+
+  p {
+    margin: 0 0 0.5rem;
+    font-weight: 600;
+  }
+}
+
+.secret {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+
+  code {
+    padding: 0.375rem 0.625rem;
+    border-radius: nb-theme(border-radius);
+    background: nb-theme(background-basic-color-3);
+    color: nb-theme(text-basic-color);
+    font-size: 0.8125rem;
+    overflow-wrap: anywhere;
+  }
+}
+
+.table {
+  overflow-x: auto;
+}
+
+td {
+  white-space: nowrap;
+}
+
+.name {
+  font-weight: 500;
+}
+
+.key {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+
+  code {
+    font-size: 0.8125rem;
+  }
+}
+
+.never {
+  color: nb-theme(text-hint-color);
+}
+
+.actions {
+  width: 3rem;
+  text-align: end;
+}

@@ -1,0 +1,144 @@
+<header class="page-header">
+  <h1 class="h4">Settings</h1>
+  <p class="hint">Your profile, notifications and appearance</p>
+</header>
+
+<nb-card>
+  <nb-tabset>
+    <nb-tab tabTitle="Profile">
+      <div class="profile">
+        <div class="picture">
+          <nb-user size="giant"
+            onlyPicture
+            name="Jane Doe"
+            [picture]="photo" />
+          <button nbButton
+            outline
+            size="small"
+            type="button">Change photo</button>
+        </div>
+        <div class="fields">
+          <div class="field">
+            <label class="label"
+              for="settings-name">Name</label>
+            <input nbInput
+              fullWidth
+              id="settings-name"
+              autocomplete="off"
+              value="Jane Doe" />
+          </div>
+          <div class="field">
+            <label class="label"
+              for="settings-role">Role</label>
+            <input nbInput
+              fullWidth
+              id="settings-role"
+              autocomplete="off"
+              value="Head of design" />
+          </div>
+          <div class="field">
+            <label class="label"
+              id="settings-department">Department</label>
+            <nb-select fullWidth
+              aria-labelledby="settings-department"
+              selected="Design">
+              @for (item of departments; track item) {
+              <nb-option [value]="item">{{ item }}</nb-option>
+              }
+            </nb-select>
+          </div>
+          <div class="field">
+            <label class="label"
+              id="settings-office">Office</label>
+            <nb-select fullWidth
+              aria-labelledby="settings-office"
+              selected="London">
+              @for (item of offices; track item) {
+              <nb-option [value]="item">{{ item }}</nb-option>
+              }
+            </nb-select>
+          </div>
+          <div class="field">
+            <label class="label"
+              for="settings-phone">Phone</label>
+            <input nbInput
+              fullWidth
+              id="settings-phone"
+              type="tel"
+              autocomplete="off"
+              value="+44 20 7946 0018" />
+          </div>
+          <div class="field">
+            <label class="label"
+              for="settings-pronouns">Pronouns</label>
+            <input nbInput
+              fullWidth
+              id="settings-pronouns"
+              autocomplete="off"
+              placeholder="Optional" />
+          </div>
+          <div class="field wide">
+            <label class="label"
+              for="settings-bio">About you</label>
+            <textarea nbInput
+              fullWidth
+              id="settings-bio"
+              rows="3">Leads the design team across London and Berlin. Ask me about the design system, research or the offsite agenda.</textarea>
+          </div>
+        </div>
+      </div>
+    </nb-tab>
+
+    <nb-tab tabTitle="Notifications">
+      <nb-list>
+        @for (item of notifications; track item.title) {
+        <nb-list-item class="notification">
+          <span>
+            <span class="item-title">{{ item.title }}</span>
+            <span class="caption hint">{{ item.description }}</span>
+          </span>
+          <nb-toggle [checked]="item.on"
+            [attr.aria-label]="item.title" />
+        </nb-list-item>
+        }
+      </nb-list>
+    </nb-tab>
+
+    <nb-tab tabTitle="Appearance">
+      <div class="appearance">
+        <div class="field">
+          <span class="label"
+            id="settings-theme">Theme</span>
+          <nb-radio-group name="theme"
+            aria-labelledby="settings-theme"
+            [ngModel]="appearance()"
+            (ngModelChange)="appearance.set($event)">
+            <nb-radio value="system">Follow the system</nb-radio>
+            <nb-radio value="light">Light</nb-radio>
+            <nb-radio value="dark">Dark</nb-radio>
+          </nb-radio-group>
+        </div>
+        <div class="field">
+          <span class="label"
+            id="settings-density">Density</span>
+          <nb-radio-group name="density"
+            aria-labelledby="settings-density"
+            [ngModel]="density()"
+            (ngModelChange)="density.set($event)">
+            <nb-radio value="comfortable">Comfortable</nb-radio>
+            <nb-radio value="compact">Compact</nb-radio>
+          </nb-radio-group>
+        </div>
+      </div>
+    </nb-tab>
+  </nb-tabset>
+  <nb-card-footer class="actions">
+    <a nbButton
+      ghost
+      routerLink="../home">Cancel</a>
+    <button nbButton
+      status="primary"
+      type="button"
+      (click)="save()">Save changes</button>
+  </nb-card-footer>
+</nb-card>
