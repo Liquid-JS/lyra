@@ -1,16 +1,10 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { Component } from '@angular/core';
+import { NbCardComponent, NbCardBodyComponent, NbIconComponent } from '@liquid-js/lyr-core';
 
 @Component({
-    selector: 'nb-icon-showcase',
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    templateUrl: './icon-showcase.component.html',
-    standalone: false
+  selector: 'nb-icon-showcase',
+  templateUrl: './icon-showcase.component.html',
+  imports: [NbCardComponent, NbCardBodyComponent, NbIconComponent],
 })
 export class IconShowcaseComponent {
 

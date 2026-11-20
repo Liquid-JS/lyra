@@ -1,7 +1,7 @@
 import { NbFontIconPackParams, NbIconPackParams } from './icon-pack';
 
 export interface NbIconOptions {
-  [name: string]: any;
+  [name: string]: unknown;
 }
 
 export interface NbIcon {
@@ -11,10 +11,10 @@ export interface NbIcon {
 
 export class NbFontIcon implements NbIcon {
 
-  constructor(protected name, protected content: any, protected params: NbFontIconPackParams = {}) {}
+  constructor(protected name: string, protected content: string, protected params: NbFontIconPackParams = {}) {}
 
-  getClasses(options?: NbIconOptions): string[] {
-    const classes = [];
+  getClasses(_options?: NbIconOptions): string[] {
+    const classes = new Array<string>();
 
     if (this.params.packClass) {
       classes.push(this.params.packClass);
@@ -25,17 +25,17 @@ export class NbFontIcon implements NbIcon {
     return classes;
   }
 
-  getContent(options?: NbIconOptions): string {
+  getContent(_options?: NbIconOptions): string {
     return this.content;
   }
 }
 
 export class NbSvgIcon implements NbIcon {
 
-  constructor(protected name, protected content: any, protected params: NbIconPackParams = {}) {}
+  constructor(protected name: string, protected content: string, protected params: NbIconPackParams = {}) {}
 
-  getClasses(options?: NbIconOptions): string[] {
-    const classes = [];
+  getClasses(_options?: NbIconOptions): string[] {
+    const classes = new Array<string>();
 
     if (this.params.packClass) {
       classes.push(this.params.packClass);
@@ -43,7 +43,7 @@ export class NbSvgIcon implements NbIcon {
     return classes;
   }
 
-  getContent(options?: NbIconOptions): string {
+  getContent(_options?: NbIconOptions): string {
     return this.content;
   }
 }

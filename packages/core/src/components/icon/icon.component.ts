@@ -1,95 +1,77 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import {
-  ChangeDetectionStrategy,
-  Component,
-  ElementRef,
-  HostBinding,
-  Input,
-  OnChanges,
-  OnInit,
-  Renderer2,
-} from '@angular/core';
+import { Component, computed, inject, input } from '@angular/core';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
-import { NbStatusService } from '../../services/status.service';
-import { NbComponentOrCustomStatus } from '../component-status';
+import { injectNbIconStyle } from '@liquid-js/lyr-core/base';
+import { NbComponentOrCustomStatus } from '@liquid-js/lyr-core/base';
 import { NbIconLibraries } from './icon-libraries';
+import { NbIconOptions } from './icon';
+import { NbIconRef } from './icon-ref';
 
 export interface NbIconConfig {
   icon: string;
   pack?: string;
   status?: NbComponentOrCustomStatus;
-  options?: { [name: string]: any };
+  options?: NbIconOptions;
 }
 
 /**
- * Icon component. Allows to render both `svg` and `font` icons.
- * Starting from Nebular 4.0 uses [Eva Icons](https://akveo.github.io/eva-icons/) pack by default.
+ * Renders an SVG or font icon from a registered icon pack.
  *
- * Basic icon example:
+ * Uses the icons of `@liquid-js/lyr-icons` by default, once they're registered.
+ *
  * @stacked-example(Showcase, icon/icon-showcase.component)
- *
- * Icon configuration:
  *
  * ```html
  * <nb-icon icon="star"></nb-icon>
  * ```
  * ### Installation
  *
- * By default Nebular comes without any pre-installed icon pack.
- * Starting with Nebular 4.0.0 we ship separate package called `@nebular/eva-icons`
- * which integrates SVG [Eva Icons](https://akveo.github.io/eva-icons/) pack to Nebular. To add it to your
- * project run:
+ * Import `NbIconComponent` into your standalone component:
+ * ```ts
+ * @Component({
+ *   imports: [NbIconComponent],
+ * })
+ * export class PageComponent { }
+ * ```
+ *
+ * By default Lyra comes only with the icons its components use. The rest of its icons ship as a separate package,
+ * `@liquid-js/lyr-icons`:
  * ```sh
- * npm i eva-icons @nebular/eva-icons
+ * npm i @liquid-js/lyr-icons
  * ```
- * This command will install Eva Icons pack. Then register `NbEvaIconsModule` into your app module:
+ * Register it in the application's providers, which makes it the default pack:
  * ```ts
- * import { NbEvaIconsModule } from '@nebular/eva-icons';
+ * import { provideNbIcons } from '@liquid-js/lyr-icons';
  *
- * @NgModule({
- *   imports: [
- *     // ...
- *     NbEvaIconsModule,
- *   ],
- * })
- * export class AppModule { }
+ * bootstrapApplication(AppComponent, { providers: [provideNbTheme(), provideNbIcons()] });
  * ```
- * Last thing, import `NbIconModule` to your feature module where you need to show an icon:
- * ```ts
- * import { NbIconModule } from '@nebular/theme';
+ * All the icons are in the [icon browser](icons/browse-icons); an app's own icons can join the pack, see
+ * [Register Icon Packs](icons/register-icon-packs).
  *
- * @NgModule({
- *   imports: [
- *     // ...
- *     NbIconModule,
- *   ],
- * })
- * export class PageModule { }
- * ```
  * ### Usage
  *
- * Icon can be colored using `status` input:
+ * `status` colours the icon:
  * ```html
  * <nb-icon icon="star" status="warning"></nb-icon>
  * ```
  *
- * Colored icons:
  * @stacked-example(Colored Icons, icon/icon-colors.component)
  *
- * In case you need to specify an icon from a specific icon pack, this could be done using `pack` input property:
+ * `pack` takes the icon from a pack other than the default one:
  * ```html
  * <nb-icon icon="star" pack="font-awesome"></nb-icon>
  * ```
- * Additional icon settings (if available by the icon pack) could be passed using `options` input:
+ * `options` passes settings the icon pack supports, if any:
  *
  * ```html
  * <nb-icon icon="star" [options]="{ animation: { type: 'zoom' } }"></nb-icon>
+ * ```
+ *
+ * The icons animate with `zoom`, `pulse`, `shake` or `flip`; `infinite: true` repeats it, and `hover: false` plays it
+ * right away instead of on hover:
+ *
+ * ```html
+ * <nb-icon icon="heart-outline" [options]="{ animation: { type: 'pulse', infinite: true, hover: false } }"></nb-icon>
  * ```
  *
  * @styles
@@ -108,165 +90,68 @@ export interface NbIconConfig {
  * icon-control-color:
  */
 @Component({
-    selector: 'nb-icon',
-    styleUrls: [`./icon.component.scss`],
-    template: '',
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  selector: 'nb-icon',
+  styleUrls: [`./icon.component.scss`],
+  template: '',
+  providers: [{ provide: NbIconRef, useExisting: NbIconComponent }],
+  host: {
+    '[class]': 'hostClasses()',
+    '[innerHtml]': 'html()',
+  },
 })
-export class NbIconComponent implements NbIconConfig, OnChanges, OnInit {
+export class NbIconComponent {
+  protected readonly sanitizer = inject(DomSanitizer);
+  protected readonly iconLibrary = inject(NbIconLibraries);
 
-  protected iconDef;
-  protected prevClasses = [];
+  /** The icon's name in its pack. */
+  readonly icon = input<string>();
 
-  @HostBinding('innerHtml')
-  html: SafeHtml = '';
+  /** The pack to take the icon from; the default pack when unset. Throws when no pack is registered as the default. */
+  readonly pack = input<string>();
 
-  @HostBinding('class.status-primary')
-  get primary() {
-    return this.status === 'primary';
-  }
+  /** Settings the icon pack supports, e.g. an animation. */
+  readonly options = input<NbIconOptions>();
 
-  @HostBinding('class.status-info')
-  get info() {
-    return this.status === 'info';
-  }
-
-  @HostBinding('class.status-success')
-  get success() {
-    return this.status === 'success';
-  }
-
-  @HostBinding('class.status-warning')
-  get warning() {
-    return this.status === 'warning';
-  }
-
-  @HostBinding('class.status-danger')
-  get danger() {
-    return this.status === 'danger';
-  }
-
-  @HostBinding('class.status-basic')
-  get basic() {
-    return this.status === 'basic';
-  }
-
-  @HostBinding('class.status-control')
-  get control() {
-    return this.status === 'control';
-  }
-
-  @HostBinding('class')
-  get additionalClasses(): string[] {
-    if (this.statusService.isCustomStatus(this.status)) {
-      return [this.statusService.getStatusClass(this.status)];
-    }
-    return [];
-  }
+  /** Colours the icon with a status colour. */
+  readonly status = input<NbComponentOrCustomStatus>();
 
   /**
-   * Icon name
-   * @param {string} status
-   */
-  @Input() icon: string;
-
-  /**
-   * Icon pack name
-   * @param {string} status
-   */
-  @Input() pack: string;
-
-  /**
-   * Additional icon settings
-   * @param {[name: string]: any}
-   */
-  @Input() options: { [name: string]: any };
-
-  /**
-   * Icon status (adds specific styles):
-   * `basic`, `primary`, `info`, `success`, `warning`, `danger`, `control`
-   */
-  @Input() status?: NbComponentOrCustomStatus;
-
-  /**
-   * Sets all icon configurable properties via config object.
-   * If passed value is a string set icon name.
+   * All the icon's inputs as one object, or just the icon's name as a string; an object replaces the separate inputs
+   * entirely.
    * @docs-private
    */
-  @Input()
-  get config(): string | NbIconConfig {
-    return this._config;
-  }
-  set config(value: string | NbIconConfig) {
-    if (!value) {
-      return;
+  readonly config = input<string | NbIconConfig>();
+
+  // The icon to render: `config` when it is set, the separate inputs otherwise.
+  protected readonly resolved = computed<Partial<NbIconConfig>>(() => {
+    const config = this.config();
+    if (!config) {
+      return { icon: this.icon(), pack: this.pack(), status: this.status(), options: this.options() };
     }
-
-    this._config = value;
-
-    if (typeof value === 'string') {
-      this.icon = value;
-    } else {
-      this.icon = value.icon;
-      this.pack = value.pack;
-      this.status = value.status;
-      this.options = value.options;
+    if (typeof config === 'string') {
+      return { icon: config, pack: this.pack(), status: this.status(), options: this.options() };
     }
-  }
-  protected _config: string | NbIconConfig;
+    return config;
+  });
 
-  constructor(
-    protected sanitizer: DomSanitizer,
-    protected iconLibrary: NbIconLibraries,
-    protected el: ElementRef,
-    protected renderer: Renderer2,
-    protected statusService: NbStatusService,
-  ) {}
+  // The app's icon style, if it has one: icons in the other style use this one where their pack has both.
+  protected readonly iconStyle = injectNbIconStyle();
 
-  ngOnInit() {
-    this.iconDef = this.renderIcon(this.icon, this.pack, this.options);
-  }
+  protected readonly iconDefinition = computed(() => {
+    const { icon, pack } = this.resolved();
+    // An unset icon is still looked up (as an empty name), so a missing pack fails as it does for a set one.
+    return this.iconLibrary.getIcon(icon ?? '', pack, this.iconStyle());
+  });
 
-  ngOnChanges() {
-    const iconDef = this.iconLibrary.getIcon(this.icon, this.pack);
-    if (iconDef) {
-      this.renderIcon(this.icon, this.pack, this.options);
-    } else {
-      this.clearIcon();
-    }
-  }
+  protected readonly html = computed<SafeHtml>(() => {
+    const content = this.iconDefinition()?.icon.getContent(this.resolved().options);
+    return content ? this.sanitizer.bypassSecurityTrustHtml(content) : '';
+  });
 
-  renderIcon(name: string, pack?: string, options?: { [name: string]: any }) {
-    const iconDefinition = this.iconLibrary.getIcon(name, pack);
-
-    if (!iconDefinition) {
-      return undefined;
-    }
-
-    const content = iconDefinition.icon.getContent(options);
-    if (content) {
-      this.html = this.sanitizer.bypassSecurityTrustHtml(content);
-    }
-
-    this.assignClasses(iconDefinition.icon.getClasses(options));
-    return iconDefinition;
-  }
-
-  protected clearIcon(): void {
-    this.html = '';
-    this.assignClasses([]);
-  }
-
-  protected assignClasses(classes: string[]) {
-    this.prevClasses.forEach((className: string) => {
-      this.renderer.removeClass(this.el.nativeElement, className);
-    });
-
-    classes.forEach((className: string) => {
-      this.renderer.addClass(this.el.nativeElement, className);
-    });
-
-    this.prevClasses = classes;
-  }
+  protected readonly hostClasses = computed(() => {
+    const { status, options } = this.resolved();
+    // Pack and icon classes may hold several space-separated names.
+    const iconClasses = (this.iconDefinition()?.icon.getClasses(options) ?? []).flatMap((name) => name.split(/\s+/));
+    return [...iconClasses, status && `status-${status}`].filter(Boolean);
+  });
 }

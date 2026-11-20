@@ -1,17 +1,18 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { TestBed } from '@angular/core/testing';
-
-import { NbIconModule, NbIconComponent, NbIconConfig, NbThemeModule, NbFontIcon, NbSvgIcon } from '@nebular/theme';
+import {
+  NbIconModule,
+  NbIconComponent,
+  NbIconConfig,
+  NbIconLibraries,
+  NbThemeModule,
+  NbFontIcon,
+  NbSvgIcon,
+} from '@liquid-js/lyr-core';
 
 describe('icon', () => {
   let fontIcon: NbFontIcon;
   let svgIcon: NbSvgIcon;
-
 
   it(`font icon renders`, () => {
 
@@ -76,73 +77,64 @@ describe('icon', () => {
 });
 
 describe('NbIconComponent', () => {
+  let fixture: ComponentFixture<NbIconComponent>;
+  let element: HTMLElement;
+
+  const render = (inputs: { [name: string]: unknown }) => {
+    for (const [name, value] of Object.entries(inputs)) {
+      fixture.componentRef.setInput(name, value);
+    }
+    fixture.detectChanges();
+  };
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [ NbThemeModule.forRoot(), NbIconModule ],
+      imports: [NbThemeModule.forRoot(), NbIconModule],
     });
+    const libraries = TestBed.inject(NbIconLibraries);
+    libraries.registerSvgPack('svg-pack', { 'svg-icon': '<svg class="svg-content"></svg>' });
+    libraries.registerFontPack('font-pack', { packClass: 'font-pack-class', iconClassPrefix: 'fp' });
+    libraries.setDefaultPack('svg-pack');
+    fixture = TestBed.createComponent(NbIconComponent);
+    element = fixture.nativeElement;
   });
 
-  it('should set icon name when string passed as a config', () => {
-    const iconComponent: NbIconComponent = TestBed.createComponent(NbIconComponent).componentInstance;
-    const iconName = 'some-icon';
+  it('should render the icon named by a string config', () => {
+    render({ config: 'svg-icon' });
 
-    iconComponent.config = iconName;
-
-    expect(iconComponent.icon).toEqual(iconName);
+    expect(element.querySelector('.svg-content')).not.toBeNull();
   });
 
-  it('should set icon when object with icon passed as a config', () => {
-    const iconComponent: NbIconComponent = TestBed.createComponent(NbIconComponent).componentInstance;
-    const iconConfig: NbIconConfig = { icon: 'some-icon' };
+  it('should render the icon and pack of an object config', () => {
+    render({ config: { icon: 'home', pack: 'font-pack' } as NbIconConfig });
 
-    iconComponent.config = iconConfig;
-
-    expect(iconComponent.icon).toEqual(iconConfig.icon);
+    expect(element.classList).toContain('font-pack-class');
+    expect(element.classList).toContain('fp-home');
   });
 
-  it('should set pack when object with pack passed as a config', () => {
-    const iconComponent: NbIconComponent = TestBed.createComponent(NbIconComponent).componentInstance;
-    const iconConfig: NbIconConfig = { icon: 'some-icon', pack: 'some-pack' };
+  it('should add the status class of an object config', () => {
+    render({ config: { icon: 'svg-icon', status: 'danger' } as NbIconConfig });
 
-    iconComponent.config = iconConfig;
-
-    expect(iconComponent.pack).toEqual(iconConfig.pack);
+    expect(element.classList).toContain('status-danger');
   });
 
-  it('should set status when object with status passed as a config', () => {
-    const iconComponent: NbIconComponent = TestBed.createComponent(NbIconComponent).componentInstance;
-    const iconConfig: NbIconConfig = { icon: 'some-icon', status: 'danger' };
+  it('should prefer the config to the separate inputs', () => {
+    render({ icon: 'other', pack: 'font-pack', config: { icon: 'svg-icon' } as NbIconConfig });
 
-    iconComponent.config = iconConfig;
-
-    expect(iconComponent.status).toEqual(iconConfig.status);
+    expect(element.querySelector('.svg-content')).not.toBeNull();
+    expect(element.classList).not.toContain('font-pack-class');
   });
 
-  it('should set options when object with options passed as a config', () => {
-    const iconComponent: NbIconComponent = TestBed.createComponent(NbIconComponent).componentInstance;
-    const options = { someProp: 'someVal' };
-    const iconConfig: NbIconConfig = { icon: 'some-icon', options };
+  it('should render the separate inputs without a config', () => {
+    render({ icon: 'home', pack: 'font-pack', status: 'primary' });
 
-    iconComponent.config = iconConfig;
-
-    expect(iconComponent.options).toEqual(iconConfig.options);
+    expect(element.classList).toContain('fp-home');
+    expect(element.classList).toContain('status-primary');
   });
 
-  it('should do nothing when falsy value passed as a config', () => {
-    const iconComponent: NbIconComponent = TestBed.createComponent(NbIconComponent).componentInstance;
-    const config: NbIconConfig = { icon: 'icon', pack: 'pack', status: 'danger', options: { opt: 'opt' } };
-    iconComponent.config = config;
+  it('should render nothing for an icon missing from the pack', () => {
+    render({ config: { icon: 'test-not-existing-icon' } as NbIconConfig });
 
-    iconComponent.config = null;
-    expect(iconComponent.config).toEqual(config);
-  });
-
-  it('icon inner html not to be null or undefined', () => {
-    const iconComponent: NbIconComponent = TestBed.createComponent(NbIconComponent).componentInstance;
-    iconComponent.config = { icon: 'test-not-existing-icon' };
-
-    expect(iconComponent.html).not.toBeNull();
-    expect(iconComponent.html).not.toBeUndefined();
+    expect(element.innerHTML).toBe('');
   });
 });

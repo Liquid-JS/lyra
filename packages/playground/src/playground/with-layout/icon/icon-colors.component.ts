@@ -1,17 +1,11 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { Component } from '@angular/core';
+import { NbCardComponent, NbCardBodyComponent, NbIconComponent } from '@liquid-js/lyr-core';
 
 @Component({
-    selector: 'nb-icon-colors',
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    templateUrl: './icon-colors.component.html',
-    styleUrls: ['./icon-colors.component.scss'],
-    standalone: false
+  selector: 'nb-icon-colors',
+  templateUrl: './icon-colors.component.html',
+  styleUrls: ['./icon-colors.component.scss'],
+  imports: [NbCardComponent, NbCardBodyComponent, NbIconComponent],
 })
 export class IconColorsComponent {
 }

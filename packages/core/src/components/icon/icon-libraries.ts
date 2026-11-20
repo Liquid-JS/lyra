@@ -1,46 +1,46 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
+import { Service } from '@angular/core';
 
-import { Injectable } from '@angular/core';
+import type { NbIconStyle } from '@liquid-js/lyr-core/base';
 import { NbFontIconPackParams, NbIconPack, NbIconPackParams, NbIconPackType, NbIcons } from './icon-pack';
 import { NbFontIcon, NbIcon, NbSvgIcon } from './icon';
+import { NB_ESSENTIAL_ICONS, NB_ESSENTIAL_ICONS_PACK } from './essential-icons';
 
-export class NbIconDefinition {
+export interface NbIconDefinition {
   name: string;
   type: string;
   pack: string;
   icon: NbIcon;
 }
 
-function throwPackNotFoundError(name: string) {
+function throwPackNotFoundError(name: string): never {
   throw Error(`Icon Pack '${name}' is not registered`);
 }
 
-function throwNoDefaultPackError() {
+function throwNoDefaultPackError(): never {
   throw Error('Default pack is not registered.');
 }
 
-function throwWrongPackTypeError(name: string, type: string, desiredType: string) {
+function throwWrongPackTypeError(name: string, type: string, desiredType: string): never {
   throw Error(`Pack '${name}' is not an '${desiredType}' Pack and its type is '${type}'`);
 }
 
 /**
- * This service allows to register multiple icon packs to use them later within `<nb-icon></nb-icon>` component.
+ * Registers icon packs for `nb-icon`, and looks icons up in them.
+ *
+ * The `essentials` pack, with the icons Lyra's components use, is registered from the start; an app's own packs need
+ * registering, and `setDefaultPack` names the one `nb-icon` uses when `pack` is unset.
  */
-@Injectable({ providedIn: 'root' })
+@Service()
 export class NbIconLibraries {
-  protected packs: Map<string, NbIconPack> = new Map();
-  protected defaultPack: NbIconPack;
+  protected packs = new Map<string, NbIconPack>();
+  protected defaultPack?: NbIconPack;
 
-  /**
-   * Registers new Svg icon pack
-   * @param {string} name
-   * @param {NbIcon} icons
-   * @param {NbIconPackParams} params
-   */
+  constructor() {
+    // The icons Lyra components use themselves, so they render wherever NbIconComponent is imported.
+    this.registerSvgPack(NB_ESSENTIAL_ICONS_PACK, NB_ESSENTIAL_ICONS);
+  }
+
+  /** Registers an SVG pack, or replaces the one of that name; `icons` maps names to `NbIcon`s or markup. */
   registerSvgPack(name: string, icons: NbIcons, params: NbIconPackParams = {}) {
     this.packs.set(name, {
       name,
@@ -51,9 +51,27 @@ export class NbIconLibraries {
   }
 
   /**
-   * Registers new font pack
-   * @param {string} name
-   * @param {NbIconPackParams} params
+   * Adds icons to a registered SVG pack, or replaces ones of the same name: `NbIcon`s, or markup the pack makes icons
+   * of (whole SVG files, unless the pack says otherwise with `createIcon`). An SVG file can be imported as text with
+   * `import vegan from './vegan.svg' with { loader: 'text' };`.
+   *
+   * ```ts
+   * iconLibraries.registerSvgIcons('icons', { vegan, 'gluten-free': glutenFree });
+   * ```
+   */
+  registerSvgIcons(name: string, icons: NbIcons) {
+    const pack = this.getPackOrThrow(name);
+    if (pack.type !== NbIconPackType.SVG) {
+      throwWrongPackTypeError(pack.name, pack.type, 'SVG');
+    }
+    for (const [iconName, icon] of Object.entries(icons)) {
+      pack.icons.set(iconName, icon);
+    }
+  }
+
+  /**
+   * Registers a font pack, or replaces the one of that name. A font icon is drawn by its classes (`packClass` and the
+   * name, with `iconClassPrefix`), with the name as its content when the font uses ligatures.
    */
   registerFontPack(name: string, params: NbFontIconPackParams = {}) {
     this.packs.set(name, {
@@ -64,34 +82,20 @@ export class NbIconLibraries {
     });
   }
 
-  /**
-   * Returns pack by name
-   * @param {string} name
-   */
-  getPack(name: string): NbIconPack {
+  getPack(name: string): NbIconPack | undefined {
     return this.packs.get(name);
   }
 
-  /**
-   * Sets pack as a default
-   * @param {string} name
-   */
+  /** Makes a registered pack the one icons are taken from when no pack is named; throws when it isn't registered. */
   setDefaultPack(name: string) {
-    if (!this.packs.has(name)) {
-      throwPackNotFoundError(name);
-    }
-
-    this.defaultPack = this.packs.get(name);
+    this.defaultPack = this.getPackOrThrow(name);
   }
 
   /**
-   * Returns Svg icon
-   * @param {string} name
-   * @param {string} pack
-   *
-   * @returns NbIconDefinition
+   * An icon of an SVG pack (the default one when `pack` is unset), or `undefined` when the pack doesn't have it. Throws
+   * when the pack isn't registered or isn't an SVG pack.
    */
-  getSvgIcon(name: string, pack?: string): NbIconDefinition | null {
+  getSvgIcon(name: string, pack?: string): NbIconDefinition | undefined {
     const iconsPack = pack ? this.getPackOrThrow(pack) : this.getDefaultPackOrThrow();
 
     if (iconsPack.type !== NbIconPackType.SVG) {
@@ -101,7 +105,7 @@ export class NbIconLibraries {
     const icon = this.getIconFromPack(name, iconsPack);
 
     if (!icon) {
-      return null;
+      return undefined;
     }
 
     return {
@@ -113,11 +117,8 @@ export class NbIconLibraries {
   }
 
   /**
-   * Returns Font icon
-   * @param {string} name
-   * @param {string} pack
-   *
-   * @returns NbIconDefinition
+   * An icon of a font pack (the default one when `pack` is unset). A font pack holds no icons, so any name gives one.
+   * Throws when the pack isn't registered or isn't a font pack.
    */
   getFontIcon(name: string, pack?: string): NbIconDefinition {
     const iconsPack = pack ? this.getPackOrThrow(pack) : this.getDefaultPackOrThrow();
@@ -127,7 +128,8 @@ export class NbIconLibraries {
     }
 
     const icon = this.getIconFromPack(name, iconsPack) ?? '';
-    const iconContent = iconsPack.params.ligature ? name : icon;
+    const params: NbFontIconPackParams = iconsPack.params;
+    const iconContent = params.ligature ? name : icon;
 
     return {
       name,
@@ -138,32 +140,48 @@ export class NbIconLibraries {
   }
 
   /**
-   * Returns an icon
-   * @param {string} name
-   * @param {string} pack
-   *
-   * @returns NbIconDefinition
+   * An icon of a pack of either type, as `getSvgIcon` and `getFontIcon` give it.
+   * @param style the style to use where the pack has the icon in both, see `NbComponentDefaults.iconStyle`
    */
-  getIcon(name: string, pack?: string): NbIconDefinition | null {
+  getIcon(name: string, pack?: string, style?: NbIconStyle): NbIconDefinition | undefined {
     const iconsPack = pack ? this.getPackOrThrow(pack) : this.getDefaultPackOrThrow();
+    const styled = style && this.styledName(name, style);
+    const resolvedName = styled && iconsPack.icons.has(styled) ? styled : name;
 
     if (iconsPack.type === NbIconPackType.SVG) {
-      return this.getSvgIcon(name, pack);
+      return this.getSvgIcon(resolvedName, pack);
     }
 
-    return this.getFontIcon(name, pack);
+    return this.getFontIcon(resolvedName, pack);
   }
 
-  protected createSvgIcon(name: string, content: NbIcon | string, params: NbIconPackParams): NbSvgIcon {
-    return content instanceof NbSvgIcon ? content : new NbSvgIcon(name, content, params);
+  /**
+   * The name of an icon in the other style: `star-outline` for `star` in the outline style, `star` for `star-outline`
+   * in the filled one. `getIcon` uses it where the pack has it.
+   */
+  protected styledName(name: string, style: NbIconStyle): string {
+    const outline = name.endsWith('-outline');
+    if (style === 'filled') {
+      return outline ? name.slice(0, -'-outline'.length) : name;
+    }
+    return outline ? name : `${name}-outline`;
   }
 
-  protected createFontIcon(name: string, content: NbIcon | string, params: NbFontIconPackParams): NbFontIcon {
-    return content instanceof NbFontIcon ? content : new NbFontIcon(name, content, params);
+  // A pack's icon is markup, which the pack may make icons of itself, or an icon of its own.
+  protected createSvgIcon(name: string, content: NbIcon | string, params: NbIconPackParams): NbIcon {
+    if (typeof content !== 'string') {
+      return content;
+    }
+    return params.createIcon ? params.createIcon(name, content, params) : new NbSvgIcon(name, content, params);
+  }
+
+  // A pack's icon is a character or ligature, or an icon of its own.
+  protected createFontIcon(name: string, content: NbIcon | string, params: NbFontIconPackParams): NbIcon {
+    return typeof content === 'string' ? new NbFontIcon(name, content, params) : content;
   }
 
   protected getPackOrThrow(name: string): NbIconPack {
-    const pack: NbIconPack = this.packs.get(name);
+    const pack = this.packs.get(name);
     if (!pack) {
       throwPackNotFoundError(name);
     }
@@ -177,11 +195,7 @@ export class NbIconLibraries {
     return this.defaultPack;
   }
 
-  protected getIconFromPack(name: string, pack: NbIconPack): NbIcon | string | null {
-    if (pack.icons.has(name)) {
-      return pack.icons.get(name);
-    }
-
-    return null;
+  protected getIconFromPack(name: string, pack: NbIconPack): NbIcon | string | undefined {
+    return pack.icons.get(name);
   }
 }

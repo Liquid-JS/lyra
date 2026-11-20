@@ -1,5 +1,6 @@
+import { assert } from 'vitest';
 import { TestBed } from '@angular/core/testing';
-import { NbIconLibraries, NbSvgIcon } from '@nebular/theme';
+import { NbIconLibraries, NbSvgIcon } from '@liquid-js/lyr-core';
 
 describe('icons-library', () => {
   let iconsLibrary: NbIconLibraries;
@@ -18,6 +19,8 @@ describe('icons-library', () => {
 
     const icon = iconsLibrary.getSvgIcon('home');
 
+    assert(icon);
+
     expect(icon.icon.getContent()).toEqual('<svg><rect></rect></svg>');
     expect(icon.name).toEqual('home');
     expect(icon.pack).toEqual('super-pack');
@@ -32,6 +35,8 @@ describe('icons-library', () => {
 
     const icon = iconsLibrary.getSvgIcon('home');
 
+    assert(icon);
+
     expect(icon.icon.getContent()).toEqual('<svg><rect></rect></svg>');
     expect(icon.icon.getClasses()).toEqual(['sp']);
     expect(icon.name).toEqual('home');
@@ -41,7 +46,7 @@ describe('icons-library', () => {
 
   it('should register custom svg icon', () => {
     class CustomSvgIcon extends NbSvgIcon {
-      getContent() {
+      override getContent() {
         return 'custom';
       }
     }
@@ -53,6 +58,8 @@ describe('icons-library', () => {
 
     const icon = iconsLibrary.getSvgIcon('home');
 
+    assert(icon);
+
     expect(icon.icon.getContent()).toEqual('custom');
     expect(icon.icon.getClasses()).toEqual(['sp']);
     expect(icon.name).toEqual('home');
@@ -60,15 +67,15 @@ describe('icons-library', () => {
     expect(icon.type).toEqual('svg');
   });
 
-  it('should return null for unknown svg icon', () => {
+  it('should return undefined for unknown svg icon', () => {
     iconsLibrary.registerSvgPack('super-pack', { home: '<svg><rect></rect></svg>', gear: '<svg></svg>' });
     iconsLibrary.setDefaultPack('super-pack');
 
-    expect(iconsLibrary.getSvgIcon('unknown')).toBeNull();
+    expect(iconsLibrary.getSvgIcon('unknown')).toBeUndefined();
   });
 
   it('should throw for no default pack', () => {
-    expect(() => iconsLibrary.getSvgIcon('unknown')).toThrowError('Default pack is not registered.');
+    expect(() => iconsLibrary.getSvgIcon('unknown')).toThrow('Default pack is not registered.');
   });
 
   it('should throw for wrong pack type', () => {
@@ -76,23 +83,23 @@ describe('icons-library', () => {
     iconsLibrary.registerFontPack('font-pack');
     iconsLibrary.setDefaultPack('font-pack');
 
-    expect(() => iconsLibrary.getSvgIcon('unknown')).toThrowError(
+    expect(() => iconsLibrary.getSvgIcon('unknown')).toThrow(
       `Pack 'font-pack' is not an 'SVG' Pack and its type is 'font'`,
     );
   });
 
-  it('should return null for wrong pack', () => {
+  it('should return undefined for wrong pack', () => {
     iconsLibrary.registerSvgPack('super-pack', { home: '<svg><rect></rect></svg>', gear: '<svg></svg>' });
     iconsLibrary.registerFontPack('font-pack');
     iconsLibrary.setDefaultPack('super-pack');
 
-    expect(iconsLibrary.getSvgIcon('unknown')).toBeNull();
+    expect(iconsLibrary.getSvgIcon('unknown')).toBeUndefined();
   });
 
   it('should throw for wrong pack when setting default', () => {
     iconsLibrary.registerFontPack('font-pack');
 
-    expect(() => iconsLibrary.setDefaultPack('super-pack')).toThrowError(`Icon Pack 'super-pack' is not registered`);
+    expect(() => iconsLibrary.setDefaultPack('super-pack')).toThrow(`Icon Pack 'super-pack' is not registered`);
   });
 
   it('should register font icon', () => {
@@ -127,7 +134,10 @@ describe('icons-library', () => {
     iconsLibrary.setDefaultPack('font-pack');
 
     const icon = iconsLibrary.getIcon('home');
+
+    assert(icon);
     const svgIcon = iconsLibrary.getIcon('home', 'super-pack');
+    assert(svgIcon);
 
     expect(icon.icon.getContent()).toEqual('');
     expect(icon.icon.getClasses()).toEqual(['font', 'fp-home']);
@@ -140,5 +150,34 @@ describe('icons-library', () => {
     expect(svgIcon.name).toEqual('home');
     expect(svgIcon.pack).toEqual('super-pack');
     expect(svgIcon.type).toEqual('svg');
+  });
+
+  it('should add icons to a registered svg pack', () => {
+    iconsLibrary.registerSvgPack('super-pack', { home: '<svg><rect></rect></svg>' });
+    iconsLibrary.registerSvgIcons('super-pack', { gear: '<svg><circle></circle></svg>', home: '<svg></svg>' });
+
+    expect(iconsLibrary.getSvgIcon('gear', 'super-pack')?.icon.getContent()).toEqual('<svg><circle></circle></svg>');
+    expect(iconsLibrary.getSvgIcon('home', 'super-pack')?.icon.getContent()).toEqual('<svg></svg>');
+  });
+
+  it('should make icons of markup with the pack\'s own createIcon', () => {
+    const createIcon = vi.fn((name: string, content: string) => new NbSvgIcon(name, `<svg class="own">${content}</svg>`));
+    iconsLibrary.registerSvgPack('own-pack', { home: '<rect></rect>' }, { createIcon });
+    iconsLibrary.registerSvgIcons('own-pack', { gear: '<circle></circle>' });
+
+    expect(iconsLibrary.getSvgIcon('home', 'own-pack')?.icon.getContent()).toEqual('<svg class="own"><rect></rect></svg>');
+    expect(iconsLibrary.getSvgIcon('gear', 'own-pack')?.icon.getContent()).toEqual('<svg class="own"><circle></circle></svg>');
+    expect(createIcon).toHaveBeenCalledWith('gear', '<circle></circle>', expect.objectContaining({ createIcon }));
+  });
+
+  it('should only add svg icons to a registered svg pack', () => {
+    iconsLibrary.registerFontPack('font-pack');
+
+    expect(() => iconsLibrary.registerSvgIcons('font-pack', { home: '<svg></svg>' })).toThrow(
+      "Pack 'font-pack' is not an 'SVG' Pack and its type is 'font'",
+    );
+    expect(() => iconsLibrary.registerSvgIcons('unknown-pack', { home: '<svg></svg>' })).toThrow(
+      "Icon Pack 'unknown-pack' is not registered",
+    );
   });
 });
