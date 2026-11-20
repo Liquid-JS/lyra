@@ -1,48 +1,55 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Inject } from '@angular/core';
-import { Router } from '@angular/router';
-import { NB_AUTH_OPTIONS, NbAuthSocialLink } from '../../auth.options';
-import { getDeepFromObject } from '../../helpers';
+import { ChangeDetectorRef, Component, inject } from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
+import { NB_AUTH_OPTIONS, NbAuthFormMessagesOptions, NbAuthResolvedOptions, NbAuthSocialLink } from '../../auth.options';
+import { getDeepFromObject, NbPath, NbPathValue } from '../../helpers';
 
 import { NbAuthService } from '../../services/auth.service';
 import { NbAuthResult } from '../../services/auth-result';
+import { NbAuthCredentials } from '../../models/user';
+import {
+  NbAlertComponent,
+  NbInputDirective,
+  NbCheckboxComponent,
+  NbButtonComponent,
+  NbIconComponent,
+} from '@liquid-js/lyr-core';
+import { FormsModule } from '@angular/forms';
+import { injectNbAuthTexts } from '../../texts';
 
 @Component({
-    selector: 'nb-login',
-    templateUrl: './login.component.html',
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  selector: 'nb-login',
+  templateUrl: './login.component.html',
+  imports: [
+    NbAlertComponent,
+    FormsModule,
+    NbInputDirective,
+    RouterLink,
+    NbCheckboxComponent,
+    NbButtonComponent,
+    NbIconComponent,
+  ],
 })
 export class NbLoginComponent {
+  protected readonly texts = injectNbAuthTexts();
 
-  redirectDelay: number = 0;
-  showMessages: any = {};
-  strategy: string = '';
+  protected readonly service = inject(NbAuthService);
+  protected readonly options = inject(NB_AUTH_OPTIONS);
+  protected readonly cd = inject(ChangeDetectorRef);
+  protected readonly router = inject(Router);
 
-  errors: string[] = [];
-  messages: string[] = [];
-  user: any = {};
-  submitted: boolean = false;
-  socialLinks: NbAuthSocialLink[] = [];
-  rememberMe = false;
+  redirectDelay: number = this.getConfigValue('forms.login.redirectDelay');
+  showMessages: NbAuthFormMessagesOptions = this.getConfigValue('forms.login.showMessages');
+  strategy: string = this.getConfigValue('forms.login.strategy');
 
-  constructor(protected service: NbAuthService,
-              @Inject(NB_AUTH_OPTIONS) protected options = {},
-              protected cd: ChangeDetectorRef,
-              protected router: Router) {
+  errors = new Array<string>();
+  messages = new Array<string>();
+  // Remembered unless the user unticks it.
+  user: NbAuthCredentials = { rememberMe: true };
+  submitted = false;
+  socialLinks: NbAuthSocialLink[] = this.getConfigValue('forms.login.socialLinks');
+  rememberMe: boolean = this.getConfigValue('forms.login.rememberMe');
 
-    this.redirectDelay = this.getConfigValue('forms.login.redirectDelay');
-    this.showMessages = this.getConfigValue('forms.login.showMessages');
-    this.strategy = this.getConfigValue('forms.login.strategy');
-    this.socialLinks = this.getConfigValue('forms.login.socialLinks');
-    this.rememberMe = this.getConfigValue('forms.login.rememberMe');
-  }
-
-  login(): void {
+  login() {
     this.errors = [];
     this.messages = [];
     this.submitted = true;
@@ -66,7 +73,7 @@ export class NbLoginComponent {
     });
   }
 
-  getConfigValue(key: string): any {
-    return getDeepFromObject(this.options, key, null);
+  getConfigValue<P extends NbPath<NbAuthResolvedOptions>>(key: P): NbPathValue<NbAuthResolvedOptions, P> {
+    return getDeepFromObject(this.options, key);
   }
 }

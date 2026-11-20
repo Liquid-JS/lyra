@@ -1,9 +1,4 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-import { Inject, Injectable } from '@angular/core';
+import { inject, Service } from '@angular/core';
 
 import { Observable, of as observableOf } from 'rxjs';
 import { switchMap, map } from 'rxjs/operators';
@@ -13,110 +8,90 @@ import { NB_AUTH_STRATEGIES } from '../auth.options';
 import { NbAuthResult } from './auth-result';
 import { NbTokenService } from './token/token.service';
 import { NbAuthToken } from './token/token';
+import { NbTokenStorageOptions } from './token/token-storage';
+
+/** The "remember me" of a login form's data, if it has one. */
+function rememberMe(data: unknown): boolean | undefined {
+  return typeof data === 'object' && data !== null && 'rememberMe' in data && typeof data.rememberMe === 'boolean'
+    ? data.rememberMe
+    : undefined;
+}
 
 /**
- * Common authentication service.
- * Should be used to as an interlayer between UI Components and Auth Strategy.
+ * Signs in, up and out with a named strategy, and keeps the token it gets in the token storage; the auth components
+ * go through it rather than a strategy.
  */
-@Injectable()
+@Service({ autoProvided: false })
 export class NbAuthService {
+  protected readonly tokenService = inject(NbTokenService);
+  protected readonly strategies = inject(NB_AUTH_STRATEGIES);
 
-  constructor(protected tokenService: NbTokenService,
-              @Inject(NB_AUTH_STRATEGIES) protected strategies) {
-  }
-
-  /**
-   * Retrieves current authenticated token stored
-   * @returns {Observable<any>}
-   */
+  /** The stored token; an empty one of the fallback class when there's none. */
   getToken(): Observable<NbAuthToken> {
     return this.tokenService.get();
   }
 
-  /**
-   * Returns true if auth token is present in the token storage
-   * @returns {Observable<boolean>}
-   */
+  /** Whether the stored token is valid. */
   isAuthenticated(): Observable<boolean> {
     return this.getToken()
       .pipe(map((token: NbAuthToken) => token.isValid()));
   }
 
   /**
-   * Returns true if valid auth token is present in the token storage.
-   * If not, calls the strategy refreshToken, and returns isAuthenticated() if success, false otherwise
-   * @returns {Observable<boolean>}
+   * Whether the stored token is valid, after refreshing it with its strategy when it has a value but isn't valid, e.g.
+   * has expired.
    */
   isAuthenticatedOrRefresh(): Observable<boolean> {
     return this.getToken()
       .pipe(
-        switchMap(token => {
-        if (token.getValue() && !token.isValid()) {
-          return this.refreshToken(token.getOwnerStrategyName(), token)
-            .pipe(
-              switchMap(res => {
-                if (res.isSuccess()) {
-                  return this.isAuthenticated();
-                } else {
-                  return observableOf(false);
-                }
-              }),
-            )
-        } else {
-          return observableOf(token.isValid());
-        }
-    }));
+        switchMap((token) => {
+          if (token.getValue() && !token.isValid()) {
+            return this.refreshToken(token.getOwnerStrategyName(), token)
+              .pipe(
+                switchMap((res) => {
+                  if (res.isSuccess()) {
+                    return this.isAuthenticated();
+                  } else {
+                    return observableOf(false);
+                  }
+                }),
+              );
+          } else {
+            return observableOf(token.isValid());
+          }
+        }));
   }
 
-  /**
-   * Returns tokens stream
-   * @returns {Observable<NbAuthSimpleToken>}
-   */
+  /** The token, now and whenever it's set or cleared, also from another tab. */
   onTokenChange(): Observable<NbAuthToken> {
     return this.tokenService.tokenChange();
   }
 
-  /**
-   * Returns authentication status stream
-   * @returns {Observable<boolean>}
-   */
+  /** Whether the token is valid, now and whenever it changes. */
   onAuthenticationChange(): Observable<boolean> {
     return this.onTokenChange()
       .pipe(map((token: NbAuthToken) => token.isValid()));
   }
 
   /**
-   * Authenticates with the selected strategy
-   * Stores received token in the token storage
+   * Signs in with the strategy, and keeps the token it gets. A `rememberMe` in `data`, as the login form sends, tells
+   * whether the token outlives the browser session; without it the token stays where the current one is, or is
+   * remembered.
    *
-   * Example:
-   * authenticate('email', {email: 'email@example.com', password: 'test'})
-   *
-   * @param strategyName
-   * @param data
-   * @returns {Observable<NbAuthResult>}
+   * @param data what the strategy takes, such as the login form's `NbAuthCredentials`
    */
-  authenticate(strategyName: string, data?: any): Observable<NbAuthResult> {
+  authenticate(strategyName: string, data?: unknown): Observable<NbAuthResult> {
     return this.getStrategy(strategyName).authenticate(data)
       .pipe(
         switchMap((result: NbAuthResult) => {
-          return this.processResultToken(result);
+          // The login form's "remember me": without it the token is remembered, as after a redirect.
+          return this.processResultToken(result, { remember: rememberMe(data) });
         }),
       );
   }
 
-  /**
-   * Registers with the selected strategy
-   * Stores received token in the token storage
-   *
-   * Example:
-   * register('email', {email: 'email@example.com', name: 'Some Name', password: 'test'})
-   *
-   * @param strategyName
-   * @param data
-   * @returns {Observable<NbAuthResult>}
-   */
-  register(strategyName: string, data?: any): Observable<NbAuthResult> {
+  /** Registers with the strategy, and keeps the token it gets. */
+  register(strategyName: string, data?: unknown): Observable<NbAuthResult> {
     return this.getStrategy(strategyName).register(data)
       .pipe(
         switchMap((result: NbAuthResult) => {
@@ -125,69 +100,31 @@ export class NbAuthService {
       );
   }
 
-  /**
-   * Sign outs with the selected strategy
-   * Removes token from the token storage
-   *
-   * Example:
-   * logout('email')
-   *
-   * @param strategyName
-   * @returns {Observable<NbAuthResult>}
-   */
+  /** Signs out with the strategy, and clears the token when that succeeds. */
   logout(strategyName: string): Observable<NbAuthResult> {
     return this.getStrategy(strategyName).logout()
       .pipe(
         switchMap((result: NbAuthResult) => {
           if (result.isSuccess()) {
-            this.tokenService.clear()
-              .pipe(map(() => result));
+            return this.tokenService.clear().pipe(map(() => result));
           }
           return observableOf(result);
         }),
       );
   }
 
-  /**
-   * Sends forgot password request to the selected strategy
-   *
-   * Example:
-   * requestPassword('email', {email: 'email@example.com'})
-   *
-   * @param strategyName
-   * @param data
-   * @returns {Observable<NbAuthResult>}
-   */
-  requestPassword(strategyName: string, data?: any): Observable<NbAuthResult> {
+  /** Asks the strategy to send the password reset instructions, e.g. to the email in `data`. */
+  requestPassword(strategyName: string, data?: unknown): Observable<NbAuthResult> {
     return this.getStrategy(strategyName).requestPassword(data);
   }
 
-  /**
-   * Tries to reset password with the selected strategy
-   *
-   * Example:
-   * resetPassword('email', {newPassword: 'test'})
-   *
-   * @param strategyName
-   * @param data
-   * @returns {Observable<NbAuthResult>}
-   */
-  resetPassword(strategyName: string, data?: any): Observable<NbAuthResult> {
+  /** Sets a new password with the strategy, from `data`, e.g. the reset password form's. */
+  resetPassword(strategyName: string, data?: unknown): Observable<NbAuthResult> {
     return this.getStrategy(strategyName).resetPassword(data);
   }
 
-  /**
-   * Sends a refresh token request
-   * Stores received token in the token storage
-   *
-   * Example:
-   * refreshToken('email', {token: token})
-   *
-   * @param {string} strategyName
-   * @param data
-   * @returns {Observable<NbAuthResult>}
-   */
-  refreshToken(strategyName: string, data?: any): Observable<NbAuthResult> {
+  /** Refreshes the token with the strategy, e.g. given the current token, and keeps the one it gets. */
+  refreshToken(strategyName: string, data?: unknown): Observable<NbAuthResult> {
     return this.getStrategy(strategyName).refreshToken(data)
       .pipe(
         switchMap((result: NbAuthResult) => {
@@ -196,15 +133,7 @@ export class NbAuthService {
       );
   }
 
-  /**
-   * Get registered strategy by name
-   *
-   * Example:
-   * getStrategy('email')
-   *
-   * @param {string} provider
-   * @returns {NbAbstractAuthProvider}
-   */
+  /** The strategy set up under the name; throws when there's none. */
   protected getStrategy(strategyName: string): NbAuthStrategy {
     const found = this.strategies.find((strategy: NbAuthStrategy) => strategy.getName() === strategyName);
 
@@ -215,11 +144,12 @@ export class NbAuthService {
     return found;
   }
 
-  private processResultToken(result: NbAuthResult) {
-    if (result.isSuccess() && result.getToken()) {
-      return this.tokenService.set(result.getToken())
+  private processResultToken(result: NbAuthResult, options?: NbTokenStorageOptions) {
+    const token = result.getToken();
+    if (result.isSuccess() && token) {
+      return this.tokenService.set(token, options)
         .pipe(
-          map((token: NbAuthToken) => {
+          map(() => {
             return result;
           }),
         );

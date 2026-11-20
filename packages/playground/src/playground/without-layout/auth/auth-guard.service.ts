@@ -1,20 +1,19 @@
-import { Injectable } from '@angular/core';
+import { inject, Service } from '@angular/core';
 import { tap } from 'rxjs/operators';
 import { Router } from '@angular/router';
-import { NbAuthService } from '@nebular/auth';
+import { NbAuthService } from '@liquid-js/lyr-auth';
 
-@Injectable()
-export class AuthGuard  {
-
-  constructor(private authService: NbAuthService, private router: Router) {
-  }
+@Service({ autoProvided: false })
+export class AuthGuard {
+  private readonly authService = inject(NbAuthService);
+  private readonly router = inject(Router);
 
   canActivate() {
     return this.authService.isAuthenticated()
       .pipe(
-        tap(authenticated => {
+        tap((authenticated) => {
           if (!authenticated) {
-            this.router.navigate(['auth/login']);
+            void this.router.navigate(['auth/login']);
           }
         }),
       );

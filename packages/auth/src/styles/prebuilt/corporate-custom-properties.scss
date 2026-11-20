@@ -1,7 +1,2 @@
-@use '../../../theme/styles/themes/corporate';
-@use '../../../theme/styles/theming' as *;
-@use '../globals' as *;
-
-$nb-enabled-themes: (corporate);
-
-@include nb-install();
+// @liquid-js/lyr-core's corporate-custom-properties.css has the theme's variables, and components-custom-properties.css here
+// auth's component styles, so this writes nothing. It's kept so that existing imports of it still work.

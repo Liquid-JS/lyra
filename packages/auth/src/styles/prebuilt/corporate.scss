@@ -1,9 +1,11 @@
-@use '../../../theme/styles/themes/corporate';
-@use '../../../theme/styles/theming' as *;
+// Auth's component styles, next to @liquid-js/lyr-core's corporate.css, which has the theme's variables.
+@use '@liquid-js/lyr-core/styles/themes/corporate';
+@use '@liquid-js/lyr-core/styles/theming-variables' as *;
+@use '@liquid-js/lyr-core/styles/theming' as *;
 @use '../globals' as *;
 
 $nb-enabled-themes: (corporate);
-$nb-enable-css-custom-properties: false;
+$nb-global-styles-on-install: false;
 
 @include nb-install() {
   @include nb-auth-global();

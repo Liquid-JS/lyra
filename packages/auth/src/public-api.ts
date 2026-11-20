@@ -1,11 +1,7 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
 export * from './auth.options';
 export * from './auth.module';
 export * from './auth.routes';
+export * from './texts';
 
 export * from './components/auth.component';
 export * from './components/auth-block/auth-block.component';

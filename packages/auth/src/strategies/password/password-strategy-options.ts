@@ -1,18 +1,16 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { NbAuthSimpleToken, NbAuthTokenClass } from '../../services/token/token';
-import { NbAuthStrategyOptions } from '../auth-strategy-options';
-import { getDeepFromObject } from '../../helpers';
+import { NbAuthSimpleToken } from '../../services/token/token';
+import { NbAuthStrategyOptions, NbStrategyToken } from '../auth-strategy-options';
+import { getDeepFromObject, nbAuthMessages } from '../../helpers';
 import { HttpErrorResponse, HttpResponse } from '@angular/common/http';
+
+/** The modules (actions) of the password strategy, as its options name them. */
+export type NbPasswordStrategyModuleName = 'login' | 'register' | 'requestPass' | 'resetPass' | 'logout' | 'refreshToken';
 
 export interface NbPasswordStrategyModule {
   alwaysFail?: boolean;
   endpoint?: string;
   method?: string;
+  /** Where to go after the action; `null` turns a default redirect off, while a missing one keeps the default. */
   redirect?: {
     success?: string | null;
     failure?: string | null;
@@ -26,16 +24,26 @@ export interface NbPasswordStrategyReset extends NbPasswordStrategyModule {
   resetPasswordTokenKey?: string;
 }
 
-export interface NbPasswordStrategyToken {
-  class?: NbAuthTokenClass,
-  key?: string,
-  getter?: Function,
+export interface NbPasswordStrategyToken extends NbStrategyToken {
+  key?: string;
+  /** Reads the token value from a successful response of the given module (action). */
+  getter?(module: string, res: HttpResponse<unknown>, options: NbPasswordAuthStrategyOptions): unknown;
 }
 
 export interface NbPasswordStrategyMessage {
-  key?: string,
-  getter?: Function,
+  key?: string;
+  /**
+   * Reads the messages from a successful response, or the errors from a failed one, of the given module (action). The
+   * response is the strategy's own: an `HttpResponse` or `HttpErrorResponse` in the password strategy.
+   */
+  getter?(module: string, res: unknown, options: NbAuthStrategyOptions): string[];
 }
+
+/**
+ * The options a getter is called with: the defaults merged with the configured ones, so the getter's key is set.
+ */
+type NbPasswordStrategyOptionsWithKey<K extends 'token' | 'errors' | 'messages'> = NbPasswordAuthStrategyOptions
+  & Record<K, { key: string }>;
 
 export class NbPasswordAuthStrategyOptions extends NbAuthStrategyOptions {
   baseEndpoint?: string = '/api/auth/';
@@ -106,46 +114,42 @@ export class NbPasswordAuthStrategyOptions extends NbAuthStrategyOptions {
     defaultErrors: ['Something went wrong, please try again.'],
     defaultMessages: ['Your token has been successfully refreshed.'],
   };
-  token?: NbPasswordStrategyToken = {
+  override token?: NbPasswordStrategyToken = {
     class: NbAuthSimpleToken,
     key: 'data.token',
-    getter: (module: string, res: HttpResponse<Object>, options: NbPasswordAuthStrategyOptions) => getDeepFromObject(
-      res.body,
-      options.token.key,
-    ),
+    getter: (module: string, res: HttpResponse<unknown>, options: NbPasswordStrategyOptionsWithKey<'token'>) =>
+      getDeepFromObject(res.body, options.token.key),
   };
   errors?: NbPasswordStrategyMessage = {
     key: 'data.errors',
-    getter: (module: string, res: HttpErrorResponse, options: NbPasswordAuthStrategyOptions) => getDeepFromObject(
-      res.error,
-      options.errors.key,
-      options[module].defaultErrors,
-    ),
+    getter: (module: string, res: HttpErrorResponse, options: NbPasswordStrategyOptionsWithKey<'errors'>) =>
+      nbAuthMessages(
+        getDeepFromObject(res.error, options.errors.key, getDeepFromObject(options, `${module}.defaultErrors`)),
+      ),
   };
   messages?: NbPasswordStrategyMessage = {
     key: 'data.messages',
-    getter: (module: string, res: HttpResponse<Object>, options: NbPasswordAuthStrategyOptions) => getDeepFromObject(
-      res.body,
-      options.messages.key,
-      options[module].defaultMessages,
-    ),
+    getter: (module: string, res: HttpResponse<unknown>, options: NbPasswordStrategyOptionsWithKey<'messages'>) =>
+      nbAuthMessages(
+        getDeepFromObject(res.body, options.messages.key, getDeepFromObject(options, `${module}.defaultMessages`)),
+      ),
   };
   validation?: {
     password?: {
       required?: boolean;
-      minLength?: number | null;
-      maxLength?: number | null;
-      regexp?: string | null;
+      minLength?: number;
+      maxLength?: number;
+      regexp?: string;
     };
     email?: {
       required?: boolean;
-      regexp?: string | null;
+      regexp?: string;
     };
     fullName?: {
       required?: boolean;
-      minLength?: number | null;
-      maxLength?: number | null;
-      regexp?: string | null;
+      minLength?: number;
+      maxLength?: number;
+      regexp?: string;
     };
   };
 }

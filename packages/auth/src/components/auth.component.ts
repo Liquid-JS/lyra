@@ -1,54 +1,57 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-import { Component, OnDestroy } from '@angular/core';
+import { Component, ChangeDetectionStrategy, DestroyRef, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Location } from '@angular/common';
+import { Subscription } from 'rxjs';
 
 import { NbAuthService } from '../services/auth.service';
-import { takeUntil } from 'rxjs/operators';
-import { Subject } from 'rxjs';
+import {
+  NbLayoutComponent,
+  NbLayoutColumnComponent,
+  NbCardComponent,
+  NbCardHeaderComponent,
+  NbCardBodyComponent,
+  NbIconComponent,
+} from '@liquid-js/lyr-core';
+import { NbAuthBlockComponent } from './auth-block/auth-block.component';
+import { RouterOutlet } from '@angular/router';
+import { injectNbAuthTexts } from '../texts';
 
 @Component({
-    selector: 'nb-auth',
-    styleUrls: ['./auth.component.scss'],
-    template: `
-    <nb-layout>
-      <nb-layout-column>
-        <nb-card>
-          <nb-card-header>
-            <nav class="navigation">
-              <a href="#" (click)="back()" class="link back-link" aria-label="Back">
-                <nb-icon icon="arrow-back"></nb-icon>
-              </a>
-            </nav>
-          </nb-card-header>
-          <nb-card-body>
-            <nb-auth-block>
-              <router-outlet></router-outlet>
-            </nb-auth-block>
-          </nb-card-body>
-        </nb-card>
-      </nb-layout-column>
-    </nb-layout>
-  `,
-    standalone: false
+  selector: 'nb-auth',
+  styleUrls: ['./auth.component.scss'],
+  templateUrl: './auth.component.html',
+  // Routed auth pages may not use signals, so the outlet is checked on every change detection.
+  changeDetection: ChangeDetectionStrategy.Eager,
+  imports: [
+    NbLayoutComponent,
+    NbLayoutColumnComponent,
+    NbCardComponent,
+    NbCardHeaderComponent,
+    NbCardBodyComponent,
+    NbIconComponent,
+    NbAuthBlockComponent,
+    RouterOutlet,
+  ],
 })
-export class NbAuthComponent implements OnDestroy {
+export class NbAuthComponent {
+  protected readonly texts = injectNbAuthTexts();
 
-  private destroy$ = new Subject<void>();
+  protected readonly destroyRef = inject(DestroyRef);
+  protected readonly auth = inject(NbAuthService);
+  protected readonly location = inject(Location);
 
-  subscription: any;
+  subscription: Subscription;
 
-  authenticated: boolean = false;
-  token: string = '';
+  authenticated = false;
+  token = '';
 
-  // showcase of how to use the onAuthenticationChange method
-  constructor(protected auth: NbAuthService, protected location: Location) {
+  // Follows the authentication state, as an example of `onAuthenticationChange()`; the template doesn't read it.
+  constructor() {
+    const auth = this.auth;
 
-    this.subscription = auth.onAuthenticationChange()
-      .pipe(takeUntil(this.destroy$))
+    this.subscription = auth
+      .onAuthenticationChange()
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((authenticated: boolean) => {
         this.authenticated = authenticated;
       });
@@ -57,10 +60,5 @@ export class NbAuthComponent implements OnDestroy {
   back() {
     this.location.back();
     return false;
-  }
-
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
   }
 }

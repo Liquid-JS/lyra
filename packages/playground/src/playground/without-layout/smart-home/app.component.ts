@@ -1,25 +1,23 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 import { Component } from '@angular/core';
+import {
+  NbLayoutComponent,
+  NbLayoutColumnComponent,
+  NbCardComponent,
+  NbCardBodyComponent,
+  NbButtonComponent,
+} from '@liquid-js/lyr-core';
+import { RouterLink } from '@angular/router';
 
 @Component({
-    selector: 'ngx-app',
-    template: `
-    <nb-layout>
-      <nb-layout-column>
-        <nb-card>
-          <nb-card-body>
-            <a nbButton routerLink="auth/login">Login</a>
-          </nb-card-body>
-        </nb-card>
-      </nb-layout-column>
-    </nb-layout>
-  `,
-    standalone: false
+  selector: 'ngx-app',
+  templateUrl: './app.component.html',
+  imports: [
+    NbLayoutComponent,
+    NbLayoutColumnComponent,
+    NbCardComponent,
+    NbCardBodyComponent,
+    NbButtonComponent,
+    RouterLink,
+  ],
 })
-export class AppComponent {
-}
+export class AppComponent {}

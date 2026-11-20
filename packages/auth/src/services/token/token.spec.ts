@@ -1,16 +1,10 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { NbAuthOAuth2Token, NbAuthJWTToken, NbAuthSimpleToken, NbAuthOAuth2JWTToken } from '@nebular/auth';
+import { assert } from 'vitest';
+import { NbAuthOAuth2Token, NbAuthJWTToken, NbAuthSimpleToken, NbAuthOAuth2JWTToken } from '@liquid-js/lyr-auth';
 
 describe('auth token', () => {
   describe('NbAuthJWTToken', () => {
     const now = new Date();
 
-    /* eslint-disable */
     const simpleToken = new NbAuthSimpleToken('token', 'strategy');
     const validJWTToken = new NbAuthJWTToken(
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJjZXJlbWEuZnIiLCJpYXQiOjE1MzIzNTA4MDAsImV4cCI6MjUzMjM1MDgwMCwic3ViIjoiQWxhaW4gQ0hBUkxFUyIsImFkbWluIjp0cnVlfQ.Rgkgb4KvxY2wp2niXIyLJNJeapFp9z3tCF-zK6Omc8c',
@@ -32,8 +26,6 @@ describe('auth token', () => {
       'strategy',
     );
 
-    /* eslint-enable */
-
     it('JWT Token constructor, not valid JWT token, must consist of three parts', () => {
       expect(() => {
         new NbAuthJWTToken('.', 'strategy');
@@ -54,26 +46,10 @@ describe('auth token', () => {
 
     it('getPayload success', () => {
       expect(validJWTToken.getPayload())
-        // eslint-disable-next-line
+
         .toEqual(
           JSON.parse('{"iss":"cerema.fr","iat":1532350800,"exp":2532350800,"sub":"Alain CHARLES","admin":true}'),
         );
-    });
-
-    it('getCreatedAt success : now for simpleToken', () => {
-      // we consider dates are the same if differing from minus than 10 ms
-      expect(simpleToken.getCreatedAt().getTime() - now.getTime()).toBeLessThan(10);
-    });
-
-    it('getCreatedAt success : exp for validJWTToken', () => {
-      const date = new Date();
-      date.setTime(1532350800000);
-      expect(validJWTToken.getCreatedAt()).toEqual(date);
-    });
-
-    it('getCreatedAt success : now for noIatJWTToken', () => {
-      // we consider dates are the same if differing from minus than 10 ms
-      expect(noIatJWTToken.getCreatedAt().getTime() - now.getTime()).toBeLessThan(10);
     });
 
     it('getCreatedAt success : now for simpleToken', () => {
@@ -99,7 +75,7 @@ describe('auth token', () => {
     });
 
     it('getTokenExpDate is empty', () => {
-      expect(noExpJWTToken.getTokenExpDate()).toBeNull();
+      expect(noExpJWTToken.getTokenExpDate()).toBeUndefined();
     });
 
     it('no exp date token is valid', () => {
@@ -130,30 +106,7 @@ describe('auth token', () => {
 
     it('NbAuthSimpleToken has payload', () => {
       // without token
-      expect(simpleToken.getPayload()).toEqual(null);
-    });
-
-    it('getPayload success', () => {
-      expect(validJWTToken.getPayload())
-        // eslint-disable-next-line
-        .toEqual(
-          JSON.parse('{"iss":"cerema.fr","iat":1532350800,"exp":2532350800,"sub":"Alain CHARLES","admin":true}'),
-        );
-    });
-
-    it('NbAuthJWTToken name', () => {
-      // without token
-      expect(NbAuthJWTToken.NAME).toEqual(validJWTToken.getName());
-    });
-
-    it('NbAuthSimpleToken name', () => {
-      // without token
-      expect(NbAuthSimpleToken.NAME).toEqual(simpleToken.getName());
-    });
-
-    it('NbAuthSimpleToken has payload', () => {
-      // without token
-      expect(simpleToken.getPayload()).toEqual(null);
+      expect(simpleToken.getPayload()).toBeUndefined();
     });
   });
 
@@ -192,22 +145,24 @@ describe('auth token', () => {
       validToken = new NbAuthOAuth2Token(token, 'strategy');
       const date = new Date();
       date.setTime(date.getTime() + 3600 * 1000);
-      expect(validToken.getTokenExpDate().getTime() - date.getTime()).toBeLessThan(10);
+      const expDate = validToken.getTokenExpDate();
+      assert(expDate);
+      expect(expDate.getTime() - date.getTime()).toBeLessThan(10);
     });
 
     it('getTokenExpDate is empty', () => {
-      expect(noExpToken.getTokenExpDate()).toBeNull();
+      expect(noExpToken.getTokenExpDate()).toBeUndefined();
     });
 
     it('toString is json', () => {
       expect(String(validToken)).toEqual(JSON.stringify(token));
     });
 
-    it('getTokenExpDate is empty', () => {
+    it('getType success', () => {
       expect(validToken.getType()).toEqual(token.token_type);
     });
 
-    it('getTokenExpDate is empty', () => {
+    it('getRefreshToken success', () => {
       expect(noExpToken.getRefreshToken()).toEqual(token.refresh_token);
     });
 
@@ -238,7 +193,7 @@ describe('auth token', () => {
     };
 
     const validPayload = {
-      // eslint-disable-next-line
+
       access_token:
         'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJjZXJlbWEuZnIiLCJpYXQiOjE1MzIzNTA4MDAsImV4cCI6MjUzMjM1MDgwMCwic3ViIjoiQWxhaW4gQ0hBUkxFUyIsImFkbWluIjp0cnVlfQ.Rgkgb4KvxY2wp2niXIyLJNJeapFp9z3tCF-zK6Omc8c',
       expires_in: 1000000000,
@@ -248,7 +203,7 @@ describe('auth token', () => {
     };
 
     const noExpButIatPayload = {
-      // eslint-disable-next-line
+
       access_token:
         'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJjZXJlbWEuZnIiLCJpYXQiOjE1MzIzNTA4MDAsInN1YiI6IkFsYWluIENIQVJMRVMiLCJhZG1pbiI6dHJ1ZX0.heHVXkHexwqbPCPUAvkJlXO6tvxzxTKf4iP0OWBbp7Y',
       expires_in: expires_in,
@@ -258,7 +213,7 @@ describe('auth token', () => {
     };
 
     const noExpNoIatPayload = {
-      // eslint-disable-next-line
+
       access_token:
         'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJjZXJlbWEuZnIiLCJzdWIiOiJBbGFpbiBDSEFSTEVTIiwiYWRtaW4iOnRydWV9.LKZggkN-r_5hnEcCg5GzbSqZz5_SUHEB1Bf9Sy1qJd4',
       expires_in: expires_in,
@@ -268,7 +223,7 @@ describe('auth token', () => {
     };
 
     const permanentPayload = {
-      // eslint-disable-next-line
+
       access_token:
         'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJjZXJlbWEuZnIiLCJzdWIiOiJBbGFpbiBDSEFSTEVTIiwiYWRtaW4iOnRydWV9.LKZggkN-r_5hnEcCg5GzbSqZz5_SUHEB1Bf9Sy1qJd4',
       token_type: 'bearer',
@@ -321,11 +276,13 @@ describe('auth token', () => {
       const NoExpNoIatToken = new NbAuthOAuth2JWTToken(noExpNoIatPayload, 'strategy');
       const date = new Date();
       date.setTime(date.getTime() + expires_in * 1000);
-      expect(NoExpNoIatToken.getTokenExpDate().getTime() - date.getTime()).toBeLessThan(10);
+      const expDate = NoExpNoIatToken.getTokenExpDate();
+      assert(expDate);
+      expect(expDate.getTime() - date.getTime()).toBeLessThan(10);
     });
 
     it('getTokenExpDate is empty', () => {
-      expect(permanentToken.getTokenExpDate()).toBeNull();
+      expect(permanentToken.getTokenExpDate()).toBeUndefined();
     });
 
     it('name', () => {

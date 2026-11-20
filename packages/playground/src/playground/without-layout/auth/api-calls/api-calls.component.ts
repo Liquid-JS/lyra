@@ -1,93 +1,77 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { Component, Inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Router } from '@angular/router';
-import { Observable, of as observableOf } from 'rxjs';
+import { Router, RouterOutlet } from '@angular/router';
+import { of as observableOf } from 'rxjs';
 import { catchError, delay } from 'rxjs/operators';
-import { NbAuthResult, NbAuthService, NbAuthToken, NB_AUTH_OPTIONS } from '@nebular/auth';
-import { getDeepFromObject } from '../../../../framework/auth/helpers';
+import { NbAuthService, NbAuthToken, NB_AUTH_OPTIONS } from '@liquid-js/lyr-auth';
 import { Wine } from './wine';
+import {
+  NbLayoutComponent,
+  NbLayoutColumnComponent,
+  NbCardComponent,
+  NbCardBodyComponent,
+  NbCardHeaderComponent,
+  NbListComponent,
+  NbListItemComponent,
+  NbButtonComponent,
+} from '@liquid-js/lyr-core';
 
 @Component({
-    selector: 'nb-playground-api-calls',
-    template: `
-    <router-outlet></router-outlet>
-    <nb-layout>
-      <nb-layout-column>
-        <nb-card>
-          <nb-card-body>
-            <h2>You are authenticated</h2>
-            <p>You can call the secured API</p>
-            <button nbButton status="primary" (click)="loadWines()">Call API</button>
-            <button nbButton status="primary" (click)="logout()">Sign out</button>
-          </nb-card-body>
-        </nb-card>
-        <nb-card *ngIf="(wines$ | async)?.length">
-          <nb-card-header>
-            Alain'wines
-          </nb-card-header>
-          <nb-list>
-            <nb-list-item *ngFor="let wine of wines$ | async">
-              {{ wine.region }}, {{ wine.name }} ({{ wine.year }})
-            </nb-list-item>
-          </nb-list>
-        </nb-card>
-      </nb-layout-column>
-    </nb-layout>
-  `,
-    standalone: false
+  selector: 'nb-playground-api-calls',
+  templateUrl: './api-calls.component.html',
+  imports: [
+    NbButtonComponent,
+    RouterOutlet,
+    NbLayoutComponent,
+    NbLayoutColumnComponent,
+    NbCardComponent,
+    NbCardBodyComponent,
+    NbCardHeaderComponent,
+    NbListComponent,
+    NbListItemComponent,
+  ],
 })
-
 export class PlaygroundApiCallsComponent {
+  private readonly authService = inject(NbAuthService);
+  private readonly http = inject(HttpClient);
+  private readonly router = inject(Router);
+  protected readonly options = inject(NB_AUTH_OPTIONS);
 
-  token: NbAuthToken;
-  wines$: Observable<Wine[]>;
-  redirectDelay: number = 0;
-  strategy: string = '';
+  token?: NbAuthToken;
+  readonly wines = signal<Wine[]>([]);
+  redirectDelay = 0;
+  strategy = '';
 
-  constructor(private authService: NbAuthService,
-              private http: HttpClient,
-              private router: Router,
-              @Inject(NB_AUTH_OPTIONS) protected options = {}) {
+  constructor() {
+    this.redirectDelay = this.options.forms.logout.redirectDelay;
+    this.strategy = this.options.forms.logout.strategy;
 
-    this.redirectDelay = this.getConfigValue('forms.logout.redirectDelay');
-    this.strategy = this.getConfigValue('forms.logout.strategy');
-
-    this.authService.onTokenChange()
-      .subscribe((token: NbAuthToken) => {
-        this.token = null;
-        if (token && token.isValid()) {
-          this.token = token;
-        }
-      });
+    this.authService.onTokenChange().subscribe((token: NbAuthToken) => {
+      this.token = undefined;
+      if (token && token.isValid()) {
+        this.token = token;
+      }
+    });
   }
 
   logout() {
-    this.authService.logout(this.strategy)
-      .pipe(
-        delay(this.redirectDelay),
-      )
-      .subscribe((result: NbAuthResult) => this.router.navigate(['/auth/login']));
+    this.authService
+      .logout(this.strategy)
+      .pipe(delay(this.redirectDelay))
+      .subscribe(() => this.router.navigate(['/auth/login']));
   }
 
   loadWines() {
-    this.wines$ = this.http.get<Wine[]>('http://localhost:4400/api/wines')
+    this.http
+      .get<Wine[]>('http://localhost:4400/api/wines')
       .pipe(
-        catchError(err => {
+        catchError((err) => {
           if (err instanceof HttpErrorResponse && err.status === 401) {
-            this.router.navigate(['/auth/login']);
+            void this.router.navigate(['/auth/login']);
           }
           return observableOf([]);
         }),
-      );
-  }
-
-  getConfigValue(key: string): any {
-    return getDeepFromObject(this.options, key, null);
+      )
+      .subscribe((wines) => this.wines.set(wines));
   }
 }

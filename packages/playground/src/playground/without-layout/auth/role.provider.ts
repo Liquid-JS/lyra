@@ -1,21 +1,19 @@
-import { Injectable } from '@angular/core';
+import { inject, Service } from '@angular/core';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
-import { NbAuthService, NbAuthJWTToken, NbAuthToken } from '@nebular/auth';
-import { NbRoleProvider } from '@nebular/security';
+import { NbAuthService, NbAuthJWTToken, NbAuthToken } from '@liquid-js/lyr-auth';
+import { NbRoleProvider } from '@liquid-js/lyr-security';
 
-@Injectable()
+@Service({ autoProvided: false })
 export class CustomRoleProvider implements NbRoleProvider {
-  constructor(private authService: NbAuthService) {}
+  private readonly authService = inject(NbAuthService);
 
   getRole(): Observable<string> {
     return this.authService.onTokenChange().pipe(
       map((token: NbAuthToken) => {
-        if (token instanceof NbAuthJWTToken && token.isValid()) {
-          return token.getPayload().role;
-        }
-        return 'guest';
+        const role = token instanceof NbAuthJWTToken && token.isValid() ? token.getPayload()?.['role'] : undefined;
+        return typeof role === 'string' ? role : 'guest';
       }),
     );
   }

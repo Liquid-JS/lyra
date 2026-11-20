@@ -2,11 +2,11 @@ import { urlBase64Decode } from '../../helpers';
 
 export abstract class NbAuthToken {
 
-  protected payload: any = null;
+  protected payload?: unknown;
 
   abstract getValue(): string;
   abstract isValid(): boolean;
-  // the strategy name used to acquire this token (needed for refreshing token)
+  /** The name of the strategy that got the token, which is the one that refreshes it. */
   abstract getOwnerStrategyName(): string;
   abstract getCreatedAt(): Date;
   abstract toString(): string;
@@ -15,9 +15,39 @@ export abstract class NbAuthToken {
     return (this.constructor as NbAuthTokenClass).NAME;
   }
 
-  getPayload(): any {
+  getPayload(): unknown {
     return this.payload;
   }
+}
+
+/**
+ * The claims of a JWT: the registered ones (RFC 7519, 4.1) and any others the issuer adds.
+ */
+export interface NbAuthJWTPayload {
+  /** Expiration time, in seconds since the epoch. */
+  exp?: number;
+  /** Issued at, in seconds since the epoch. */
+  iat?: number;
+  /** Not before, in seconds since the epoch. */
+  nbf?: number;
+  sub?: string;
+  iss?: string;
+  aud?: string | string[];
+  jti?: string;
+  [claim: string]: unknown;
+}
+
+/**
+ * An OAuth2 token response (RFC 6749, 5.1), and any other fields the server adds.
+ */
+export interface NbAuthOAuth2TokenData {
+  access_token?: string;
+  token_type?: string;
+  /** The lifetime of the access token, in seconds. */
+  expires_in?: number | string;
+  refresh_token?: string;
+  scope?: string;
+  [field: string]: unknown;
 }
 
 export class NbAuthTokenNotFoundError extends Error {
@@ -50,22 +80,22 @@ export class NbAuthIllegalJWTTokenError extends NbAuthIllegalTokenError {
 
 export interface NbAuthRefreshableToken {
   getRefreshToken(): string;
-  setRefreshToken(refreshToken: string);
+  setRefreshToken(refreshToken: string): void;
 }
 
 export interface NbAuthTokenClass<T = NbAuthToken> {
   NAME: string;
-  new (raw: any, strategyName: string, expDate?: Date): T;
+  new (raw: unknown, strategyName: string, expDate?: Date): T;
 }
 
 export function nbAuthCreateToken<T extends NbAuthToken>(tokenClass: NbAuthTokenClass<T>,
-                                  token: any,
-                                  ownerStrategyName: string,
-                                  createdAt?: Date) {
+  token: unknown,
+  ownerStrategyName: string,
+  createdAt?: Date) {
   return new tokenClass(token, ownerStrategyName, createdAt);
 }
 
-export function decodeJwtPayload(payload: string): any {
+export function decodeJwtPayload(payload: string): NbAuthJWTPayload {
 
   if (payload.length === 0) {
     throw new NbAuthEmptyTokenError('Cannot extract from an empty payload.');
@@ -81,7 +111,7 @@ export function decodeJwtPayload(payload: string): any {
   let decoded;
   try {
     decoded = urlBase64Decode(parts[1]);
-  } catch (e) {
+  } catch {
     throw new NbAuthIllegalJWTTokenError(
       `The payload ${payload} is not valid JWT payload and cannot be parsed.`);
   }
@@ -90,20 +120,24 @@ export function decodeJwtPayload(payload: string): any {
     throw new NbAuthIllegalJWTTokenError(
       `The payload ${payload} is not valid JWT payload and cannot be decoded.`);
   }
-  return JSON.parse(decoded);
+  return JSON.parse(decoded) as NbAuthJWTPayload;
 }
 
-/**
- * Wrapper for simple (text) token
- */
+/** A token that is a plain string; valid while it isn't empty. */
 export class NbAuthSimpleToken extends NbAuthToken {
 
   static NAME = 'nb:auth:simple:token';
 
-  constructor(protected readonly token: any,
-              protected readonly ownerStrategyName: string,
-              protected createdAt?: Date) {
+  protected createdAt: Date;
+
+  constructor(protected readonly token: unknown,
+    protected readonly ownerStrategyName: string,
+    createdAt?: Date) {
     super();
+    // Set before parsing, as the constructor parameter property did, so subclasses can read it in parsePayload().
+    if (createdAt) {
+      this.createdAt = createdAt;
+    }
     try {
       this.parsePayload();
     } catch (err) {
@@ -115,155 +149,148 @@ export class NbAuthSimpleToken extends NbAuthToken {
     this.createdAt = this.prepareCreatedAt(createdAt);
   }
 
-  protected parsePayload(): any {
-    this.payload = null;
+  protected parsePayload(): void {
+    this.payload = undefined;
   }
 
-  protected prepareCreatedAt(date: Date) {
+  protected prepareCreatedAt(date?: Date): Date {
     return date ? date : new Date();
   }
 
-  /**
-   * Returns the token's creation date
-   * @returns {Date}
-   */
+  /** When the token was made, or when the storage says it was. */
   getCreatedAt(): Date {
     return this.createdAt;
   }
 
-  /**
-   * Returns the token value
-   * @returns string
-   */
+  /** The token's text; empty when it isn't a string. */
   getValue(): string {
-    return this.token;
+    return typeof this.token === 'string' ? this.token : '';
   }
 
   getOwnerStrategyName(): string {
     return this.ownerStrategyName;
   }
 
-  /**
-   * Is non empty and valid
-   * @returns {boolean}
-   */
+  /** Whether the token isn't empty. */
   isValid(): boolean {
     return !!this.getValue();
   }
 
-  /**
-   * Validate value and convert to string, if value is not valid return empty string
-   * @returns {string}
-   */
+  /** The token as text, for the storage; empty without one. */
   toString(): string {
-    return !!this.token ? this.token : '';
+    return this.token ? String(this.token) : '';
   }
 }
 
-/**
- * Wrapper for JWT token with additional methods.
- */
+/** A JWT: its payload is decoded, it's created at its `iat` claim, and it's valid until its `exp` claim. */
 export class NbAuthJWTToken extends NbAuthSimpleToken {
 
-  static NAME = 'nb:auth:jwt:token';
+  static override NAME = 'nb:auth:jwt:token';
 
-  /**
-   * for JWT token, the iat (issued at) field of the token payload contains the creation Date
-   */
-  protected prepareCreatedAt(date: Date) {
-      const decoded = this.getPayload();
-      return decoded && decoded.iat ? new Date(Number(decoded.iat) * 1000) : super.prepareCreatedAt(date);
+  protected declare payload?: NbAuthJWTPayload;
+
+  /** The `iat` claim, when there is one. */
+  protected override prepareCreatedAt(date?: Date): Date {
+    const decoded = this.getPayload();
+    return decoded && decoded.iat ? new Date(Number(decoded.iat) * 1000) : super.prepareCreatedAt(date);
   }
 
   /**
-   * Returns payload object
-   * @returns any
+   * Decodes the payload; throws `NbAuthTokenNotFoundError` without a token, and `NbAuthIllegalJWTTokenError` for one
+   * that isn't a JWT.
    */
-  protected parsePayload(): void {
+  protected override parsePayload() {
     if (!this.token) {
-      throw new NbAuthTokenNotFoundError('Token not found. ')
+      throw new NbAuthTokenNotFoundError('Token not found. ');
+    }
+    if (typeof this.token !== 'string') {
+      throw new NbAuthIllegalJWTTokenError('The JWT token is not a string.');
     }
     this.payload = decodeJwtPayload(this.token);
   }
 
-  /**
-   * Returns expiration date
-   * @returns Date
-   */
-  getTokenExpDate(): Date {
+  /** The token's claims, or `undefined` without a token. */
+  override getPayload(): NbAuthJWTPayload | undefined {
+    return this.payload;
+  }
+
+  /** The `exp` claim as a date, or `undefined` without one. */
+  getTokenExpDate(): Date | undefined {
     const decoded = this.getPayload();
     if (decoded && !decoded.hasOwnProperty('exp')) {
-      return null;
+      return undefined;
     }
     const date = new Date(0);
-    date.setUTCSeconds(decoded.exp); // 'cause jwt token are set in seconds
+    date.setUTCSeconds(Number(decoded?.exp)); // JWT times are in seconds
     return date;
   }
 
-  /**
-   * Is data expired
-   * @returns {boolean}
-   */
-  isValid(): boolean {
-    return super.isValid() && (!this.getTokenExpDate() || new Date() < this.getTokenExpDate());
+  /** Whether the token isn't empty and hasn't expired. */
+  override isValid(): boolean {
+    if (!super.isValid()) {
+      return false;
+    }
+    const expDate = this.getTokenExpDate();
+    return !expDate || new Date() < expDate;
   }
 }
 
-const prepareOAuth2Token = (data) => {
+const prepareOAuth2Token = (data: unknown): unknown => {
   if (typeof data === 'string') {
     try {
       return JSON.parse(data);
-    } catch (e) {}
+    } catch {}
   }
   return data;
 };
 
+/** Whether the raw token is an object, which an OAuth2 token reads as a token response. */
+function isOAuth2TokenData(token: unknown): token is NbAuthOAuth2TokenData {
+  return typeof token === 'object' && token !== null;
+}
+
 /**
- * Wrapper for OAuth2 token whose access_token is a JWT Token
+ * An OAuth2 token response: its `access_token` is the value, and it expires `expires_in` seconds after it was created.
  */
 export class NbAuthOAuth2Token extends NbAuthSimpleToken {
 
-  static NAME = 'nb:auth:oauth2:token';
+  static override NAME = 'nb:auth:oauth2:token';
 
-  constructor( data: { [key: string]: string|number }|string = {},
-               ownerStrategyName: string,
-               createdAt?: Date) {
+  /**
+   * @param data the token response, or its JSON (as the storage gives it)
+   */
+  constructor(data: unknown = {},
+    ownerStrategyName: string,
+    createdAt?: Date) {
 
     // we may get it as string when retrieving from a storage
     super(prepareOAuth2Token(data), ownerStrategyName, createdAt);
   }
 
-  /**
-   * Returns the token value
-   * @returns string
-   */
-  getValue(): string {
-    return this.token.access_token;
+  /** The token response; empty when the raw token isn't one. */
+  protected get data(): NbAuthOAuth2TokenData {
+    return isOAuth2TokenData(this.token) ? this.token : {};
   }
 
-  /**
-   * Returns the refresh token
-   * @returns string
-   */
+  /** The `access_token`; empty without one. */
+  override getValue(): string {
+    return this.data.access_token ?? '';
+  }
+
+  /** The `refresh_token`; empty without one. */
   getRefreshToken(): string {
-    return this.token.refresh_token;
+    return this.data.refresh_token ?? '';
   }
 
-  /**
-   *  put refreshToken in the token payload
-    * @param refreshToken
-   */
+  /** Sets the `refresh_token`, e.g. the previous token's after a refresh whose response has none. */
   setRefreshToken(refreshToken: string) {
-    this.token.refresh_token = refreshToken;
+    this.data.refresh_token = refreshToken;
   }
 
-  /**
-   * Parses token payload
-   * @returns any
-   */
-  protected parsePayload(): void {
+  /** The payload is the response itself; throws without a token, or with an empty one. */
+  protected override parsePayload() {
     if (!this.token) {
-      throw new NbAuthTokenNotFoundError('Token not found.')
+      throw new NbAuthTokenNotFoundError('Token not found.');
     } else {
       if (!Object.keys(this.token).length) {
         throw new NbAuthEmptyTokenError('Cannot extract payload from an empty token.');
@@ -272,98 +299,79 @@ export class NbAuthOAuth2Token extends NbAuthSimpleToken {
     this.payload = this.token;
   }
 
-  /**
-   * Returns the token type
-   * @returns string
-   */
+  /** The `token_type`, e.g. `Bearer`; empty without one. */
   getType(): string {
-    return this.token.token_type;
+    return this.data.token_type ?? '';
   }
 
-  /**
-   * Is data expired
-   * @returns {boolean}
-   */
-  isValid(): boolean {
-    return super.isValid() && (!this.getTokenExpDate() || new Date() < this.getTokenExpDate());
-  }
-
-  /**
-   * Returns expiration date
-   * @returns Date
-   */
-  getTokenExpDate(): Date {
-    if (!this.token.hasOwnProperty('expires_in')) {
-      return null;
+  /** Whether the token has an `access_token` and hasn't expired. */
+  override isValid(): boolean {
+    if (!super.isValid()) {
+      return false;
     }
-    return new Date(this.createdAt.getTime() + Number(this.token.expires_in) * 1000);
-}
+    const expDate = this.getTokenExpDate();
+    return !expDate || new Date() < expDate;
+  }
 
-  /**
-   * Convert to string
-   * @returns {string}
-   */
-  toString(): string {
+  /** When the token expires, `expires_in` seconds after it was created; `undefined` without `expires_in`. */
+  getTokenExpDate(): Date | undefined {
+    const data = this.data;
+    if (!data.hasOwnProperty('expires_in')) {
+      return undefined;
+    }
+    return new Date(this.createdAt.getTime() + Number(data.expires_in) * 1000);
+  }
+
+  /** The response as JSON, for the storage. */
+  override toString(): string {
     return JSON.stringify(this.token);
   }
 }
 
 /**
- * Wrapper for OAuth2 token embedding JWT tokens
+ * An OAuth2 token whose `access_token` is a JWT: its claims say when the token was created and expires, over the
+ * response's `expires_in`.
  */
 export class NbAuthOAuth2JWTToken extends NbAuthOAuth2Token {
 
-  static NAME = 'nb:auth:oauth2:jwt:token';
+  static override NAME = 'nb:auth:oauth2:jwt:token';
 
-  protected accessTokenPayload: any;
+  protected accessTokenPayload?: NbAuthJWTPayload;
 
-  protected parsePayload(): void {
+  protected override parsePayload() {
     super.parsePayload();
     this.parseAccessTokenPayload();
   }
 
-  protected parseAccessTokenPayload(): any {
+  protected parseAccessTokenPayload(): void {
     const accessToken = this.getValue();
     if (!accessToken) {
-      throw new NbAuthTokenNotFoundError('access_token key not found.')
+      throw new NbAuthTokenNotFoundError('access_token key not found.');
     }
     this.accessTokenPayload = decodeJwtPayload(accessToken);
   }
 
-  /**
-   * Returns access token payload
-   * @returns any
-   */
-  getAccessTokenPayload(): any {
+  /** The access token's claims; `undefined` when it has none. */
+  getAccessTokenPayload(): NbAuthJWTPayload | undefined {
     return this.accessTokenPayload;
   }
 
-  /**
-   * for Oauth2 JWT token, the iat (issued at) field of the access_token payload
-   */
-  protected prepareCreatedAt(date: Date) {
+  /** The access token's `iat` claim, when there is one. */
+  protected override prepareCreatedAt(date?: Date): Date {
     const payload = this.accessTokenPayload;
     return payload && payload.iat ? new Date(Number(payload.iat) * 1000) : super.prepareCreatedAt(date);
   }
 
-  /**
-   * Is token valid
-   * @returns {boolean}
-   */
-  isValid(): boolean {
-    return this.accessTokenPayload && super.isValid();
+  /** Whether the access token has claims, and the token is valid. */
+  override isValid(): boolean {
+    return !!this.accessTokenPayload && super.isValid();
   }
 
-  /**
-   * Returns expiration date :
-   * - exp if set,
-   * - super.getExpDate() otherwise
-   * @returns Date
-   */
-  getTokenExpDate(): Date {
+  /** The access token's `exp` claim as a date, or the response's `expires_in` without one. */
+  override getTokenExpDate(): Date | undefined {
     if (this.accessTokenPayload && this.accessTokenPayload.hasOwnProperty('exp')) {
       const date = new Date(0);
-      date.setUTCSeconds(this.accessTokenPayload.exp);
+      date.setUTCSeconds(Number(this.accessTokenPayload.exp));
       return date;
     } else {
       return super.getTokenExpDate();

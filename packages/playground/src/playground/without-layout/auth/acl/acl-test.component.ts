@@ -1,37 +1,28 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { Component } from '@angular/core';
-import { NbAccessChecker } from '@nebular/security';
+import { Component, inject } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { NbAccessChecker, NbIsGrantedDirective } from '@liquid-js/lyr-security';
+import {
+  NbLayoutComponent,
+  NbLayoutColumnComponent,
+  NbCardComponent,
+  NbCardHeaderComponent,
+  NbCardBodyComponent,
+} from '@liquid-js/lyr-core';
 
 @Component({
-    selector: 'nb-actions-test',
-    template: `
-    <nb-layout>
-      <nb-layout-column>
-        <nb-card>
-          <nb-card-header>Service usage</nb-card-header>
-          <nb-card-body>
-            <button *ngIf="accessChecker.isGranted('create', 'comments') | async" >Post Comment</button>
-          </nb-card-body>
-        </nb-card>
-        <nb-card>
-          <nb-card-header>Directive usage</nb-card-header>
-          <nb-card-body>
-            <button *nbIsGranted="['create', 'comments']" >Post Comment</button>
-          </nb-card-body>
-        </nb-card>
-      </nb-layout-column>
-    </nb-layout>
-  `,
-    standalone: false
+  selector: 'nb-actions-test',
+  templateUrl: './acl-test.component.html',
+  imports: [
+    NbLayoutComponent,
+    NbLayoutColumnComponent,
+    NbCardComponent,
+    NbCardHeaderComponent,
+    NbCardBodyComponent,
+    NbIsGrantedDirective,
+  ],
 })
 export class AclTestComponent {
+  private readonly accessChecker = inject(NbAccessChecker);
 
-  constructor(public accessChecker: NbAccessChecker) {
-  }
-
+  readonly canCreateComments = toSignal(this.accessChecker.isGranted('create', 'comments'));
 }

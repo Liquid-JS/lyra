@@ -1,10 +1,5 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-import { Injectable } from '@angular/core';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { inject, Service } from '@angular/core';
+import { HttpClient, HttpErrorResponse, HttpResponse } from '@angular/common/http';
 import { ActivatedRoute } from '@angular/router';
 import { Observable, of as observableOf } from 'rxjs';
 import { switchMap, map, catchError } from 'rxjs/operators';
@@ -12,21 +7,27 @@ import { switchMap, map, catchError } from 'rxjs/operators';
 import { NbAuthResult } from '../../services/auth-result';
 import { NbAuthStrategy } from '../auth-strategy';
 import { NbAuthStrategyClass } from '../../auth.options';
-import { NbPasswordAuthStrategyOptions, passwordStrategyOptions } from './password-strategy-options';
+import {
+  NbPasswordAuthStrategyOptions,
+  NbPasswordStrategyModuleName,
+  passwordStrategyOptions,
+} from './password-strategy-options';
 import { NbAuthIllegalTokenError } from '../../services/token/token';
 
 /**
- * The most common authentication provider for email/password strategy.
+ * Signs in, up and out, and requests and resets the password, against an email and password backend. Each action
+ * (`login`, `register`, `requestPass`, `resetPass`, `logout`, `refreshToken`) sends its data to its `endpoint` after
+ * `baseEndpoint`, reads the token, messages and errors from the response with the `token`, `messages` and `errors`
+ * getters, and redirects as its `redirect` says; `resetPass` adds the reset token from the page's query under
+ * `resetPasswordTokenKey`. With `requireValidToken`, a response without a valid token fails the action.
  *
- * Strategy settings. Note, there is no need to copy over the whole object to change the settings you need.
- * Also, this.getOption call won't work outside of the default options declaration
- * (which is inside of the `NbPasswordAuthStrategy` class), so you have to replace it with a custom helper function
- * if you need it.
+ * Strategy settings; `setup` takes the ones to change, over these defaults. `defaultErrors` and `defaultMessages` are
+ * the `authStrategy` texts (`provideNbTexts`), unless the given options set them:
  *
  * ```ts
  *export class NbPasswordAuthStrategyOptions extends NbAuthStrategyOptions {
- *  name: string;
- *  baseEndpoint? = '/api/auth/';
+ *  name = '';
+ *  baseEndpoint?: string = '/api/auth/';
  *  login?: boolean | NbPasswordStrategyModule = {
  *    alwaysFail: false,
  *    endpoint: 'login',
@@ -97,63 +98,53 @@ import { NbAuthIllegalTokenError } from '../../services/token/token';
  *  token?: NbPasswordStrategyToken = {
  *    class: NbAuthSimpleToken,
  *    key: 'data.token',
- *    getter: (module: string, res: HttpResponse<Object>, options: NbPasswordAuthStrategyOptions) => getDeepFromObject(
- *      res.body,
- *      options.token.key,
- *    ),
+ *    getter: (module, res, options) => getDeepFromObject(res.body, options.token.key),
  *  };
  *  errors?: NbPasswordStrategyMessage = {
  *    key: 'data.errors',
- *    getter: (module: string, res: HttpErrorResponse, options: NbPasswordAuthStrategyOptions) => getDeepFromObject(
- *      res.error,
- *      options.errors.key,
- *      options[module].defaultErrors,
- *    ),
+ *    getter: (module, res, options) =>
+ *      nbAuthMessages(getDeepFromObject(res.error, options.errors.key, options[module].defaultErrors)),
  *  };
  *  messages?: NbPasswordStrategyMessage = {
  *    key: 'data.messages',
- *    getter: (module: string, res: HttpResponse<Object>, options: NbPasswordAuthStrategyOptions) => getDeepFromObject(
- *      res.body,
- *      options.messages.key,
- *      options[module].defaultMessages,
- *    ),
+ *    getter: (module, res, options) =>
+ *      nbAuthMessages(getDeepFromObject(res.body, options.messages.key, options[module].defaultMessages)),
  *  };
  *  validation?: {
  *    password?: {
  *      required?: boolean;
- *      minLength?: number | null;
- *      maxLength?: number | null;
- *      regexp?: string | null;
+ *      minLength?: number;
+ *      maxLength?: number;
+ *      regexp?: string;
  *    };
  *    email?: {
  *      required?: boolean;
- *      regexp?: string | null;
+ *      regexp?: string;
  *    };
  *    fullName?: {
  *      required?: boolean;
- *      minLength?: number | null;
- *      maxLength?: number | null;
- *      regexp?: string | null;
+ *      minLength?: number;
+ *      maxLength?: number;
+ *      regexp?: string;
  *    };
  *  };
  *}
  * ```
  */
-@Injectable()
-export class NbPasswordAuthStrategy extends NbAuthStrategy {
-  protected defaultOptions: NbPasswordAuthStrategyOptions = passwordStrategyOptions;
+@Service({ autoProvided: false })
+export class NbPasswordAuthStrategy extends NbAuthStrategy<NbPasswordAuthStrategyOptions> {
+  protected readonly http = inject(HttpClient);
+  private readonly route = inject(ActivatedRoute);
+
+  protected override defaultOptions: NbPasswordAuthStrategyOptions = passwordStrategyOptions;
 
   static setup(options: NbPasswordAuthStrategyOptions): [NbAuthStrategyClass, NbPasswordAuthStrategyOptions] {
     return [NbPasswordAuthStrategy, options];
   }
 
-  constructor(protected http: HttpClient, private route: ActivatedRoute) {
-    super();
-  }
-
-  authenticate(data?: any): Observable<NbAuthResult> {
+  authenticate(data?: unknown): Observable<NbAuthResult> {
     const module = 'login';
-    const method = this.getOption(`${module}.method`);
+    const method = this.getOption(`${module}.method`) ?? 'post';
     const url = this.getActionEndpoint(module);
     const requireValidToken = this.getOption(`${module}.requireValidToken`);
     return this.http.request(method, url, { body: data, observe: 'response', headers: this.getHeaders() }).pipe(
@@ -169,8 +160,8 @@ export class NbPasswordAuthStrategy extends NbAuthStrategy {
           res,
           this.getOption(`${module}.redirect.success`),
           [],
-          this.getOption('messages.getter')(module, res, this.options),
-          this.createToken(this.getOption('token.getter')(module, res, this.options), requireValidToken),
+          this.readMessages(module, res),
+          this.createToken(this.readToken(module, res), requireValidToken),
         );
       }),
       catchError((res) => {
@@ -179,9 +170,9 @@ export class NbPasswordAuthStrategy extends NbAuthStrategy {
     );
   }
 
-  register(data?: any): Observable<NbAuthResult> {
+  register(data?: unknown): Observable<NbAuthResult> {
     const module = 'register';
-    const method = this.getOption(`${module}.method`);
+    const method = this.getOption(`${module}.method`) ?? 'post';
     const url = this.getActionEndpoint(module);
     const requireValidToken = this.getOption(`${module}.requireValidToken`);
     return this.http.request(method, url, { body: data, observe: 'response', headers: this.getHeaders() }).pipe(
@@ -198,8 +189,8 @@ export class NbPasswordAuthStrategy extends NbAuthStrategy {
           res,
           this.getOption(`${module}.redirect.success`),
           [],
-          this.getOption('messages.getter')(module, res, this.options),
-          this.createToken(this.getOption('token.getter')('login', res, this.options), requireValidToken),
+          this.readMessages(module, res),
+          this.createToken(this.readToken('login', res), requireValidToken),
         );
       }),
       catchError((res) => {
@@ -208,9 +199,9 @@ export class NbPasswordAuthStrategy extends NbAuthStrategy {
     );
   }
 
-  requestPassword(data?: any): Observable<NbAuthResult> {
+  requestPassword(data?: unknown): Observable<NbAuthResult> {
     const module = 'requestPass';
-    const method = this.getOption(`${module}.method`);
+    const method = this.getOption(`${module}.method`) ?? 'post';
     const url = this.getActionEndpoint(module);
     return this.http.request(method, url, { body: data, observe: 'response', headers: this.getHeaders() }).pipe(
       map((res) => {
@@ -226,7 +217,7 @@ export class NbPasswordAuthStrategy extends NbAuthStrategy {
           res,
           this.getOption(`${module}.redirect.success`),
           [],
-          this.getOption('messages.getter')(module, res, this.options),
+          this.readMessages(module, res),
         );
       }),
       catchError((res) => {
@@ -235,11 +226,12 @@ export class NbPasswordAuthStrategy extends NbAuthStrategy {
     );
   }
 
-  resetPassword(data: any = {}): Observable<NbAuthResult> {
+  /** Sends the data with the reset password token of the page's query, under the options' `resetPasswordTokenKey`. */
+  resetPassword(data: Record<string, unknown> = {}): Observable<NbAuthResult> {
     const module = 'resetPass';
-    const method = this.getOption(`${module}.method`);
+    const method = this.getOption(`${module}.method`) ?? 'put';
     const url = this.getActionEndpoint(module);
-    const tokenKey = this.getOption(`${module}.resetPasswordTokenKey`);
+    const tokenKey = this.getOption(`${module}.resetPasswordTokenKey`) ?? '';
     data[tokenKey] = this.route.snapshot.queryParams[tokenKey];
     return this.http.request(method, url, { body: data, observe: 'response', headers: this.getHeaders() }).pipe(
       map((res) => {
@@ -255,7 +247,7 @@ export class NbPasswordAuthStrategy extends NbAuthStrategy {
           res,
           this.getOption(`${module}.redirect.success`),
           [],
-          this.getOption('messages.getter')(module, res, this.options),
+          this.readMessages(module, res),
         );
       }),
       catchError((res) => {
@@ -266,11 +258,11 @@ export class NbPasswordAuthStrategy extends NbAuthStrategy {
 
   logout(): Observable<NbAuthResult> {
     const module = 'logout';
-    const method = this.getOption(`${module}.method`);
+    const method = this.getOption(`${module}.method`) ?? 'delete';
     const url = this.getActionEndpoint(module);
 
     return observableOf({}).pipe(
-      switchMap((res: any) => {
+      switchMap((res: object) => {
         if (!url) {
           return observableOf(res);
         }
@@ -289,7 +281,7 @@ export class NbPasswordAuthStrategy extends NbAuthStrategy {
           res,
           this.getOption(`${module}.redirect.success`),
           [],
-          this.getOption('messages.getter')(module, res, this.options),
+          this.readMessages(module, res),
         );
       }),
       catchError((res) => {
@@ -298,9 +290,9 @@ export class NbPasswordAuthStrategy extends NbAuthStrategy {
     );
   }
 
-  refreshToken(data?: any): Observable<NbAuthResult> {
+  refreshToken(data?: unknown): Observable<NbAuthResult> {
     const module = 'refreshToken';
-    const method = this.getOption(`${module}.method`);
+    const method = this.getOption(`${module}.method`) ?? 'post';
     const url = this.getActionEndpoint(module);
     const requireValidToken = this.getOption(`${module}.requireValidToken`);
 
@@ -318,8 +310,8 @@ export class NbPasswordAuthStrategy extends NbAuthStrategy {
           res,
           this.getOption(`${module}.redirect.success`),
           [],
-          this.getOption('messages.getter')(module, res, this.options),
-          this.createToken(this.getOption('token.getter')(module, res, this.options), requireValidToken),
+          this.readMessages(module, res),
+          this.createToken(this.readToken(module, res), requireValidToken),
         );
       }),
       catchError((res) => {
@@ -328,14 +320,31 @@ export class NbPasswordAuthStrategy extends NbAuthStrategy {
     );
   }
 
-  protected handleResponseError(res: any, module: string): Observable<NbAuthResult> {
-    let errors = [];
+  /** The messages of a module's response, as the options' messages getter reads them. */
+  protected readMessages(module: NbPasswordStrategyModuleName, res: unknown): string[] | undefined {
+    const options = this.options;
+    const getter = options?.messages?.getter;
+    return options && getter ? getter(module, res, options) : undefined;
+  }
+
+  /** The token value of a module's response, as the options' token getter reads it. */
+  protected readToken(module: NbPasswordStrategyModuleName, res: HttpResponse<unknown>): unknown {
+    const options = this.options;
+    const getter = options?.token?.getter;
+    return options && getter ? getter(module, res, options) : undefined;
+  }
+
+  /** A failed module's result, with the errors of the options' errors getter for an error response. */
+  protected handleResponseError(res: unknown, module: NbPasswordStrategyModuleName): Observable<NbAuthResult> {
+    let errors = new Array<string>();
+    const options = this.options;
+    const getter = options?.errors?.getter;
     if (res instanceof HttpErrorResponse) {
-      errors = this.getOption('errors.getter')(module, res, this.options);
+      errors = options && getter ? getter(module, res, options) : [];
     } else if (res instanceof NbAuthIllegalTokenError) {
       errors.push(res.message);
     } else {
-      errors.push('Something went wrong.');
+      errors.push(this.texts().unknownError);
     }
     return observableOf(new NbAuthResult(false, res, this.getOption(`${module}.redirect.failure`), errors));
   }

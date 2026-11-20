@@ -1,7 +1,2 @@
-@use '../../../theme/styles/themes/dark';
-@use '../../../theme/styles/theming' as *;
-@use '../globals' as *;
-
-$nb-enabled-themes: (dark);
-
-@include nb-install();
+// @liquid-js/lyr-core's dark-custom-properties.css has the theme's variables, and components-custom-properties.css here
+// auth's component styles, so this writes nothing. It's kept so that existing imports of it still work.

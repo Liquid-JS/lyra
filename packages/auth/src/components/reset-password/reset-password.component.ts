@@ -1,45 +1,49 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Inject } from '@angular/core';
-import { Router } from '@angular/router';
-import { NB_AUTH_OPTIONS } from '../../auth.options';
-import { getDeepFromObject } from '../../helpers';
+import { ChangeDetectorRef, Component, inject } from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
+import { NB_AUTH_OPTIONS, NbAuthFormMessagesOptions, NbAuthResolvedOptions } from '../../auth.options';
+import { getDeepFromObject, NbPath, NbPathValue } from '../../helpers';
 
 import { NbAuthService } from '../../services/auth.service';
 import { NbAuthResult } from '../../services/auth-result';
+import { NbAuthCredentials } from '../../models/user';
+import {
+  NbAlertComponent,
+  NbInputDirective,
+  NbButtonComponent,
+} from '@liquid-js/lyr-core';
+import { FormsModule } from '@angular/forms';
+import { injectNbAuthTexts } from '../../texts';
 
 @Component({
-    selector: 'nb-reset-password-page',
-    styleUrls: ['./reset-password.component.scss'],
-    templateUrl: './reset-password.component.html',
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  selector: 'nb-reset-password-page',
+  styleUrls: ['./reset-password.component.scss'],
+  templateUrl: './reset-password.component.html',
+  imports: [
+    NbAlertComponent,
+    FormsModule,
+    NbInputDirective,
+    NbButtonComponent,
+    RouterLink,
+  ],
 })
 export class NbResetPasswordComponent {
+  protected readonly texts = injectNbAuthTexts();
 
-  redirectDelay: number = 0;
-  showMessages: any = {};
-  strategy: string = '';
+  protected readonly service = inject(NbAuthService);
+  protected readonly options = inject(NB_AUTH_OPTIONS);
+  protected readonly cd = inject(ChangeDetectorRef);
+  protected readonly router = inject(Router);
+
+  redirectDelay: number = this.getConfigValue('forms.resetPassword.redirectDelay');
+  showMessages: NbAuthFormMessagesOptions = this.getConfigValue('forms.resetPassword.showMessages');
+  strategy: string = this.getConfigValue('forms.resetPassword.strategy');
 
   submitted = false;
-  errors: string[] = [];
-  messages: string[] = [];
-  user: any = {};
+  errors = new Array<string>();
+  messages = new Array<string>();
+  user: NbAuthCredentials = {};
 
-  constructor(protected service: NbAuthService,
-              @Inject(NB_AUTH_OPTIONS) protected options = {},
-              protected cd: ChangeDetectorRef,
-              protected router: Router) {
-
-    this.redirectDelay = this.getConfigValue('forms.resetPassword.redirectDelay');
-    this.showMessages = this.getConfigValue('forms.resetPassword.showMessages');
-    this.strategy = this.getConfigValue('forms.resetPassword.strategy');
-  }
-
-  resetPass(): void {
+  resetPass() {
     this.errors = this.messages = [];
     this.submitted = true;
 
@@ -61,7 +65,7 @@ export class NbResetPasswordComponent {
     });
   }
 
-  getConfigValue(key: string): any {
-    return getDeepFromObject(this.options, key, null);
+  getConfigValue<P extends NbPath<NbAuthResolvedOptions>>(key: P): NbPathValue<NbAuthResolvedOptions, P> {
+    return getDeepFromObject(this.options, key);
   }
 }

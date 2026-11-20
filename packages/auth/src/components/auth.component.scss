@@ -1,11 +1,12 @@
-@use '../../theme/styles/globals' as *;
+@use '@liquid-js/lyr-core/styles/globals' as *;
+@use '@liquid-js/lyr-core/styles/theming' as *;
 
 :host {
   $auth-layout-padding: 2.5rem;
 
   nb-card {
     margin: 0;
-    height: calc(100vh - 2 * #{$auth-layout-padding});
+    height: calc(100dvh - 2 * #{$auth-layout-padding});
   }
 
   .navigation .link {
@@ -15,6 +16,8 @@
     nb-icon {
       font-size: 2rem;
       vertical-align: middle;
+      // The arrow points back, to the start.
+      @include nb-rtl(transform, scaleX(-1));
     }
   }
 
@@ -34,7 +37,7 @@
   @include media-breakpoint-down(sm) {
     nb-card {
       border-radius: 0;
-      height: 100vh;
+      height: 100dvh;
     }
   }
 

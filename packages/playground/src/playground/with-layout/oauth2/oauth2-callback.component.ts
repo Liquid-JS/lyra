@@ -1,40 +1,27 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { Component, OnDestroy } from '@angular/core';
-import { NbAuthResult, NbAuthService } from '@nebular/auth';
+import { Component, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { NbAuthResult, NbAuthService } from '@liquid-js/lyr-auth';
 import { Router } from '@angular/router';
-import { takeUntil } from 'rxjs/operators';
-import { Subject } from 'rxjs';
+import { NbLayoutComponent, NbLayoutColumnComponent } from '@liquid-js/lyr-core';
 
 @Component({
-    selector: 'nb-playground-oauth2-callback',
-    template: `
-    <nb-layout>
-      <nb-layout-column>Authenticating...</nb-layout-column>
-    </nb-layout>
-  `,
-    standalone: false
+  selector: 'nb-playground-oauth2-callback',
+  templateUrl: './oauth2-callback.component.html',
+  imports: [NbLayoutComponent, NbLayoutColumnComponent],
 })
-export class OAuth2CallbackComponent implements OnDestroy {
+export class OAuth2CallbackComponent {
+  private readonly authService = inject(NbAuthService);
+  private readonly router = inject(Router);
 
-  private destroy$ = new Subject<void>();
-
-  constructor(private authService: NbAuthService, private router: Router) {
-    this.authService.authenticate('google')
-      .pipe(takeUntil(this.destroy$))
+  constructor() {
+    this.authService
+      .authenticate('google')
+      .pipe(takeUntilDestroyed())
       .subscribe((authResult: NbAuthResult) => {
-        if (authResult.isSuccess() && authResult.getRedirect()) {
-          this.router.navigateByUrl(authResult.getRedirect());
+        const redirect = authResult.getRedirect();
+        if (authResult.isSuccess() && redirect) {
+          void this.router.navigateByUrl(redirect);
         }
       });
-  }
-
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
   }
 }

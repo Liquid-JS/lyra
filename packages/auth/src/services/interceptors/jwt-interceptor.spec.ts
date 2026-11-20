@@ -1,10 +1,9 @@
 import { Injector } from '@angular/core';
-import { HttpClientModule, HttpClient } from '@angular/common/http';
+import { HttpClient, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { HTTP_INTERCEPTORS, HttpRequest } from '@angular/common/http';
-import { TestBed, inject, waitForAsync } from '@angular/core/testing';
-import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
-import { RouterTestingModule } from '@angular/router/testing';
-import { of as observableOf } from 'rxjs';
+import { TestBed, inject } from '@angular/core/testing';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { of as observableOf, EMPTY } from 'rxjs';
 
 import {
   NbAuthJWTInterceptor,
@@ -24,37 +23,39 @@ import {
   nbStrategiesFactory,
   NbAuthJWTToken,
   NbAuthSimpleToken,
-} from '@nebular/auth';
+} from '@liquid-js/lyr-auth';
+import { RouterModule } from '@angular/router';
 
 describe('jwt-interceptor', () => {
 
   // eslint-disable
   const validJWTValue = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJjZXJlbWEuZnIiLCJpYXQiOjE1MzIzNTA4MDAsImV4cCI6MjUzMjM1MDgwMCwic3ViIjoiQWxhaW4gQ0hBUkxFUyIsImFkbWluIjp0cnVlfQ.Rgkgb4KvxY2wp2niXIyLJNJeapFp9z3tCF-zK6Omc8c';
   const validJWTToken = new NbAuthJWTToken(validJWTValue, 'dummy');
-  const expiredJWTToken = new NbAuthJWTToken('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzY290Y2guaW8iLCJleHAiOjEzMDA4MTkzODAsIm5hbWUiOiJDaHJpcyBTZXZpbGxlamEiLCJhZG1pbiI6dHJ1ZX0.03f329983b86f7d9a9f5fef85305880101d5e302afafa20154d094b229f75773','dummy');
+  const expiredJWTToken = new NbAuthJWTToken('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzY290Y2guaW8iLCJleHAiOjEzMDA4MTkzODAsIm5hbWUiOiJDaHJpcyBTZXZpbGxlamEiLCJhZG1pbiI6dHJ1ZX0.03f329983b86f7d9a9f5fef85305880101d5e302afafa20154d094b229f75773', 'dummy');
   const authHeader = 'Bearer ' + validJWTValue;
 
   let authService: NbAuthService;
-  let tokenService: NbTokenService;
-  let dummyAuthStrategy: NbDummyAuthStrategy;
 
   let http: HttpClient;
   let httpMock: HttpTestingController;
 
   function filterInterceptorRequest(req: HttpRequest<any>): boolean {
     return ['/filtered/url']
-      .some(url => req.url.includes(url));
+      .some((url) => req.url.includes(url));
   }
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [HttpClientModule, HttpClientTestingModule, RouterTestingModule],
+      imports: [RouterModule.forRoot([])],
       providers: [
-         { provide: NB_AUTH_FALLBACK_TOKEN, useValue: NbAuthSimpleToken },
-         { provide: NB_AUTH_TOKENS, useValue: [NbAuthJWTToken] },
+        provideHttpClient(withInterceptorsFromDi()),
+        provideHttpClientTesting(),
+        { provide: NB_AUTH_FALLBACK_TOKEN, useValue: NbAuthSimpleToken },
+        { provide: NB_AUTH_TOKENS, useValue: [NbAuthJWTToken] },
         NbAuthTokenParceler,
-         {
-          provide: NB_AUTH_USER_OPTIONS, useValue: {
+        {
+          provide: NB_AUTH_USER_OPTIONS,
+          useValue: {
             strategies: [
               NbDummyAuthStrategy.setup({
                 alwaysFail: false,
@@ -74,59 +75,50 @@ describe('jwt-interceptor', () => {
       ],
     });
     authService = TestBed.inject(NbAuthService);
-    tokenService = TestBed.inject(NbTokenService);
-    dummyAuthStrategy = TestBed.inject(NbDummyAuthStrategy);
   });
 
-    beforeEach(waitForAsync(
-      inject([HttpClient, HttpTestingController], (_httpClient, _httpMock) => {
-        http = _httpClient;
-        httpMock = _httpMock;
-      }),
-    ));
+  beforeEach(inject(
+    [HttpClient, HttpTestingController],
+    (_httpClient: HttpClient, _httpMock: HttpTestingController) => {
+      http = _httpClient;
+      httpMock = _httpMock;
+    },
+  ));
 
-    it ('Url filtered, isAuthenticatedOrRefresh not called, token not added', () => {
-      const spy = spyOn(authService, 'isAuthenticatedOrRefresh');
-      http.get('/filtered/url/').subscribe(res => {
-        expect(spy).not.toHaveBeenCalled();
-      });
-      httpMock.expectOne(
-        req => req.url === '/filtered/url/'
-          && ! req.headers.get('Authorization'),
-      ).flush({});
+  it('Url filtered, isAuthenticatedOrRefresh not called, token not added', () => {
+    const spy = vi.spyOn(authService, 'isAuthenticatedOrRefresh').mockReturnValue(EMPTY);
+    http.get('/filtered/url/').subscribe(() => {
+      expect(spy).not.toHaveBeenCalled();
     });
+    httpMock.expectOne(
+      (req) => req.url === '/filtered/url/' &&
+          ! req.headers.get('Authorization'),
+    ).flush({});
+  });
 
-    it ('Url not filtered, isAuthenticatedOrRefresh called, authenticated, token added', () => {
-      const spy = spyOn(authService, 'isAuthenticatedOrRefresh')
-        .and.
-        returnValue(observableOf(true));
-      spyOn(authService, 'getToken')
-        .and
-        .returnValue(observableOf(validJWTToken));
-      http.get('/notfiltered/url/').subscribe(res => {
-        expect(spy).toHaveBeenCalled();
-      });
-      httpMock.expectOne(
-        req => req.url === '/notfiltered/url/'
-          && req.headers.get('Authorization') === authHeader,
-      ).flush({});
+  it('Url not filtered, isAuthenticatedOrRefresh called, authenticated, token added', () => {
+    const spy = vi.spyOn(authService, 'isAuthenticatedOrRefresh').mockReturnValue(observableOf(true));
+    vi.spyOn(authService, 'getToken').mockReturnValue(observableOf(validJWTToken));
+    http.get('/notfiltered/url/').subscribe(() => {
+      expect(spy).toHaveBeenCalled();
     });
+    httpMock.expectOne(
+      (req) => req.url === '/notfiltered/url/' &&
+          req.headers.get('Authorization') === authHeader,
+    ).flush({});
+  });
 
-    it ('Url not filtered, isAuthenticatedOrRefresh called, not authenticated, token not added', () => {
-      const spy = spyOn(authService, 'isAuthenticatedOrRefresh')
-        .and.
-        returnValue(observableOf(false));
-      spyOn(authService, 'getToken')
-        .and
-        .returnValue(observableOf(expiredJWTToken));
-      http.get('/notfiltered/url/').subscribe(res => {
-        expect(spy).toHaveBeenCalled();
-      });
-      httpMock.expectOne(
-        req => req.url === '/notfiltered/url/'
-          && ! req.headers.get('Authorization'),
-      ).flush({});
+  it('Url not filtered, isAuthenticatedOrRefresh called, not authenticated, token not added', () => {
+    const spy = vi.spyOn(authService, 'isAuthenticatedOrRefresh').mockReturnValue(observableOf(false));
+    vi.spyOn(authService, 'getToken').mockReturnValue(observableOf(expiredJWTToken));
+    http.get('/notfiltered/url/').subscribe(() => {
+      expect(spy).toHaveBeenCalled();
     });
+    httpMock.expectOne(
+      (req) => req.url === '/notfiltered/url/' &&
+          ! req.headers.get('Authorization'),
+    ).flush({});
+  });
 
-  },
+},
 );

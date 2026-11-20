@@ -1,0 +1,22 @@
+<nb-layout>
+  <nb-layout-column>
+    <nb-card>
+      <nb-card-header>
+        <nav class="navigation">
+          <a href="#"
+            (click)="back()"
+            class="link back-link"
+            [attr.aria-label]="texts().back">
+            <nb-icon icon="arrow-back-outline"
+              pack="essentials" />
+          </a>
+        </nav>
+      </nb-card-header>
+      <nb-card-body>
+        <nb-auth-block>
+          <router-outlet />
+        </nb-auth-block>
+      </nb-card-body>
+    </nb-card>
+  </nb-layout-column>
+</nb-layout>

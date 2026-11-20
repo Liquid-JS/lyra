@@ -1,10 +1,4 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { Component, Inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import {
   NbAuthResult,
@@ -13,29 +7,59 @@ import {
   nbAuthCreateToken,
   NbAuthJWTToken,
   NbAuthOAuth2Token,
-} from '@nebular/auth';
-import { getDeepFromObject } from '../../../framework/auth/helpers';
+  NbAuthBlockComponent,
+  NbAuthCredentials,
+  NbAuthFormMessagesOptions,
+  NbAuthResolvedOptions,
+  NbPath,
+  NbPathValue,
+  getDeepFromObject,
+} from '@liquid-js/lyr-auth';
+import {
+  NbLayoutComponent,
+  NbLayoutColumnComponent,
+  NbCardComponent,
+  NbCardBodyComponent,
+  NbAlertComponent,
+  NbInputDirective,
+  NbButtonComponent,
+} from '@liquid-js/lyr-core';
+import { FormsModule } from '@angular/forms';
+import { JsonPipe } from '@angular/common';
 
 @Component({
-    selector: 'nb-playground-auth',
-    templateUrl: './oauth2-password-login.component.html',
-    styleUrls: ['./oauth2-password-login.component.scss'],
-    standalone: false
+  selector: 'nb-oauth2-password-login',
+  templateUrl: './oauth2-password-login.component.html',
+  styleUrls: ['./oauth2-password-login.component.scss'],
+  imports: [
+    NbButtonComponent,
+    NbLayoutComponent,
+    NbLayoutColumnComponent,
+    NbCardComponent,
+    NbCardBodyComponent,
+    NbAuthBlockComponent,
+    NbAlertComponent,
+    FormsModule,
+    NbInputDirective,
+    JsonPipe,
+  ],
 })
 export class OAuth2PasswordLoginComponent {
+  private readonly authService = inject(NbAuthService);
+  protected readonly options = inject(NB_AUTH_OPTIONS);
+  protected readonly router = inject(Router);
 
-  token: NbAuthOAuth2Token;
-  redirectDelay: number = 0;
-  showMessages: any = {};
-  strategy: string = '';
+  readonly token = signal<NbAuthOAuth2Token | undefined>(undefined);
+  redirectDelay = 0;
+  showMessages: NbAuthFormMessagesOptions = { success: false, error: false };
+  strategy = '';
 
-  errors: string[] = [];
-  messages: string[] = [];
-  user: any = {};
-  submitted: boolean = false;
+  readonly errors = signal<string[]>([]);
+  readonly messages = signal<string[]>([]);
+  user: NbAuthCredentials = {};
+  readonly submitted = signal(false);
 
-  constructor(private authService: NbAuthService, @Inject(NB_AUTH_OPTIONS) protected options = {},
-              protected router: Router) {
+  constructor() {
     this.redirectDelay = this.getConfigValue('forms.login.redirectDelay');
     this.showMessages = this.getConfigValue('forms.login.showMessages');
     this.strategy = this.getConfigValue('forms.login.strategy');
@@ -48,18 +72,18 @@ export class OAuth2PasswordLoginComponent {
       }); **/
   }
 
-  login(): void {
-
-    this.errors = this.messages = [];
-    this.submitted = true;
+  login() {
+    this.errors.set([]);
+    this.messages.set([]);
+    this.submitted.set(true);
 
     this.authService.authenticate(this.strategy, this.user).subscribe((result: NbAuthResult) => {
-      this.submitted = false;
-      this.token = result.getToken() as NbAuthOAuth2Token;
+      this.submitted.set(false);
+      this.token.set(result.getToken() as NbAuthOAuth2Token);
       if (result.isSuccess()) {
-        this.messages = result.getMessages();
+        this.messages.set(result.getMessages());
       } else {
-        this.errors = result.getErrors();
+        this.errors.set(result.getErrors());
       }
 
       const redirect = result.getRedirect();
@@ -71,21 +95,19 @@ export class OAuth2PasswordLoginComponent {
     });
   }
 
-
   logout() {
-    this.authService.logout('password')
-      .subscribe((authResult: NbAuthResult) => {
-        this.token = null;
-      });
+    this.authService.logout('password').subscribe(() => {
+      this.token.set(undefined);
+    });
   }
 
-  getConfigValue(key: string): any {
-    return getDeepFromObject(this.options, key, null);
+  getConfigValue<P extends NbPath<NbAuthResolvedOptions>>(key: P): NbPathValue<NbAuthResolvedOptions, P> {
+    return getDeepFromObject(this.options, key);
   }
 
-  getClaims(rawToken: string): string {
+  getClaims(rawToken: string) {
     if (!rawToken) {
-      return null;
+      return undefined;
     }
     return nbAuthCreateToken(NbAuthJWTToken, rawToken, this.strategy).getPayload();
   }

@@ -1,14 +1,15 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
+import { assert } from 'vitest';
+import { inject, TestBed } from '@angular/core/testing';
+import { HttpErrorResponse, HttpResponse, provideHttpClient } from '@angular/common/http';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { NbPasswordAuthStrategy, NbAuthResult, nbAuthCreateToken, NbAuthSimpleToken } from '@liquid-js/lyr-auth';
+import { RouterModule } from '@angular/router';
 
-import { inject, TestBed, waitForAsync } from '@angular/core/testing';
-import { HttpErrorResponse, HttpResponse } from '@angular/common/http';
-import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
-import { RouterTestingModule } from '@angular/router/testing';
-import { NbPasswordAuthStrategy, NbAuthResult, nbAuthCreateToken, NbAuthSimpleToken } from '@nebular/auth';
+function tokenOf(result: NbAuthResult) {
+  const token = result.getToken();
+  assert(token, 'result has no token');
+  return token;
+}
 
 const ownerStrategyName = 'strategy';
 
@@ -40,19 +41,24 @@ describe('password-auth-strategy', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule, RouterTestingModule],
-      providers: [{ provide: NbPasswordAuthStrategy, useClass: NbPasswordAuthStrategy }],
+      imports: [RouterModule.forRoot([])],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        { provide: NbPasswordAuthStrategy, useClass: NbPasswordAuthStrategy },
+      ],
     });
   });
 
   beforeEach(
-    waitForAsync(
-      inject([NbPasswordAuthStrategy, HttpTestingController], (_strategy, _httpMock) => {
+    inject(
+      [NbPasswordAuthStrategy, HttpTestingController],
+      (_strategy: NbPasswordAuthStrategy, _httpMock: HttpTestingController) => {
         strategy = _strategy;
         httpMock = _httpMock;
 
         strategy.setOptions({ name: ownerStrategyName });
-      }),
+      },
     ),
   );
 
@@ -65,199 +71,199 @@ describe('password-auth-strategy', () => {
       strategy.setOptions({ name: ownerStrategyName });
     });
 
-    it('authenticate success', (done: DoneFn) => {
+    it('authenticate success', () => new Promise<void>((done) => {
       strategy.authenticate(loginData).subscribe((result: NbAuthResult) => {
         expect(result).toBeTruthy();
         expect(result.isSuccess()).toBe(true);
         expect(result.isFailure()).toBe(false);
         expect(result.getMessages()).toEqual(successResponse.data.messages);
         expect(result.getErrors()).toEqual([]); // no error message, response is success
-        expect(result.getToken().getValue()).toEqual(successToken.getValue());
-        expect(result.getToken().getOwnerStrategyName()).toEqual(successToken.getOwnerStrategyName());
+        expect(tokenOf(result).getValue()).toEqual(successToken.getValue());
+        expect(tokenOf(result).getOwnerStrategyName()).toEqual(successToken.getOwnerStrategyName());
         expect(result.getRedirect()).toEqual('/');
 
         done();
       });
 
       httpMock.expectOne('/api/auth/login').flush(successResponse);
-    });
+    }));
 
-    it('authenticate fail', (done: DoneFn) => {
+    it('authenticate fail', () => new Promise<void>((done) => {
       strategy.authenticate(loginData).subscribe((result: NbAuthResult) => {
         expect(result).toBeTruthy();
         expect(result.isSuccess()).toBe(false);
         expect(result.isFailure()).toBe(true);
         expect(result.getMessages()).toEqual([]);
         expect(result.getErrors()).toEqual(successResponse.data.errors); // no error message, response is success
-        expect(result.getToken()).toBe(null);
-        expect(result.getRedirect()).toEqual(null);
+        expect(result.getToken()).toBeUndefined();
+        expect(result.getRedirect()).toBeUndefined();
 
         done();
       });
 
       httpMock.expectOne('/api/auth/login').flush(successResponse, { status: 401, statusText: 'Unauthorized' });
-    });
+    }));
 
-    it('register success', (done: DoneFn) => {
+    it('register success', () => new Promise<void>((done) => {
       strategy.register(loginData).subscribe((result: NbAuthResult) => {
         expect(result).toBeTruthy();
         expect(result.isSuccess()).toBe(true);
         expect(result.isFailure()).toBe(false);
         expect(result.getMessages()).toEqual(successResponse.data.messages);
         expect(result.getErrors()).toEqual([]); // no error message, response is success
-        expect(result.getToken().getValue()).toEqual(successToken.getValue());
-        expect(result.getToken().getOwnerStrategyName()).toEqual(successToken.getOwnerStrategyName());
+        expect(tokenOf(result).getValue()).toEqual(successToken.getValue());
+        expect(tokenOf(result).getOwnerStrategyName()).toEqual(successToken.getOwnerStrategyName());
         expect(result.getRedirect()).toEqual('/');
 
         done();
       });
 
       httpMock.expectOne('/api/auth/register').flush(successResponse);
-    });
+    }));
 
-    it('register fail', (done: DoneFn) => {
+    it('register fail', () => new Promise<void>((done) => {
       strategy.register(loginData).subscribe((result: NbAuthResult) => {
         expect(result).toBeTruthy();
         expect(result.isSuccess()).toBe(false);
         expect(result.isFailure()).toBe(true);
         expect(result.getMessages()).toEqual([]);
         expect(result.getErrors()).toEqual(successResponse.data.errors); // no error message, response is success
-        expect(result.getToken()).toBe(null);
-        expect(result.getRedirect()).toEqual(null);
+        expect(result.getToken()).toBeUndefined();
+        expect(result.getRedirect()).toBeUndefined();
 
         done();
       });
 
       httpMock.expectOne('/api/auth/register').flush(successResponse, { status: 401, statusText: 'Unauthorized' });
-    });
+    }));
 
-    it('requestPassword success', (done: DoneFn) => {
+    it('requestPassword success', () => new Promise<void>((done) => {
       strategy.requestPassword(loginData).subscribe((result: NbAuthResult) => {
         expect(result).toBeTruthy();
         expect(result.isSuccess()).toBe(true);
         expect(result.isFailure()).toBe(false);
         expect(result.getMessages()).toEqual(successResponse.data.messages);
         expect(result.getErrors()).toEqual([]); // no error message, response is success
-        expect(result.getToken()).toBe(null);
+        expect(result.getToken()).toBeUndefined();
         expect(result.getRedirect()).toEqual('/');
 
         done();
       });
 
       httpMock.expectOne('/api/auth/request-pass').flush(successResponse);
-    });
+    }));
 
-    it('requestPassword fail', (done: DoneFn) => {
+    it('requestPassword fail', () => new Promise<void>((done) => {
       strategy.requestPassword(loginData).subscribe((result: NbAuthResult) => {
         expect(result).toBeTruthy();
         expect(result.isSuccess()).toBe(false);
         expect(result.isFailure()).toBe(true);
         expect(result.getMessages()).toEqual([]);
         expect(result.getErrors()).toEqual(successResponse.data.errors); // no error message, response is success
-        expect(result.getToken()).toBe(null);
-        expect(result.getRedirect()).toEqual(null);
+        expect(result.getToken()).toBeUndefined();
+        expect(result.getRedirect()).toBeUndefined();
 
         done();
       });
 
       httpMock.expectOne('/api/auth/request-pass').flush(successResponse, { status: 401, statusText: 'Unauthorized' });
-    });
+    }));
 
-    it('resetPassword success', (done: DoneFn) => {
+    it('resetPassword success', () => new Promise<void>((done) => {
       strategy.resetPassword(loginData).subscribe((result: NbAuthResult) => {
         expect(result).toBeTruthy();
         expect(result.isSuccess()).toBe(true);
         expect(result.isFailure()).toBe(false);
         expect(result.getMessages()).toEqual(successResponse.data.messages);
         expect(result.getErrors()).toEqual([]); // no error message, response is success
-        expect(result.getToken()).toBe(null);
+        expect(result.getToken()).toBeUndefined();
         expect(result.getRedirect()).toEqual('/');
 
         done();
       });
 
       httpMock.expectOne('/api/auth/reset-pass').flush(successResponse);
-    });
+    }));
 
-    it('resetPassword fail', (done: DoneFn) => {
+    it('resetPassword fail', () => new Promise<void>((done) => {
       strategy.resetPassword(loginData).subscribe((result: NbAuthResult) => {
         expect(result).toBeTruthy();
         expect(result.isSuccess()).toBe(false);
         expect(result.isFailure()).toBe(true);
         expect(result.getMessages()).toEqual([]);
         expect(result.getErrors()).toEqual(successResponse.data.errors); // no error message, response is success
-        expect(result.getToken()).toBe(null);
-        expect(result.getRedirect()).toEqual(null);
+        expect(result.getToken()).toBeUndefined();
+        expect(result.getRedirect()).toBeUndefined();
 
         done();
       });
 
       httpMock.expectOne('/api/auth/reset-pass').flush(successResponse, { status: 401, statusText: 'Unauthorized' });
-    });
-    it('logout success', (done: DoneFn) => {
+    }));
+    it('logout success', () => new Promise<void>((done) => {
       strategy.logout().subscribe((result: NbAuthResult) => {
         expect(result).toBeTruthy();
         expect(result.isSuccess()).toBe(true);
         expect(result.isFailure()).toBe(false);
         expect(result.getMessages()).toEqual(successResponse.data.messages);
         expect(result.getErrors()).toEqual([]); // no error message, response is success
-        expect(result.getToken()).toBe(null);
+        expect(result.getToken()).toBeUndefined();
         expect(result.getRedirect()).toEqual('/');
 
         done();
       });
 
       httpMock.expectOne('/api/auth/logout').flush(successResponse);
-    });
+    }));
 
-    it('logout fail', (done: DoneFn) => {
+    it('logout fail', () => new Promise<void>((done) => {
       strategy.logout().subscribe((result: NbAuthResult) => {
         expect(result).toBeTruthy();
         expect(result.isSuccess()).toBe(false);
         expect(result.isFailure()).toBe(true);
         expect(result.getMessages()).toEqual([]);
         expect(result.getErrors()).toEqual(successResponse.data.errors); // no error message, response is success
-        expect(result.getToken()).toBe(null);
-        expect(result.getRedirect()).toEqual(null);
+        expect(result.getToken()).toBeUndefined();
+        expect(result.getRedirect()).toBeUndefined();
 
         done();
       });
 
       httpMock.expectOne('/api/auth/logout').flush(successResponse, { status: 401, statusText: 'Unauthorized' });
-    });
+    }));
 
-    it('refreshToken success', (done: DoneFn) => {
+    it('refreshToken success', () => new Promise<void>((done) => {
       strategy.refreshToken().subscribe((result: NbAuthResult) => {
         expect(result).toBeTruthy();
         expect(result.isSuccess()).toBe(true);
         expect(result.isFailure()).toBe(false);
-        expect(result.getToken().getValue()).toEqual(successToken.getValue());
-        expect(result.getToken().getOwnerStrategyName()).toEqual(successToken.getOwnerStrategyName());
+        expect(tokenOf(result).getValue()).toEqual(successToken.getValue());
+        expect(tokenOf(result).getOwnerStrategyName()).toEqual(successToken.getOwnerStrategyName());
         expect(result.getMessages()).toEqual(successResponse.data.messages);
         expect(result.getErrors()).toEqual([]); // no error message, response is success
-        expect(result.getRedirect()).toEqual(null);
+        expect(result.getRedirect()).toBeUndefined();
 
         done();
       });
 
       httpMock.expectOne('/api/auth/refresh-token').flush(successResponse);
-    });
+    }));
 
-    it('refreshToken fail', (done: DoneFn) => {
+    it('refreshToken fail', () => new Promise<void>((done) => {
       strategy.refreshToken().subscribe((result: NbAuthResult) => {
         expect(result).toBeTruthy();
         expect(result.isSuccess()).toBe(false);
         expect(result.isFailure()).toBe(true);
-        expect(result.getToken()).toBe(null);
+        expect(result.getToken()).toBeUndefined();
         expect(result.getMessages()).toEqual([]);
         expect(result.getErrors()).toEqual(successResponse.data.errors); // no error message, response is success
-        expect(result.getRedirect()).toEqual(null);
+        expect(result.getRedirect()).toBeUndefined();
 
         done();
       });
 
       httpMock.expectOne('/api/auth/refresh-token').flush(successResponse, { status: 401, statusText: 'Unauthorized' });
-    });
+    }));
   });
 
   describe('always fail', () => {
@@ -285,7 +291,7 @@ describe('password-auth-strategy', () => {
       });
     });
 
-    it('authenticate fail', (done: DoneFn) => {
+    it('authenticate fail', () => new Promise<void>((done) => {
       strategy.authenticate(loginData).subscribe((result: NbAuthResult) => {
         expect(result).toBeTruthy();
         expect(result.isFailure()).toBe(true);
@@ -295,9 +301,9 @@ describe('password-auth-strategy', () => {
       });
 
       httpMock.expectOne('/api/auth/login').flush(successResponse);
-    });
+    }));
 
-    it('register fail', (done: DoneFn) => {
+    it('register fail', () => new Promise<void>((done) => {
       strategy.register(loginData).subscribe((result: NbAuthResult) => {
         expect(result).toBeTruthy();
         expect(result.isFailure()).toBe(true);
@@ -307,9 +313,9 @@ describe('password-auth-strategy', () => {
       });
 
       httpMock.expectOne('/api/auth/register').flush(successResponse);
-    });
+    }));
 
-    it('requestPassword fail', (done: DoneFn) => {
+    it('requestPassword fail', () => new Promise<void>((done) => {
       strategy.requestPassword(loginData).subscribe((result: NbAuthResult) => {
         expect(result).toBeTruthy();
         expect(result.isFailure()).toBe(true);
@@ -319,9 +325,9 @@ describe('password-auth-strategy', () => {
       });
 
       httpMock.expectOne('/api/auth/request-pass').flush(successResponse);
-    });
+    }));
 
-    it('resetPassword fail', (done: DoneFn) => {
+    it('resetPassword fail', () => new Promise<void>((done) => {
       strategy.resetPassword(loginData).subscribe((result: NbAuthResult) => {
         expect(result).toBeTruthy();
         expect(result.isFailure()).toBe(true);
@@ -331,9 +337,9 @@ describe('password-auth-strategy', () => {
       });
 
       httpMock.expectOne('/api/auth/reset-pass').flush(successResponse);
-    });
+    }));
 
-    it('logout fail', (done: DoneFn) => {
+    it('logout fail', () => new Promise<void>((done) => {
       strategy.logout().subscribe((result: NbAuthResult) => {
         expect(result).toBeTruthy();
         expect(result.isFailure()).toBe(true);
@@ -343,9 +349,9 @@ describe('password-auth-strategy', () => {
       });
 
       httpMock.expectOne('/api/auth/logout').flush(successResponse);
-    });
+    }));
 
-    it('refreshToken fail', (done: DoneFn) => {
+    it('refreshToken fail', () => new Promise<void>((done) => {
       strategy.refreshToken().subscribe((result: NbAuthResult) => {
         expect(result).toBeTruthy();
         expect(result.isFailure()).toBe(true);
@@ -355,7 +361,7 @@ describe('password-auth-strategy', () => {
       });
 
       httpMock.expectOne('/api/auth/refresh-token').flush(successResponse);
-    });
+    }));
   });
 
   describe('custom endpoint', () => {
@@ -383,7 +389,7 @@ describe('password-auth-strategy', () => {
       });
     });
 
-    it('authenticate', (done: DoneFn) => {
+    it('authenticate', () => new Promise<void>((done) => {
       strategy.authenticate(loginData).subscribe((result: NbAuthResult) => {
         expect(result).toBeTruthy();
         expect(result.isFailure()).toBe(false);
@@ -393,9 +399,9 @@ describe('password-auth-strategy', () => {
       });
 
       httpMock.expectOne('/api/auth/new').flush(successResponse);
-    });
+    }));
 
-    it('register', (done: DoneFn) => {
+    it('register', () => new Promise<void>((done) => {
       strategy.register(loginData).subscribe((result: NbAuthResult) => {
         expect(result).toBeTruthy();
         expect(result.isFailure()).toBe(false);
@@ -405,9 +411,9 @@ describe('password-auth-strategy', () => {
       });
 
       httpMock.expectOne('/api/auth/new').flush(successResponse);
-    });
+    }));
 
-    it('requestPassword', (done: DoneFn) => {
+    it('requestPassword', () => new Promise<void>((done) => {
       strategy.requestPassword(loginData).subscribe((result: NbAuthResult) => {
         expect(result).toBeTruthy();
         expect(result.isFailure()).toBe(false);
@@ -417,9 +423,9 @@ describe('password-auth-strategy', () => {
       });
 
       httpMock.expectOne('/api/auth/new').flush(successResponse);
-    });
+    }));
 
-    it('resetPassword', (done: DoneFn) => {
+    it('resetPassword', () => new Promise<void>((done) => {
       strategy.resetPassword(loginData).subscribe((result: NbAuthResult) => {
         expect(result).toBeTruthy();
         expect(result.isFailure()).toBe(false);
@@ -429,9 +435,9 @@ describe('password-auth-strategy', () => {
       });
 
       httpMock.expectOne('/api/auth/new').flush(successResponse);
-    });
+    }));
 
-    it('logout', (done: DoneFn) => {
+    it('logout', () => new Promise<void>((done) => {
       strategy.logout().subscribe((result: NbAuthResult) => {
         expect(result).toBeTruthy();
         expect(result.isFailure()).toBe(false);
@@ -441,9 +447,9 @@ describe('password-auth-strategy', () => {
       });
 
       httpMock.expectOne('/api/auth/new').flush(successResponse);
-    });
+    }));
 
-    it('refreshToken', (done: DoneFn) => {
+    it('refreshToken', () => new Promise<void>((done) => {
       strategy.refreshToken().subscribe((result: NbAuthResult) => {
         expect(result).toBeTruthy();
         expect(result.isFailure()).toBe(false);
@@ -453,7 +459,7 @@ describe('password-auth-strategy', () => {
       });
 
       httpMock.expectOne('/api/auth/new').flush(successResponse);
-    });
+    }));
   });
 
   describe('custom base endpoint', () => {
@@ -464,7 +470,7 @@ describe('password-auth-strategy', () => {
       });
     });
 
-    it('authenticate', (done: DoneFn) => {
+    it('authenticate', () => new Promise<void>((done) => {
       strategy.authenticate(loginData).subscribe((result: NbAuthResult) => {
         expect(result).toBeTruthy();
         expect(result.isFailure()).toBe(false);
@@ -474,9 +480,9 @@ describe('password-auth-strategy', () => {
       });
 
       httpMock.expectOne('/api/auth/custom/login').flush(successResponse);
-    });
+    }));
 
-    it('register', (done: DoneFn) => {
+    it('register', () => new Promise<void>((done) => {
       strategy.register(loginData).subscribe((result: NbAuthResult) => {
         expect(result).toBeTruthy();
         expect(result.isFailure()).toBe(false);
@@ -486,9 +492,9 @@ describe('password-auth-strategy', () => {
       });
 
       httpMock.expectOne('/api/auth/custom/register').flush(successResponse);
-    });
+    }));
 
-    it('requestPassword', (done: DoneFn) => {
+    it('requestPassword', () => new Promise<void>((done) => {
       strategy.requestPassword(loginData).subscribe((result: NbAuthResult) => {
         expect(result).toBeTruthy();
         expect(result.isFailure()).toBe(false);
@@ -498,9 +504,9 @@ describe('password-auth-strategy', () => {
       });
 
       httpMock.expectOne('/api/auth/custom/request-pass').flush(successResponse);
-    });
+    }));
 
-    it('resetPassword', (done: DoneFn) => {
+    it('resetPassword', () => new Promise<void>((done) => {
       strategy.resetPassword(loginData).subscribe((result: NbAuthResult) => {
         expect(result).toBeTruthy();
         expect(result.isFailure()).toBe(false);
@@ -510,9 +516,9 @@ describe('password-auth-strategy', () => {
       });
 
       httpMock.expectOne('/api/auth/custom/reset-pass').flush(successResponse);
-    });
+    }));
 
-    it('logout', (done: DoneFn) => {
+    it('logout', () => new Promise<void>((done) => {
       strategy.logout().subscribe((result: NbAuthResult) => {
         expect(result).toBeTruthy();
         expect(result.isFailure()).toBe(false);
@@ -522,9 +528,9 @@ describe('password-auth-strategy', () => {
       });
 
       httpMock.expectOne('/api/auth/custom/logout').flush(successResponse);
-    });
+    }));
 
-    it('logout with no endpoint', (done: DoneFn) => {
+    it('logout with no endpoint', () => new Promise<void>((done) => {
       strategy.setOptions({
         name: ownerStrategyName,
         baseEndpoint: '/api/auth/custom/',
@@ -542,9 +548,9 @@ describe('password-auth-strategy', () => {
       });
 
       httpMock.expectNone('/api/auth/custom/');
-    });
+    }));
 
-    it('refreshToken', (done: DoneFn) => {
+    it('refreshToken', () => new Promise<void>((done) => {
       strategy.refreshToken().subscribe((result: NbAuthResult) => {
         expect(result).toBeTruthy();
         expect(result.isFailure()).toBe(false);
@@ -554,7 +560,7 @@ describe('password-auth-strategy', () => {
       });
 
       httpMock.expectOne('/api/auth/custom/refresh-token').flush(successResponse);
-    });
+    }));
   });
 
   describe('custom method', () => {
@@ -582,7 +588,7 @@ describe('password-auth-strategy', () => {
       });
     });
 
-    it('authenticate', (done: DoneFn) => {
+    it('authenticate', () => new Promise<void>((done) => {
       strategy.authenticate(loginData).subscribe((result: NbAuthResult) => {
         expect(result).toBeTruthy();
         expect(result.isFailure()).toBe(false);
@@ -592,9 +598,9 @@ describe('password-auth-strategy', () => {
       });
 
       httpMock.expectOne({ method: 'get' }).flush(successResponse);
-    });
+    }));
 
-    it('register', (done: DoneFn) => {
+    it('register', () => new Promise<void>((done) => {
       strategy.register(loginData).subscribe((result: NbAuthResult) => {
         expect(result).toBeTruthy();
         expect(result.isFailure()).toBe(false);
@@ -604,9 +610,9 @@ describe('password-auth-strategy', () => {
       });
 
       httpMock.expectOne({ method: 'get' }).flush(successResponse);
-    });
+    }));
 
-    it('requestPassword', (done: DoneFn) => {
+    it('requestPassword', () => new Promise<void>((done) => {
       strategy.requestPassword(loginData).subscribe((result: NbAuthResult) => {
         expect(result).toBeTruthy();
         expect(result.isFailure()).toBe(false);
@@ -616,9 +622,9 @@ describe('password-auth-strategy', () => {
       });
 
       httpMock.expectOne({ method: 'get' }).flush(successResponse);
-    });
+    }));
 
-    it('resetPassword', (done: DoneFn) => {
+    it('resetPassword', () => new Promise<void>((done) => {
       strategy.resetPassword(loginData).subscribe((result: NbAuthResult) => {
         expect(result).toBeTruthy();
         expect(result.isFailure()).toBe(false);
@@ -628,9 +634,9 @@ describe('password-auth-strategy', () => {
       });
 
       httpMock.expectOne({ method: 'get' }).flush(successResponse);
-    });
+    }));
 
-    it('logout', (done: DoneFn) => {
+    it('logout', () => new Promise<void>((done) => {
       strategy.logout().subscribe((result: NbAuthResult) => {
         expect(result).toBeTruthy();
         expect(result.isFailure()).toBe(false);
@@ -640,9 +646,9 @@ describe('password-auth-strategy', () => {
       });
 
       httpMock.expectOne({ method: 'get' }).flush(successResponse);
-    });
+    }));
 
-    it('refreshToken', (done: DoneFn) => {
+    it('refreshToken', () => new Promise<void>((done) => {
       strategy.refreshToken().subscribe((result: NbAuthResult) => {
         expect(result).toBeTruthy();
         expect(result.isFailure()).toBe(false);
@@ -652,7 +658,7 @@ describe('password-auth-strategy', () => {
       });
 
       httpMock.expectOne({ method: 'get' }).flush(successResponse);
-    });
+    }));
   });
 
   describe('custom redirect', () => {
@@ -685,7 +691,7 @@ describe('password-auth-strategy', () => {
       });
     });
 
-    it('authenticate success', (done: DoneFn) => {
+    it('authenticate success', () => new Promise<void>((done) => {
       strategy.authenticate(loginData).subscribe((result: NbAuthResult) => {
         expect(result).toBeTruthy();
         expect(result.getRedirect()).toBe(redirect.success);
@@ -694,9 +700,9 @@ describe('password-auth-strategy', () => {
       });
 
       httpMock.expectOne('/api/auth/login').flush(successResponse);
-    });
+    }));
 
-    it('authenticate fail', (done: DoneFn) => {
+    it('authenticate fail', () => new Promise<void>((done) => {
       strategy.authenticate(loginData).subscribe((result: NbAuthResult) => {
         expect(result).toBeTruthy();
         expect(result.getRedirect()).toBe(redirect.failure);
@@ -705,9 +711,9 @@ describe('password-auth-strategy', () => {
       });
 
       httpMock.expectOne('/api/auth/login').flush(successResponse, { status: 401, statusText: 'Unauthorized' });
-    });
+    }));
 
-    it('register success', (done: DoneFn) => {
+    it('register success', () => new Promise<void>((done) => {
       strategy.register(loginData).subscribe((result: NbAuthResult) => {
         expect(result).toBeTruthy();
         expect(result.getRedirect()).toBe(redirect.success);
@@ -716,9 +722,9 @@ describe('password-auth-strategy', () => {
       });
 
       httpMock.expectOne('/api/auth/register').flush(successResponse);
-    });
+    }));
 
-    it('register fail', (done: DoneFn) => {
+    it('register fail', () => new Promise<void>((done) => {
       strategy.register(loginData).subscribe((result: NbAuthResult) => {
         expect(result).toBeTruthy();
         expect(result.getRedirect()).toBe(redirect.failure);
@@ -727,9 +733,9 @@ describe('password-auth-strategy', () => {
       });
 
       httpMock.expectOne('/api/auth/register').flush(successResponse, { status: 401, statusText: 'Unauthorized' });
-    });
+    }));
 
-    it('requestPassword success', (done: DoneFn) => {
+    it('requestPassword success', () => new Promise<void>((done) => {
       strategy.requestPassword(loginData).subscribe((result: NbAuthResult) => {
         expect(result).toBeTruthy();
         expect(result.getRedirect()).toBe(redirect.success);
@@ -738,9 +744,9 @@ describe('password-auth-strategy', () => {
       });
 
       httpMock.expectOne('/api/auth/request-pass').flush(successResponse);
-    });
+    }));
 
-    it('requestPassword fail', (done: DoneFn) => {
+    it('requestPassword fail', () => new Promise<void>((done) => {
       strategy.requestPassword(loginData).subscribe((result: NbAuthResult) => {
         expect(result).toBeTruthy();
         expect(result.getRedirect()).toBe(redirect.failure);
@@ -749,9 +755,9 @@ describe('password-auth-strategy', () => {
       });
 
       httpMock.expectOne('/api/auth/request-pass').flush(successResponse, { status: 401, statusText: 'Unauthorized' });
-    });
+    }));
 
-    it('resetPassword success', (done: DoneFn) => {
+    it('resetPassword success', () => new Promise<void>((done) => {
       strategy.resetPassword(loginData).subscribe((result: NbAuthResult) => {
         expect(result).toBeTruthy();
         expect(result.getRedirect()).toBe(redirect.success);
@@ -760,9 +766,9 @@ describe('password-auth-strategy', () => {
       });
 
       httpMock.expectOne('/api/auth/reset-pass').flush(successResponse);
-    });
+    }));
 
-    it('resetPassword fail', (done: DoneFn) => {
+    it('resetPassword fail', () => new Promise<void>((done) => {
       strategy.resetPassword(loginData).subscribe((result: NbAuthResult) => {
         expect(result).toBeTruthy();
         expect(result.getRedirect()).toBe(redirect.failure);
@@ -771,9 +777,9 @@ describe('password-auth-strategy', () => {
       });
 
       httpMock.expectOne('/api/auth/reset-pass').flush(successResponse, { status: 401, statusText: 'Unauthorized' });
-    });
+    }));
 
-    it('logout success', (done: DoneFn) => {
+    it('logout success', () => new Promise<void>((done) => {
       strategy.logout().subscribe((result: NbAuthResult) => {
         expect(result).toBeTruthy();
         expect(result.getRedirect()).toBe(redirect.success);
@@ -782,9 +788,9 @@ describe('password-auth-strategy', () => {
       });
 
       httpMock.expectOne('/api/auth/logout').flush(successResponse);
-    });
+    }));
 
-    it('logout fail', (done: DoneFn) => {
+    it('logout fail', () => new Promise<void>((done) => {
       strategy.logout().subscribe((result: NbAuthResult) => {
         expect(result).toBeTruthy();
         expect(result.getRedirect()).toBe(redirect.failure);
@@ -793,9 +799,9 @@ describe('password-auth-strategy', () => {
       });
 
       httpMock.expectOne('/api/auth/logout').flush(successResponse, { status: 401, statusText: 'Unauthorized' });
-    });
+    }));
 
-    it('refreshToken success', (done: DoneFn) => {
+    it('refreshToken success', () => new Promise<void>((done) => {
       strategy.refreshToken().subscribe((result: NbAuthResult) => {
         expect(result).toBeTruthy();
         expect(result.getRedirect()).toBe(redirect.success);
@@ -804,9 +810,9 @@ describe('password-auth-strategy', () => {
       });
 
       httpMock.expectOne('/api/auth/refresh-token').flush(successResponse);
-    });
+    }));
 
-    it('refreshToken fail', (done: DoneFn) => {
+    it('refreshToken fail', () => new Promise<void>((done) => {
       strategy.refreshToken().subscribe((result: NbAuthResult) => {
         expect(result).toBeTruthy();
         expect(result.getRedirect()).toBe(redirect.failure);
@@ -815,7 +821,7 @@ describe('password-auth-strategy', () => {
       });
 
       httpMock.expectOne('/api/auth/refresh-token').flush(successResponse, { status: 401, statusText: 'Unauthorized' });
-    });
+    }));
   });
 
   describe('custom message', () => {
@@ -848,7 +854,7 @@ describe('password-auth-strategy', () => {
       });
     });
 
-    it('authenticate success', (done: DoneFn) => {
+    it('authenticate success', () => new Promise<void>((done) => {
       strategy.authenticate(loginData).subscribe((result: NbAuthResult) => {
         expect(result).toBeTruthy();
         expect(result.getMessages()).toEqual(messages.defaultMessages);
@@ -857,9 +863,9 @@ describe('password-auth-strategy', () => {
       });
 
       httpMock.expectOne('/api/auth/login').flush(noMessageResponse);
-    });
+    }));
 
-    it('authenticate fail', (done: DoneFn) => {
+    it('authenticate fail', () => new Promise<void>((done) => {
       strategy.authenticate(loginData).subscribe((result: NbAuthResult) => {
         expect(result).toBeTruthy();
         expect(result.getErrors()).toEqual(messages.defaultErrors);
@@ -868,9 +874,9 @@ describe('password-auth-strategy', () => {
       });
 
       httpMock.expectOne('/api/auth/login').flush(noMessageResponse, { status: 401, statusText: 'Unauthorized' });
-    });
+    }));
 
-    it('register success', (done: DoneFn) => {
+    it('register success', () => new Promise<void>((done) => {
       strategy.register(loginData).subscribe((result: NbAuthResult) => {
         expect(result).toBeTruthy();
         expect(result.getMessages()).toEqual(messages.defaultMessages);
@@ -879,9 +885,9 @@ describe('password-auth-strategy', () => {
       });
 
       httpMock.expectOne('/api/auth/register').flush(noMessageResponse);
-    });
+    }));
 
-    it('register fail', (done: DoneFn) => {
+    it('register fail', () => new Promise<void>((done) => {
       strategy.register(loginData).subscribe((result: NbAuthResult) => {
         expect(result).toBeTruthy();
         expect(result.getErrors()).toEqual(messages.defaultErrors);
@@ -890,9 +896,9 @@ describe('password-auth-strategy', () => {
       });
 
       httpMock.expectOne('/api/auth/register').flush(noMessageResponse, { status: 401, statusText: 'Unauthorized' });
-    });
+    }));
 
-    it('requestPassword success', (done: DoneFn) => {
+    it('requestPassword success', () => new Promise<void>((done) => {
       strategy.requestPassword(loginData).subscribe((result: NbAuthResult) => {
         expect(result).toBeTruthy();
         expect(result.getMessages()).toEqual(messages.defaultMessages);
@@ -901,9 +907,9 @@ describe('password-auth-strategy', () => {
       });
 
       httpMock.expectOne('/api/auth/request-pass').flush(noMessageResponse);
-    });
+    }));
 
-    it('requestPassword fail', (done: DoneFn) => {
+    it('requestPassword fail', () => new Promise<void>((done) => {
       strategy.requestPassword(loginData).subscribe((result: NbAuthResult) => {
         expect(result).toBeTruthy();
         expect(result.getErrors()).toEqual(messages.defaultErrors);
@@ -912,9 +918,9 @@ describe('password-auth-strategy', () => {
       });
 
       httpMock.expectOne('/api/auth/request-pass').flush({}, { status: 401, statusText: 'Unauthorized' });
-    });
+    }));
 
-    it('resetPassword success', (done: DoneFn) => {
+    it('resetPassword success', () => new Promise<void>((done) => {
       strategy.resetPassword(loginData).subscribe((result: NbAuthResult) => {
         expect(result).toBeTruthy();
         expect(result.getMessages()).toEqual(messages.defaultMessages);
@@ -923,9 +929,9 @@ describe('password-auth-strategy', () => {
       });
 
       httpMock.expectOne('/api/auth/reset-pass').flush(noMessageResponse);
-    });
+    }));
 
-    it('resetPassword fail', (done: DoneFn) => {
+    it('resetPassword fail', () => new Promise<void>((done) => {
       strategy.resetPassword(loginData).subscribe((result: NbAuthResult) => {
         expect(result).toBeTruthy();
         expect(result.getErrors()).toEqual(messages.defaultErrors);
@@ -934,9 +940,9 @@ describe('password-auth-strategy', () => {
       });
 
       httpMock.expectOne('/api/auth/reset-pass').flush(noMessageResponse, { status: 401, statusText: 'Unauthorized' });
-    });
+    }));
 
-    it('logout success', (done: DoneFn) => {
+    it('logout success', () => new Promise<void>((done) => {
       strategy.logout().subscribe((result: NbAuthResult) => {
         expect(result).toBeTruthy();
         expect(result.getMessages()).toEqual(messages.defaultMessages);
@@ -945,9 +951,9 @@ describe('password-auth-strategy', () => {
       });
 
       httpMock.expectOne('/api/auth/logout').flush(noMessageResponse);
-    });
+    }));
 
-    it('logout fail', (done: DoneFn) => {
+    it('logout fail', () => new Promise<void>((done) => {
       strategy.logout().subscribe((result: NbAuthResult) => {
         expect(result).toBeTruthy();
         expect(result.getErrors()).toEqual(messages.defaultErrors);
@@ -956,9 +962,9 @@ describe('password-auth-strategy', () => {
       });
 
       httpMock.expectOne('/api/auth/logout').flush(noMessageResponse, { status: 401, statusText: 'Unauthorized' });
-    });
+    }));
 
-    it('refreshToken success', (done: DoneFn) => {
+    it('refreshToken success', () => new Promise<void>((done) => {
       strategy.refreshToken().subscribe((result: NbAuthResult) => {
         expect(result).toBeTruthy();
         expect(result.getMessages()).toEqual(messages.defaultMessages);
@@ -967,9 +973,9 @@ describe('password-auth-strategy', () => {
       });
 
       httpMock.expectOne('/api/auth/refresh-token').flush(noMessageResponse);
-    });
+    }));
 
-    it('refreshToken fail', (done: DoneFn) => {
+    it('refreshToken fail', () => new Promise<void>((done) => {
       strategy.refreshToken().subscribe((result: NbAuthResult) => {
         expect(result).toBeTruthy();
         expect(result.getErrors()).toEqual(messages.defaultErrors);
@@ -980,7 +986,7 @@ describe('password-auth-strategy', () => {
       httpMock
         .expectOne('/api/auth/refresh-token')
         .flush(noMessageResponse, { status: 401, statusText: 'Unauthorized' });
-    });
+    }));
   });
 
   describe('custom token key', () => {
@@ -993,44 +999,44 @@ describe('password-auth-strategy', () => {
       });
     });
 
-    it('authenticate', (done: DoneFn) => {
+    it('authenticate', () => new Promise<void>((done) => {
       strategy.authenticate(loginData).subscribe((result: NbAuthResult) => {
         expect(result).toBeTruthy();
         expect(result.isFailure()).toBe(false);
         expect(result.isSuccess()).toBe(true);
-        expect(result.getToken().getValue()).toEqual(successToken.getValue());
-        expect(result.getToken().getOwnerStrategyName()).toEqual(successToken.getOwnerStrategyName());
+        expect(tokenOf(result).getValue()).toEqual(successToken.getValue());
+        expect(tokenOf(result).getOwnerStrategyName()).toEqual(successToken.getOwnerStrategyName());
         done();
       });
 
       httpMock.expectOne('/api/auth/login').flush(customResponse);
-    });
+    }));
 
-    it('register', (done: DoneFn) => {
+    it('register', () => new Promise<void>((done) => {
       strategy.register(loginData).subscribe((result: NbAuthResult) => {
         expect(result).toBeTruthy();
         expect(result.isFailure()).toBe(false);
         expect(result.isSuccess()).toBe(true);
-        expect(result.getToken().getValue()).toEqual(successToken.getValue());
-        expect(result.getToken().getOwnerStrategyName()).toEqual(successToken.getOwnerStrategyName());
+        expect(tokenOf(result).getValue()).toEqual(successToken.getValue());
+        expect(tokenOf(result).getOwnerStrategyName()).toEqual(successToken.getOwnerStrategyName());
         done();
       });
 
       httpMock.expectOne('/api/auth/register').flush(customResponse);
-    });
+    }));
 
-    it('refreshToken', (done: DoneFn) => {
+    it('refreshToken', () => new Promise<void>((done) => {
       strategy.refreshToken().subscribe((result: NbAuthResult) => {
         expect(result).toBeTruthy();
         expect(result.isFailure()).toBe(false);
         expect(result.isSuccess()).toBe(true);
-        expect(result.getToken().getValue()).toEqual(successToken.getValue());
-        expect(result.getToken().getOwnerStrategyName()).toEqual(successToken.getOwnerStrategyName());
+        expect(tokenOf(result).getValue()).toEqual(successToken.getValue());
+        expect(tokenOf(result).getOwnerStrategyName()).toEqual(successToken.getOwnerStrategyName());
         done();
       });
 
       httpMock.expectOne('/api/auth/refresh-token').flush(customResponse);
-    });
+    }));
   });
 
   describe('custom token extractor', () => {
@@ -1038,49 +1044,52 @@ describe('password-auth-strategy', () => {
       strategy.setOptions({
         name: ownerStrategyName,
         token: {
-          getter: (module: string, res: HttpResponse<{ token: string }>) => res.body.token,
+          getter: (module: string, res: HttpResponse<{ token: string }>) => {
+            assert(res.body, 'response has no body');
+            return res.body.token;
+          },
         },
       });
     });
 
-    it('authenticate', (done: DoneFn) => {
+    it('authenticate', () => new Promise<void>((done) => {
       strategy.authenticate(loginData).subscribe((result: NbAuthResult) => {
         expect(result).toBeTruthy();
         expect(result.isFailure()).toBe(false);
         expect(result.isSuccess()).toBe(true);
-        expect(result.getToken().getValue()).toEqual(successToken.getValue());
-        expect(result.getToken().getOwnerStrategyName()).toEqual(successToken.getOwnerStrategyName());
+        expect(tokenOf(result).getValue()).toEqual(successToken.getValue());
+        expect(tokenOf(result).getOwnerStrategyName()).toEqual(successToken.getOwnerStrategyName());
         done();
       });
 
       httpMock.expectOne('/api/auth/login').flush(customResponse);
-    });
+    }));
 
-    it('register', (done: DoneFn) => {
+    it('register', () => new Promise<void>((done) => {
       strategy.register(loginData).subscribe((result: NbAuthResult) => {
         expect(result).toBeTruthy();
         expect(result.isFailure()).toBe(false);
         expect(result.isSuccess()).toBe(true);
-        expect(result.getToken().getValue()).toEqual(successToken.getValue());
-        expect(result.getToken().getOwnerStrategyName()).toEqual(successToken.getOwnerStrategyName());
+        expect(tokenOf(result).getValue()).toEqual(successToken.getValue());
+        expect(tokenOf(result).getOwnerStrategyName()).toEqual(successToken.getOwnerStrategyName());
         done();
       });
 
       httpMock.expectOne('/api/auth/register').flush(customResponse);
-    });
+    }));
 
-    it('refreshToken', (done: DoneFn) => {
+    it('refreshToken', () => new Promise<void>((done) => {
       strategy.refreshToken().subscribe((result: NbAuthResult) => {
         expect(result).toBeTruthy();
         expect(result.isFailure()).toBe(false);
         expect(result.isSuccess()).toBe(true);
-        expect(result.getToken().getValue()).toEqual(successToken.getValue());
-        expect(result.getToken().getOwnerStrategyName()).toEqual(successToken.getOwnerStrategyName());
+        expect(tokenOf(result).getValue()).toEqual(successToken.getValue());
+        expect(tokenOf(result).getOwnerStrategyName()).toEqual(successToken.getOwnerStrategyName());
         done();
       });
 
       httpMock.expectOne('/api/auth/refresh-token').flush(customResponse);
-    });
+    }));
   });
 
   describe('custom message key', () => {
@@ -1099,7 +1108,7 @@ describe('password-auth-strategy', () => {
       });
     });
 
-    it('authenticate success', (done: DoneFn) => {
+    it('authenticate success', () => new Promise<void>((done) => {
       strategy.authenticate(loginData).subscribe((result: NbAuthResult) => {
         expect(result).toBeTruthy();
         expect(result.isFailure()).toBe(false);
@@ -1110,9 +1119,9 @@ describe('password-auth-strategy', () => {
       });
 
       httpMock.expectOne('/api/auth/login').flush(customResponse);
-    });
+    }));
 
-    it('authenticate fail', (done: DoneFn) => {
+    it('authenticate fail', () => new Promise<void>((done) => {
       strategy.authenticate(loginData).subscribe((result: NbAuthResult) => {
         expect(result).toBeTruthy();
         expect(result.isFailure()).toBe(true);
@@ -1123,9 +1132,9 @@ describe('password-auth-strategy', () => {
       });
 
       httpMock.expectOne('/api/auth/login').flush(customResponse, { status: 401, statusText: 'Unauthorized' });
-    });
+    }));
 
-    it('register success', (done: DoneFn) => {
+    it('register success', () => new Promise<void>((done) => {
       strategy.register(loginData).subscribe((result: NbAuthResult) => {
         expect(result).toBeTruthy();
         expect(result.isFailure()).toBe(false);
@@ -1136,9 +1145,9 @@ describe('password-auth-strategy', () => {
       });
 
       httpMock.expectOne('/api/auth/register').flush(customResponse);
-    });
+    }));
 
-    it('register fail', (done: DoneFn) => {
+    it('register fail', () => new Promise<void>((done) => {
       strategy.register(loginData).subscribe((result: NbAuthResult) => {
         expect(result).toBeTruthy();
         expect(result.isFailure()).toBe(true);
@@ -1149,9 +1158,9 @@ describe('password-auth-strategy', () => {
       });
 
       httpMock.expectOne('/api/auth/register').flush(customResponse, { status: 401, statusText: 'Unauthorized' });
-    });
+    }));
 
-    it('refreshToken success', (done: DoneFn) => {
+    it('refreshToken success', () => new Promise<void>((done) => {
       strategy.refreshToken().subscribe((result: NbAuthResult) => {
         expect(result).toBeTruthy();
         expect(result.isFailure()).toBe(false);
@@ -1162,9 +1171,9 @@ describe('password-auth-strategy', () => {
       });
 
       httpMock.expectOne('/api/auth/refresh-token').flush(customResponse);
-    });
+    }));
 
-    it('refreshToken fail', (done: DoneFn) => {
+    it('refreshToken fail', () => new Promise<void>((done) => {
       strategy.refreshToken().subscribe((result: NbAuthResult) => {
         expect(result).toBeTruthy();
         expect(result.isFailure()).toBe(true);
@@ -1175,7 +1184,7 @@ describe('password-auth-strategy', () => {
       });
 
       httpMock.expectOne('/api/auth/refresh-token').flush(customResponse, { status: 401, statusText: 'Unauthorized' });
-    });
+    }));
   });
 
   describe('custom message extractor', () => {
@@ -1186,7 +1195,10 @@ describe('password-auth-strategy', () => {
           key: 'token',
         },
         messages: {
-          getter: (module: string, res: HttpResponse<{ messages: string[] }>) => res.body.messages,
+          getter: (module: string, res: HttpResponse<{ messages: string[] }>) => {
+            assert(res.body, 'response has no body');
+            return res.body.messages;
+          },
         },
         errors: {
           getter: (module: string, res: HttpErrorResponse) => res.error.errors,
@@ -1194,7 +1206,7 @@ describe('password-auth-strategy', () => {
       });
     });
 
-    it('authenticate success', (done: DoneFn) => {
+    it('authenticate success', () => new Promise<void>((done) => {
       strategy.authenticate(loginData).subscribe((result: NbAuthResult) => {
         expect(result).toBeTruthy();
         expect(result.isFailure()).toBe(false);
@@ -1205,9 +1217,9 @@ describe('password-auth-strategy', () => {
       });
 
       httpMock.expectOne('/api/auth/login').flush(customResponse);
-    });
+    }));
 
-    it('authenticate fail', (done: DoneFn) => {
+    it('authenticate fail', () => new Promise<void>((done) => {
       strategy.authenticate(loginData).subscribe((result: NbAuthResult) => {
         expect(result).toBeTruthy();
         expect(result.isFailure()).toBe(true);
@@ -1218,9 +1230,9 @@ describe('password-auth-strategy', () => {
       });
 
       httpMock.expectOne('/api/auth/login').flush(customResponse, { status: 401, statusText: 'Unauthorized' });
-    });
+    }));
 
-    it('register success', (done: DoneFn) => {
+    it('register success', () => new Promise<void>((done) => {
       strategy.register(loginData).subscribe((result: NbAuthResult) => {
         expect(result).toBeTruthy();
         expect(result.isFailure()).toBe(false);
@@ -1231,9 +1243,9 @@ describe('password-auth-strategy', () => {
       });
 
       httpMock.expectOne('/api/auth/register').flush(customResponse);
-    });
+    }));
 
-    it('register fail', (done: DoneFn) => {
+    it('register fail', () => new Promise<void>((done) => {
       strategy.register(loginData).subscribe((result: NbAuthResult) => {
         expect(result).toBeTruthy();
         expect(result.isFailure()).toBe(true);
@@ -1244,9 +1256,9 @@ describe('password-auth-strategy', () => {
       });
 
       httpMock.expectOne('/api/auth/register').flush(customResponse, { status: 401, statusText: 'Unauthorized' });
-    });
+    }));
 
-    it('refreshToken success', (done: DoneFn) => {
+    it('refreshToken success', () => new Promise<void>((done) => {
       strategy.refreshToken().subscribe((result: NbAuthResult) => {
         expect(result).toBeTruthy();
         expect(result.isFailure()).toBe(false);
@@ -1257,9 +1269,9 @@ describe('password-auth-strategy', () => {
       });
 
       httpMock.expectOne('/api/auth/refresh-token').flush(customResponse);
-    });
+    }));
 
-    it('refreshToken fail', (done: DoneFn) => {
+    it('refreshToken fail', () => new Promise<void>((done) => {
       strategy.refreshToken().subscribe((result: NbAuthResult) => {
         expect(result).toBeTruthy();
         expect(result.isFailure()).toBe(true);
@@ -1270,11 +1282,11 @@ describe('password-auth-strategy', () => {
       });
 
       httpMock.expectOne('/api/auth/refresh-token').flush(customResponse, { status: 401, statusText: 'Unauthorized' });
-    });
+    }));
   });
 
   describe('custom requireValidToken', () => {
-    it('authenticate fail as no token when requireValidToken is set', (done: DoneFn) => {
+    it('authenticate fail as no token when requireValidToken is set', () => new Promise<void>((done) => {
       strategy.setOptions({
         name: ownerStrategyName,
         login: {
@@ -1295,9 +1307,9 @@ describe('password-auth-strategy', () => {
           message: 'Successfully logged in!',
         },
       });
-    });
+    }));
 
-    it('authenticate does not fail even when no token', (done: DoneFn) => {
+    it('authenticate does not fail even when no token', () => new Promise<void>((done) => {
       strategy.setOptions({
         name: ownerStrategyName,
         login: {
@@ -1316,9 +1328,9 @@ describe('password-auth-strategy', () => {
       });
 
       httpMock.expectOne('/api/auth/login').flush({});
-    });
+    }));
 
-    it('register fail as no token and requireValidtoken is set', (done: DoneFn) => {
+    it('register fail as no token and requireValidtoken is set', () => new Promise<void>((done) => {
       strategy.setOptions({
         name: ownerStrategyName,
         register: {
@@ -1336,9 +1348,9 @@ describe('password-auth-strategy', () => {
       });
 
       httpMock.expectOne('/api/auth/register').flush({});
-    });
+    }));
 
-    it('register does not fail even when no token', (done: DoneFn) => {
+    it('register does not fail even when no token', () => new Promise<void>((done) => {
       strategy.setOptions({
         name: ownerStrategyName,
         register: {
@@ -1357,9 +1369,9 @@ describe('password-auth-strategy', () => {
       });
 
       httpMock.expectOne('/api/auth/register').flush({});
-    });
+    }));
 
-    it('refreshToken fail as no token and requireValidToken is set', (done: DoneFn) => {
+    it('refreshToken fail as no token and requireValidToken is set', () => new Promise<void>((done) => {
       strategy.setOptions({
         name: ownerStrategyName,
         refreshToken: {
@@ -1377,9 +1389,9 @@ describe('password-auth-strategy', () => {
       });
 
       httpMock.expectOne('/api/auth/refresh-token').flush({});
-    });
+    }));
 
-    it('refreshToken does not fail even when no token', (done: DoneFn) => {
+    it('refreshToken does not fail even when no token', () => new Promise<void>((done) => {
       strategy.setOptions({
         name: ownerStrategyName,
         refreshToken: {
@@ -1398,6 +1410,6 @@ describe('password-auth-strategy', () => {
       });
 
       httpMock.expectOne('/api/auth/refresh-token').flush({});
-    });
+    }));
   });
 });

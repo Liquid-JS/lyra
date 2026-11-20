@@ -1,40 +1,32 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-import { Component, Inject, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { Router } from '@angular/router';
 
-import { NB_AUTH_OPTIONS } from '../../auth.options';
-import { getDeepFromObject } from '../../helpers';
+import { NB_AUTH_OPTIONS, NbAuthResolvedOptions } from '../../auth.options';
+import { getDeepFromObject, NbPath, NbPathValue } from '../../helpers';
 import { NbAuthService } from '../../services/auth.service';
 import { NbAuthResult } from '../../services/auth-result';
+import { injectNbAuthTexts } from '../../texts';
 
 @Component({
-    selector: 'nb-logout',
-    templateUrl: './logout.component.html',
-    standalone: false
+  selector: 'nb-logout',
+  templateUrl: './logout.component.html',
 })
 export class NbLogoutComponent implements OnInit {
+  protected readonly texts = injectNbAuthTexts();
 
-  redirectDelay: number = 0;
-  strategy: string = '';
+  protected readonly service = inject(NbAuthService);
+  protected readonly options = inject(NB_AUTH_OPTIONS);
+  protected readonly router = inject(Router);
 
-  constructor(protected service: NbAuthService,
-              @Inject(NB_AUTH_OPTIONS) protected options = {},
-              protected router: Router) {
-    this.redirectDelay = this.getConfigValue('forms.logout.redirectDelay');
-    this.strategy = this.getConfigValue('forms.logout.strategy');
-  }
+  redirectDelay: number = this.getConfigValue('forms.logout.redirectDelay');
+  strategy: string = this.getConfigValue('forms.logout.strategy');
 
-  ngOnInit(): void {
+  ngOnInit() {
     this.logout(this.strategy);
   }
 
-  logout(strategy: string): void {
+  logout(strategy: string) {
     this.service.logout(strategy).subscribe((result: NbAuthResult) => {
-
       const redirect = result.getRedirect();
       if (redirect) {
         setTimeout(() => {
@@ -44,7 +36,7 @@ export class NbLogoutComponent implements OnInit {
     });
   }
 
-  getConfigValue(key: string): any {
-    return getDeepFromObject(this.options, key, null);
+  getConfigValue<P extends NbPath<NbAuthResolvedOptions>>(key: P): NbPathValue<NbAuthResolvedOptions, P> {
+    return getDeepFromObject(this.options, key);
   }
 }

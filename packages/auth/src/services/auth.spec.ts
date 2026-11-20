@@ -1,13 +1,7 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 import { TestBed } from '@angular/core/testing';
 import { Injector } from '@angular/core';
 import { HttpResponse } from '@angular/common/http';
-import { of as observableOf } from 'rxjs';
+import { of as observableOf, defer, EMPTY } from 'rxjs';
 import { delay, first } from 'rxjs/operators';
 import {
   NB_AUTH_OPTIONS,
@@ -28,7 +22,7 @@ import {
   NbTokenStorage,
   NB_AUTH_FALLBACK_TOKEN,
   NbAuthTokenParceler,
-} from '@nebular/auth';
+} from '@liquid-js/lyr-auth';
 
 describe('auth-service', () => {
   let authService: NbAuthService;
@@ -37,12 +31,12 @@ describe('auth-service', () => {
   const testTokenValue = 'test-token';
   const ownerStrategyName = 'dummy';
 
-  const resp401 = new HttpResponse<Object>({ body: {}, status: 401 });
-  const resp200 = new HttpResponse<Object>({ body: {}, status: 200 });
+  const resp401 = new HttpResponse<unknown>({ body: {}, status: 401 });
+  const resp200 = new HttpResponse<unknown>({ body: {}, status: 200 });
 
   const testToken = nbAuthCreateToken(NbAuthSimpleToken, testTokenValue, ownerStrategyName);
   const invalidToken = nbAuthCreateToken(NbAuthSimpleToken, testTokenValue, ownerStrategyName);
-  const emptyToken = nbAuthCreateToken(NbAuthSimpleToken, null, null);
+  const emptyToken = nbAuthCreateToken(NbAuthSimpleToken, null, '');
 
   const failResult = new NbAuthResult(false, resp401, null, ['Something went wrong.']);
 
@@ -102,7 +96,7 @@ describe('auth-service', () => {
   });
 
   it('get test token before set', () => {
-    const spy = spyOn(tokenService, 'get').and.returnValue(observableOf(testToken));
+    const spy = vi.spyOn(tokenService, 'get').mockReturnValue(observableOf(testToken));
 
     authService.getToken().subscribe((val: NbAuthToken) => {
       expect(spy).toHaveBeenCalled();
@@ -111,7 +105,7 @@ describe('auth-service', () => {
   });
 
   it('is authenticated true if token exists', () => {
-    const spy = spyOn(tokenService, 'get').and.returnValue(observableOf(testToken));
+    const spy = vi.spyOn(tokenService, 'get').mockReturnValue(observableOf(testToken));
 
     authService.isAuthenticated().subscribe((isAuth: boolean) => {
       expect(spy).toHaveBeenCalled();
@@ -120,7 +114,7 @@ describe('auth-service', () => {
   });
 
   it("is authenticated false if token doesn't exist", () => {
-    const spy = spyOn(tokenService, 'get').and.returnValue(observableOf(emptyToken));
+    const spy = vi.spyOn(tokenService, 'get').mockReturnValue(observableOf(emptyToken));
 
     authService.isAuthenticated().subscribe((isAuth: boolean) => {
       expect(spy).toHaveBeenCalled();
@@ -128,10 +122,10 @@ describe('auth-service', () => {
     });
   });
 
-  it('isAuthenticatedOrRefresh, token valid, strategy refreshToken not called, returns true', (done) => {
-    const spy = spyOn(dummyAuthStrategy, 'refreshToken');
+  it('isAuthenticatedOrRefresh, token valid, strategy refreshToken not called, returns true', () => new Promise<void>((done) => {
+    const spy = vi.spyOn(dummyAuthStrategy, 'refreshToken').mockReturnValue(EMPTY);
 
-    spyOn(tokenService, 'get').and.returnValue(observableOf(testToken));
+    vi.spyOn(tokenService, 'get').mockReturnValue(observableOf(testToken));
 
     authService
       .isAuthenticatedOrRefresh()
@@ -141,14 +135,14 @@ describe('auth-service', () => {
         expect(isAuth).toBeTruthy();
         done();
       });
-  });
+  }));
 
-  it('isAuthenticatedOrRefresh, token invalid, strategy refreshToken called, returns true', (done) => {
-    spyOn(invalidToken, 'isValid').and.returnValue(false);
+  it('isAuthenticatedOrRefresh, token invalid, strategy refreshToken called, returns true', () => new Promise<void>((done) => {
+    vi.spyOn(invalidToken, 'isValid').mockReturnValue(false);
 
-    const spy = spyOn(dummyAuthStrategy, 'refreshToken').and.returnValue(observableOf(successResult));
+    const spy = vi.spyOn(dummyAuthStrategy, 'refreshToken').mockReturnValue(observableOf(successResult));
 
-    spyOn(tokenService, 'get').and.returnValues(observableOf(invalidToken), observableOf(testToken));
+    vi.spyOn(tokenService, 'get').mockReturnValueOnce(observableOf(invalidToken)).mockReturnValueOnce(observableOf(testToken));
 
     authService
       .isAuthenticatedOrRefresh()
@@ -158,27 +152,14 @@ describe('auth-service', () => {
         expect(isAuth).toBeTruthy();
         done();
       });
-  });
+  }));
 
-  it('isAuthenticatedOrRefresh, token invalid, strategy refreshToken called, returns false', (done) => {
-    spyOn(invalidToken, 'isValid').and.returnValue(false);
+  it('isAuthenticatedOrRefresh, token invalid, strategy refreshToken called, returns false', () => new Promise<void>((done) => {
+    vi.spyOn(invalidToken, 'isValid').mockReturnValue(false);
 
-    const spy = spyOn(dummyAuthStrategy, 'refreshToken').and.returnValue(observableOf(failResult));
+    const spy = vi.spyOn(dummyAuthStrategy, 'refreshToken').mockReturnValue(observableOf(failResult));
 
-    spyOn(tokenService, 'get').and.returnValues(observableOf(invalidToken), observableOf(invalidToken));
-
-    authService
-      .isAuthenticatedOrRefresh()
-      .pipe(first())
-      .subscribe((isAuth: boolean) => {
-        expect(spy).toHaveBeenCalled();
-        expect(isAuth).toBeFalsy();
-        done();
-      });
-  });
-
-  it("isAuthenticatedOrRefresh, token doesn't exist, strategy refreshToken called, returns false", (done) => {
-    const spy = spyOn(tokenService, 'get').and.returnValue(observableOf(emptyToken));
+    vi.spyOn(tokenService, 'get').mockReturnValueOnce(observableOf(invalidToken)).mockReturnValueOnce(observableOf(invalidToken));
 
     authService
       .isAuthenticatedOrRefresh()
@@ -188,10 +169,23 @@ describe('auth-service', () => {
         expect(isAuth).toBeFalsy();
         done();
       });
-  });
+  }));
 
-  it('onTokenChange return correct stream and gets test token', (done) => {
-    const spy = spyOn(tokenService, 'tokenChange').and.returnValue(observableOf(testToken));
+  it("isAuthenticatedOrRefresh, token doesn't exist, strategy refreshToken called, returns false", () => new Promise<void>((done) => {
+    const spy = vi.spyOn(tokenService, 'get').mockReturnValue(observableOf(emptyToken));
+
+    authService
+      .isAuthenticatedOrRefresh()
+      .pipe(first())
+      .subscribe((isAuth: boolean) => {
+        expect(spy).toHaveBeenCalled();
+        expect(isAuth).toBeFalsy();
+        done();
+      });
+  }));
+
+  it('onTokenChange return correct stream and gets test token', () => new Promise<void>((done) => {
+    const spy = vi.spyOn(tokenService, 'tokenChange').mockReturnValue(observableOf(testToken));
 
     authService
       .onTokenChange()
@@ -201,10 +195,10 @@ describe('auth-service', () => {
         expect(token.getValue()).toEqual(testTokenValue);
         done();
       });
-  });
+  }));
 
-  it('authenticate failed', (done) => {
-    const spy = spyOn(dummyAuthStrategy, 'authenticate').and.returnValue(observableOf(failResult).pipe(delay(1000)));
+  it('authenticate failed', () => new Promise<void>((done) => {
+    const spy = vi.spyOn(dummyAuthStrategy, 'authenticate').mockReturnValue(observableOf(failResult).pipe(delay(1000)));
 
     authService.authenticate(ownerStrategyName).subscribe((authRes: NbAuthResult) => {
       expect(spy).toHaveBeenCalled();
@@ -212,19 +206,17 @@ describe('auth-service', () => {
       expect(authRes.isSuccess()).toBeFalsy();
       expect(authRes.getMessages()).toEqual([]);
       expect(authRes.getErrors()).toEqual(['Something went wrong.']);
-      expect(authRes.getRedirect()).toBeNull();
-      expect(authRes.getToken()).toBe(null);
+      expect(authRes.getRedirect()).toBeUndefined();
+      expect(authRes.getToken()).toBeUndefined();
       expect(authRes.getResponse()).toEqual(resp401);
       done();
     });
-  });
+  }));
 
-  it('authenticate succeed', (done) => {
-    const strategySpy = spyOn(dummyAuthStrategy, 'authenticate').and.returnValue(
-      observableOf(successResult).pipe(delay(1000)),
-    );
+  it('authenticate succeed', () => new Promise<void>((done) => {
+    const strategySpy = vi.spyOn(dummyAuthStrategy, 'authenticate').mockReturnValue(observableOf(successResult).pipe(delay(1000)));
 
-    const tokenServiceSetSpy = spyOn(tokenService, 'set').and.returnValue(observableOf(null));
+    const tokenServiceSetSpy = vi.spyOn(tokenService, 'set').mockReturnValue(observableOf(undefined));
 
     authService.authenticate(ownerStrategyName).subscribe((authRes: NbAuthResult) => {
       expect(strategySpy).toHaveBeenCalled();
@@ -239,10 +231,24 @@ describe('auth-service', () => {
       expect(authRes.getResponse()).toEqual(resp200);
       done();
     });
+  }));
+
+  it('keeps the token for the session only when the login form doesn\'t remember it', async () => {
+    vi.spyOn(dummyAuthStrategy, 'authenticate').mockReturnValue(observableOf(successResult));
+    const set = vi.spyOn(tokenService, 'set').mockReturnValue(observableOf(undefined));
+
+    await new Promise((resolve) =>
+      authService.authenticate(ownerStrategyName, { email: 'jane@example.com', rememberMe: false }).subscribe(resolve),
+    );
+    expect(set).toHaveBeenLastCalledWith(testToken, { remember: false });
+
+    // Without the form, e.g. after a redirect, the storage decides: the token is remembered.
+    await new Promise((resolve) => authService.authenticate(ownerStrategyName).subscribe(resolve));
+    expect(set).toHaveBeenLastCalledWith(testToken, { remember: undefined });
   });
 
-  it('register failed', (done) => {
-    const spy = spyOn(dummyAuthStrategy, 'register').and.returnValue(observableOf(failResult).pipe(delay(1000)));
+  it('register failed', () => new Promise<void>((done) => {
+    const spy = vi.spyOn(dummyAuthStrategy, 'register').mockReturnValue(observableOf(failResult).pipe(delay(1000)));
 
     authService.register(ownerStrategyName).subscribe((authRes: NbAuthResult) => {
       expect(spy).toHaveBeenCalled();
@@ -250,19 +256,17 @@ describe('auth-service', () => {
       expect(authRes.isSuccess()).toBeFalsy();
       expect(authRes.getMessages()).toEqual([]);
       expect(authRes.getErrors()).toEqual(['Something went wrong.']);
-      expect(authRes.getRedirect()).toBeNull();
-      expect(authRes.getToken()).toBe(null);
+      expect(authRes.getRedirect()).toBeUndefined();
+      expect(authRes.getToken()).toBeUndefined();
       expect(authRes.getResponse()).toEqual(resp401);
       done();
     });
-  });
+  }));
 
-  it('register succeed', (done) => {
-    const strategySpy = spyOn(dummyAuthStrategy, 'register').and.returnValue(
-      observableOf(successResult).pipe(delay(1000)),
-    );
+  it('register succeed', () => new Promise<void>((done) => {
+    const strategySpy = vi.spyOn(dummyAuthStrategy, 'register').mockReturnValue(observableOf(successResult).pipe(delay(1000)));
 
-    const tokenServiceSetSpy = spyOn(tokenService, 'set').and.returnValue(observableOf(null));
+    const tokenServiceSetSpy = vi.spyOn(tokenService, 'set').mockReturnValue(observableOf(undefined));
 
     authService.register(ownerStrategyName).subscribe((authRes: NbAuthResult) => {
       expect(strategySpy).toHaveBeenCalled();
@@ -277,10 +281,10 @@ describe('auth-service', () => {
       expect(authRes.getResponse()).toEqual(resp200);
       done();
     });
-  });
+  }));
 
-  it('logout failed', (done) => {
-    const spy = spyOn(dummyAuthStrategy, 'logout').and.returnValue(observableOf(failResult).pipe(delay(1000)));
+  it('logout failed', () => new Promise<void>((done) => {
+    const spy = vi.spyOn(dummyAuthStrategy, 'logout').mockReturnValue(observableOf(failResult).pipe(delay(1000)));
 
     authService.logout(ownerStrategyName).subscribe((authRes: NbAuthResult) => {
       expect(spy).toHaveBeenCalled();
@@ -289,18 +293,16 @@ describe('auth-service', () => {
       expect(authRes.isSuccess()).toBeFalsy();
       expect(authRes.getMessages()).toEqual([]);
       expect(authRes.getErrors()).toEqual(['Something went wrong.']);
-      expect(authRes.getRedirect()).toBeNull();
-      expect(authRes.getToken()).toBe(null);
+      expect(authRes.getRedirect()).toBeUndefined();
+      expect(authRes.getToken()).toBeUndefined();
       expect(authRes.getResponse()).toEqual(resp401);
       done();
     });
-  });
+  }));
 
-  it('logout succeed', (done) => {
-    const strategyLogoutSpy = spyOn(dummyAuthStrategy, 'logout').and.returnValue(
-      observableOf(successLogoutResult).pipe(delay(1000)),
-    );
-    const tokenServiceClearSpy = spyOn(tokenService, 'clear').and.returnValue(observableOf(null));
+  it('logout succeed', () => new Promise<void>((done) => {
+    const strategyLogoutSpy = vi.spyOn(dummyAuthStrategy, 'logout').mockReturnValue(observableOf(successLogoutResult).pipe(delay(1000)));
+    const tokenServiceClearSpy = vi.spyOn(tokenService, 'clear').mockReturnValue(observableOf(undefined));
 
     authService.logout(ownerStrategyName).subscribe((authRes: NbAuthResult) => {
       expect(strategyLogoutSpy).toHaveBeenCalled();
@@ -311,14 +313,29 @@ describe('auth-service', () => {
       expect(authRes.getMessages()).toEqual(['Successfully logged out.']);
       expect(authRes.getErrors()).toEqual([]);
       expect(authRes.getRedirect()).toEqual('/');
-      expect(authRes.getToken()).toBe(null);
+      expect(authRes.getToken()).toBeUndefined();
       expect(authRes.getResponse()).toEqual(resp200);
       done();
     });
-  });
+  }));
 
-  it('requestPassword failed', (done) => {
-    const spy = spyOn(dummyAuthStrategy, 'requestPassword').and.returnValue(observableOf(failResult).pipe(delay(1000)));
+  it('logout should wait for the token to be cleared', () => new Promise<void>((done) => {
+    vi.spyOn(dummyAuthStrategy, 'logout').mockReturnValue(observableOf(successLogoutResult));
+    let cleared = false;
+    // A token service whose clear() is lazy, like one backed by an async storage.
+    vi.spyOn(tokenService, 'clear').mockReturnValue(defer(() => {
+      cleared = true;
+      return observableOf(undefined);
+    }));
+
+    authService.logout(ownerStrategyName).subscribe(() => {
+      expect(cleared).toBe(true);
+      done();
+    });
+  }));
+
+  it('requestPassword failed', () => new Promise<void>((done) => {
+    const spy = vi.spyOn(dummyAuthStrategy, 'requestPassword').mockReturnValue(observableOf(failResult).pipe(delay(1000)));
 
     authService.requestPassword(ownerStrategyName).subscribe((authRes: NbAuthResult) => {
       expect(spy).toHaveBeenCalled();
@@ -327,17 +344,15 @@ describe('auth-service', () => {
       expect(authRes.isSuccess()).toBeFalsy();
       expect(authRes.getMessages()).toEqual([]);
       expect(authRes.getErrors()).toEqual(['Something went wrong.']);
-      expect(authRes.getRedirect()).toBeNull();
-      expect(authRes.getToken()).toBe(null);
+      expect(authRes.getRedirect()).toBeUndefined();
+      expect(authRes.getToken()).toBeUndefined();
       expect(authRes.getResponse()).toEqual(resp401);
       done();
     });
-  });
+  }));
 
-  it('requestPassword succeed', (done) => {
-    const strategyLogoutSpy = spyOn(dummyAuthStrategy, 'requestPassword').and.returnValue(
-      observableOf(successRequestPasswordResult).pipe(delay(1000)),
-    );
+  it('requestPassword succeed', () => new Promise<void>((done) => {
+    const strategyLogoutSpy = vi.spyOn(dummyAuthStrategy, 'requestPassword').mockReturnValue(observableOf(successRequestPasswordResult).pipe(delay(1000)));
 
     authService.requestPassword(ownerStrategyName).subscribe((authRes: NbAuthResult) => {
       expect(strategyLogoutSpy).toHaveBeenCalled();
@@ -347,14 +362,14 @@ describe('auth-service', () => {
       expect(authRes.getMessages()).toEqual(['Successfully requested password.']);
       expect(authRes.getErrors()).toEqual([]);
       expect(authRes.getRedirect()).toEqual('/');
-      expect(authRes.getToken()).toBe(null);
+      expect(authRes.getToken()).toBeUndefined();
       expect(authRes.getResponse()).toEqual(resp200);
       done();
     });
-  });
+  }));
 
-  it('resetPassword failed', (done) => {
-    const spy = spyOn(dummyAuthStrategy, 'resetPassword').and.returnValue(observableOf(failResult).pipe(delay(1000)));
+  it('resetPassword failed', () => new Promise<void>((done) => {
+    const spy = vi.spyOn(dummyAuthStrategy, 'resetPassword').mockReturnValue(observableOf(failResult).pipe(delay(1000)));
 
     authService.resetPassword(ownerStrategyName).subscribe((authRes: NbAuthResult) => {
       expect(spy).toHaveBeenCalled();
@@ -363,17 +378,15 @@ describe('auth-service', () => {
       expect(authRes.isSuccess()).toBeFalsy();
       expect(authRes.getMessages()).toEqual([]);
       expect(authRes.getErrors()).toEqual(['Something went wrong.']);
-      expect(authRes.getRedirect()).toBeNull();
-      expect(authRes.getToken()).toBe(null);
+      expect(authRes.getRedirect()).toBeUndefined();
+      expect(authRes.getToken()).toBeUndefined();
       expect(authRes.getResponse()).toEqual(resp401);
       done();
     });
-  });
+  }));
 
-  it('resetPassword succeed', (done) => {
-    const strategyLogoutSpy = spyOn(dummyAuthStrategy, 'resetPassword').and.returnValue(
-      observableOf(successResetPasswordResult).pipe(delay(1000)),
-    );
+  it('resetPassword succeed', () => new Promise<void>((done) => {
+    const strategyLogoutSpy = vi.spyOn(dummyAuthStrategy, 'resetPassword').mockReturnValue(observableOf(successResetPasswordResult).pipe(delay(1000)));
 
     authService.resetPassword(ownerStrategyName).subscribe((authRes: NbAuthResult) => {
       expect(strategyLogoutSpy).toHaveBeenCalled();
@@ -383,14 +396,14 @@ describe('auth-service', () => {
       expect(authRes.getMessages()).toEqual(['Successfully reset password.']);
       expect(authRes.getErrors()).toEqual([]);
       expect(authRes.getRedirect()).toEqual('/');
-      expect(authRes.getToken()).toBe(null);
+      expect(authRes.getToken()).toBeUndefined();
       expect(authRes.getResponse()).toEqual(resp200);
       done();
     });
-  });
+  }));
 
-  it('refreshToken failed', (done) => {
-    const spy = spyOn(dummyAuthStrategy, 'refreshToken').and.returnValue(observableOf(failResult).pipe(delay(1000)));
+  it('refreshToken failed', () => new Promise<void>((done) => {
+    const spy = vi.spyOn(dummyAuthStrategy, 'refreshToken').mockReturnValue(observableOf(failResult).pipe(delay(1000)));
 
     authService.refreshToken(ownerStrategyName).subscribe((authRes: NbAuthResult) => {
       expect(spy).toHaveBeenCalled();
@@ -398,19 +411,17 @@ describe('auth-service', () => {
       expect(authRes.isSuccess()).toBeFalsy();
       expect(authRes.getMessages()).toEqual([]);
       expect(authRes.getErrors()).toEqual(['Something went wrong.']);
-      expect(authRes.getRedirect()).toBeNull();
-      expect(authRes.getToken()).toBe(null);
+      expect(authRes.getRedirect()).toBeUndefined();
+      expect(authRes.getToken()).toBeUndefined();
       expect(authRes.getResponse()).toEqual(resp401);
       done();
     });
-  });
+  }));
 
-  it('refreshToken succeed', (done) => {
-    const strategySpy = spyOn(dummyAuthStrategy, 'refreshToken').and.returnValue(
-      observableOf(successRefreshTokenResult).pipe(delay(1000)),
-    );
+  it('refreshToken succeed', () => new Promise<void>((done) => {
+    const strategySpy = vi.spyOn(dummyAuthStrategy, 'refreshToken').mockReturnValue(observableOf(successRefreshTokenResult).pipe(delay(1000)));
 
-    const tokenServiceSetSpy = spyOn(tokenService, 'set').and.returnValue(observableOf(null));
+    const tokenServiceSetSpy = vi.spyOn(tokenService, 'set').mockReturnValue(observableOf(undefined));
 
     authService.refreshToken(ownerStrategyName).subscribe((authRes: NbAuthResult) => {
       expect(strategySpy).toHaveBeenCalled();
@@ -420,10 +431,10 @@ describe('auth-service', () => {
       expect(authRes.isSuccess()).toBeTruthy();
       expect(authRes.getMessages()).toEqual(['Successfully refreshed token.']);
       expect(authRes.getErrors()).toEqual([]);
-      expect(authRes.getRedirect()).toBeNull();
+      expect(authRes.getRedirect()).toBeUndefined();
       expect(authRes.getToken()).toEqual(testToken);
       expect(authRes.getResponse()).toEqual(resp200);
       done();
     });
-  });
+  }));
 });

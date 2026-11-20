@@ -1,64 +1,50 @@
-import { Injectable } from '@angular/core';
+import { inject, Service } from '@angular/core';
 import { Observable, BehaviorSubject, of as observableOf } from 'rxjs';
 import { filter, share } from 'rxjs/operators';
 
-import { NbTokenStorage } from './token-storage';
+import { NbTokenStorage, NbTokenStorageOptions } from './token-storage';
 import { NbAuthToken } from './token';
 
-/**
- * Service that allows you to manage authentication token - get, set, clear and also listen to token changes over time.
- */
-@Injectable()
+/** Gets, sets and clears the token in the `NbTokenStorage`, and tells when it changes, also from another tab. */
+@Service({ autoProvided: false })
 export class NbTokenService {
+  protected readonly tokenStorage = inject(NbTokenStorage);
 
-  protected token$: BehaviorSubject<NbAuthToken> = new BehaviorSubject(null);
+  protected token$ = new BehaviorSubject<NbAuthToken | undefined>(undefined);
 
-  constructor(protected tokenStorage: NbTokenStorage) {
+  constructor() {
     this.publishStoredToken();
+    // E.g. another tab signed in or out.
+    this.tokenStorage.changes?.subscribe(() => this.publishStoredToken());
   }
 
-  /**
-   * Publishes token when it changes.
-   * @returns {Observable<NbAuthToken>}
-   */
+  /** The token, now and whenever it's set or cleared. */
   tokenChange(): Observable<NbAuthToken> {
     return this.token$
       .pipe(
-        filter(value => !!value),
+        filter((value): value is NbAuthToken => !!value),
         share(),
       );
   }
 
-  /**
-   * Sets a token into the storage. This method is used by the NbAuthService automatically.
-   *
-   * @param {NbAuthToken} token
-   * @returns {Observable<any>}
-   */
-  set(token: NbAuthToken): Observable<null> {
-    this.tokenStorage.set(token);
+  /** Stores the token, as `NbAuthService` does with the one a strategy gets. */
+  set(token: NbAuthToken, options?: NbTokenStorageOptions): Observable<void> {
+    this.tokenStorage.set(token, options);
     this.publishStoredToken();
-    return observableOf(null);
+    return observableOf(undefined);
   }
 
-  /**
-   * Returns observable of current token
-   * @returns {Observable<NbAuthToken>}
-   */
+  /** The stored token. */
   get(): Observable<NbAuthToken> {
     const token = this.tokenStorage.get();
     return observableOf(token);
   }
 
-  /**
-   * Removes the token and published token value
-   *
-   * @returns {Observable<any>}
-   */
-  clear(): Observable<null> {
+  /** Removes the token. */
+  clear(): Observable<void> {
     this.tokenStorage.clear();
     this.publishStoredToken();
-    return observableOf(null);
+    return observableOf(undefined);
   }
 
   protected publishStoredToken() {

@@ -1,18 +1,13 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
 import { HttpHeaders } from '@angular/common/http';
 import { NbAuthTokenClass } from '../services/token/token';
 
 export interface NbStrategyToken {
   class?: NbAuthTokenClass;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export class NbAuthStrategyOptions {
-  name: string;
+  name = '';
   token?: NbStrategyToken;
-  headers?: HttpHeaders | { [header: string]: string | string[]; };
+  headers?: HttpHeaders | { [header: string]: string | string[] };
 }

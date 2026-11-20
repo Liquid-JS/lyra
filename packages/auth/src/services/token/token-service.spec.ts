@@ -1,10 +1,4 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { inject, TestBed, waitForAsync } from '@angular/core/testing';
+import { inject, TestBed } from '@angular/core/testing';
 import { take } from 'rxjs/operators';
 
 import {
@@ -18,7 +12,7 @@ import {
   NB_AUTH_FALLBACK_TOKEN,
   NbAuthTokenParceler,
   NB_AUTH_TOKENS,
-} from '@nebular/auth';
+} from '@liquid-js/lyr-auth';
 
 const noop = () => {};
 const ownerStrategyName = 'strategy';
@@ -43,13 +37,13 @@ describe('token-service', () => {
     });
   });
 
-    beforeEach(waitForAsync(inject(
+  beforeEach(inject(
     [NbTokenService, NbTokenStorage],
-    (_tokenService, _tokenStorage) => {
+    (_tokenService: NbTokenService, _tokenStorage: NbTokenLocalStorage) => {
       tokenService = _tokenService;
       tokenStorage = _tokenStorage;
     },
-  )));
+  ));
 
   afterEach(() => {
     localStorage.removeItem(testTokenKey);
@@ -57,9 +51,7 @@ describe('token-service', () => {
 
   it('set calls storage set', () => {
 
-    const spy = spyOn(tokenStorage, 'set')
-      .and
-      .returnValue(null);
+    const spy = vi.spyOn(tokenStorage, 'set').mockReturnValue(undefined);
 
     tokenService.set(simpleToken).subscribe(() => {
       expect(spy).toHaveBeenCalled();
@@ -68,16 +60,14 @@ describe('token-service', () => {
 
   it('get return null in case token was not set', () => {
 
-    const spy = spyOn(tokenStorage, 'get')
-      .and
-      .returnValue(emptyToken);
+    const spy = vi.spyOn(tokenStorage, 'get').mockReturnValue(emptyToken);
 
     tokenService.get()
       .subscribe((token: NbAuthToken) => {
         expect(spy).toHaveBeenCalled();
         expect(token.getValue()).toEqual('');
         expect(token.isValid()).toBe(false);
-      })
+      });
   });
 
   it('should return correct value', () => {
@@ -91,9 +81,7 @@ describe('token-service', () => {
 
   it('clear remove token', () => {
 
-    const spy = spyOn(tokenStorage, 'clear')
-      .and
-      .returnValue(null);
+    const spy = vi.spyOn(tokenStorage, 'clear').mockReturnValue(undefined);
 
     tokenService.set(simpleToken).subscribe(noop);
 
@@ -102,7 +90,7 @@ describe('token-service', () => {
     });
   });
 
-  it('token should be published', (done) => {
+  it('token should be published', () => new Promise<void>((done) => {
     tokenService.tokenChange()
       .pipe(take(1))
       .subscribe((token: NbAuthToken) => {
@@ -114,9 +102,9 @@ describe('token-service', () => {
         expect(token.getValue()).toEqual(simpleToken.getValue());
         done();
       });
-  });
+  }));
 
-  it('clear should be published', (done) => {
+  it('clear should be published', () => new Promise<void>((done) => {
     tokenService.tokenChange()
       .pipe(take(1))
       .subscribe((token: NbAuthToken) => {
@@ -134,5 +122,5 @@ describe('token-service', () => {
         expect(token.getValue()).toEqual('');
         done();
       });
-  })
+  }));
 });

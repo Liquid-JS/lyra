@@ -1,50 +1,74 @@
 import { NbAuthToken } from './token/token';
 
-export class NbAuthResult {
+/** What an `NbAuthResult` holds, for `NbAuthResult.from`. */
+export interface NbAuthResultOptions<R = unknown> {
+  success: boolean;
+  /** What the backend answered, or the error the action failed with. */
+  response?: R;
+  /** Where to go next; `null`, as the strategies' options use for a redirect they don't want, is none. */
+  redirect?: string | null;
+  errors?: string[];
+  messages?: string[];
+  token?: NbAuthToken;
+}
 
-  protected token: NbAuthToken;
-  protected errors: string[] = [];
-  protected messages: string[] = [];
+/**
+ * The outcome of a strategy's action. `R` is the strategy's response: what its backend answered, or the error it failed
+ * with.
+ */
+export class NbAuthResult<R = unknown> {
 
-  // TODO: better pass object
+  protected token?: NbAuthToken;
+  protected redirect?: string;
+  protected errors = new Array<string>();
+  protected messages = new Array<string>();
+
+  /**
+   * A result from named options, which reads better than the constructor's positional ones:
+   *
+   * ```ts
+   * NbAuthResult.from({ success: true, response, redirect: '/dashboard', messages: ['Signed in.'], token });
+   * ```
+   */
+  static from<R>(options: NbAuthResultOptions<R>): NbAuthResult<R> {
+    const { success, response, redirect, errors, messages, token } = options;
+    return new NbAuthResult(success, response, redirect, errors, messages, token);
+  }
+
+  /**
+   * @param redirect where to go next; `null`, as the strategies' options use for a redirect they don't want, is none
+   */
   constructor(protected success: boolean,
-              protected response?: any,
-              protected redirect?: any,
-              errors?: any,
-              messages?: any,
-              token: NbAuthToken = null) {
+    protected response?: R,
+    redirect?: string | null,
+    errors?: string[],
+    messages?: string[],
+    token?: NbAuthToken) {
 
-    this.errors = this.errors.concat([errors]);
-    if (errors instanceof Array) {
-      this.errors = errors;
-    }
-
-    this.messages = this.messages.concat([messages]);
-    if (messages instanceof Array) {
-      this.messages = messages;
-    }
-
+    this.redirect = redirect ?? undefined;
+    this.errors = errors ?? [];
+    this.messages = messages ?? [];
     this.token = token;
   }
 
-  getResponse(): any {
+  getResponse(): R | undefined {
     return this.response;
   }
 
-  getToken(): NbAuthToken {
+  getToken(): NbAuthToken | undefined {
     return this.token;
   }
 
-  getRedirect(): string {
+  getRedirect(): string | undefined {
     return this.redirect;
   }
 
   getErrors(): string[] {
-    return this.errors.filter(val => !!val);
+    return this.errors.filter((val) => !!val);
   }
 
   getMessages(): string[] {
-    return this.messages.filter(val => !!val);
+    return this.messages.filter((val) => !!val);
   }
 
   isSuccess(): boolean {

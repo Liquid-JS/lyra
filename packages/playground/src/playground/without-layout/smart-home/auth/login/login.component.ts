@@ -1,15 +1,19 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
 import { Component } from '@angular/core';
-import { NbLoginComponent } from '@nebular/auth';
+import { NbLoginComponent } from '@liquid-js/lyr-auth';
+import { NbAlertComponent, NbInputDirective, NbCheckboxComponent, NbButtonComponent } from '@liquid-js/lyr-core';
+import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 
 @Component({
-    selector: 'ngx-login',
-    templateUrl: './login.component.html',
-    standalone: false
+  selector: 'ngx-login',
+  templateUrl: './login.component.html',
+  imports: [
+    NbAlertComponent,
+    FormsModule,
+    NbInputDirective,
+    NbCheckboxComponent,
+    RouterLink,
+    NbButtonComponent,
+  ],
 })
-export class LoginComponent extends NbLoginComponent {
-}
+export class LoginComponent extends NbLoginComponent {}
