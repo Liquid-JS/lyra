@@ -1,0 +1,53 @@
+@use '../../styles/theming' as *;
+
+@mixin nb-breadcrumbs-theme() {
+  nb-breadcrumbs {
+    color: nb-theme(breadcrumbs-text-color);
+    font-family: nb-theme(breadcrumbs-text-font-family);
+    font-size: nb-theme(breadcrumbs-text-font-size);
+    font-weight: nb-theme(breadcrumbs-text-font-weight);
+    line-height: nb-theme(breadcrumbs-text-line-height);
+
+    ol {
+      gap: 0 nb-theme(breadcrumbs-gap);
+    }
+  }
+
+  nb-breadcrumb {
+    display: inline-flex;
+    align-items: center;
+    gap: nb-theme(breadcrumbs-gap);
+
+    a {
+      color: nb-theme(breadcrumbs-link-text-color);
+      text-decoration: none;
+      border-radius: nb-theme(breadcrumbs-link-border-radius);
+
+      &:hover {
+        color: nb-theme(breadcrumbs-link-hover-text-color);
+        text-decoration: underline;
+      }
+
+      &:focus {
+        color: nb-theme(breadcrumbs-link-text-color);
+      }
+
+      // The ring shows what has focus; the text takes the basic colour, as primary text is hard to read on the ring
+      // in the dark themes.
+      &:focus-visible {
+        outline: none;
+        color: nb-theme(breadcrumbs-link-focus-text-color);
+        @include nb-outline(nb-theme(breadcrumbs-link-outline-width), nb-theme(breadcrumbs-link-outline-color));
+      }
+    }
+
+    &.current {
+      color: nb-theme(breadcrumbs-current-text-color);
+    }
+
+    .separator {
+      display: inline-flex;
+      color: nb-theme(breadcrumbs-separator-text-color);
+    }
+  }
+}
