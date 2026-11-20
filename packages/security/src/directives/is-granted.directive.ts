@@ -1,29 +1,25 @@
-import { Directive, Input, OnDestroy, TemplateRef, ViewContainerRef } from '@angular/core';
-import { takeUntil } from 'rxjs/operators';
-import { Subject } from 'rxjs';
+import { Directive, inject, input, TemplateRef, ViewContainerRef } from '@angular/core';
+import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
+import { switchMap } from 'rxjs/operators';
 
 import { NbAccessChecker } from '../services/access-checker.service';
 
-@Directive({
-    selector: '[nbIsGranted]',
-    standalone: false
-})
-export class NbIsGrantedDirective implements OnDestroy {
-
-  private destroy$ = new Subject<void>();
+@Directive({ selector: '[nbIsGranted]' })
+export class NbIsGrantedDirective {
+  private readonly templateRef = inject<TemplateRef<unknown>>(TemplateRef);
+  private readonly viewContainer = inject(ViewContainerRef);
+  private readonly accessChecker = inject(NbAccessChecker);
 
   private hasView = false;
 
-  constructor(private templateRef: TemplateRef<any>,
-              private viewContainer: ViewContainerRef,
-              private accessChecker: NbAccessChecker) {
-  }
+  readonly nbIsGranted = input.required<[string, string]>();
 
-  @Input() set nbIsGranted([permission, resource]: [string, string]) {
-
-    this.accessChecker.isGranted(permission, resource)
+  constructor() {
+    // A new permission or resource replaces the previous check.
+    toObservable(this.nbIsGranted)
       .pipe(
-        takeUntil(this.destroy$),
+        switchMap(([permission, resource]) => this.accessChecker.isGranted(permission, resource)),
+        takeUntilDestroyed(),
       )
       .subscribe((can: boolean) => {
         if (can && !this.hasView) {
@@ -34,10 +30,5 @@ export class NbIsGrantedDirective implements OnDestroy {
           this.hasView = false;
         }
       });
-  }
-
-  ngOnDestroy() {
-    this.destroy$.next();
-    this.destroy$.complete();
   }
 }

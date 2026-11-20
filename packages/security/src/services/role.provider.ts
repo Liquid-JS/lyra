@@ -1,15 +1,8 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
 import { Observable } from 'rxjs';
 
+/** Tells the access checker the current user's roles; the app provides it, e.g. reading them from the auth token. */
 export abstract class NbRoleProvider {
 
-  /**
-   * Returns current user role
-   * @returns {Observable<string | string[]>}
-   */
-  abstract getRole(): Observable<string|string[]>;
+  /** The current user's role, or roles, now and as they change. */
+  abstract getRole(): Observable<string | string[]>;
 }

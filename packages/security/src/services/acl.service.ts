@@ -1,38 +1,36 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-import { Inject, Injectable, Optional } from '@angular/core';
+import { inject, Service } from '@angular/core';
 import { NB_SECURITY_OPTIONS_TOKEN, NbAclOptions, NbAclRole, NbAccessControl } from '../security.options';
 
-const shallowObjectClone = (o) => Object.assign({}, o);
-const shallowArrayClone = (a) => Object.assign([], a);
-const popParent = (abilities) => {
+const shallowObjectClone = <T extends object>(o: T): T => ({ ...o });
+const shallowArrayClone = <T>(a: T[]): T[] => Object.assign(new Array<T>(), a);
+const popParent = (abilities: NbAclRole) => {
   const parent = abilities.parent;
   delete abilities.parent;
   return parent;
 };
 
 /**
- * Common acl service.
+ * The access control list: which roles have which permissions on which resources, from `provideNbSecurity`'s
+ * `accessControl` or `setAccessControl`. A role has its `parent`'s permissions too, and `*` as a resource grants a
+ * permission on every resource.
  */
-@Injectable()
+@Service({ autoProvided: false })
 export class NbAclService {
+  protected readonly settings = inject<NbAclOptions>(NB_SECURITY_OPTIONS_TOKEN, { optional: true }) ?? {};
+
   private static readonly ANY_RESOURCE = '*';
 
   private state: NbAccessControl = {};
 
-  constructor(@Optional() @Inject(NB_SECURITY_OPTIONS_TOKEN) protected settings: NbAclOptions = {}) {
+  constructor() {
+    const settings = this.settings;
+
     if (settings.accessControl) {
       this.setAccessControl(settings.accessControl);
     }
   }
 
-  /**
-   * Set/Reset ACL list
-   * @param {NbAccessControl} list
-   */
+  /** Registers the roles of the list with their parents and abilities, replacing those of the same names. */
   setAccessControl(list: NbAccessControl) {
     for (const [role, value] of Object.entries(list)) {
       const abilities = shallowObjectClone(value);
@@ -41,13 +39,8 @@ export class NbAclService {
     }
   }
 
-  /**
-   * Register a new role with a list of abilities (permission/resources combinations)
-   * @param {string} role
-   * @param {string} parent
-   * @param {[permission: string]: string|string[]} abilities
-   */
-  register(role: string, parent: string = null, abilities: { [permission: string]: string | string[] } = {}) {
+  /** Registers a role, replacing one of the same name, with its parent and the resources of each permission. */
+  register(role: string, parent?: string, abilities: { [permission: string]: string | string[] | undefined } = {}) {
     this.validateRole(role);
 
     this.state[role] = {
@@ -55,22 +48,17 @@ export class NbAclService {
     };
 
     for (const [permission, value] of Object.entries(abilities)) {
-      const resources = typeof value === 'string' ? [value] : value;
+      const resources = typeof value === 'string' ? [value] : value ?? [];
       this.allow(role, permission, shallowArrayClone(resources));
     }
   }
 
-  /**
-   * Allow a permission for specific resources to a role
-   * @param {string} role
-   * @param {string} permission
-   * @param {string | string[]} resource
-   */
+  /** Grants a role a permission on resources, registering the role when it's new. */
   allow(role: string, permission: string, resource: string | string[]) {
     this.validateRole(role);
 
     if (!this.getRole(role)) {
-      this.register(role, null, {});
+      this.register(role, undefined, {});
     }
 
     resource = typeof resource === 'string' ? [resource] : resource;
@@ -81,18 +69,12 @@ export class NbAclService {
     this.state[role][permission] = resources.filter((item, pos) => resources.indexOf(item) === pos);
   }
 
-  /**
-   * Check whether the role has a permission to a resource
-   * @param {string} role
-   * @param {string} permission
-   * @param {string} resource
-   * @returns {boolean}
-   */
-  can(role: string, permission: string, resource: string) {
+  /** Whether the role, or one of its ancestors, has the permission on the resource; `*` and `''` throw. */
+  can(role: string, permission: string, resource: string): boolean {
     this.validateResource(resource);
 
     const parentRole = this.getRoleParent(role);
-    const parentCan = parentRole && this.can(this.getRoleParent(role), permission, resource);
+    const parentCan = !!parentRole && this.can(parentRole, permission, resource);
     return parentCan || this.exactCan(role, permission, resource);
   }
 
@@ -118,16 +100,17 @@ export class NbAclService {
   }
 
   private getRoleResources(role: string, permission: string): string[] {
-    return this.getRoleAbilities(role)[permission] || [];
+    const resources = this.getRoleAbilities(role)[permission];
+    return Array.isArray(resources) ? resources : [];
   }
 
-  private getRoleAbilities(role: string): { [permission: string]: string[] } {
+  private getRoleAbilities(role: string): NbAclRole {
     const abilities = shallowObjectClone(this.state[role] || {});
-    popParent(shallowObjectClone(this.state[role] || {}));
+    popParent(abilities);
     return abilities;
   }
 
-  private getRoleParent(role: string): string {
-    return this.state[role] ? this.state[role].parent : null;
+  private getRoleParent(role: string): string | undefined {
+    return this.state[role]?.parent;
   }
 }

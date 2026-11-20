@@ -1,16 +1,9 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { TestBed, inject, waitForAsync } from '@angular/core/testing';
-import { NbAclService, NB_SECURITY_OPTIONS_TOKEN } from '@nebular/security';
-import { deepExtend } from '../../auth/helpers'; // TODO: common module?
+import { TestBed, inject } from '@angular/core/testing';
+import { NbAclOptions, NbAclService, NB_SECURITY_OPTIONS_TOKEN } from '@liquid-js/lyr-security';
 
 let aclService: NbAclService;
 
-function sharedAclTests(defaultSettings) {
+function sharedAclTests(defaultSettings: Required<NbAclOptions>) {
   it(`should store different object`, () => {
     // @ts-ignore
     expect(defaultSettings.accessControl).not.toBe(aclService.state);
@@ -21,20 +14,20 @@ function sharedAclTests(defaultSettings) {
   });
 
   it(`can register a role`, () => {
-    const modifiedRoles = deepExtend({}, defaultSettings.accessControl);
-    modifiedRoles.guest = {
-      parent: null,
+    const modifiedRoles = structuredClone(defaultSettings.accessControl);
+    modifiedRoles['guest'] = {
+      parent: undefined,
     };
 
-    aclService.register('guest', null, {});
+    aclService.register('guest', undefined, {});
     // @ts-ignore
     expect(aclService.state).toEqual(modifiedRoles);
   });
 
   it(`can register a role with default values`, () => {
-    const modifiedRoles = deepExtend({}, defaultSettings.accessControl);
-    modifiedRoles.guest = {
-      parent: null,
+    const modifiedRoles = structuredClone(defaultSettings.accessControl);
+    modifiedRoles['guest'] = {
+      parent: undefined,
     };
 
     aclService.register('guest');
@@ -43,13 +36,13 @@ function sharedAclTests(defaultSettings) {
   });
 
   it(`can register a role with custom values`, () => {
-    const modifiedRoles = deepExtend({}, defaultSettings.accessControl);
-    modifiedRoles.guest = {
-      parent: null,
+    const modifiedRoles = structuredClone(defaultSettings.accessControl);
+    modifiedRoles['guest'] = {
+      parent: undefined,
       view: ['users'],
     };
 
-    aclService.register('guest', null, { view: ['users'] });
+    aclService.register('guest', undefined, { view: ['users'] });
     // @ts-ignore
     expect(aclService.state).toEqual(modifiedRoles);
   });
@@ -57,21 +50,21 @@ function sharedAclTests(defaultSettings) {
   it(`will rewrite newly registered role`, () => {
     let modifiedRoles;
 
-    modifiedRoles = deepExtend({}, defaultSettings.accessControl);
-    modifiedRoles.guest = {
-      parent: null,
+    modifiedRoles = structuredClone(defaultSettings.accessControl);
+    modifiedRoles['guest'] = {
+      parent: undefined,
       view: ['users'],
     };
-    aclService.register('guest', null, { view: ['users'] });
+    aclService.register('guest', undefined, { view: ['users'] });
     // @ts-ignore
     expect(aclService.state).toEqual(modifiedRoles);
 
-    modifiedRoles = deepExtend({}, defaultSettings.accessControl);
-    modifiedRoles.guest = {
-      parent: null,
+    modifiedRoles = structuredClone(defaultSettings.accessControl);
+    modifiedRoles['guest'] = {
+      parent: undefined,
       edit: ['users'],
     };
-    aclService.register('guest', null, { edit: ['users'] });
+    aclService.register('guest', undefined, { edit: ['users'] });
     // @ts-ignore
     expect(aclService.state).toEqual(modifiedRoles);
   });
@@ -79,22 +72,22 @@ function sharedAclTests(defaultSettings) {
   it(`can register multiple roles`, () => {
     let modifiedRoles;
 
-    modifiedRoles = deepExtend({}, defaultSettings.accessControl);
-    modifiedRoles.guest = {
-      parent: null,
+    modifiedRoles = structuredClone(defaultSettings.accessControl);
+    modifiedRoles['guest'] = {
+      parent: undefined,
       view: ['users'],
     };
 
-    aclService.register('guest', null, { view: ['users'] });
+    aclService.register('guest', undefined, { view: ['users'] });
     // @ts-ignore
     expect(aclService.state).toEqual(modifiedRoles);
 
-    modifiedRoles = deepExtend({}, defaultSettings.accessControl);
-    modifiedRoles.guest = {
-      parent: null,
+    modifiedRoles = structuredClone(defaultSettings.accessControl);
+    modifiedRoles['guest'] = {
+      parent: undefined,
       view: ['users'],
     };
-    modifiedRoles.user = {
+    modifiedRoles['user'] = {
       parent: 'guest',
       edit: ['users'],
     };
@@ -104,7 +97,7 @@ function sharedAclTests(defaultSettings) {
   });
 
   it(`cannot register a role with an empty name`, () => {
-    expect(() => aclService.register('', null, { view: ['users'] })).toThrow(
+    expect(() => aclService.register('', undefined, { view: ['users'] })).toThrow(
       new Error('NbAclService: role name cannot be empty'),
     );
   });
@@ -116,14 +109,14 @@ function sharedAclTests(defaultSettings) {
   });
 
   it(`can handle permissions`, () => {
-    aclService.register('guest', null, { view: ['users'] });
+    aclService.register('guest', undefined, { view: ['users'] });
     expect(aclService.can('guest', 'view', 'users')).toBe(true);
     expect(aclService.can('guest', 'edit', 'users')).toBe(false);
     expect(aclService.can('user', 'view', 'users')).toBe(false);
   });
 
   it(`can handle permissions with multiple resorces`, () => {
-    aclService.register('guest', null, { view: ['users', 'posts'] });
+    aclService.register('guest', undefined, { view: ['users', 'posts'] });
     expect(aclService.can('guest', 'view', 'users')).toBe(true);
     expect(aclService.can('guest', 'edit', 'users')).toBe(false);
     expect(aclService.can('user', 'view', 'users')).toBe(false);
@@ -134,7 +127,7 @@ function sharedAclTests(defaultSettings) {
   });
 
   it(`can inherit permissions - 2 levels`, () => {
-    aclService.register('guest', null, { view: ['users'] });
+    aclService.register('guest', undefined, { view: ['users'] });
     aclService.register('user', 'guest', { edit: ['users'] });
 
     expect(aclService.can('guest', 'view', 'users')).toBe(true);
@@ -147,7 +140,7 @@ function sharedAclTests(defaultSettings) {
   });
 
   it(`can inherit permissions - 3 levels`, () => {
-    aclService.register('guest', null, { view: ['users'] });
+    aclService.register('guest', undefined, { view: ['users'] });
     aclService.register('user', 'guest', { edit: ['users'] });
     aclService.register('admin', 'user', { remove: ['users'] });
     aclService.register('guest-who-can-delete', 'guest', { remove: ['users'] });
@@ -174,7 +167,7 @@ function sharedAclTests(defaultSettings) {
   });
 
   it(`can inherit permissions - 3 levels, more resources`, () => {
-    aclService.register('guest', null, { view: ['users', 'posts'] });
+    aclService.register('guest', undefined, { view: ['users', 'posts'] });
     aclService.register('user', 'guest', { view: ['dashboard'], edit: ['users', 'posts', 'dashboard'] });
     aclService.register('admin', 'user', { remove: ['users', 'posts'] });
 
@@ -216,7 +209,7 @@ function sharedAclTests(defaultSettings) {
   });
 
   it(`cannot allow empty role for 'allow' method`, () => {
-    expect(() => aclService.allow('', null, 'users')).toThrow(new Error('NbAclService: role name cannot be empty'));
+    expect(() => aclService.allow('', 'view', 'users')).toThrow(new Error('NbAclService: role name cannot be empty'));
   });
 
   it(`should allow new role`, () => {
@@ -227,7 +220,7 @@ function sharedAclTests(defaultSettings) {
   });
 
   it(`should allow new permissions on role`, () => {
-    aclService.register('guest', null, { view: ['users'] });
+    aclService.register('guest', undefined, { view: ['users'] });
     aclService.allow('guest', 'edit', 'users');
 
     expect(aclService.can('guest', 'view', 'users')).toBe(true);
@@ -235,7 +228,7 @@ function sharedAclTests(defaultSettings) {
   });
 
   it(`should allow new permissions on parent role`, () => {
-    aclService.register('guest', null, { view: ['users'] });
+    aclService.register('guest', undefined, { view: ['users'] });
     aclService.register('user', 'guest', { remove: ['users'] });
 
     expect(aclService.can('guest', 'view', 'users')).toBe(true);
@@ -261,7 +254,7 @@ function sharedAclTests(defaultSettings) {
     const settings = {
       accessControl: {
         guest: {
-          parent: null,
+          parent: undefined,
           count: ['users'],
         },
         super_user: {
@@ -311,7 +304,7 @@ function sharedAclTests(defaultSettings) {
   it(`cannot be changed by reference through register`, () => {
     const abilities = { view: ['users'] };
 
-    aclService.register('moderator', null, abilities);
+    aclService.register('moderator', undefined, abilities);
 
     expect(aclService.can('moderator', 'view', 'users')).toBe(true);
 
@@ -324,7 +317,7 @@ function sharedAclTests(defaultSettings) {
   });
 
   it(`can accept roles as string`, () => {
-    aclService.register('role', null, { view: 'all', edit: '*' });
+    aclService.register('role', undefined, { view: 'all', edit: '*' });
 
     expect(aclService.can('role', 'view', 'all')).toBe(true);
     expect(aclService.can('role', 'edit', 'all')).toBe(true);
@@ -344,11 +337,9 @@ describe('acl-service', () => {
 
     // Single async inject to save references; which are used in all tests below
     beforeEach(
-      waitForAsync(
-        inject([NbAclService], (_aclService) => {
-          aclService = _aclService;
-        }),
-      ),
+      inject([NbAclService], (_aclService: NbAclService) => {
+        aclService = _aclService;
+      }),
     );
 
     it(`has empty default state`, () => {
@@ -363,7 +354,7 @@ describe('acl-service', () => {
     const defaultSettings = {
       accessControl: {
         guest: {
-          parent: null,
+          parent: undefined,
           count: ['users'],
         },
         super_user: {
@@ -385,11 +376,9 @@ describe('acl-service', () => {
 
     // Single async inject to save references; which are used in all tests below
     beforeEach(
-      waitForAsync(
-        inject([NbAclService], (_aclService) => {
-          aclService = _aclService;
-        }),
-      ),
+      inject([NbAclService], (_aclService: NbAclService) => {
+        aclService = _aclService;
+      }),
     );
 
     it(`has predefined default state`, () => {
@@ -410,7 +399,7 @@ describe('acl-service', () => {
     const defaultSettings = {
       accessControl: {
         guest: {
-          parent: null,
+          parent: undefined,
           count: ['users'],
         },
         super_user: {
@@ -429,11 +418,9 @@ describe('acl-service', () => {
 
     // Single async inject to save references; which are used in all tests below
     beforeEach(
-      waitForAsync(
-        inject([NbAclService], (_aclService) => {
-          aclService = _aclService;
-        }),
-      ),
+      inject([NbAclService], (_aclService: NbAclService) => {
+        aclService = _aclService;
+      }),
     );
 
     it(`has predefined default state`, () => {
@@ -454,7 +441,7 @@ describe('acl-service', () => {
     const defaultSettings = {
       accessControl: {
         guest: {
-          parent: null,
+          parent: undefined,
           count: ['users'],
         },
         moderator: {
@@ -481,11 +468,9 @@ describe('acl-service', () => {
 
     // Single async inject to save references; which are used in all tests below
     beforeEach(
-      waitForAsync(
-        inject([NbAclService], (_aclService) => {
-          aclService = _aclService;
-        }),
-      ),
+      inject([NbAclService], (_aclService: NbAclService) => {
+        aclService = _aclService;
+      }),
     );
 
     it(`has predefined default state`, () => {
