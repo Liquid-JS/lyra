@@ -2,7 +2,7 @@
 We will close this issue if you don't provide the needed information.
 
 Please remember, the github issues is __NOT__ for support requests and general questions. It is for bugs and feature requests only.
-Please read https://github.com/akveo/nebular/blob/master/CONTRIBUTING.md and search
+Please read https://github.com/Liquid-JS/lyra/blob/master/CONTRIBUTING.md and search
 existing issues (both open and closed) prior to opening any new issue and ensure you follow the instructions therein.
 -->
 
@@ -30,7 +30,7 @@ If you are able to illustrate the bug or feature request with an example, please
 
 A sample application via GitHub
 
-StackBlitz [StackBlitz Seed Project](https://stackblitz.com/github/akveo/nebular-seed)
+A StackBlitz project or a minimal GitHub repository
 
 
 -->
@@ -50,7 +50,7 @@ Browser: Chrome/Safari/Firefox/etc?
 -->
 ```
 
-**Angular, Nebular**
+**Angular, Lyra**
 ```
 <!--
 Check your `package-lock.json` or locate a `package.json` in the `node_modules` folder.
