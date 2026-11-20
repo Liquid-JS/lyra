@@ -1,37 +1,20 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
 import { NgModule } from '@angular/core';
 
-import { NbSharedModule } from '../shared/shared.module';
-import { NbOverlayModule } from '../cdk/overlay/overlay.module';
-import { NbIconModule } from '../icon/icon.module';
-import { NbButtonModule } from '../button/button.module';
+import { NbOverlayModule } from '@liquid-js/lyr-core/cdk';
+import { NbIconModule } from '@liquid-js/lyr-core/icon';
+import { NbButtonModule } from '@liquid-js/lyr-core/button';
 
 import { NbSearchComponent, NbSearchFieldComponent } from './search.component';
-import { NbSearchService } from './search.service';
-
 
 @NgModule({
   imports: [
-    NbSharedModule,
     NbOverlayModule,
     NbIconModule,
     NbButtonModule,
-  ],
-  declarations: [
     NbSearchComponent,
     NbSearchFieldComponent,
   ],
-  exports: [
-    NbSearchComponent,
-    NbSearchFieldComponent,
-  ],
-  providers: [
-    NbSearchService,
-  ],
+  exports: [NbSearchComponent, NbSearchFieldComponent],
 })
 export class NbSearchModule {
 }

@@ -1,75 +1,69 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 import {
   AfterViewInit,
-  ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  computed,
+  DestroyRef,
   ElementRef,
-  EventEmitter,
-  HostBinding,
-  Input,
+  inject,
+  input,
   OnChanges,
   OnDestroy,
   OnInit,
-  Output,
+  output,
+  signal,
   SimpleChanges,
-  ViewChild,
+  viewChild,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router } from '@angular/router';
 
-import { of as observableOf, Subject } from 'rxjs';
-import { filter, delay, takeUntil } from 'rxjs/operators';
+import { of as observableOf } from 'rxjs';
+import { filter, delay } from 'rxjs/operators';
 
 import { NbSearchService } from './search.service';
-import { NbThemeService } from '../../services/theme.service';
-import { NbOverlayService } from '../cdk/overlay/overlay-service';
-import { NbOverlayRef, NbPortalDirective } from '../cdk/overlay/mapping';
+import { NbThemeService } from '@liquid-js/lyr-core/base';
+import { NbOverlayService } from '@liquid-js/lyr-core/cdk';
+import { NbOverlayRef, NbPortalDirective } from '@liquid-js/lyr-core/cdk';
+import { NbButtonComponent } from '@liquid-js/lyr-core/button';
+import { NbIconComponent } from '@liquid-js/lyr-core/icon';
+import { FormsModule } from '@angular/forms';
+import { injectNbTexts, NbLocalize } from '@liquid-js/lyr-core/base';
+import { ɵconvertToBoolProperty as convertToBoolProperty, NbBooleanInput } from '@liquid-js/lyr-core/base';
+
+/** @internal */
+declare const $localize: NbLocalize;
+
+let lastSearchHintId = 0;
 
 /**
- * search-field-component is used under the hood by nb-search component
- * can't be used itself
+ * The field `nb-search` opens over the page; not for use on its own.
  */
 @Component({
-    selector: 'nb-search-field',
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    styleUrls: [
-        'styles/search.component.modal-zoomin.scss',
-        'styles/search.component.layout-rotate.scss',
-        'styles/search.component.modal-move.scss',
-        'styles/search.component.curtain.scss',
-        'styles/search.component.column-curtain.scss',
-        'styles/search.component.modal-drop.scss',
-        'styles/search.component.modal-half.scss',
-    ],
-    template: `
-    <div class="search" (keyup.esc)="emitClose()">
-      <button (click)="emitClose()" nbButton ghost class="close-button">
-        <nb-icon icon="close-outline" pack="nebular-essentials"></nb-icon>
-      </button>
-      <div class="form-wrapper">
-        <form class="form" (keyup.enter)="submitSearch(searchInput.value)">
-          <div class="form-content">
-            <input class="search-input"
-                   #searchInput
-                   (input)="emitSearchInput(searchInput.value)"
-                   autocomplete="off"
-                   [attr.placeholder]="placeholder"
-                   tabindex="-1"
-                   (blur)="focusInput()"/>
-          </div>
-          <span class="info">{{ hint }}</span>
-        </form>
-      </div>
-    </div>
-  `,
-    standalone: false
+  selector: 'nb-search-field',
+  styleUrls: [
+    'styles/search.component.modal-zoomin.scss',
+    'styles/search.component.layout-rotate.scss',
+    'styles/search.component.modal-move.scss',
+    'styles/search.component.curtain.scss',
+    'styles/search.component.column-curtain.scss',
+    'styles/search.component.modal-drop.scss',
+    'styles/search.component.modal-half.scss',
+  ],
+  templateUrl: './search-field.component.html',
+  imports: [NbButtonComponent, NbIconComponent, FormsModule],
+  host: {
+    '[class]': 'typeClass()',
+    '[class.show]': 'show()',
+  },
 })
 export class NbSearchFieldComponent implements OnChanges, AfterViewInit {
+  protected readonly texts = injectNbTexts('search', () => ({
+    placeholder: $localize`:@@nb.search.placeholder:Search...`,
+    hint: $localize`:@@nb.search.hint:Hit enter to search`,
+    open: $localize`:@@nb.search.open:Search`,
+    close: $localize`:@@nb.search.close:Close search`,
+  }));
 
   static readonly TYPE_MODAL_ZOOMIN = 'modal-zoomin';
   static readonly TYPE_ROTATE_LAYOUT = 'rotate-layout';
@@ -79,61 +73,28 @@ export class NbSearchFieldComponent implements OnChanges, AfterViewInit {
   static readonly TYPE_MODAL_DROP = 'modal-drop';
   static readonly TYPE_MODAL_HALF = 'modal-half';
 
-  @Input() type: string;
-  @Input() placeholder: string;
-  @Input() hint: string;
-  @Input() show = false;
+  readonly type = input<string>();
+  readonly placeholder = input<string>();
+  readonly hint = input<string>();
 
-  @Output() close = new EventEmitter();
-  @Output() search = new EventEmitter();
-  @Output() searchInput = new EventEmitter();
+  // The hint describes the field, as a field's errors do; the placeholder names it, with nothing else to.
+  protected readonly hintId = `nb-search-hint-${lastSearchHintId++}`;
 
-  @ViewChild('searchInput') inputElement: ElementRef<HTMLInputElement>;
+  readonly show = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
 
-  @HostBinding('class.show')
-  get showClass() {
-    return this.show;
-  }
+  readonly close = output<void>();
+  readonly search = output<string>();
+  readonly searchInput = output<string>();
 
-  @HostBinding('class.modal-zoomin')
-  get modalZoomin() {
-    return this.type === NbSearchFieldComponent.TYPE_MODAL_ZOOMIN;
-  }
+  readonly inputElement = viewChild<ElementRef<HTMLInputElement>>('searchInput');
 
-  @HostBinding('class.rotate-layout')
-  get rotateLayout() {
-    return this.type === NbSearchFieldComponent.TYPE_ROTATE_LAYOUT;
-  }
-
-  @HostBinding('class.modal-move')
-  get modalMove() {
-    return this.type === NbSearchFieldComponent.TYPE_MODAL_MOVE;
-  }
-
-  @HostBinding('class.curtain')
-  get curtain() {
-    return this.type === NbSearchFieldComponent.TYPE_CURTAIN;
-  }
-
-  @HostBinding('class.column-curtain')
-  get columnCurtain() {
-    return this.type === NbSearchFieldComponent.TYPE_COLUMN_CURTAIN;
-  }
-
-  @HostBinding('class.modal-drop')
-  get modalDrop() {
-    return this.type === NbSearchFieldComponent.TYPE_MODAL_DROP;
-  }
-
-  @HostBinding('class.modal-half')
-  get modalHalf() {
-    return this.type === NbSearchFieldComponent.TYPE_MODAL_HALF;
-  }
+  protected readonly typeClass = computed(() => (searchTypes.includes(this.type() as NbSearchType) ? this.type() : ''));
 
   ngOnChanges({ show }: SimpleChanges) {
-    const becameHidden = !show.isFirstChange() && show.currentValue === false;
-    if (becameHidden && this.inputElement) {
-      this.inputElement.nativeElement.value = '';
+    const becameHidden = show && !show.isFirstChange() && show.currentValue === false;
+    const inputElement = this.inputElement();
+    if (becameHidden && inputElement) {
+      inputElement.nativeElement.value = '';
     }
 
     this.focusInput();
@@ -147,7 +108,15 @@ export class NbSearchFieldComponent implements OnChanges, AfterViewInit {
     this.close.emit();
   }
 
-  submitSearch(term) {
+  /** Escape closes the search, on key down as the overlays close, and only the search. */
+  protected onEscape(event: Event) {
+    if (!event.defaultPrevented) {
+      event.preventDefault();
+      this.emitClose();
+    }
+  }
+
+  submitSearch(term: string) {
     if (term) {
       this.search.emit(term);
     }
@@ -158,26 +127,39 @@ export class NbSearchFieldComponent implements OnChanges, AfterViewInit {
   }
 
   focusInput() {
-    if (this.show && this.inputElement) {
-      this.inputElement.nativeElement.focus();
+    const inputElement = this.inputElement();
+    if (this.show() && inputElement) {
+      inputElement.nativeElement.focus();
     }
   }
 }
 
-export type NbSearchType = 'modal-zoomin' | 'rotate-layout' | 'modal-move' |
-  'curtain' | 'column-curtain' | 'modal-drop' | 'modal-half';
+export type NbSearchType = 'modal-zoomin' | 'rotate-layout' | 'modal-move'
+  | 'curtain' | 'column-curtain' | 'modal-drop' | 'modal-half';
+
+const searchTypes: NbSearchType[] = [
+  'modal-zoomin', 'rotate-layout', 'modal-move', 'curtain', 'column-curtain', 'modal-drop', 'modal-half',
+];
 
 /**
- * Beautiful full-page search control.
+ * A search button that opens a search field over the whole page, with an animation of the chosen `type`.
  *
  * @stacked-example(Showcase, search/search-showcase.component)
  *
- * Basic setup:
- *
- * ```ts
- *  <nb-search type="rotate-layout"></nb-search>
+ * ```html
+ * <nb-search type="rotate-layout" />
  * ```
  * ### Installation
+ *
+ * Import `NbSearchComponent` into your standalone component:
+ * ```ts
+ * @Component({
+ *   imports: [NbSearchComponent],
+ * })
+ * export class PageComponent { }
+ * ```
+ *
+ * With NgModules:
  *
  * Import `NbSearchModule` to your feature module.
  * ```ts
@@ -191,12 +173,15 @@ export type NbSearchType = 'modal-zoomin' | 'rotate-layout' | 'modal-move' |
  * ```
  * ### Usage
  *
- * Several animation types are available:
- * modal-zoomin, rotate-layout, modal-move, curtain, column-curtain, modal-drop, modal-half
- *
- * It is also possible to handle search event using `NbSearchService`:
+ * The animations are `modal-zoomin`, `rotate-layout`, `modal-move`, `curtain`, `column-curtain`, `modal-drop` and
+ * `modal-half`. The field takes the focus while it's open; Escape or the close button closes it, and so does a
+ * navigation. Enter submits the term through `NbSearchService`, which also opens and closes the search:
  *
  * @stacked-example(Search Event, search/search-event.component)
+ *
+ * `onSearchInput()` emits as the user types, e.g. to suggest results before they submit:
+ *
+ * @stacked-example(Search Input Event, search/search-with-input-event.component)
  *
  * @styles
  *
@@ -218,90 +203,66 @@ export type NbSearchType = 'modal-zoomin' | 'rotate-layout' | 'modal-move' |
  * search-info-text-line-height:
  */
 @Component({
-    selector: 'nb-search',
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    styleUrls: ['styles/search.component.scss'],
-    template: `
-    <button #searchButton class="start-search" (click)="emitActivate()" nbButton ghost>
-      <nb-icon icon="search-outline" pack="nebular-essentials"></nb-icon>
-    </button>
-    <nb-search-field
-      *nbPortal
-      [show]="showSearchField"
-      [type]="type"
-      [placeholder]="placeholder"
-      [hint]="hint"
-      (search)="search($event)"
-      (searchInput)="emitInput($event)"
-      (close)="emitDeactivate()">
-    </nb-search-field>
-  `,
-    standalone: false
+  selector: 'nb-search',
+  styleUrls: ['styles/search.component.scss'],
+  templateUrl: './search.component.html',
+  imports: [NbButtonComponent, NbIconComponent, NbPortalDirective, NbSearchFieldComponent],
 })
 export class NbSearchComponent implements OnInit, OnDestroy {
+  protected readonly texts = injectNbTexts('search', () => ({
+    placeholder: $localize`:@@nb.search.placeholder:Search...`,
+    hint: $localize`:@@nb.search.hint:Hit enter to search`,
+    open: $localize`:@@nb.search.open:Search`,
+    close: $localize`:@@nb.search.close:Close search`,
+  }));
 
-  private destroy$ = new Subject<void>();
-  private overlayRef: NbOverlayRef;
-  showSearchField = false;
+  private readonly searchService = inject(NbSearchService);
+  private readonly themeService = inject(NbThemeService);
+  private readonly router = inject(Router);
+  private readonly overlayService = inject(NbOverlayService);
+  private readonly changeDetector = inject(ChangeDetectorRef);
 
-  /**
-   * Tags a search with some ID, can be later used in the search service
-   * to determine which search component triggered the action, if multiple searches exist on the page.
-   *
-   * @type {string}
-   */
-  @Input() tag: string;
-
-  /**
-   * Search input placeholder
-   * @type {string}
-   */
-  @Input() placeholder: string = 'Search...';
+  private readonly destroyRef = inject(DestroyRef);
+  private overlayRef?: NbOverlayRef;
+  readonly showSearchField = signal(false);
 
   /**
-   * Hint showing under the input field to improve user experience
-   *
-   * @type {string}
+   * Tells the searches apart in `NbSearchService` when a page has several: the service's events carry it, and a
+   * call with a tag reaches only the search with that tag, or the searches without one.
    */
-  @Input() hint: string = 'Hit enter to search';
+  readonly tag = input<string>();
 
-  /**
-   * Search design type, available types are
-   * modal-zoomin, rotate-layout, modal-move, curtain, column-curtain, modal-drop, modal-half
-   * @type {string}
-   */
-  @Input() type: NbSearchType;
+  /** The field's placeholder; "Search..." by default, from the app's texts. */
+  readonly placeholder = input<string>();
 
-  @ViewChild(NbPortalDirective) searchFieldPortal: NbPortalDirective;
-  @ViewChild('searchButton', { read: ElementRef }) searchButton: ElementRef<HTMLElement>;
+  /** A hint under the field; "Hit enter to search" by default, from the app's texts. */
+  readonly hint = input<string>();
 
-  constructor(
-    private searchService: NbSearchService,
-    private themeService: NbThemeService,
-    private router: Router,
-    private overlayService: NbOverlayService,
-    private changeDetector: ChangeDetectorRef,
-  ) {}
+  /** The animation the field opens with; without one, the field shows without an animation. */
+  readonly type = input<NbSearchType>();
+
+  readonly searchFieldPortal = viewChild.required(NbPortalDirective);
+  readonly searchButton = viewChild.required('searchButton', { read: ElementRef<HTMLElement> });
 
   ngOnInit() {
     this.router.events
       .pipe(
-        filter(event => event instanceof NavigationEnd),
-        takeUntil(this.destroy$),
+        filter((event) => event instanceof NavigationEnd),
+        takeUntilDestroyed(this.destroyRef),
       )
       .subscribe(() => this.hideSearch());
 
     this.searchService.onSearchActivate()
       .pipe(
-        filter(data => !this.tag || data.tag === this.tag),
-        takeUntil(this.destroy$),
+        filter((data) => !this.tag() || data.tag === this.tag()),
+        takeUntilDestroyed(this.destroyRef),
       )
       .subscribe(() => this.openSearch());
 
     this.searchService.onSearchDeactivate()
       .pipe(
-        filter(data => !this.tag || data.tag === this.tag),
-        takeUntil(this.destroy$),
+        filter((data) => !this.tag() || data.tag === this.tag()),
+        takeUntilDestroyed(this.destroyRef),
       )
       .subscribe(() => this.hideSearch());
   }
@@ -311,53 +272,57 @@ export class NbSearchComponent implements OnInit, OnDestroy {
       this.removeLayoutClasses();
       this.overlayRef.detach();
     }
-
-    this.destroy$.next();
-    this.destroy$.complete();
   }
 
   openSearch() {
     if (!this.overlayRef) {
       this.overlayRef = this.overlayService.create();
-      this.overlayRef.attach(this.searchFieldPortal);
+      this.overlayRef.attach(this.searchFieldPortal());
     }
 
-    this.themeService.appendLayoutClass(this.type);
+    const type = this.type();
+    if (type) {
+      this.themeService.appendLayoutClass(type);
+    }
     observableOf(null).pipe(delay(0)).subscribe(() => {
       this.themeService.appendLayoutClass('with-search');
-      this.showSearchField = true;
+      this.showSearchField.set(true);
       this.changeDetector.detectChanges();
     });
   }
 
   hideSearch() {
     this.removeLayoutClasses();
-    this.showSearchField = false;
+    this.showSearchField.set(false);
+    // Render now, so the search field is closed before the button takes the focus back.
     this.changeDetector.detectChanges();
-    this.searchButton.nativeElement.focus();
+    this.searchButton().nativeElement.focus();
   }
 
-  search(term) {
-    this.searchService.submitSearch(term, this.tag);
+  search(term: string) {
+    this.searchService.submitSearch(term, this.tag());
     this.hideSearch();
   }
 
   emitInput(term: string) {
-    this.searchService.searchInput(term, this.tag);
+    this.searchService.searchInput(term, this.tag());
   }
 
   emitActivate() {
-    this.searchService.activateSearch(this.type, this.tag);
+    this.searchService.activateSearch(this.type(), this.tag());
   }
 
   emitDeactivate() {
-    this.searchService.deactivateSearch(this.type, this.tag);
+    this.searchService.deactivateSearch(this.type(), this.tag());
   }
 
   private removeLayoutClasses() {
     this.themeService.removeLayoutClass('with-search');
     observableOf(null).pipe(delay(500)).subscribe(() => {
-      this.themeService.removeLayoutClass(this.type);
+      const type = this.type();
+      if (type) {
+        this.themeService.removeLayoutClass(type);
+      }
     });
   }
 }

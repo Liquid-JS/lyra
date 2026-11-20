@@ -1,88 +1,57 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { Injectable } from '@angular/core';
+import { Service } from '@angular/core';
 import { Subject, Observable } from 'rxjs';
 import { share } from 'rxjs/operators';
 
 /**
- * Search component service, connects your code to a page-level search component.
+ * Connects the app to the page's `nb-search`: opens and closes it, and passes on what the user types and submits.
+ *
+ * A `tag` tells the searches apart when a page has several: a call with a tag reaches the search with that tag, or
+ * the searches without one, and the events carry the tag of the search they come from.
  */
-@Injectable()
+@Service()
 export class NbSearchService {
-  private searchSubmittings$ = new Subject<{ term: string, tag?: string }>();
-  private searchActivations$ = new Subject<{ searchType: string, tag?: string }>();
-  private searchDeactivations$ = new Subject<{ searchType: string, tag?: string }>();
-  private searchInput$ = new Subject<{ term: string, tag?: string }>();
+  private searchSubmittings$ = new Subject<{ term: string; tag?: string }>();
+  private searchActivations$ = new Subject<{ searchType?: string; tag?: string }>();
+  private searchDeactivations$ = new Subject<{ searchType?: string; tag?: string }>();
+  private searchInput$ = new Subject<{ term: string; tag?: string }>();
 
-  /***
-   * Activate (open) search component
-   * @param {string} searchType
-   * @param {string} tag
-   */
-  activateSearch(searchType: string, tag?: string) {
+  /** Opens the search; the search button calls it too. `searchType` is passed on with the event. */
+  activateSearch(searchType?: string, tag?: string) {
     this.searchActivations$.next({ searchType, tag });
   }
 
-  /**
-   * Deactibate (close) search component
-   * @param {string} searchType
-   * @param {string} tag
-   */
-  deactivateSearch(searchType: string, tag?: string) {
+  /** Closes the search; the close button calls it too. `searchType` is passed on with the event. */
+  deactivateSearch(searchType?: string, tag?: string) {
     this.searchDeactivations$.next({ searchType, tag });
   }
 
-  /**
-   * Trigger search submit
-   * @param {string} term
-   * @param {string} tag
-   */
+  /** Submits a term, as Enter in the field does. */
   submitSearch(term: string, tag?: string) {
     this.searchSubmittings$.next({ term, tag });
   }
 
-  /**
-   * Trigger search submit by input event
-   * @param {string} term
-   * @param {string} tag
-   */
+  /** Reports the term as it's typed, as the field does. */
   searchInput(term: string, tag?: string) {
-    this.searchInput$.next({term, tag});
+    this.searchInput$.next({ term, tag });
   }
 
-  /**
-   * Subscribe to 'activate' event
-   * @returns Observable<{searchType: string; tag?: string}>
-   */
-  onSearchActivate(): Observable<{ searchType: string, tag?: string }> {
+  /** The searches opened: by the button, or `activateSearch`. */
+  onSearchActivate(): Observable<{ searchType?: string; tag?: string }> {
     return this.searchActivations$.pipe(share());
   }
 
-  /**
-   * Subscribe to 'deactivate' event
-   * @returns Observable<{searchType: string; tag?: string}>
-   */
-  onSearchDeactivate(): Observable<{ searchType: string, tag?: string }> {
+  /** The searches closed by the user: Escape or the close button, or `deactivateSearch`. */
+  onSearchDeactivate(): Observable<{ searchType?: string; tag?: string }> {
     return this.searchDeactivations$.pipe(share());
   }
 
-  /**
-   * Subscribe to 'submit' event (when submit button clicked)
-   * @returns Observable<{term: string; tag?: string}>
-   */
-  onSearchSubmit(): Observable<{ term: string, tag?: string }> {
+  /** The terms submitted with Enter, or `submitSearch`; the search closes on each. */
+  onSearchSubmit(): Observable<{ term: string; tag?: string }> {
     return this.searchSubmittings$.pipe(share());
   }
 
-  /**
-   * Subscribe to input event
-   * @returns Observable<{term: string; tag?: string}>
-   */
-  onSearchInput(): Observable<{ term: string, tag?: string }> {
+  /** The term as the user types it, e.g. to suggest results before they submit. */
+  onSearchInput(): Observable<{ term: string; tag?: string }> {
     return this.searchInput$.pipe(share());
   }
 }

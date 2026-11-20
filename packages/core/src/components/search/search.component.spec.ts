@@ -1,7 +1,6 @@
-import createSpy = jasmine.createSpy;
-import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
+import { assert } from 'vitest';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { RouterTestingModule } from '@angular/router/testing';
 import {
   NbLayoutModule,
   NbSearchComponent,
@@ -10,16 +9,23 @@ import {
   NbSearchService,
   NbThemeModule,
   NbLayoutComponent,
-} from '@nebular/theme';
+} from '@liquid-js/lyr-core';
+import { RouterModule } from '@angular/router';
 
 describe('NbSearchFieldComponent', () => {
   let fixture: ComponentFixture<NbSearchFieldComponent>;
   let searchFieldComponent: NbSearchFieldComponent;
 
+  const inputElement = () => {
+    const input = searchFieldComponent.inputElement();
+    assert(input, 'search input not rendered');
+    return input.nativeElement;
+  };
+
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [
-        RouterTestingModule.withRoutes([]),
+        RouterModule.forRoot([]),
         NbThemeModule.forRoot(),
         NbSearchModule,
       ],
@@ -30,29 +36,57 @@ describe('NbSearchFieldComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should emit input event when typing in input', fakeAsync(() => {
-    const inputSpy = createSpy('inputSpy');
+  it('should be named by its placeholder and described by its hint', () => {
+    fixture.componentRef.setInput('placeholder', 'Search orders');
+    fixture.componentRef.setInput('hint', 'Hit enter to search');
+    fixture.detectChanges();
+    const input = inputElement();
+    expect(input.getAttribute('aria-label')).toBe('Search orders');
+    const hint = fixture.nativeElement.querySelector(`#${input.getAttribute('aria-describedby')}`) as HTMLElement;
+    expect(hint.textContent?.trim()).toBe('Hit enter to search');
+  });
+
+  it('should emit input event when typing in input', async () => {
+    vi.useFakeTimers();
+    const inputSpy = vi.fn();
     searchFieldComponent.searchInput.subscribe(inputSpy);
 
-    const input: HTMLInputElement = fixture.componentInstance.inputElement.nativeElement;
+    const input = inputElement();
     input.dispatchEvent(new Event('input'));
-    tick();
+    await vi.advanceTimersByTimeAsync(0);
 
     expect(inputSpy).toHaveBeenCalledTimes(1);
-  }));
+  });
 
-  it('should emit input event with input value', fakeAsync(() => {
+  it('should emit input event with input value', async () => {
+    vi.useFakeTimers();
     const inputValue = 'input text';
-    const inputSpy = createSpy('inputSpy');
+    const inputSpy = vi.fn();
     searchFieldComponent.searchInput.subscribe(inputSpy);
 
-    const input: HTMLInputElement = fixture.componentInstance.inputElement.nativeElement;
+    const input = inputElement();
     input.value = inputValue;
     input.dispatchEvent(new Event('input'));
-    tick();
+    await vi.advanceTimersByTimeAsync(0);
 
     expect(inputSpy).toHaveBeenCalledWith(inputValue);
-  }));
+  });
+
+  // The term takes its own direction; the empty field keeps the page's, for the placeholder.
+  it('should take the direction of the term', () => {
+    const input = inputElement();
+    expect(input.hasAttribute('dir')).toBe(false);
+
+    input.value = 'input text';
+    input.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+    expect(input.getAttribute('dir')).toBe('auto');
+
+    input.value = '';
+    input.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+    expect(input.hasAttribute('dir')).toBe(false);
+  });
 });
 
 describe('NbSearchComponent', () => {
@@ -66,7 +100,7 @@ describe('NbSearchComponent', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [
-        RouterTestingModule.withRoutes([]),
+        RouterModule.forRoot([]),
         NbThemeModule.forRoot(),
         NbLayoutModule,
         NbSearchModule,
@@ -80,33 +114,35 @@ describe('NbSearchComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should listen to search field input event', fakeAsync(() => {
+  it('should listen to search field input event', async () => {
+    vi.useFakeTimers();
     searchComponent.openSearch();
     fixture.detectChanges();
-    tick();
+    await vi.advanceTimersByTimeAsync(0);
 
-    const inputSpy = spyOn(searchComponent, 'emitInput');
+    const inputSpy = vi.spyOn(searchComponent, 'emitInput').mockImplementation(() => undefined);
     const searchFieldComponent: NbSearchFieldComponent = getSearchFieldComponent();
 
-    searchFieldComponent.searchInput.emit();
-    tick();
+    searchFieldComponent.searchInput.emit('');
+    await vi.advanceTimersByTimeAsync(0);
     expect(inputSpy).toHaveBeenCalledTimes(1);
-  }));
+  });
 
-  it(`should propagate search event to search service`, fakeAsync(() => {
+  it(`should propagate search event to search service`, async () => {
+    vi.useFakeTimers();
     searchComponent.openSearch();
     fixture.detectChanges();
-    tick();
+    await vi.advanceTimersByTimeAsync(0);
     const searchFieldComponent: NbSearchFieldComponent = getSearchFieldComponent();
 
     const searchService = TestBed.inject(NbSearchService);
-    const searchInput = spyOn(searchService, 'searchInput').and.callThrough();
+    const searchInput = vi.spyOn(searchService, 'searchInput');
     const searchTerm = 'search term';
 
     searchFieldComponent.searchInput.emit(searchTerm);
-    tick();
+    await vi.advanceTimersByTimeAsync(0);
 
     expect(searchInput).toHaveBeenCalledTimes(1);
     expect(searchInput).toHaveBeenCalledWith(searchTerm, undefined);
-  }));
+  });
 });
