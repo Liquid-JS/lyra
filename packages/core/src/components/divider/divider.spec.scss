@@ -1,0 +1,10 @@
+// The default theme's divider styles, which specs don't load otherwise.
+@use '@liquid-js/lyr-core/styles/all' as *;
+@use 'divider.component.theme' as divider;
+
+$nb-enabled-themes: (default);
+
+@include nb-install() {
+  @include nb-theme-base();
+  @include divider.nb-divider-theme();
+}
