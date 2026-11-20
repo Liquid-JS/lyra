@@ -1,0 +1,12 @@
+<nb-card>
+  <nb-card-body class="fields">
+    @for (size of sizes; track size) {
+    <nb-slider [size]="size"
+      [min]="0"
+      [max]="100"
+      [(value)]="volume"
+      [labels]="false"
+      [aria-label]="size + ' volume'" />
+    }
+  </nb-card-body>
+</nb-card>

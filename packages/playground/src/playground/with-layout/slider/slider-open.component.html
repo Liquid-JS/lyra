@@ -1,0 +1,36 @@
+<nb-card>
+  <nb-card-body class="fields">
+    <div>
+      <label nbLabel
+        [for]="seatsField">Licence seats</label>
+      <nb-slider [min]="1"
+        [step]="1"
+        [formControl]="seats"
+        nbValidation
+        #seatsField="nbValidation" />
+      <p class="value caption">{{ seats.value }} seats</p>
+    </div>
+
+    <div>
+      <label nbLabel
+        [for]="adjustmentField">Price adjustment (%)</label>
+      <nb-slider [step]="1"
+        [formControl]="adjustment"
+        nbValidation
+        #adjustmentField="nbValidation" />
+      <p class="value caption">{{ adjustment.value ?? 0 }}%</p>
+    </div>
+
+    <div>
+      <label nbLabel
+        [for]="teamField">Team size</label>
+      <nb-slider range
+        [min]="1"
+        [step]="1"
+        [formControl]="team"
+        nbValidation
+        #teamField="nbValidation" />
+      <p class="value caption">{{ team.value?.start }} to {{ team.value?.end }} people</p>
+    </div>
+  </nb-card-body>
+</nb-card>
