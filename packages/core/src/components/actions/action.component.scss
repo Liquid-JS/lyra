@@ -1,8 +1,4 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
+@use '../../styles/theming' as *;
 
 :host {
   background: transparent;
@@ -14,7 +10,8 @@
 :host(.disabled) {
   cursor: not-allowed;
 
-  a, nb-icon {
+  a,
+  nb-icon {
     cursor: not-allowed;
   }
 }
@@ -27,7 +24,41 @@
 a.icon-container {
   position: relative;
 
-  &:hover, &:focus {
+  // A badge on the icon sits over its corner, so it covers only that corner, e.g. of a bell.
+  nb-badge {
+    translate: var(--nb-action-badge-x, 0) var(--nb-action-badge-y, 0);
+
+    &.position-top {
+      --nb-action-badge-y: -50%;
+    }
+
+    &.position-bottom {
+      --nb-action-badge-y: 50%;
+    }
+
+    &.position-right {
+      --nb-action-badge-x: 50%;
+    }
+
+    &.position-left {
+      --nb-action-badge-x: -50%;
+    }
+
+    &.position-end {
+      --nb-action-badge-x: 50%;
+
+      @include nb-rtl(--nb-action-badge-x, -50%);
+    }
+
+    &.position-start {
+      --nb-action-badge-x: -50%;
+
+      @include nb-rtl(--nb-action-badge-x, 50%);
+    }
+  }
+
+  &:hover,
+  &:focus {
     text-decoration: none;
   }
 }

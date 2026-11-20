@@ -1,157 +1,97 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
+import { Component, input } from '@angular/core';
 
-import { Component, HostBinding, Input } from '@angular/core';
-
-import { convertToBoolProperty, NbBooleanInput } from '../helpers';
-import { NbComponentSize } from '../component-size';
-import { NbComponentOrCustomStatus } from '../component-status';
-import { NbBadgePosition } from '../badge/badge.component';
-import { NbIconConfig } from '../icon/icon.component';
+import { ɵconvertToBoolProperty as convertToBoolProperty, NbBooleanInput } from '@liquid-js/lyr-core/base';
+import { NbComponentSize } from '@liquid-js/lyr-core/base';
+import { NbComponentOrCustomStatus } from '@liquid-js/lyr-core/base';
+import { NbBadgePosition, NbBadgeComponent } from '@liquid-js/lyr-core/badge';
+import { NbIconConfig, NbIconComponent } from '@liquid-js/lyr-core/icon';
+import { RouterLink } from '@angular/router';
+import { NgTemplateOutlet } from '@angular/common';
 
 /**
- * Action item, display a link with an icon, or any other content provided instead.
+ * An action in `nb-actions`: a link with an icon, or any content given instead of an icon.
  */
 @Component({
-    selector: 'nb-action',
-    styleUrls: ['./action.component.scss'],
-    template: `
-    <ng-container *ngIf="icon; else projectedContent">
-      <a class="icon-container"
-         [routerLink]="link"
-         [title]="title"
-         *ngIf="link">
-        <nb-icon [config]="icon"></nb-icon>
-        <ng-container [ngTemplateOutlet]="badgeTemplate"></ng-container>
-      </a>
-      <a class="icon-container"
-         [href]="href"
-         [title]="title"
-         *ngIf="href && !link">
-        <nb-icon [config]="icon"></nb-icon>
-        <ng-container [ngTemplateOutlet]="badgeTemplate"></ng-container>
-      </a>
-      <a class="icon-container"
-         href="#"
-         [title]="title"
-         *ngIf="!href && !link"
-         (click)="$event.preventDefault()">
-        <nb-icon [config]="icon"></nb-icon>
-        <ng-container [ngTemplateOutlet]="badgeTemplate"></ng-container>
-      </a>
-    </ng-container>
-
-    <ng-template #projectedContent>
-      <ng-content></ng-content>
-      <ng-container [ngTemplateOutlet]="badgeTemplate"></ng-container>
-    </ng-template>
-    <ng-template #badgeTemplate>
-      <nb-badge *ngIf="badgeText || badgeDot"
-                [text]="badgeText"
-                [dotMode]="badgeDot"
-                [status]="badgeStatus"
-                [position]="badgePosition">
-      </nb-badge>
-    </ng-template>
-  `,
-    standalone: false
+  selector: 'nb-action',
+  styleUrls: ['./action.component.scss'],
+  templateUrl: './actions.component.html',
+  imports: [RouterLink, NbIconComponent, NgTemplateOutlet, NbBadgeComponent],
+  host: {
+    '[class.disabled]': 'disabled()',
+  },
 })
 export class NbActionComponent {
+  /**
+   * Router link of the icon; wins over `href`.
+   */
+  readonly link = input<string>();
 
   /**
-   * Router link to use
-   * @type string
+   * Plain `href` of the icon. Without `link` or `href` the icon is a link that goes nowhere.
    */
-  @Input() link: string;
+  readonly href = input<string>();
 
   /**
-   * Regular HREF link
-   * @type: string
+   * Title (tooltip) of the icon link.
    */
-  @Input() href: string;
+  readonly title = input<string>('');
 
   /**
-   * Optional title for mouseover
-   * @type string
+   * Icon name or config. Without it the action shows its content instead.
    */
-  @Input() title: string = '';
+  readonly icon = input<string | NbIconConfig>();
 
   /**
-   * Icon name or config object
-   * @type {string | NbIconConfig}
+   * Disables the item: dimmed, skipped by Tab and `aria-disabled`.
    */
-  @Input() icon: string | NbIconConfig;
+  readonly disabled = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
 
   /**
-   * Visually disables the item
-   * @type boolean
+   * Shows the badge as a dot, without text.
    */
-  @Input()
-  @HostBinding('class.disabled')
-  get disabled(): boolean {
-    return this._disabled;
-  }
-  set disabled(value: boolean) {
-    this._disabled = convertToBoolProperty(value);
-  }
-  protected _disabled: boolean = false;
-  static ngAcceptInputType_disabled: NbBooleanInput;
+  readonly badgeDot = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
 
   /**
-   * Use badge dot mode
-   * @type boolean
+   * Text of the badge, which shows when this or `badgeDot` is set.
    */
-  @Input()
-  get badgeDot(): boolean {
-    return this._badgeDot;
-  }
-  set badgeDot(value: boolean) {
-    this._badgeDot = convertToBoolProperty(value);
-  }
-  protected _badgeDot: boolean;
-  static ngAcceptInputType_badgeDot: NbBooleanInput;
+  readonly badgeText = input<string>();
 
   /**
-   * Badge text to display
-   * @type string
+   * Badge status: `basic` (default), `primary`, `info`, `success`, `warning`, `danger`, `control` or a custom one.
    */
-  @Input() badgeText: string;
+  readonly badgeStatus = input<NbComponentOrCustomStatus>('basic');
 
   /**
-   * Badge status (adds specific styles):
-   * 'basic', 'primary', 'info', 'success', 'warning', 'danger', 'control'
-   * @param {string} val
+   * Badge position, `top right` by default: a physical corner such as `bottom left`, or a logical one such as
+   * `top end`.
    */
-  @Input() badgeStatus: NbComponentOrCustomStatus = 'basic';
-
-  /**
-   * Badge position.
-   * Can be set to any class or to one of predefined positions:
-   * 'top left', 'top right', 'bottom left', 'bottom right',
-   * 'top start', 'top end', 'bottom start', 'bottom end'
-   * @type string
-   */
-  @Input() badgePosition: NbBadgePosition;
+  readonly badgePosition = input<NbBadgePosition>();
 }
 
 /**
- * Shows a horizontal list of actions, available in multiple sizes.
- * Aligns items vertically.
+ * Shows a row of actions, vertically centred, in several sizes.
  *
  * @stacked-example(Showcase, action/action-showcase.component)
  *
  * Basic actions setup:
  * ```html
  * <nb-actions size="small">
- *   <nb-action icon="nb-search"></nb-action>
- *   <nb-action icon="nb-power-circled"></nb-action>
- *   <nb-action icon="nb-person"></nb-action>
+ *   <nb-action icon="search-outline"></nb-action>
+ *   <nb-action icon="power-outline"></nb-action>
+ *   <nb-action icon="person-outline"></nb-action>
  * </nb-actions>
  * ```
  * ### Installation
+ *
+ * Import `NbActionsComponent`, `NbActionComponent` into your standalone component:
+ * ```ts
+ * @Component({
+ *   imports: [NbActionsComponent, NbActionComponent],
+ * })
+ * export class PageComponent { }
+ * ```
+ *
+ * With NgModules:
  *
  * Import `NbActionsModule` to your feature module.
  * ```ts
@@ -165,7 +105,8 @@ export class NbActionComponent {
  * ```
  * ### Usage
  *
- * Multiple sizes example:
+ * Its sizes are the sizes of its icons, from 1rem for `tiny` to 4rem for `giant`, not the heights of controls, so the
+ * app's size for controls doesn't change them:
  * @stacked-example(Multiple Sizes, action/action-sizes.component)
  *
  * It is also possible to specify a `badge` value:
@@ -213,63 +154,22 @@ export class NbActionComponent {
  * actions-giant-text-font-size:
  */
 @Component({
-    selector: 'nb-actions',
-    styleUrls: ['./actions.component.scss'],
-    template: `
-    <ng-content select="nb-action"></ng-content>
-  `,
-    standalone: false
+  selector: 'nb-actions',
+  styleUrls: ['./actions.component.scss'],
+  template: ` <ng-content select="nb-action" /> `,
+  host: {
+    '[class]': '`size-${size()}`',
+    '[class.full-width]': 'fullWidth()',
+  },
 })
 export class NbActionsComponent {
+  /**
+   * Size of the icons: `tiny`, `small` (default), `medium`, `large` or `giant`.
+   */
+  readonly size = input<NbComponentSize>('small');
 
   /**
-   * Size of the component: 'tiny', 'small' (default), 'medium', 'large', 'giant'
+   * Fills the width of the container, the actions sharing it equally.
    */
-  @Input()
-  get size(): NbComponentSize {
-    return this._size;
-  }
-  set size(value: NbComponentSize) {
-    this._size = value;
-  }
-  protected _size: NbComponentSize = 'small';
-
-  /**
-   * Component will fill full width of the container
-   */
-  @Input()
-  @HostBinding('class.full-width')
-  get fullWidth(): boolean {
-    return this._fullWidth;
-  }
-  set fullWidth(value: boolean) {
-    this._fullWidth = convertToBoolProperty(value);
-  }
-  protected _fullWidth: boolean = false;
-  static ngAcceptInputType_fullWidth: NbBooleanInput;
-
-  @HostBinding('class.size-tiny')
-  get tiny(): boolean {
-    return this.size === 'tiny';
-  }
-
-  @HostBinding('class.size-small')
-  get small(): boolean {
-    return this.size === 'small';
-  }
-
-  @HostBinding('class.size-medium')
-  get medium(): boolean {
-    return this.size === 'medium';
-  }
-
-  @HostBinding('class.size-large')
-  get large(): boolean {
-    return this.size === 'large';
-  }
-
-  @HostBinding('class.size-giant')
-  get giant(): boolean {
-    return this.size === 'giant';
-  }
+  readonly fullWidth = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
 }

@@ -1,16 +1,10 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { Component } from '@angular/core';
+import { NbCardComponent, NbCardBodyComponent, NbActionsComponent, NbActionComponent } from '@liquid-js/lyr-core';
 
 @Component({
-    selector: 'nb-action-dot-mode',
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    templateUrl: './action-dot-mode.component.html',
-    standalone: false
+  selector: 'nb-action-dot-mode',
+  templateUrl: './action-dot-mode.component.html',
+  imports: [NbCardComponent, NbCardBodyComponent, NbActionsComponent, NbActionComponent],
 })
 export class ActionDotModeComponent {
 }

@@ -1,18 +1,17 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { NbIconConfig } from '@nebular/theme';
+import { Component } from '@angular/core';
+import {
+  NbIconConfig,
+  NbCardComponent,
+  NbCardBodyComponent,
+  NbActionsComponent,
+  NbActionComponent,
+} from '@liquid-js/lyr-core';
 
 @Component({
-    selector: 'nb-action-showcase',
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    templateUrl: './action-showcase.component.html',
-    standalone: false
+  selector: 'nb-action-showcase',
+  templateUrl: './action-showcase.component.html',
+  imports: [NbCardComponent, NbCardBodyComponent, NbActionsComponent, NbActionComponent],
 })
 export class ActionShowcaseComponent {
-  disabledIconConfig: NbIconConfig = { icon: 'settings-2-outline', pack: 'eva' };
+  disabledIconConfig: NbIconConfig = { icon: 'settings-2-outline', pack: 'icons' };
 }

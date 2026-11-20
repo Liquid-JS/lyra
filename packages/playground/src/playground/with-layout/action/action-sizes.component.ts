@@ -1,18 +1,17 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { NbComponentSize } from '@nebular/theme';
+import { Component } from '@angular/core';
+import {
+  NbComponentSize,
+  NbCardComponent,
+  NbCardBodyComponent,
+  NbActionsComponent,
+  NbActionComponent,
+} from '@liquid-js/lyr-core';
 
 @Component({
-    selector: 'nb-action-sizes',
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    templateUrl: './action-sizes.component.html',
-    standalone: false
+  selector: 'nb-action-sizes',
+  templateUrl: './action-sizes.component.html',
+  imports: [NbCardComponent, NbCardBodyComponent, NbActionsComponent, NbActionComponent],
 })
 export class ActionSizesComponent {
-  sizes: NbComponentSize[] = [ 'tiny', 'small', 'medium', 'large', 'giant' ];
+  sizes: NbComponentSize[] = ['tiny', 'small', 'medium', 'large', 'giant'];
 }
