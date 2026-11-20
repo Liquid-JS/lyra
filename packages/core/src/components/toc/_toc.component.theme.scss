@@ -1,0 +1,49 @@
+@use '../../styles/theming' as *;
+
+@mixin nb-toc-theme() {
+  nb-toc {
+    font-family: nb-theme(toc-text-font-family);
+    font-size: nb-theme(toc-text-font-size);
+    font-weight: nb-theme(toc-text-font-weight);
+    line-height: nb-theme(toc-text-line-height);
+
+    a {
+      color: nb-theme(toc-text-color);
+      padding: nb-theme(toc-item-padding);
+      border-inline-start: nb-theme(toc-border-width) solid nb-theme(toc-border-color);
+
+      &:hover {
+        color: nb-theme(toc-hover-text-color);
+      }
+
+      &:focus {
+        color: nb-theme(toc-text-color);
+      }
+
+      // The ring shows what has focus, as for breadcrumbs.
+      &:focus-visible {
+        outline: none;
+        color: nb-theme(toc-focus-text-color);
+        border-radius: nb-theme(toc-border-radius);
+        @include nb-outline(nb-theme(toc-outline-width), nb-theme(toc-outline-color));
+      }
+
+      &.active {
+        color: nb-theme(toc-active-text-color);
+        border-inline-start-color: nb-theme(toc-active-border-color);
+      }
+    }
+
+    ul ul a {
+      padding-inline-start: calc(#{nb-theme(toc-item-indent)} * 2);
+    }
+
+    ul ul ul a {
+      padding-inline-start: calc(#{nb-theme(toc-item-indent)} * 3);
+    }
+  }
+
+  .nb-toc-target:focus {
+    outline: none;
+  }
+}

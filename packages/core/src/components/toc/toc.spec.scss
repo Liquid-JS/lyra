@@ -1,0 +1,32 @@
+// The default theme's table of contents styles, which specs don't load otherwise.
+@use '@liquid-js/lyr-core/styles/all' as *;
+@use 'toc.component.theme' as toc;
+
+$nb-enabled-themes: (default);
+
+@include nb-install() {
+  @include nb-theme-base();
+  @include toc.nb-toc-theme();
+}
+
+.article {
+  height: 200px;
+  overflow-y: auto;
+  margin: 0;
+
+  h2,
+  h3 {
+    margin: 0;
+    height: 20px;
+  }
+
+  p {
+    margin: 0;
+    height: 180px;
+  }
+
+  // Too short for its heading to reach the top.
+  .short {
+    height: 40px;
+  }
+}
