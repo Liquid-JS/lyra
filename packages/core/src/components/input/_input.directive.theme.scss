@@ -1,21 +1,73 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 @use '../../styles/theming' as *;
 @use '../form-field/form-field.component.theme' as form-field-theme;
-@use 'input-statuses';
-@use 'input-sizes';
-@use 'input-shapes';
+@use 'input-look' as look;
 
 @mixin nb-input-theme() {
+  // The width a field starts at, by size. :where() leaves it no specificity, so fullWidth and nb-form-field, which
+  // fill the space instead, always win.
+  @each $size in nb-get-sizes() {
+    :where([nbInput].size-#{$size}),
+    :where(.nb-tag-list-with-input.size-#{$size}) {
+      width: nb-theme(input-#{$size}-width);
+    }
+  }
+
   [nbInput] {
     @include nb-input-core-theme();
-    @include input-statuses.input-statuses();
-    @include input-sizes.input-sizes();
-    @include input-shapes.input-shapes();
+
+    // Beside a button of its size it lines up by its middle, as buttons do, rather than by its text's baseline, which
+    // sits deeper in a field. A textarea keeps its baseline.
+    &:not(textarea) {
+      vertical-align: middle;
+    }
+
+    @each $status in nb-get-statuses() {
+      &.status-#{$status} {
+        @include look.status($status, ':disabled');
+      }
+    }
+
+    @each $size in nb-get-sizes() {
+      &.size-#{$size} {
+        @include look.size($size);
+
+        &:not(.input-full-width) {
+          max-width: nb-theme(input-#{$size}-max-width);
+        }
+
+        @include look.placeholder-size($size);
+      }
+    }
+
+    @each $shape in nb-get-shapes() {
+      &.shape-#{$shape} {
+        @include look.shape($shape);
+      }
+    }
+  }
+
+  // Phone numbers, emails and URLs read left to right, from the left, in any page. The field itself keeps the page's
+  // direction (Chrome makes a tel field left to right), so a form field's padding for its prefix and suffix stays on
+  // their side; `plaintext` lays the text out by its own direction.
+  input[nbInput]:is([type='email'], [type='tel'], [type='url']) {
+    direction: inherit;
+    text-align: left;
+
+    &,
+    &::placeholder {
+      unicode-bidi: plaintext;
+    }
+  }
+
+  // Ghost has no background or border at rest; under the pointer and with focus it looks as usual.
+  @each $status in nb-get-statuses() {
+    [nbInput].input-ghost.status-#{$status} {
+      &:not(:hover):not(:focus),
+      &:disabled {
+        background-color: nb-theme(input-ghost-background-color);
+        border-color: nb-theme(input-ghost-border-color);
+      }
+    }
   }
 
   @include form-field-theme.nb-form-field-root-component('[nbInput]');
@@ -27,22 +79,10 @@
 }
 
 @mixin nb-input-core-theme() {
-  border-style: nb-theme(input-border-style);
-  border-width: nb-theme(input-border-width);
-  font-family: nb-theme(input-text-font-family);
-  appearance: none; // removes inner shadow on iOS
+  @include look.core();
 
   &.nb-transition {
     @include nb-component-animation(border, background-color, color, box-shadow);
-  }
-
-  &::placeholder {
-    font-family: nb-theme(input-placeholder-text-font-family);
-    text-overflow: ellipsis;
-  }
-
-  &:focus {
-    outline: none;
   }
 
   &.input-full-width {

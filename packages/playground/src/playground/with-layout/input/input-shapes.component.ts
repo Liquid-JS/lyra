@@ -1,21 +1,8 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 import { Component } from '@angular/core';
+import { NbCardComponent, NbCardBodyComponent, NbInputDirective } from '@liquid-js/lyr-core';
 
 @Component({
-    template: `
-    <nb-card>
-      <nb-card-body class="example-items-col">
-        <input type="text" nbInput fullWidth shape="rectangle" placeholder="Rectangle">
-        <input type="text" nbInput fullWidth shape="semi-round" placeholder="Semi round">
-        <input type="text" nbInput fullWidth shape="round" placeholder="Round">
-      </nb-card-body>
-    </nb-card>
-  `,
-    standalone: false
+  templateUrl: './input-shapes.component.html',
+  imports: [NbCardComponent, NbCardBodyComponent, NbInputDirective],
 })
 export class InputShapesComponent {}

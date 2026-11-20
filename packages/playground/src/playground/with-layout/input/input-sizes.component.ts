@@ -1,23 +1,8 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 import { Component } from '@angular/core';
+import { NbCardComponent, NbCardBodyComponent, NbInputDirective } from '@liquid-js/lyr-core';
 
 @Component({
-    template: `
-    <nb-card>
-      <nb-card-body class="example-items-col">
-        <input type="text" nbInput fullWidth fieldSize="tiny" placeholder="Tiny">
-        <input type="text" nbInput fullWidth fieldSize="small" placeholder="Small">
-        <input type="text" nbInput fullWidth fieldSize="medium" placeholder="Medium">
-        <input type="text" nbInput fullWidth fieldSize="large" placeholder="Large">
-        <input type="text" nbInput fullWidth fieldSize="giant" placeholder="Giant">
-      </nb-card-body>
-    </nb-card>
-  `,
-    standalone: false
+  templateUrl: './input-sizes.component.html',
+  imports: [NbCardComponent, NbCardBodyComponent, NbInputDirective],
 })
 export class InputSizesComponent {}

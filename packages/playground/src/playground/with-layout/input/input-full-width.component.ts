@@ -1,22 +1,8 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 import { Component } from '@angular/core';
+import { NbCardComponent, NbCardBodyComponent, NbInputDirective } from '@liquid-js/lyr-core';
 
 @Component({
-    template: `
-    <nb-card>
-      <nb-card-body class="example-items-col">
-        <input type="text" nbInput placeholder="Initial width">
-        <input type="text" nbInput fullWidth placeholder="Full width">
-        <textarea nbInput placeholder="Initial width"></textarea>
-        <textarea nbInput fullWidth placeholder="Full width"></textarea>
-      </nb-card-body>
-    </nb-card>
-  `,
-    standalone: false
+  templateUrl: './input-full-width.component.html',
+  imports: [NbCardComponent, NbCardBodyComponent, NbInputDirective],
 })
 export class InputFullWidthComponent {}

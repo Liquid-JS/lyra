@@ -1,42 +1,47 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 import {
+  computed,
+  DestroyRef,
   Directive,
-  Input,
-  HostBinding,
-  OnDestroy,
-  OnInit,
-  ElementRef,
-  SimpleChanges,
-  OnChanges,
   DoCheck,
-  AfterViewInit,
-  Renderer2,
-  NgZone,
+  ElementRef,
+  inject,
+  input,
+  linkedSignal,
+  signal,
+  untracked,
 } from '@angular/core';
-import { Subject, BehaviorSubject } from 'rxjs';
-import { map, finalize, takeUntil } from 'rxjs/operators';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { map } from 'rxjs/operators';
 
-import { NbStatusService } from '../../services/status.service';
-import { convertToBoolProperty, NbBooleanInput } from '../helpers';
-import { NbComponentSize } from '../component-size';
-import { NbComponentShape } from '../component-shape';
-import { NbComponentOrCustomStatus } from '../component-status';
-import { NbFormFieldControl } from '../form-field/form-field-control';
-import { NbFocusMonitor } from '../cdk/a11y/a11y.module';
+import { injectNbDefaults } from '@liquid-js/lyr-core/base';
+import { NbStatusService } from '@liquid-js/lyr-core/base';
+import { ɵconvertToBoolProperty as convertToBoolProperty, NbBooleanInput } from '@liquid-js/lyr-core/base';
+import { NbComponentSize } from '@liquid-js/lyr-core/base';
+import { NbComponentShape } from '@liquid-js/lyr-core/base';
+import { NbComponentOrCustomStatus } from '@liquid-js/lyr-core/base';
+import { NbFormFieldControl } from '@liquid-js/lyr-core/form-field';
+import { NbValidationDirective } from '@liquid-js/lyr-core/validation';
+import { NbFocusMonitor } from '@liquid-js/lyr-core/cdk';
+import { ɵenableTransitionsAfterRender as enableTransitionsAfterRender } from '@liquid-js/lyr-core/base';
 
 /**
- * Basic input directive.
+ * Styles an `<input>` or `<textarea>` as a field of the design system.
  *
  * ```html
- * <input nbInput></input>
+ * <input nbInput />
  * ```
  *
  * ### Installation
+ *
+ * Import `NbInputDirective` into your standalone component:
+ * ```ts
+ * @Component({
+ *   imports: [NbInputDirective],
+ * })
+ * export class PageComponent { }
+ * ```
+ *
+ * With NgModules:
  *
  * Import `NbInputModule` to your feature module.
  * ```ts
@@ -50,42 +55,54 @@ import { NbFocusMonitor } from '../cdk/a11y/a11y.module';
  * ```
  * ### Usage
  *
- * Default input size is `medium`:
  * @stacked-example(Showcase, input/input-showcase.component)
  *
- * Inputs are available in multiple colors using `status` property:
+ * `status` colours the field:
  * @stacked-example(Input Colors, input/input-colors.component)
  *
- * There are three input sizes:
+ * Inputs come in five sizes, `tiny`, `small`, `medium` (default), `large` and `giant`, set with `fieldSize`: on an
+ * `<input>`, `size` is already the HTML attribute for its width in characters. Components that aren't a native field,
+ * such as `nb-select`, the phone input and the colour picker, take `size`.
  *
  * @stacked-example(Input Sizes, input/input-sizes.component)
  *
- * Inputs available in different shapes, which could be combined with the other properties:
+ * `shape` rounds the corners:
  * @stacked-example(Input Shapes, input/input-shapes.component)
  *
- * `nbInput` could be applied to the following selectors - `input`, `textarea`:
+ * It applies to `input` and `textarea` elements:
  * @stacked-example(Input Elements, input/input-types.component)
  *
- * You can add `fullWidth` attribute to make element fill container:
+ * `fullWidth` makes the field fill its container:
  * @stacked-example(Full width inputs, input/input-full-width.component)
  *
- * Or you can bind control with form controls or ngModel:
+ * A `ghost` input shows no background or border until it's hovered or focused, for fields edited in place:
+ * @stacked-example(Ghost inputs, input/input-ghost.component)
+ *
+ * It works with reactive forms and `ngModel` as any input does:
  * @stacked-example(Input form binding, input/input-form.component)
  *
- * Use `<nb-form-field>` to add custom content to the input field.
- * First import `NbFormFieldModule`. Then put the input field and custom content into
- * `<nb-form-field>` and add `nbPrefix` or `nbSuffix` directive to the custom content.
- * `nbPrefix` puts content before input and `nbSuffix` after.
+ * Add `nbValidation` to show the control's validation errors and status, see [Validation](components/forms/validation).
  *
+ * `<nb-form-field>` adds content before (`nbPrefix`) or after (`nbSuffix`) the field, such as an icon or a button.
+ *
+ * @stacked-example(Prefix and suffix, form-field/form-field-showcase.component)
  * @stacked-example(Input with icon, form-field/form-field-input.component)
  * @stacked-example(Input with button, form-field/form-field-password.component)
  *
+ * Addons grow to fit text, e.g. a unit or a URL scheme, and the input's padding follows their width:
+ * @stacked-example(Input with text, form-field/form-field-text.component)
+ *
  * @styles
  *
+ * input-ghost-background-color:
+ * input-ghost-border-color:
+ * input-tiny-width:
+ * input-small-width:
+ * input-medium-width:
+ * input-large-width:
+ * input-giant-width:
  * input-border-style:
  * input-border-width:
- * input-outline-color:
- * input-outline-width:
  * input-placeholder-text-font-family:
  * input-text-font-family:
  * input-basic-text-color:
@@ -93,6 +110,8 @@ import { NbFocusMonitor } from '../cdk/a11y/a11y.module';
  * input-basic-background-color:
  * input-basic-border-color:
  * input-basic-focus-background-color:
+ * input-basic-focus-and-hover-background-color:
+ * input-basic-focus-and-hover-border-color:
  * input-basic-focus-border-color:
  * input-basic-hover-background-color:
  * input-basic-hover-border-color:
@@ -105,6 +124,8 @@ import { NbFocusMonitor } from '../cdk/a11y/a11y.module';
  * input-primary-background-color:
  * input-primary-border-color:
  * input-primary-focus-background-color:
+ * input-primary-focus-and-hover-background-color:
+ * input-primary-focus-and-hover-border-color:
  * input-primary-focus-border-color:
  * input-primary-hover-background-color:
  * input-primary-hover-border-color:
@@ -117,6 +138,8 @@ import { NbFocusMonitor } from '../cdk/a11y/a11y.module';
  * input-success-background-color:
  * input-success-border-color:
  * input-success-focus-background-color:
+ * input-success-focus-and-hover-background-color:
+ * input-success-focus-and-hover-border-color:
  * input-success-focus-border-color:
  * input-success-hover-background-color:
  * input-success-hover-border-color:
@@ -129,6 +152,8 @@ import { NbFocusMonitor } from '../cdk/a11y/a11y.module';
  * input-info-background-color:
  * input-info-border-color:
  * input-info-focus-background-color:
+ * input-info-focus-and-hover-background-color:
+ * input-info-focus-and-hover-border-color:
  * input-info-focus-border-color:
  * input-info-hover-background-color:
  * input-info-hover-border-color:
@@ -141,6 +166,8 @@ import { NbFocusMonitor } from '../cdk/a11y/a11y.module';
  * input-warning-background-color:
  * input-warning-border-color:
  * input-warning-focus-background-color:
+ * input-warning-focus-and-hover-background-color:
+ * input-warning-focus-and-hover-border-color:
  * input-warning-focus-border-color:
  * input-warning-hover-background-color:
  * input-warning-hover-border-color:
@@ -153,6 +180,8 @@ import { NbFocusMonitor } from '../cdk/a11y/a11y.module';
  * input-danger-background-color:
  * input-danger-border-color:
  * input-danger-focus-background-color:
+ * input-danger-focus-and-hover-background-color:
+ * input-danger-focus-and-hover-border-color:
  * input-danger-focus-border-color:
  * input-danger-hover-background-color:
  * input-danger-hover-border-color:
@@ -165,6 +194,8 @@ import { NbFocusMonitor } from '../cdk/a11y/a11y.module';
  * input-control-background-color:
  * input-control-border-color:
  * input-control-focus-background-color:
+ * input-control-focus-and-hover-background-color:
+ * input-control-focus-and-hover-border-color:
  * input-control-focus-border-color:
  * input-control-hover-background-color:
  * input-control-hover-border-color:
@@ -175,6 +206,7 @@ import { NbFocusMonitor } from '../cdk/a11y/a11y.module';
  * input-rectangle-border-radius:
  * input-semi-round-border-radius:
  * input-round-border-radius:
+ * input-textarea-max-border-radius:
  * input-tiny-text-font-size:
  * input-tiny-text-font-weight:
  * input-tiny-text-line-height:
@@ -217,202 +249,89 @@ import { NbFocusMonitor } from '../cdk/a11y/a11y.module';
  * input-giant-max-width:
  */
 @Directive({
-    selector: 'input[nbInput],textarea[nbInput]',
-    providers: [
-        { provide: NbFormFieldControl, useExisting: NbInputDirective },
-    ],
-    standalone: false
+  selector: 'input[nbInput],textarea[nbInput]',
+  providers: [
+    { provide: NbFormFieldControl, useExisting: NbInputDirective },
+  ],
+  host: {
+    '[class]': 'hostClasses()',
+    '[class.input-full-width]': 'fullWidth()',
+    '[class.input-ghost]': 'ghost()',
+  },
 })
-export class NbInputDirective implements DoCheck, OnChanges, OnInit, AfterViewInit, OnDestroy, NbFormFieldControl {
+export class NbInputDirective implements DoCheck, NbFormFieldControl {
+  // The app's defaults for this type, which the inputs below start from.
+  protected readonly nbDefaults = injectNbDefaults('input');
 
-  protected destroy$ = new Subject<void>();
-
-  /**
-   * Field size modifications. Possible values: `small`, `medium` (default), `large`.
-   */
-  @Input()
-  fieldSize: NbComponentSize = 'medium';
-
-  /**
-   * Field status (adds specific styles):
-   * `basic`, `primary`, `info`, `success`, `warning`, `danger`, `control`
-   */
-  @Input() status: NbComponentOrCustomStatus = 'basic';
+  protected readonly elementRef = inject<ElementRef<HTMLInputElement | HTMLTextAreaElement>>(ElementRef);
+  protected readonly focusMonitor = inject(NbFocusMonitor);
+  protected readonly statusService = inject(NbStatusService);
+  protected readonly validation = inject(NbValidationDirective, { self: true, optional: true });
 
   /**
-   * Field shapes modifications. Possible values: `rectangle` (default), `round`, `semi-round`.
+   * Field size: `tiny`, `small`, `medium` (default), `large` or `giant`. Not `size`, which on an `<input>` is the
+   * HTML attribute for its width in characters.
    */
-  @Input()
-  shape: NbComponentShape = 'rectangle';
+  readonly fieldSizeInput = input<NbComponentSize | undefined>(undefined, { alias: 'fieldSize' });
+  /** The fieldSize in use: the input's, the app's default, or 'medium'. */
+  readonly fieldSize = linkedSignal<NbComponentSize>(() => this.fieldSizeInput() ?? this.nbDefaults().size ?? 'medium');
 
   /**
-   * If set element will fill container. `false` by default.
+   * Colours the field: `basic` (default), `primary`, `info`, `success`, `warning`, `danger` or `control`. With
+   * `nbValidation`, the validation status takes over while the control shows errors or success.
    */
-  @Input()
-  @HostBinding('class.input-full-width')
-  get fullWidth(): boolean {
-    return this._fullWidth;
-  }
-  set fullWidth(value: boolean) {
-    this._fullWidth = convertToBoolProperty(value);
-  }
-  private _fullWidth = false;
-  static ngAcceptInputType_fullWidth: NbBooleanInput;
+  readonly status = input<NbComponentOrCustomStatus>('basic');
 
-  @HostBinding('class')
-  get additionalClasses(): string[] {
-    if (this.statusService.isCustomStatus(this.status)) {
-      return [this.statusService.getStatusClass(this.status)];
-    }
-    return [];
-  }
+  // With `nbValidation`, the status it gives while the control shows errors or success.
+  protected readonly resolvedStatus = computed(() => this.validation?.status() ?? this.status());
 
-  constructor(
-    protected elementRef: ElementRef<HTMLInputElement | HTMLTextAreaElement>,
-    protected focusMonitor: NbFocusMonitor,
-    protected renderer: Renderer2,
-    protected zone: NgZone,
-    protected statusService: NbStatusService,
-  ) {
+  /** `rectangle` (default), `semi-round` or `round`. */
+  readonly shapeInput = input<NbComponentShape | undefined>(undefined, { alias: 'shape' });
+  /** The shape in use: the input's, the app's default, or 'rectangle'. */
+  readonly shape = linkedSignal<NbComponentShape>(() => this.shapeInput() ?? this.nbDefaults().shape ?? 'rectangle');
+
+  /** Fills the container's width. */
+  readonly fullWidth = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
+
+  /**
+   * Shows no background or border at rest; under the pointer and with focus the input looks as usual.
+   * Fits fields edited in place, e.g. a title.
+   */
+  readonly ghost = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
+
+  /** Whether the field has focus, for the form field around it. */
+  readonly focused = signal(false);
+
+  // The element's disabled property, which forms and bindings set directly, read on every check.
+  protected readonly disabled = signal(false);
+
+  readonly controlState = computed(() => ({
+    status: this.resolvedStatus(),
+    size: this.fieldSize(),
+    fullWidth: this.fullWidth(),
+    focused: this.focused(),
+    disabled: this.disabled(),
+  }));
+
+  protected readonly hostClasses = computed(() => [
+    `size-${this.fieldSize()}`,
+    this.statusService.getStatusClass(this.resolvedStatus()),
+    `shape-${this.shape()}`,
+  ]);
+
+  constructor() {
+    enableTransitionsAfterRender(this.elementRef.nativeElement);
+
+    this.focusMonitor
+      .monitor(this.elementRef)
+      .pipe(map((origin) => !!origin), takeUntilDestroyed())
+      // Focus can change while a view renders, e.g. when hiding a focused element makes the browser blur it.
+      .subscribe((focused) => untracked(() => this.focused.set(focused)));
+    inject(DestroyRef).onDestroy(() => this.focusMonitor.stopMonitoring(this.elementRef));
   }
 
   ngDoCheck() {
-    const isDisabled = this.elementRef.nativeElement.disabled;
-    if (isDisabled !== this.disabled$.value) {
-      this.disabled$.next(isDisabled);
-    }
+    this.disabled.set(this.elementRef.nativeElement.disabled);
   }
 
-  ngOnChanges({ status, fieldSize, fullWidth }: SimpleChanges) {
-    if (status) {
-      this.status$.next(this.status);
-    }
-    if (fieldSize) {
-      this.size$.next(this.fieldSize);
-    }
-    if (fullWidth) {
-      this.fullWidth$.next(this.fullWidth);
-    }
-  }
-
-  ngOnInit() {
-    this.focusMonitor.monitor(this.elementRef)
-      .pipe(
-        map(origin => !!origin),
-        finalize(() => this.focusMonitor.stopMonitoring(this.elementRef)),
-        takeUntil(this.destroy$),
-      )
-      .subscribe(this.focused$);
-  }
-
-  ngAfterViewInit() {
-    // TODO: #2254
-    this.zone.runOutsideAngular(() => setTimeout(() => {
-      this.renderer.addClass(this.elementRef.nativeElement, 'nb-transition');
-    }));
-  }
-
-  ngOnDestroy() {
-    this.destroy$.next();
-  }
-
-  @HostBinding('class.size-tiny')
-  get tiny() {
-    return this.fieldSize === 'tiny';
-  }
-
-  @HostBinding('class.size-small')
-  get small() {
-    return this.fieldSize === 'small';
-  }
-
-  @HostBinding('class.size-medium')
-  get medium() {
-    return this.fieldSize === 'medium';
-  }
-
-  @HostBinding('class.size-large')
-  get large() {
-    return this.fieldSize === 'large';
-  }
-
-  @HostBinding('class.size-giant')
-  get giant() {
-    return this.fieldSize === 'giant';
-  }
-
-  @HostBinding('class.status-primary')
-  get primary() {
-    return this.status === 'primary';
-  }
-
-  @HostBinding('class.status-info')
-  get info() {
-    return this.status === 'info';
-  }
-
-  @HostBinding('class.status-success')
-  get success() {
-    return this.status === 'success';
-  }
-
-  @HostBinding('class.status-warning')
-  get warning() {
-    return this.status === 'warning';
-  }
-
-  @HostBinding('class.status-danger')
-  get danger() {
-    return this.status === 'danger';
-  }
-
-  @HostBinding('class.status-basic')
-  get basic() {
-    return this.status === 'basic';
-  }
-
-  @HostBinding('class.status-control')
-  get control() {
-    return this.status === 'control';
-  }
-
-  @HostBinding('class.shape-rectangle')
-  get rectangle() {
-    return this.shape === 'rectangle';
-  }
-
-  @HostBinding('class.shape-semi-round')
-  get semiRound() {
-    return this.shape === 'semi-round';
-  }
-
-  @HostBinding('class.shape-round')
-  get round() {
-    return this.shape === 'round';
-  }
-
-  /*
-   * @docs-private
-   **/
-  status$ = new BehaviorSubject<NbComponentOrCustomStatus>(this.status);
-
-  /*
-   * @docs-private
-   **/
-  size$ = new BehaviorSubject<NbComponentSize>(this.fieldSize);
-
-  /*
-   * @docs-private
-   **/
-  focused$ = new BehaviorSubject<boolean>(false);
-
-  /*
-   * @docs-private
-   **/
-  disabled$ = new BehaviorSubject<boolean>(false);
-
-  /*
-   * @docs-private
-   **/
-  fullWidth$ = new BehaviorSubject<boolean>(this.fullWidth);
 }
