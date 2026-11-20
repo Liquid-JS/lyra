@@ -1,37 +1,45 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 import {
   Component,
-  Input,
-  HostBinding,
-  forwardRef,
-  ChangeDetectorRef,
-  Output,
-  EventEmitter,
-  ChangeDetectionStrategy,
-  Renderer2,
+  computed,
   ElementRef,
-  AfterViewInit,
-  NgZone,
+  forwardRef,
+  inject,
+  input,
+  linkedSignal,
+  output,
 } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 
-import { NbStatusService } from '../../services/status.service';
-import { NbComponentOrCustomStatus } from '../component-status';
-import { convertToBoolProperty, NbBooleanInput } from '../helpers';
+import { injectNbDefaults } from '@liquid-js/lyr-core/base';
+import { NbStatusService } from '@liquid-js/lyr-core/base';
+import { NbComponentOrCustomStatus } from '@liquid-js/lyr-core/base';
+import { NbComponentSize } from '@liquid-js/lyr-core/base';
+import { ɵconvertToBoolProperty as convertToBoolProperty, NbBooleanInput } from '@liquid-js/lyr-core/base';
+import { ɵfocusOnClick as focusOnClick } from '@liquid-js/lyr-core/base';
+import { NbValidationDirective } from '@liquid-js/lyr-core/validation';
+import { NbIconComponent } from '@liquid-js/lyr-core/icon';
+import { ɵenableTransitionsAfterRender as enableTransitionsAfterRender } from '@liquid-js/lyr-core/base';
+
+let lastCheckboxId = 0;
 
 /**
- * Styled checkbox component
+ * A checkbox with a label, coloured by its status.
  *
  * @stacked-example(Showcase, checkbox/checkbox-showcase.component)
  *
  * ### Installation
  *
- * Import `NbCheckboxComponent` to your feature module.
+ * Import `NbCheckboxComponent` into your standalone component:
+ * ```ts
+ * @Component({
+ *   imports: [NbCheckboxComponent],
+ * })
+ * export class PageComponent { }
+ * ```
+ *
+ * With NgModules:
+ *
+ * Import `NbCheckboxModule` to your feature module.
  * ```ts
  * @NgModule({
  *   imports: [
@@ -43,28 +51,51 @@ import { convertToBoolProperty, NbBooleanInput } from '../helpers';
  * ```
  * ### Usage
  *
- * Checkbox is available in multiple colors using `status` property:
+ * `status` colours the checkbox:
  * @stacked-example(Colored Checkboxes, checkbox/checkbox-status.component)
  *
- * Indeterminate state is also supported:
+ * An `indeterminate` checkbox is neither checked nor unchecked, e.g. for a list with some items checked:
  * @stacked-example(Indeterminate Checkbox, checkbox/checkbox-indeterminate.component)
  *
- * Checkbox can be disabled via `disabled` attribute.
+ * Checkboxes come in five sizes: `tiny`, `small`, `medium` (default), `large` and `giant`.
+ * @stacked-example(Checkbox sizes, checkbox/checkbox-sizes.component)
+ *
+ * `disabled` disables the checkbox, as does its form control:
  * @stacked-example(Disabled Checkbox, checkbox/checkbox-disabled.component)
  *
  * @styles
  *
- * checkbox-height:
- * checkbox-width:
+ * checkbox-tiny-height:
+ * checkbox-tiny-width:
+ * checkbox-small-height:
+ * checkbox-small-width:
+ * checkbox-medium-height:
+ * checkbox-medium-width:
+ * checkbox-large-height:
+ * checkbox-large-width:
+ * checkbox-giant-height:
+ * checkbox-giant-width:
  * checkbox-border-style:
  * checkbox-border-width:
  * checkbox-border-radius:
  * checkbox-outline-width:
  * checkbox-outline-color:
  * checkbox-text-font-family:
- * checkbox-text-font-size:
- * checkbox-text-font-weight:
- * checkbox-text-line-height:
+ * checkbox-tiny-text-font-size:
+ * checkbox-tiny-text-font-weight:
+ * checkbox-tiny-text-line-height:
+ * checkbox-small-text-font-size:
+ * checkbox-small-text-font-weight:
+ * checkbox-small-text-line-height:
+ * checkbox-medium-text-font-size:
+ * checkbox-medium-text-font-weight:
+ * checkbox-medium-text-line-height:
+ * checkbox-large-text-font-size:
+ * checkbox-large-text-font-weight:
+ * checkbox-large-text-line-height:
+ * checkbox-giant-text-font-size:
+ * checkbox-giant-text-font-weight:
+ * checkbox-giant-text-line-height:
  * checkbox-text-space:
  * checkbox-padding:
  * checkbox-focus-inset-shadow-length:
@@ -94,6 +125,7 @@ import { convertToBoolProperty, NbBooleanInput } from '../helpers';
  * checkbox-basic-disabled-checkmark-color:
  * checkbox-basic-disabled-text-color:
  * checkbox-basic-disabled-checked-background-color:
+ * checkbox-basic-disabled-checked-border-color:
  * checkbox-primary-text-color:
  * checkbox-primary-background-color:
  * checkbox-primary-border-color:
@@ -120,6 +152,7 @@ import { convertToBoolProperty, NbBooleanInput } from '../helpers';
  * checkbox-primary-disabled-checkmark-color:
  * checkbox-primary-disabled-text-color:
  * checkbox-primary-disabled-checked-background-color:
+ * checkbox-primary-disabled-checked-border-color:
  * checkbox-success-text-color:
  * checkbox-success-background-color:
  * checkbox-success-border-color:
@@ -146,6 +179,7 @@ import { convertToBoolProperty, NbBooleanInput } from '../helpers';
  * checkbox-success-disabled-checkmark-color:
  * checkbox-success-disabled-text-color:
  * checkbox-success-disabled-checked-background-color:
+ * checkbox-success-disabled-checked-border-color:
  * checkbox-info-text-color:
  * checkbox-info-background-color:
  * checkbox-info-border-color:
@@ -172,6 +206,7 @@ import { convertToBoolProperty, NbBooleanInput } from '../helpers';
  * checkbox-info-disabled-checkmark-color:
  * checkbox-info-disabled-text-color:
  * checkbox-info-disabled-checked-background-color:
+ * checkbox-info-disabled-checked-border-color:
  * checkbox-warning-text-color:
  * checkbox-warning-background-color:
  * checkbox-warning-border-color:
@@ -198,6 +233,7 @@ import { convertToBoolProperty, NbBooleanInput } from '../helpers';
  * checkbox-warning-disabled-checkmark-color:
  * checkbox-warning-disabled-text-color:
  * checkbox-warning-disabled-checked-background-color:
+ * checkbox-warning-disabled-checked-border-color:
  * checkbox-danger-text-color:
  * checkbox-danger-background-color:
  * checkbox-danger-border-color:
@@ -224,6 +260,7 @@ import { convertToBoolProperty, NbBooleanInput } from '../helpers';
  * checkbox-danger-disabled-checkmark-color:
  * checkbox-danger-disabled-text-color:
  * checkbox-danger-disabled-checked-background-color:
+ * checkbox-danger-disabled-checked-border-color:
  * checkbox-control-text-color:
  * checkbox-control-background-color:
  * checkbox-control-border-color:
@@ -250,174 +287,129 @@ import { convertToBoolProperty, NbBooleanInput } from '../helpers';
  * checkbox-control-disabled-checkmark-color:
  * checkbox-control-disabled-text-color:
  * checkbox-control-disabled-checked-background-color:
+ * checkbox-control-disabled-checked-border-color:
  */
 @Component({
-    selector: 'nb-checkbox',
-    template: `
-    <label class="label">
-      <input type="checkbox" class="native-input visually-hidden"
-             [disabled]="disabled"
-             [checked]="checked"
-             (change)="updateValueAndIndeterminate($event)"
-             (blur)="setTouched()"
-             (click)="$event.stopPropagation()"
-             [indeterminate]="indeterminate">
-      <span [class.indeterminate]="indeterminate" [class.checked]="checked" class="custom-checkbox">
-        <nb-icon *ngIf="indeterminate" icon="minus-bold-outline" pack="nebular-essentials" class="custom-checkbox-icon"></nb-icon>
-        <nb-icon *ngIf="checked && !indeterminate" icon="checkmark-bold-outline" pack="nebular-essentials" class="custom-checkbox-icon"></nb-icon>
-      </span>
-      <span class="text">
-        <ng-content></ng-content>
-      </span>
-    </label>
-  `,
-    styleUrls: [`./checkbox.component.scss`],
-    providers: [{
-            provide: NG_VALUE_ACCESSOR,
-            useExisting: forwardRef(() => NbCheckboxComponent),
-            multi: true,
-        }],
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  selector: 'nb-checkbox',
+  templateUrl: './checkbox.component.html',
+  styleUrls: [`./checkbox.component.scss`],
+  providers: [{
+    provide: NG_VALUE_ACCESSOR,
+    useExisting: forwardRef(() => NbCheckboxComponent),
+    multi: true,
+  }],
+  imports: [NbIconComponent],
+  host: {
+    '[class]': 'hostClasses()',
+  },
 })
-export class NbCheckboxComponent implements AfterViewInit, ControlValueAccessor {
+export class NbCheckboxComponent implements ControlValueAccessor {
+  // The app's defaults for this type, which the inputs below start from.
+  protected readonly nbDefaults = injectNbDefaults('checkbox');
 
-  onChange: any = () => { };
-  onTouched: any = () => { };
+  protected readonly focusOnClick = focusOnClick;
+  private readonly hostElement = inject<ElementRef<HTMLElement>>(ElementRef);
+  private readonly statusService = inject(NbStatusService);
 
-  @Input()
-  get checked(): boolean {
-    return this._checked;
-  }
-  set checked(value: boolean) {
-    this._checked = convertToBoolProperty(value);
-  }
-  private _checked: boolean = false;
-  static ngAcceptInputType_checked: NbBooleanInput;
+  onChange: (value: boolean) => void = () => {};
+  onTouched: () => void = () => {};
 
   /**
-   * Controls input disabled state
+   * Whether the checkbox is checked; a user or a form control changes it from there.
    */
-  @Input()
-  get disabled(): boolean {
-    return this._disabled;
-  }
-  set disabled(value: boolean) {
-    this._disabled = convertToBoolProperty(value);
-  }
-  private _disabled: boolean = false;
-  static ngAcceptInputType_disabled: NbBooleanInput;
+  readonly checked = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
 
   /**
-   * Checkbox status.
-   * Possible values are: `basic`, `primary`, `success`, `warning`, `danger`, `info`, `control`.
+   * Disables the checkbox; a form control's disabled state does too.
    */
-  @Input() status: NbComponentOrCustomStatus = 'basic';
+  readonly disabled = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
+
+  protected readonly validation = inject(NbValidationDirective, { self: true, optional: true });
+
+  // The label's text, which names the checkbox after an `nbLabel` of its `nbValidation`, as a select's value follows it.
+  protected readonly textId = `nb-checkbox-text-${lastCheckboxId++}`;
+  protected readonly labelledBy = computed(() => {
+    const labels = this.validation?.labelledBy();
+    return labels ? `${labels} ${this.textId}` : null;
+  });
 
   /**
-   * Controls checkbox indeterminate state
+   * Checkbox status: `basic` (default), `primary`, `success`, `warning`, `danger`, `info`, `control` or a custom one.
+   * With `nbValidation`, its error or success status takes over.
    */
-  @Input()
-  get indeterminate(): boolean {
-    return this._indeterminate;
-  }
-  set indeterminate(value: boolean) {
-    this._indeterminate = convertToBoolProperty(value);
-  }
-  private _indeterminate: boolean = false;
-  static ngAcceptInputType_indeterminate: NbBooleanInput;
+  readonly status = input<NbComponentOrCustomStatus>('basic');
+
+  // With `nbValidation`, the status it gives while the control shows errors or success.
+  protected readonly resolvedStatus = computed(() => this.validation?.status() ?? this.status());
 
   /**
-   * Output when checked state is changed by a user
-   * @type EventEmitter<boolean>
+   * Checkbox size: `tiny`, `small`, `medium` (default), `large` or `giant`.
    */
-  @Output() checkedChange = new EventEmitter<boolean>();
+  readonly sizeInput = input<NbComponentSize | undefined>(undefined, { alias: 'size' });
+  /** The size in use: the input's, the app's default, or 'medium'. */
+  readonly size = linkedSignal<NbComponentSize>(() => this.sizeInput() ?? this.nbDefaults().size ?? 'medium');
 
-  @HostBinding('class.status-primary')
-  get primary() {
-    return this.status === 'primary';
+  /**
+   * Shows the checkbox as indeterminate, neither checked nor unchecked, until a user clicks it.
+   */
+  readonly indeterminate = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
+
+  /**
+   * Emits when a user checks or unchecks the checkbox, not when a form control sets it.
+   */
+  readonly checkedChange = output<boolean>();
+
+  /**
+   * Whether the checkbox is checked: the `checked` input, until a user or a form changes it.
+   */
+  readonly isChecked = linkedSignal(() => this.checked());
+
+  /**
+   * Whether the checkbox is disabled: the `disabled` input, until a form changes it.
+   */
+  readonly isDisabled = linkedSignal(() => this.disabled());
+
+  /**
+   * Whether the checkbox is indeterminate: the `indeterminate` input, until a user checks the checkbox.
+   */
+  readonly isIndeterminate = linkedSignal(() => this.indeterminate());
+
+  protected readonly hostClasses = computed(() => [
+    this.statusService.getStatusClass(this.resolvedStatus()),
+    `size-${this.size()}`,
+  ]);
+
+  constructor() {
+    // The focusable element is inside: the button or the native input gets aria-invalid and aria-describedby.
+    this.validation?.delegateAria();
+    enableTransitionsAfterRender(this.hostElement.nativeElement);
   }
 
-  @HostBinding('class.status-success')
-  get success() {
-    return this.status === 'success';
-  }
-
-  @HostBinding('class.status-warning')
-  get warning() {
-    return this.status === 'warning';
-  }
-
-  @HostBinding('class.status-danger')
-  get danger() {
-    return this.status === 'danger';
-  }
-
-  @HostBinding('class.status-info')
-  get info() {
-    return this.status === 'info';
-  }
-
-  @HostBinding('class.status-basic')
-  get basic() {
-    return this.status === 'basic';
-  }
-
-  @HostBinding('class.status-control')
-  get control() {
-    return this.status === 'control';
-  }
-
-  @HostBinding('class')
-  get additionalClasses(): string[] {
-    if (this.statusService.isCustomStatus(this.status)) {
-      return [this.statusService.getStatusClass(this.status)];
-    }
-    return [];
-  }
-
-  constructor(
-    private changeDetector: ChangeDetectorRef,
-    private renderer: Renderer2,
-    private hostElement: ElementRef<HTMLElement>,
-    private zone: NgZone,
-    private statusService: NbStatusService,
-  ) {}
-
-  ngAfterViewInit() {
-    // TODO: #2254
-    this.zone.runOutsideAngular(() => setTimeout(() => {
-      this.renderer.addClass(this.hostElement.nativeElement, 'nb-transition');
-    }));
-  }
-
-  registerOnChange(fn: any) {
+  registerOnChange(fn: (value: boolean) => void) {
     this.onChange = fn;
   }
 
-  registerOnTouched(fn: any) {
+  registerOnTouched(fn: () => void) {
     this.onTouched = fn;
   }
 
-  writeValue(val: any) {
-    this._checked = val;
-    this.changeDetector.markForCheck();
+  writeValue(value: boolean | null) {
+    this.isChecked.set(!!value);
   }
 
   setDisabledState(val: boolean) {
-    this.disabled = convertToBoolProperty(val);
-    this.changeDetector.markForCheck();
+    this.isDisabled.set(convertToBoolProperty(val));
   }
 
   setTouched() {
     this.onTouched();
   }
 
-  updateValueAndIndeterminate(event: Event): void {
-    const input = (event.target as HTMLInputElement);
-    this.checked = input.checked;
-    this.checkedChange.emit(this.checked);
-    this.onChange(this.checked);
-    this.indeterminate = input.indeterminate;
+  updateValueAndIndeterminate(event: Event) {
+    const nativeInput = event.target as HTMLInputElement;
+    this.isChecked.set(nativeInput.checked);
+    this.checkedChange.emit(nativeInput.checked);
+    this.onChange(nativeInput.checked);
+    this.isIndeterminate.set(nativeInput.indeterminate);
   }
 }

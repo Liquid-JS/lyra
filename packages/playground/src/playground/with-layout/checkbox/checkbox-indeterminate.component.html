@@ -1,0 +1,14 @@
+<nb-card>
+  <nb-card-body>
+    <nb-checkbox indeterminate
+      #checkbox>Indeterminate</nb-checkbox>
+
+    @if (!checkbox.isIndeterminate()) {
+    <button nbButton
+      size="small"
+      (click)="checkbox.isIndeterminate.set(true)">
+      Set indeterminate
+    </button>
+    }
+  </nb-card-body>
+</nb-card>

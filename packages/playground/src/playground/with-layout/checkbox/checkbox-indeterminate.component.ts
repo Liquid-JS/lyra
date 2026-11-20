@@ -1,23 +1,16 @@
 import { Component } from '@angular/core';
+import { NbCardComponent, NbCardBodyComponent, NbCheckboxComponent, NbButtonComponent } from '@liquid-js/lyr-core';
 
 @Component({
-    template: `
-    <nb-card>
-      <nb-card-body>
-        <nb-checkbox indeterminate #checkbox>Indeterminate</nb-checkbox>
-
-        <button *ngIf="!checkbox.indeterminate" nbButton size="small" (click)="checkbox.indeterminate = true">
-          Set indeterminate
-        </button>
-      </nb-card-body>
-    </nb-card>
-  `,
-    styles: [`
-    button {
-      display: block;
-      margin-top: 1rem;
-    }
-  `],
-    standalone: false
+  templateUrl: './checkbox-indeterminate.component.html',
+  styles: [
+    `
+      button {
+        display: block;
+        margin-top: 1rem;
+      }
+    `,
+  ],
+  imports: [NbCardComponent, NbCardBodyComponent, NbCheckboxComponent, NbButtonComponent],
 })
 export class CheckboxIndeterminateComponent {}

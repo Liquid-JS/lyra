@@ -1,9 +1,3 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 @use '../../styles/theming' as *;
 
 @mixin nb-checkbox-theme() {
@@ -13,11 +7,10 @@
     }
 
     .custom-checkbox {
-      width: nb-theme(checkbox-width);
-      height: nb-theme(checkbox-height);
       border-style: nb-theme(checkbox-border-style);
       border-width: nb-theme(checkbox-border-width);
-      border-radius: nb-theme(checkbox-border-radius);
+      // Never more than a quarter of its side, so a theme with large corners doesn't round it into a radio.
+      border-radius: min(#{nb-theme(checkbox-border-radius)}, 25%);
       position: relative;
     }
 
@@ -39,13 +32,25 @@
 
     .text {
       font-family: nb-theme(checkbox-text-font-family);
-      font-size: nb-theme(checkbox-text-font-size);
-      font-weight: nb-theme(checkbox-text-font-weight);
-      line-height: nb-theme(checkbox-text-line-height);
 
       &:not(:empty) {
         @include nb-ltr(padding-left, nb-theme(checkbox-text-space));
         @include nb-rtl(padding-right, nb-theme(checkbox-text-space));
+      }
+    }
+  }
+
+  @each $size in nb-get-sizes() {
+    nb-checkbox.size-#{$size} {
+      .custom-checkbox {
+        width: nb-theme(checkbox-#{$size}-width);
+        height: nb-theme(checkbox-#{$size}-height);
+      }
+
+      .text {
+        font-size: nb-theme(checkbox-#{$size}-text-font-size);
+        font-weight: nb-theme(checkbox-#{$size}-text-font-weight);
+        line-height: nb-theme(checkbox-#{$size}-text-line-height);
       }
     }
   }
