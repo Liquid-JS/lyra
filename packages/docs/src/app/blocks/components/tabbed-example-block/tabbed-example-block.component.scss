@@ -1,5 +1,5 @@
 @use '../../../@theme/styles/themes' as *;
-@use '../../../../../src/framework/theme/styles/globals' as *;
+@use '../../../../../../core/src/styles/globals' as *;
 
 @include nb-install-component() {
   $tab-fg: nb-theme(color-fg-heading-light);
@@ -41,11 +41,21 @@
   }
 
   ::ng-deep nb-tabset.tabs-container {
+    // The docs theme styles tabsets for the theme editor; the code view has its own tabs, and its code fills the tab.
+    --tabset-tab-padding: 0.25rem 0.5rem;
+    --tabset-content-padding: 0;
+    --tabset-divider-width: 0;
+    --tabset-tab-underline-color: transparent;
+    --tabset-tab-active-underline-color: transparent;
+    --tabset-tab-focus-underline-color: transparent;
+    --tabset-tab-hover-underline-color: transparent;
+
     border-radius: 0.5rem 0.5rem 0 0;
 
     > ul {
+      // Over the docs page's margin for lists in its text, whose selector outranks this one.
+      margin: 0 !important;
       padding: 0;
-      margin-bottom: 0 !important; // TODO: check selectors
       border-radius: 0.5rem 0.5rem 0 0;
       background-color: $tabs-bb;
       overflow: hidden;
@@ -53,13 +63,15 @@
       li {
         padding: 0.4rem;
         width: 20%;
-        margin-bottom: 0 !important; // TODO: check selectors
+        // Over the tabset's own -1px, whose encapsulated selector outranks any from outside it.
+        margin-bottom: 0 !important;
 
         &:first-child {
           margin-left: 0;
         }
 
         a {
+          justify-content: center;
           color: $tab-fg;
         }
 

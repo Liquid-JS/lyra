@@ -1,8 +1,13 @@
-import { Injectable } from '@angular/core';
+import { Service } from '@angular/core';
+import { NgdDocMember } from '../../docs.model';
 
-@Injectable()
+@Service()
 export class NgdMetadataService {
-  isPublic(prop): boolean {
-    return !prop.isDocsPrivate && !prop.inherited;
+  /**
+   * Whether a member is part of the API the docs show. Inherited members are: a component's inputs often come from a
+   * base class, e.g. the button's, which has no page of its own. The generator leaves out protected and private ones.
+   */
+  isPublic(prop: NgdDocMember): boolean {
+    return !prop.isDocsPrivate;
   }
 }

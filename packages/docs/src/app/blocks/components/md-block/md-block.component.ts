@@ -1,57 +1,41 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { ChangeDetectionStrategy, Component, Input, OnDestroy } from '@angular/core';
-import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
-import { Observable, Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { Component, inject, input, signal } from '@angular/core';
+import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { Observable } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
 
 import { NgdMdSection } from '../../../@theme/services/text.service';
 import { NgdLastViewedSectionService } from '../../../@theme/services';
+import { NbSpinnerDirective, NbCardComponent, NbCardBodyComponent } from '@liquid-js/lyr-core';
+import { NgdFragmentTargetDirective } from '../../../@theme/components/fragment-target/fragment-target.directive';
+import { NgdMarkdownComponent } from '../../../@theme/components/markdown/markdown.component';
 
 @Component({
-    selector: 'ngd-md-block',
-    template: `
-    <div [nbSpinner]="loading">
-      <nb-card *ngFor="let section of sections$ | async" [ngdFragment]="section.fragment">
-        <nb-card-body>
-          <div [innerHtml]="getTemplate(section.html)"></div>
-        </nb-card-body>
-      </nb-card>
-    </div>
-  `,
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  selector: 'ngd-md-block',
+  templateUrl: './md-block.component.html',
+  imports: [
+    NgdMarkdownComponent,
+    NbSpinnerDirective,
+    NbCardComponent,
+    NgdFragmentTargetDirective,
+    NbCardBodyComponent,
+  ],
 })
-export class NgdMdBLockComponent implements OnDestroy {
-  private destroy$ = new Subject<void>();
-  loading = true;
+export class NgdMdBLockComponent {
+  private readonly lastViewedSectionService = inject(NgdLastViewedSectionService);
 
-  @Input()
-  get sections$(): Observable<NgdMdSection[]> {
-    return this.lastViewedSectionService.getSections();
-  }
-  set sections$(value: Observable<NgdMdSection[]>) {
-    value.pipe(takeUntil(this.destroy$)).subscribe((sections) => {
-      this.loading = false;
+  readonly loading = signal(true);
+
+  readonly sections$ = input.required<Observable<NgdMdSection[]>>();
+
+  readonly sections = toSignal(this.lastViewedSectionService.getSections());
+
+  constructor() {
+    toObservable(this.sections$).pipe(
+      switchMap((sections$) => sections$),
+      takeUntilDestroyed(),
+    ).subscribe((sections) => {
+      this.loading.set(false);
       this.lastViewedSectionService.setSection(sections);
     });
-  }
-
-  constructor(
-    private readonly domSanitizer: DomSanitizer,
-    private lastViewedSectionService: NgdLastViewedSectionService,
-  ) {}
-
-  ngOnDestroy() {
-    this.destroy$.next();
-    this.destroy$.complete();
-  }
-
-  getTemplate(content: string): SafeHtml {
-    return this.domSanitizer.bypassSecurityTrustHtml(content);
   }
 }

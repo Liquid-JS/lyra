@@ -1,0 +1,40 @@
+<nb-card>
+  <nb-card-header class="header">
+    <h2 class="h5 title">{{ name() }}</h2>
+    <button nbButton
+      ghost
+      size="small"
+      type="button"
+      aria-label="Close"
+      (click)="close()">
+      <nb-icon icon="close-outline" />
+    </button>
+  </nb-card-header>
+  <nb-card-body class="body">
+    <div class="preview">
+      <nb-icon [icon]="name()" />
+    </div>
+    @if (hasFill() && hasOutline()) {
+    <nb-toggle [checked]="filled()"
+      (checkedChange)="filled.set($event)">Filled</nb-toggle>
+    } @else {
+    <p class="only">{{ hasFill() ? 'Comes filled only' : 'Comes in outline only' }}</p>
+    }
+  </nb-card-body>
+  <nb-card-footer class="buttons">
+    <button nbButton
+      ghost
+      type="button"
+      (click)="download()">
+      <nb-icon icon="download-outline" />
+      Download SVG
+    </button>
+    <button nbButton
+      status="primary"
+      type="button"
+      (click)="copy()">
+      <nb-icon icon="copy-outline" />
+      Copy
+    </button>
+  </nb-card-footer>
+</nb-card>

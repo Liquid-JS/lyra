@@ -1,60 +1,48 @@
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { Component, computed, inject, input } from '@angular/core';
 import { NgdTabbedService } from '../../../@theme/services';
+import { NgdPreparedComponent } from '../../../docs.model';
+import { NbCardComponent, NbCardBodyComponent } from '@liquid-js/lyr-core';
+import { NgdFragmentTargetDirective } from '../../../@theme/components/fragment-target/fragment-target.directive';
+import { NgdMarkdownComponent } from '../../../@theme/components/markdown/markdown.component';
+import { NgdLiveExampleBlockComponent } from '../live-example-block/live-example-block.component';
+import { NgdInlineExampleBlockComponent } from '../inline-example-block/inline-example-block.component';
+import { NgdStackedExampleComponent } from '../stacked-example-block/stacked-examples.component';
+import { NgdPropsBlockComponent } from '../props-block/props-block.component';
+import { NgdMethodsBlockComponent } from '../methods-block/methods-block.component';
+import { NgdStylesTableBlockComponent } from '../styles-table-block/styles-table-block.component';
 
 @Component({
-    selector: 'ngd-component-block',
-    template: `
-    <nb-card [ngdFragment]="source.slag">
-      <nb-card-body>
-        <ng-container class="description" *ngFor="let node of overview">
-          <ng-container *ngIf="node.type === 'text'">
-            <div *ngFor="let section of node.content" [innerHtml]="section.html"></div>
-          </ng-container>
-          <ngd-live-example-block *ngIf="node.type === 'live-example'" [id]="node.content" [title]="'example'"
-                                  class="widget-block">
-          </ngd-live-example-block>
-          <ngd-inline-example-block *ngIf="node.type === 'inline-example'" [content]="node.content"
-                                    class="widget-block">
-          </ngd-inline-example-block>
-          <ngd-stacked-example-block *ngIf="node.type === 'example'" [content]="node.content"
-                                     class="widget-block">
-          </ngd-stacked-example-block>
-        </ng-container>
-        <ngd-props-block [source]="source" *ngIf="hasProps(source)"></ngd-props-block>
-        <ngd-methods-block [source]="source" *ngIf="hasMethods(source)"></ngd-methods-block>
-        <ng-container *ngIf="hasTheme(source)">
-          <h3>Theme</h3>
-          <ngd-styles-table-block [source]="source"></ngd-styles-table-block>
-        </ng-container>
-      </nb-card-body>
-    </nb-card>
-  `,
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  selector: 'ngd-component-block',
+  templateUrl: './component-block.component.html',
+  imports: [
+    NgdMarkdownComponent,
+    NbCardComponent,
+    NgdFragmentTargetDirective,
+    NbCardBodyComponent,
+    NgdLiveExampleBlockComponent,
+    NgdInlineExampleBlockComponent,
+    NgdStackedExampleComponent,
+    NgdPropsBlockComponent,
+    NgdMethodsBlockComponent,
+    NgdStylesTableBlockComponent,
+  ],
 })
 export class NgdComponentBlockComponent {
+  private readonly tabbedService = inject(NgdTabbedService);
 
-  source: any;
-  overview: any[] = [];
+  readonly source = input.required<NgdPreparedComponent>();
 
-  @Input('source')
-  set setSource(source: any) {
-    this.source = source;
-    this.overview = source.overview;
-  }
+  readonly overview = computed(() => this.source().overview);
 
-  constructor(private tabbedService: NgdTabbedService) {
-  }
-
-  hasTheme(component) {
+  hasTheme(component: NgdPreparedComponent) {
     return this.tabbedService.componentHasTheme(component);
   }
 
-  hasMethods(component) {
+  hasMethods(component: NgdPreparedComponent) {
     return this.tabbedService.componentHasMethods(component);
   }
 
-  hasProps(component) {
+  hasProps(component: NgdPreparedComponent) {
     return this.tabbedService.componentHasProps(component);
   }
 }

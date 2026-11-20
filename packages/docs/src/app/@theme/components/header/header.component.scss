@@ -1,5 +1,5 @@
 @use '../../../@theme/styles/themes' as *;
-@use '../../../../../src/framework/theme/styles/globals' as *;
+@use '../../../../../../core/src/styles/globals' as *;
 
 @include nb-install-component() {
   $left-section-width: nb-theme(sidebar-width);
@@ -10,7 +10,11 @@
   $menu-item-fg-active: nb-theme(header-menu-fg-active);
 
   display: flex;
-  flex: 1 0 auto;
+  // As wide as the header, not its content, so the areas that don't fit go under More.
+  flex: 1 1 auto;
+  min-width: 0;
+  // Within its container even in a wrapping row, which would be as wide as its content.
+  max-width: 100%;
   flex-direction: row;
   align-items: center;
   margin-left: -15px;
@@ -35,42 +39,68 @@
     display: flex;
     padding: 0.875rem 0.5rem;
 
+    // As wide as the docs' sidebar where there's room, so the areas line up with the pages; just the logo otherwise.
     &.left {
-      width: $left-section-width;
+      @include media-breakpoint-up(lg) {
+        width: $left-section-width;
+      }
     }
 
     &.middle {
       flex: 1;
+      min-width: 0;
       align-items: center;
       margin: 0 -0.5rem;
     }
   }
 
-  ::ng-deep nb-menu {
-    flex: 1;
-    .menu-items {
-      display: flex;
-      justify-content: flex-end;
+  // The docs areas, as many as fit, the rest under More.
+  .areas {
+    position: relative;
+    display: flex;
+    flex: 1 1 auto;
+    justify-content: flex-end;
+    min-width: 0;
+    overflow: hidden;
+  }
 
-      .menu-item {
-        border: none;
+  .area {
+    flex: none;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: nb-theme(menu-item-padding);
+    border: none;
+    background: none;
+    color: $menu-item-fg;
+    font-family: nb-theme(menu-text-font-family);
+    font-size: nb-theme(menu-text-font-size);
+    font-weight: nb-theme(menu-text-font-weight);
+    line-height: nb-theme(menu-text-line-height);
+    white-space: nowrap;
+    text-decoration: none;
+    cursor: pointer;
 
-        a {
-          color: $menu-item-fg;
-          display: block;
+    &:hover,
+    &.active,
+    &:focus {
+      color: $menu-item-fg-active;
+      outline: none;
+    }
 
-          &:hover,
-          &.active,
-          &:focus {
-            color: $menu-item-fg-active;
-            outline: none !important;
-          }
-        }
-      }
+    &:focus-visible {
+      text-decoration: underline;
+    }
 
-      li:not(:first-child) {
-        display: none;
-      }
+    nb-icon {
+      font-size: 1rem;
+    }
+
+    // Out of the flow and unseen, yet measured.
+    &.overflow {
+      position: absolute;
+      visibility: hidden;
+      pointer-events: none;
     }
   }
 
@@ -100,8 +130,20 @@
     margin-left: auto;
   }
 
+  // The stars only where there's room beside the areas, as on docs pages.
+  .section.right {
+    @include media-breakpoint-down(sm) {
+      display: none;
+    }
+  }
+
+  // As wide as its version, quiet until it's used.
   .version-select {
     display: none;
+
+    ::ng-deep .select-button {
+      min-width: 0;
+    }
   }
 
   @include media-breakpoint-up(is) {
@@ -138,18 +180,11 @@
         margin-left: 0;
       }
     }
-    ::ng-deep nb-menu .menu-items li:nth-child(2) {
-      display: list-item;
-    }
   }
 
   @include media-breakpoint-up(lg) {
-    ::ng-deep nb-menu .menu-items {
+    .areas {
       justify-content: flex-start;
-
-      li:not(:first-child) {
-        display: list-item;
-      }
     }
   }
 
@@ -177,29 +212,17 @@
         width: auto;
       }
     }
-    ::ng-deep nb-menu {
-      flex-grow: 0;
-      flex-shrink: 1;
-      flex-basis: auto;
-
-      .menu-items {
-        li {
-          margin-top: 0.25rem;
-          display: none;
-        }
-      }
+    .areas {
+      justify-content: flex-start;
+    }
+    .area {
+      margin-top: 0.25rem;
     }
     ngd-search {
       display: none;
     }
     .version-select {
       margin-left: 1rem;
-    }
-
-    @include media-breakpoint-up(is) {
-      ::ng-deep nb-menu .menu-items li:first-child {
-        display: list-item;
-      }
     }
 
     @include media-breakpoint-up(sm) {
@@ -225,22 +248,12 @@
       .section.middle {
         justify-content: space-around;
       }
-      ::ng-deep nb-menu {
-        min-width: 28rem;
-
-        .menu-items li {
-          display: list-item;
-        }
-      }
     }
 
     @include media-breakpoint-up(xl) {
       .section.left {
         padding-left: 1.125rem;
         width: nb-theme(sidebar-width);
-      }
-      ::ng-deep nb-menu {
-        flex: 1;
       }
     }
 

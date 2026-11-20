@@ -1,39 +1,27 @@
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit} from '@angular/core';
+import { Component, inject, input } from '@angular/core';
+import { toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { map, switchMap } from 'rxjs/operators';
 import { NgdCodeLoaderService } from '../../../@theme/services';
+import { NgdCodeBlockComponent } from '../code-block/code-block.component';
+import { NgdExampleContent } from '../../../docs.model';
 
 @Component({
-    selector: 'ngd-example-block',
-    template: `
-    <ngd-code-block *ngIf="code"
-      [firstLine]="firstLine"
-      [lastLine]="lastLine"
-      [code]="code">
-    </ngd-code-block>
-  `,
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  selector: 'ngd-example-block',
+  templateUrl: './example-block.component.html',
+  imports: [NgdCodeBlockComponent],
 })
 export class NgdExampleBlockComponent {
+  private readonly codeLoader = inject(NgdCodeLoaderService);
 
-  code: string;
-  firstLine: number;
-  lastLine: number;
+  readonly content = input.required<NgdExampleContent>();
 
-  @Input('content')
-  set setContent(content) {
-    this.loadCode(content);
-  }
-
-  constructor(private codeLoader: NgdCodeLoaderService, private cd: ChangeDetectorRef) {
-  }
-
-  loadCode(content) {
-    this.codeLoader.load(content.files[0])
-      .subscribe((code: string) => {
-        this.code = code;
-        this.firstLine = content.firstLine || 1;
-        this.lastLine = content.lastLine || code.split('\n').length;
-        this.cd.detectChanges();
-      });
-  }
+  readonly example = toSignal(toObservable(this.content).pipe(
+    switchMap((content) => this.codeLoader.load(content.files[0]).pipe(
+      map((code: string) => ({
+        code,
+        firstLine: content.firstLine || 1,
+        lastLine: content.lastLine || code.split('\n').length,
+      })),
+    )),
+  ));
 }

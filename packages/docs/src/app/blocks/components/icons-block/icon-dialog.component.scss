@@ -1,0 +1,53 @@
+@use '../../../@theme/styles/themes' as *;
+@use '../../../../../../core/src/styles/globals' as *;
+
+@include nb-install-component() {
+  nb-card {
+    width: min(24rem, calc(100vw - 2rem));
+    margin: 0;
+  }
+
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .title {
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.25rem;
+  }
+
+  .preview {
+    display: grid;
+    place-items: center;
+    width: 8rem;
+    aspect-ratio: 1;
+    border-radius: nb-theme(border-radius);
+    background: nb-theme(background-basic-color-2);
+
+    nb-icon {
+      font-size: 4rem;
+    }
+  }
+
+  .only {
+    margin: 0;
+    color: nb-theme(text-hint-color);
+  }
+
+  .buttons {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.5rem;
+  }
+}

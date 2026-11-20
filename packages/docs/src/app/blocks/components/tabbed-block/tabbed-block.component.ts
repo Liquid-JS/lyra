@@ -1,95 +1,76 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
-import { Title } from '@angular/platform-browser';
-import { BehaviorSubject,  combineLatest } from 'rxjs';
-import { filter } from 'rxjs/operators';
-import { NgdTabbedService } from '../../../@theme/services';
+import { Component, computed, inject, input, signal } from '@angular/core';
+import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
+import { ActivatedRoute } from '@angular/router';
+import { combineLatest } from 'rxjs';
+import { filter, map } from 'rxjs/operators';
+import { NgdStructureService, NgdTabbedService } from '../../../@theme/services';
+import { NGD_AREA } from '../../../app.options';
+import { NgdPreparedComponent, NgdTabs } from '../../../docs.model';
+import { NgdOverviewBlockComponent } from '../overview-block/overview-block.component';
+import { NgdStylesBlockComponent } from '../styles-block/styles-block.component';
+import { NgdApiBlockComponent } from '../api-block/api-block.component';
+import { NgdExamplesBlockComponent } from '../examples-block/examples-block.component';
 
 @Component({
-    selector: 'ngd-tabbed-block',
-    templateUrl: './tabbed-block.component.html',
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  selector: 'ngd-tabbed-block',
+  templateUrl: './tabbed-block.component.html',
+  imports: [NgdOverviewBlockComponent, NgdStylesBlockComponent, NgdApiBlockComponent, NgdExamplesBlockComponent],
 })
-export class NgdTabbedBlockComponent implements OnDestroy {
+export class NgdTabbedBlockComponent {
+  private readonly activatedRoute = inject(ActivatedRoute);
+  private readonly tabbedService = inject(NgdTabbedService);
+  private readonly structureService = inject(NgdStructureService);
+  private readonly area = inject(NGD_AREA);
 
-  currentTab;
+  readonly currentTab = signal<{ tab: string } | undefined>(undefined);
 
-  @Input() source;
+  readonly source = input.required<NgdPreparedComponent[]>();
 
-  @Input()
-  set tabs(value) {
-    if (value) {
-      value = Object
-        .entries(value)
-        .filter(([key, val]) => val)
-        .map(([key, val]) => ({ tab: key }));
+  readonly tabs = input<NgdTabs>();
 
-      this.tabs$.next(value);
-    }
-  }
+  private readonly tabs$ = toObservable(computed(() => Object
+    .entries(this.tabs() ?? {})
+    .filter(([, val]) => val)
+    .map(([key]) => ({ tab: key }))));
 
-  private tabs$ = new BehaviorSubject(null);
-  private alive = true;
-
-  constructor(private activatedRoute: ActivatedRoute,
-              private router: Router,
-              private cd: ChangeDetectorRef,
-              private titleService: Title,
-              private tabbedService: NgdTabbedService) {
+  constructor() {
+    // The tab the URL names after the page, e.g. `api`; the routes open a page without one on its first tab.
+    const tab$ = this.activatedRoute.params.pipe(
+      map((params) => this.structureService.resolveRoute(this.area, params)?.tab),
+    );
 
     combineLatest([
-      this.activatedRoute.params.pipe(filter((params) => !params.tab)),
-      this.tabs$.pipe(filter((tabs) => tabs && tabs.length)),
+      tab$.pipe(filter((tab) => !!tab)),
+      this.tabs$.pipe(filter((tabs) => tabs.length > 0)),
     ])
-      .subscribe(([params, tabs]) => {
-        this.router.navigate([tabs[0].tab], { relativeTo: activatedRoute, replaceUrl: true });
-      });
-
-    combineLatest([
-      this.activatedRoute.params.pipe(filter((params) => params.tab)),
-      this.tabs$.pipe(filter((tabs) => tabs && tabs.length)),
-    ])
-      .subscribe(([params, tabs]) => {
-        this.currentTab = tabs.find(tab => tab.tab === params.tab);
-        if (this.currentTab) {
-          this.titleService.setTitle(`${this.titleService.getTitle()} - component ${this.currentTab.tab}`);
-        }
-        this.cd.detectChanges();
+      .pipe(takeUntilDestroyed())
+      .subscribe(([tab, tabs]) => {
+        const currentTab = tabs.find((item) => item.tab === tab);
+        this.currentTab.set(currentTab);
       });
   }
 
-  hasOverview(component) {
+  hasOverview(component: NgdPreparedComponent) {
     return this.tabbedService.componentHasOverview(component);
   }
 
-  hasExamples(component) {
+  hasExamples(component: NgdPreparedComponent) {
     return this.tabbedService.componentHasExamples(component);
   }
 
-  hasTheme(component) {
+  hasTheme(component: NgdPreparedComponent) {
     return this.tabbedService.componentHasTheme(component);
   }
 
-  hasMethods(component) {
+  hasMethods(component: NgdPreparedComponent) {
     return this.tabbedService.componentHasMethods(component);
   }
 
-  hasProps(component) {
+  hasProps(component: NgdPreparedComponent) {
     return this.tabbedService.componentHasProps(component);
   }
 
-  hasAPI(component) {
+  hasAPI(component: NgdPreparedComponent) {
     return this.hasMethods(component) || this.hasProps(component);
-  }
-
-  ngOnDestroy() {
-    this.alive = false;
   }
 }

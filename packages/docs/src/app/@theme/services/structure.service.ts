@@ -1,166 +1,165 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { Inject, Injectable } from '@angular/core';
-import { combineLatest, Observable, of } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { inject, Service } from '@angular/core';
+import { Params } from '@angular/router';
 
 import { NgdTabbedService } from './tabbed.service';
-import { NgdMdSection, NgdTextService } from './text.service';
+import { NgdTextService } from './text.service';
 import { DOCS, STRUCTURE } from '../../app.options';
 import { NgdArticleService } from './article.service';
+import {
+  NgdBlockEntry,
+  NgdDocClass,
+  NgdPreparedArea,
+  NgdPreparedAreaChild,
+  NgdPreparedBlock,
+  NgdPreparedComponent,
+  NgdPreparedEntry,
+  NgdPreparedPageEntry,
+  NgdPreparedSection,
+  NgdPreparedSectionChild,
+  NgdSectionChildEntry,
+  NgdSectionEntry,
+  NgdTabbedBlock,
+  NgdTheme,
+} from '../../docs.model';
 
-type NgdToc = { title: string, fragment: string }[];
-
-@Injectable()
+@Service()
 export class NgdStructureService {
+  private readonly textService = inject(NgdTextService);
+  private readonly tabbedService = inject(NgdTabbedService);
+  private readonly articleService = inject(NgdArticleService);
+  private readonly docs = inject(DOCS);
 
-  protected prepared;
+  protected readonly areas: NgdPreparedArea[] = inject(STRUCTURE).map((area) => ({
+    ...area,
+    children: area.children.map((child) =>
+      child.type === 'section' ? this.prepareSection(child) : this.prepareSectionChild(child)),
+  }));
 
-  constructor(private textService: NgdTextService,
-              private tabbedService: NgdTabbedService,
-              private articleService: NgdArticleService,
-              @Inject(STRUCTURE) structure,
-              @Inject(DOCS) docs) {
-    this.prepared = this.prepareStructure(structure, docs);
+  /** The docs' top sections, each with its own sidebar. */
+  getAreas(): NgdPreparedArea[] {
+    return this.areas;
   }
 
-  getPreparedStructure(): any {
-    return this.prepared;
+  /** The pages, groups and sections of the area at `/<path>`. */
+  getPreparedStructure(path: string): NgdPreparedAreaChild[] {
+    return this.areas.find((area) => area.path === path)?.children ?? [];
   }
 
-  findPageBySlag(structure: any, slag: string): any {
+  /** The page and tab of a docs route's `page`, `subPage` and `tab` params. */
+  resolveRoute(area: string, params: Params): { page: NgdPreparedPageEntry; tab?: string } | undefined {
+    const segments = [params['page'], params['subPage'], params['tab']].filter((segment) => typeof segment === 'string');
+    return this.resolvePage(area, segments);
+  }
+
+  /**
+   * The page at a URL's segments after its area, and the tab they name: `cdk/calendar-kit/api` is a section's page,
+   * `button/api` a page of the area itself, both on their API tab.
+   */
+  resolvePage(area: string, segments: string[]): { page: NgdPreparedPageEntry; tab?: string } | undefined {
+    const structure = this.getPreparedStructure(area);
+    const [first, second, third] = segments;
+    const inSection = second === undefined ? undefined : this.findPageBySlag(structure, `${first}_${second}`);
+    if (inSection) {
+      return { page: inSection, tab: third };
+    }
+    const page = first === undefined ? undefined : this.findPageBySlag(structure, first);
+    return page ? { page, tab: second } : undefined;
+  }
+
+  findPageBySlag(structure: NgdPreparedEntry[], slag: string): NgdPreparedPageEntry | undefined {
     for (const item of structure) {
-      if (item.slag === slag) {
+      if ((item.type === 'page' || item.type === 'tabs') && item.slag === slag) {
         return item;
       }
-      if (item.type === 'section' && item.children) {
+      if (item.type === 'section') {
         const deep = this.findPageBySlag(item.children, slag);
         if (deep) {
           return deep;
         }
       }
     }
+    return undefined;
   }
 
-  protected prepareStructure(structure: any, preparedDocs: any, parentSlag?: string): any {
-    return structure.map((item: any) => {
-      const slag = item.name ? this.textService.createSlag(item.name) : null;
+  protected prepareSection(section: NgdSectionEntry): NgdPreparedSection {
+    const slag = this.textService.createSlag(section.name);
+    return { ...section, children: section.children.map((child) => this.prepareSectionChild(child, slag)) };
+  }
 
-      if (item.type === 'block' && typeof item.source === 'string') {
+  // A page's slag is its name's, after its section's when it's in one.
+  protected prepareSectionChild(item: NgdSectionChildEntry, parentSlag?: string): NgdPreparedSectionChild {
+    const name = this.textService.createSlag(item.name);
+    const slag = parentSlag ? `${parentSlag}_${name}` : name;
 
-        if (item.block === 'theme') {
-          item.source = preparedDocs.themes[item.source];
-        }
-
-        if (item.block === 'component') {
-          item.source = this.prepareComponent(preparedDocs.classes.find((data) => data.name === item.source));
-        }
+    switch (item.type) {
+      case 'page': {
+        const children = item.children.map((block) => this.prepareBlock(block));
+        return { ...item, slag, children };
       }
-
-      if (item.block === 'markdown') {
-        item.sections = this.articleService.getArticle(item.source);
-      }
-
-      if (item.children) {
-        item.children = this.prepareStructure(item.children, preparedDocs, slag);
-      }
-
-      if (item.type === 'tabs') {
-        item.source = this.getComponents(item, preparedDocs);
-        item.tabs = this.tabbedService.determineTabs(item);
-
+      case 'tabs': {
+        const source = this.getComponents(item.source);
         // we emulate a block here
-        item.children = [
-          {
-            type: 'block',
-            block: 'tabbed',
-            children: item.source,
-          },
-        ];
+        const children: [NgdTabbedBlock] = [{ type: 'block', block: 'tabbed', children: source }];
+        return {
+          ...item,
+          slag,
+          source,
+          tabs: this.tabbedService.determineTabs({ source }),
+          children,
+        };
       }
-
-      if (item.type === 'page' || item.type === 'tabs') {
-        item.toc = this.prepareToc(item);
-        item.slag = parentSlag ? `${parentSlag}_${slag}` : slag;
-      }
-
-      return item;
-    });
-  }
-
-  protected getComponents(item: any, preparedDocs) {
-    return item.source
-      .map(source => preparedDocs.classes.find((data) => data.name === source))
-      .map(component => this.prepareComponent(component));
-  }
-
-  protected prepareComponent(component: any) {
-    if (!component.isPrepared) {
-      const textNodes = component.overview.filter(node => node.type === 'text');
-      if (textNodes && textNodes.length) {
-        textNodes[0].content = `## ${component.name}\n\n${textNodes[0].content}`; // TODO: this is bad
-      }
-      // Set isPrepared property to skip repeatin sources in structure.ts
-      component.isPrepared = true;
+      case 'group':
+        return item;
     }
+  }
+
+  protected prepareBlock(block: NgdBlockEntry): NgdPreparedBlock {
+    switch (block.block) {
+      case 'markdown':
+        return { ...block, sections: this.articleService.getArticle(block.source) };
+      case 'component':
+        return { ...block, source: this.prepareComponent(this.findClass(block.source)) };
+      case 'theme':
+        return { ...block, source: this.findTheme(block.source) };
+      default:
+        return block;
+    }
+  }
+
+  protected getComponents(names: string[]): NgdPreparedComponent[] {
+    return names.map((name) => this.prepareComponent(this.findClass(name)));
+  }
+
+  protected findClass(name: string): NgdDocClass {
+    const component = this.docs.classes.find((data) => data.name === name);
+    if (!component) {
+      throw new Error(`structure.ts names ${name}, which the API docs don't have.`);
+    }
+    return component;
+  }
+
+  protected findTheme(name: string): NgdTheme {
+    const theme = this.docs.themes[name];
+    if (!theme) {
+      throw new Error(`structure.ts names the ${name} theme, which the docs don't have.`);
+    }
+    return theme;
+  }
+
+  // The overview opens with the class's name as its heading, added to the prepared copy; the API data stays as it is,
+  // so a class on several pages gets it once on each.
+  protected prepareComponent(component: NgdDocClass): NgdPreparedComponent {
+    const firstText = component.overview.find((node) => node.type === 'text');
     return {
-      ... component,
+      ...component,
       slag: this.textService.createSlag(component.name),
-      overview: component.overview.map((node: any) => {
+      overview: component.overview.map((node) => {
         if (node.type === 'text') {
-          return {
-            type: node.type,
-            content: this.textService.mdToSectionsHTML(node.content),
-          };
+          const content = node === firstText ? `## ${component.name}\n\n${node.content}` : node.content;
+          return { type: node.type, content: this.textService.mdToSections(content) };
         }
         return node;
       }),
     };
-  }
-
-  protected prepareToc(item: any): Observable<NgdToc[]> {
-    const tocList: Observable<NgdToc>[] = item.children
-      .reduce((acc: Observable<NgdToc>[], child: any) => {
-        if (child.block === 'markdown') {
-          acc.push(this.getTocForMd(child));
-        } else if (child.block === 'tabbed') {
-          acc.push(this.getTocForTabbed(child));
-        } else if (child.block === 'component') {
-          acc.push(this.getTocForComponent(child));
-        }
-        return acc;
-      }, []);
-
-    return combineLatest(tocList).pipe(
-      map((toc) => [].concat(...toc)),
-    );
-  }
-
-  protected getTocForMd(block: { sections: Observable<NgdMdSection[]> }): Observable<NgdToc> {
-    return block.sections
-      .pipe(
-        map((sections) => {
-          return sections
-            .map(({ title, fragment }) => ({ title, fragment }));
-        }),
-      );
-  }
-
-  protected getTocForComponent(block: any): Observable<NgdToc> {
-    return of([{
-      title: block.source.name,
-      fragment: block.source.slag,
-    }]);
-  }
-
-  protected getTocForTabbed(block: any): Observable<NgdToc> {
-    return of(block.children.map((component: any) => ({
-      title: component.name,
-      fragment: this.textService.createSlag(component.name),
-    })));
   }
 }

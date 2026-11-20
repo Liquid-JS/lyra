@@ -1,21 +1,16 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { Injectable } from '@angular/core';
+import { inject, Service } from '@angular/core';
 import { NgdStructureService } from './structure.service';
 import { NgdTextService } from './text.service';
 import { NgdMenuService } from './menu.service';
+import { NgdPreparedEntry } from '../../docs.model';
 
 /**
  * Pagination Item options
  */
-class NgdPaginationItem {
+interface NgdPaginationItem {
   title: string;
-  slag: string;
-  link?: string;
+  slag?: string;
+  link: string;
   prev?: {
     title: string;
     link: string;
@@ -24,51 +19,49 @@ class NgdPaginationItem {
     title: string;
     link: string;
   };
-  parent: NgdPaginationItem;
+  parent?: Pick<NgdPaginationItem, 'link'>;
 }
 
-@Injectable()
+@Service()
 export class NgdPaginationService {
+  private readonly structureService = inject(NgdStructureService);
+  private readonly textService = inject(NgdTextService);
+  private readonly menuService = inject(NgdMenuService);
 
-  protected paginationItems;
+  protected paginationItems = new Array<NgdPaginationItem>();
 
-  constructor(private structureService: NgdStructureService,
-              private textService: NgdTextService,
-              private menuService: NgdMenuService) {
-  }
-
-  setPaginationItems(basePath: string) {
+  /** The previous and next pages of the area at `/<area>`. */
+  setPaginationItems(area: string) {
     this.paginationItems = this.addPrevNextPointers(
-      this.prepareItems(
-        this.structureService.getPreparedStructure(),
-        { link: basePath })
+      this.prepareItems(this.structureService.getPreparedStructure(area), { link: `/${area}` }),
     );
   }
 
-  protected prepareItems(structure, parent = null): NgdPaginationItem[] {
+  protected prepareItems(structure: NgdPreparedEntry[], parent?: Pick<NgdPaginationItem, 'link'>): NgdPaginationItem[] {
     return structure
-        .filter(item => item.name)
-        .reduce((result, item: any) => {
-          const paginationItem: NgdPaginationItem = {
-            title: item.name,
-            parent: parent,
-            slag: item.slag,
-          };
-          paginationItem.link = this.menuService.createItemLink<NgdPaginationItem>(paginationItem);
+      .filter((item) => item.type !== 'block')
+      .reduce((result, item) => {
+        const title = item.name;
+        const paginationItem: NgdPaginationItem = {
+          title,
+          parent: parent,
+          slag: item.type === 'page' || item.type === 'tabs' ? item.slag : undefined,
+          link: this.menuService.createItemLink({ title, parent }),
+        };
 
-          if (item.name && item.type === 'page' || item.type === 'tabs') {
-            result.push(paginationItem);
-          }
+        if (item.type === 'page' || item.type === 'tabs') {
+          result.push(paginationItem);
+        }
 
-          if (item.children) {
-            return result.concat(this.prepareItems(item.children, paginationItem));
-          }
+        if ('children' in item) {
+          return result.concat(this.prepareItems(item.children, paginationItem));
+        }
 
-          return result;
-      }, [] as NgdPaginationItem[]);
+        return result;
+      }, new Array<NgdPaginationItem>());
   }
 
-  protected addPrevNextPointers(items): NgdPaginationItem[] {
+  protected addPrevNextPointers(items: NgdPaginationItem[]): NgdPaginationItem[] {
     return items
       .map((paginationItem, index, paginationItems) => {
         const prev = paginationItems[index - 1];
@@ -92,7 +85,7 @@ export class NgdPaginationService {
       });
   }
 
-  getPaginationItem(slag: string): NgdPaginationItem {
-    return this.paginationItems.find(item => item.slag === slag);
+  getPaginationItem(slag?: string): NgdPaginationItem | undefined {
+    return this.paginationItems.find((item) => item.slag === slag);
   }
 }

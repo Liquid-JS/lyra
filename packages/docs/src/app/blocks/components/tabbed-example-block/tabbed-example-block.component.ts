@@ -1,53 +1,55 @@
 import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
   Component,
-  Input,
-  Output,
-  EventEmitter,
+  inject,
+  input,
+  output,
 } from '@angular/core';
-import { forkJoin,  of as observableOf,  Observable } from 'rxjs';
-import { map,  catchError } from 'rxjs/operators';
+import { forkJoin, of as observableOf, Observable } from 'rxjs';
+import { toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { map, catchError, switchMap } from 'rxjs/operators';
 import { NgdCodeLoaderService } from '../../../@theme/services';
 import { NgdExampleView } from '../../enum.example-view';
+import { NbIconComponent, NbTabsetComponent, NbTabComponent } from '@liquid-js/lyr-core';
+import { NgdCodeBlockComponent } from '../code-block/code-block.component';
+
+interface NgdLoadedExample {
+  code: string;
+  path: string;
+  extension?: string;
+  active?: boolean;
+}
 
 @Component({
-    selector: 'ngd-tabbed-example-block',
-    styleUrls: ['./tabbed-example-block.component.scss'],
-    templateUrl: './tabbed-example-block.component.html',
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  selector: 'ngd-tabbed-example-block',
+  styleUrls: ['./tabbed-example-block.component.scss'],
+  templateUrl: './tabbed-example-block.component.html',
+  imports: [NbIconComponent, NbTabsetComponent, NbTabComponent, NgdCodeBlockComponent],
 })
 export class NgdTabbedExampleBlockComponent {
+  private readonly codeLoader = inject(NgdCodeLoaderService);
 
+  readonly hasViewSwitch = input(false);
+  readonly changeView = output<NgdExampleView>();
+  readonly content = input.required<{ files: string[] }>();
 
-  @Input() hasViewSwitch = false;
-  @Output() changeView = new EventEmitter<NgdExampleView>();
-  examples = [];
-
-  @Input()
-  set content({ files }: { files: string[] }) {
-    forkJoin(files.map(file => this.load(file)))
-      .subscribe(files => {
-        (files[0] as any).active = true;
-        this.examples = files;
-        this.cd.detectChanges();
-      });
-  }
-
-  constructor(private codeLoader: NgdCodeLoaderService, private cd: ChangeDetectorRef) {
-  }
+  readonly examples = toSignal(toObservable(this.content).pipe(
+    switchMap(({ files }) => forkJoin(files.map((file) => this.load(file)))),
+    map((loaded) => {
+      loaded[0].active = true;
+      return loaded;
+    }),
+  ), { initialValue: [] });
 
   switchToLiveView() {
     this.changeView.emit(NgdExampleView.LIVE);
   }
 
-  private load(path): Observable<any> {
+  private load(path: string): Observable<NgdLoadedExample> {
     const extension = path.split('.').pop();
     return this.codeLoader.load(path)
       .pipe(
-        map(code => ({ code, path, extension })),
-        catchError(e => observableOf('')),
+        map((code) => ({ code, path, extension })),
+        catchError(() => observableOf({ code: '', path, extension })),
       );
   }
 }

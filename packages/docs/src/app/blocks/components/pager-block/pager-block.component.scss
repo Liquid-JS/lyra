@@ -1,5 +1,5 @@
 @use '../../../@theme/styles/themes' as *;
-@use '../../../../../src/framework/theme/styles/globals' as *;
+@use '../../../../../../core/src/styles/globals' as *;
 
 @include nb-install-component() {
   $title-fg: nb-theme(color-fg-heading);
@@ -36,7 +36,7 @@
         margin-top: 0.3rem;
       }
       span {
-        word-wrap: normal;
+        overflow-wrap: normal;
       }
     }
 

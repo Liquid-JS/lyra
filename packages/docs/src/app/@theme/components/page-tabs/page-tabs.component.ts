@@ -1,55 +1,28 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { ChangeDetectionStrategy, Component, Input, OnDestroy, HostBinding } from '@angular/core';
-import { takeUntil, map, publishReplay, refCount } from 'rxjs/operators';
-import { ActivatedRoute } from '@angular/router';
-import { Observable, of as observableOf, combineLatest, Subject } from 'rxjs';
+import { Component, inject, input } from '@angular/core';
+import { toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { map } from 'rxjs/operators';
+import { ActivatedRoute, RouterLink } from '@angular/router';
+import { combineLatest } from 'rxjs';
+import { NbIconComponent } from '@liquid-js/lyr-core';
+import { NgdTabs } from '../../../docs.model';
+import { NGD_AREA } from '../../../app.options';
+import { NgdStructureService } from '../../services/structure.service';
 
 @Component({
-    selector: 'ngd-page-tabs',
-    styleUrls: ['./page-tabs.component.scss'],
-    template: `
-    <a *ngFor="let item of items$ | async" [class.selected]="item.selected" [routerLink]="['../', item.tab]">
-      <div class="text-container">
-        <nb-icon [icon]="item.icon"></nb-icon>
-        <span class="title">{{ item.title }}</span>
-      </div>
-      <i class="line"></i>
-    </a>
-  `,
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  selector: 'ngd-page-tabs',
+  styleUrls: ['./page-tabs.component.scss'],
+  templateUrl: './page-tabs.component.html',
+  host: { '[class.horizontal]': 'horizontal()' },
+  imports: [RouterLink, NbIconComponent],
 })
-export class NgdPageTabsComponent implements OnDestroy {
+export class NgdPageTabsComponent {
+  private readonly activatedRoute = inject(ActivatedRoute);
+  private readonly structureService = inject(NgdStructureService);
+  private readonly area = inject(NGD_AREA);
 
-  private destroy$ = new Subject<void>();
+  readonly tabs = input<NgdTabs>();
 
-  items$: Observable<any[]> = observableOf([]);
-
-  @Input()
-  set tabs(value) {
-    this.items$ = combineLatest(
-      observableOf(value || []).pipe(
-        map(tabs => this.availableTabs.filter(tab => tabs[tab.tab])),
-      ),
-      this.activatedRoute.params.pipe(publishReplay(), refCount()),
-    )
-    .pipe(
-      map(([tabs, params]) => (tabs.map((item: any) => ({ ...item, selected: item.tab === params.tab })))),
-      takeUntil(this.destroy$),
-    );
-  }
-
-  @HostBinding('class.horizontal')
-  isHorizontal = false;
-  @Input()
-  set horizontal(value) {
-    this.isHorizontal = value !== 'false' && value !== false;
-  }
+  readonly horizontal = input(false, { transform: (value: boolean | string) => value !== 'false' && value !== false });
 
   private availableTabs: {
     tab: string;
@@ -57,34 +30,38 @@ export class NgdPageTabsComponent implements OnDestroy {
     icon: string;
     selected?: boolean;
   }[] = [
-      {
-        tab: 'overview',
-        title: 'Overview',
-        icon: 'eye-outline',
-        selected: true,
-      },
-      {
-        tab: 'api',
-        title: 'API',
-        icon: 'settings-outline',
-      },
-      {
-        tab: 'theme',
-        title: 'Theme',
-        icon: 'droplet-outline',
-      },
-      {
-        tab: 'examples',
-        title: 'Examples',
-        icon: 'image-outline',
-      },
-    ];
+    {
+      tab: 'overview',
+      title: 'Overview',
+      icon: 'eye-outline',
+      selected: true,
+    },
+    {
+      tab: 'api',
+      title: 'API',
+      icon: 'settings-outline',
+    },
+    {
+      tab: 'theme',
+      title: 'Theme',
+      icon: 'droplet-outline',
+    },
+    {
+      tab: 'examples',
+      title: 'Examples',
+      icon: 'image-outline',
+    },
+  ];
 
-  constructor(private activatedRoute: ActivatedRoute) {
-  }
-
-  ngOnDestroy() {
-    this.destroy$.next();
-    this.destroy$.complete();
-  }
+  readonly items = toSignal(combineLatest([
+    toObservable(this.tabs).pipe(
+      map((tabs) => this.availableTabs.filter((tab) => (tabs || {})[tab.tab])),
+    ),
+    this.activatedRoute.params,
+  ]).pipe(
+    map(([tabs, params]) => {
+      const tab = this.structureService.resolveRoute(this.area, params)?.tab;
+      return tabs.map((item) => ({ ...item, selected: item.tab === tab }));
+    }),
+  ), { initialValue: [] });
 }

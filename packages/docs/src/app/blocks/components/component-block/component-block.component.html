@@ -1,0 +1,36 @@
+<nb-card [ngdFragment]="source().slag">
+  <nb-card-body>
+    @for (node of overview(); track node) {
+    <ng-container class="description">
+      @if (node.type === 'text') {
+      @for (section of node.content; track section) {
+      <ngd-markdown [markdown]="section.source" />
+      }
+      }
+      @if (node.type === 'live-example') {
+      <ngd-live-example-block [content]="node.content"
+        [title]="'example'"
+        class="widget-block" />
+      }
+      @if (node.type === 'inline-example') {
+      <ngd-inline-example-block [content]="node.content"
+        class="widget-block" />
+      }
+      @if (node.type === 'stacked-example') {
+      <ngd-stacked-example-block [content]="node.content"
+        class="widget-block" />
+      }
+    </ng-container>
+    }
+    @if (hasProps(source())) {
+    <ngd-props-block [source]="source()" />
+    }
+    @if (hasMethods(source())) {
+    <ngd-methods-block [source]="source()" />
+    }
+    @if (hasTheme(source())) {
+    <h3>Theme</h3>
+    <ngd-styles-table-block [source]="source()" />
+    }
+  </nb-card-body>
+</nb-card>

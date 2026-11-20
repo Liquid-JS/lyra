@@ -29,12 +29,25 @@
     background-color: transparent;
   }
 
+  // A section's title, or an article's heading, which the table of contents scrolls to, lands where the fixed header
+  // leaves it in view.
+  .ngd-section-title,
+  ngd-md-block h2 {
+    scroll-margin-top: 8.75rem;
+  }
+
+  // As Lyra's own: pinned to its containing block's start, so a hidden label in a wide, scrolling table doesn't
+  // widen the page.
   .visually-hidden {
-    /* https://snook.ca/archives/html_and_css/hiding-content-for-accessibility */
     position: absolute !important;
-    height: 1px;
+    inset-inline-start: 0;
     width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    border: 0;
     overflow: hidden;
-    clip: rect(1px, 1px, 1px, 1px);
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
   }
 }

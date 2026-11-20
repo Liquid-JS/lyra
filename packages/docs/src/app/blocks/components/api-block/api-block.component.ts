@@ -1,39 +1,32 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { Component, inject, input } from '@angular/core';
 import { NgdTabbedService } from '../../../@theme/services';
+import { NgdPreparedComponent } from '../../../docs.model';
+import { NbCardComponent, NbCardBodyComponent } from '@liquid-js/lyr-core';
+import { NgdFragmentTargetDirective } from '../../../@theme/components/fragment-target/fragment-target.directive';
+import { NgdPropsBlockComponent } from '../props-block/props-block.component';
+import { NgdMethodsBlockComponent } from '../methods-block/methods-block.component';
 
 @Component({
-    selector: 'ngd-api-block',
-    template: `
-    <nb-card [ngdFragment]="source.slag">
-      <nb-card-body>
-        <h2>{{ source.name }}</h2>
-        <ngd-props-block [source]="source" *ngIf="hasProps(source)"></ngd-props-block>
-        <ngd-methods-block [source]="source" *ngIf="hasMethods(source)"></ngd-methods-block>
-      </nb-card-body>
-    </nb-card>
-  `,
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  selector: 'ngd-api-block',
+  templateUrl: './api-block.component.html',
+  imports: [
+    NbCardComponent,
+    NgdFragmentTargetDirective,
+    NbCardBodyComponent,
+    NgdPropsBlockComponent,
+    NgdMethodsBlockComponent,
+  ],
 })
 export class NgdApiBlockComponent {
+  private readonly tabbedService = inject(NgdTabbedService);
 
-  @Input('source') source;
+  readonly source = input.required<NgdPreparedComponent>();
 
-  constructor(private tabbedService: NgdTabbedService) {
-  }
-
-
-  hasMethods(component) {
+  hasMethods(component: NgdPreparedComponent) {
     return this.tabbedService.componentHasMethods(component);
   }
 
-  hasProps(component) {
+  hasProps(component: NgdPreparedComponent) {
     return this.tabbedService.componentHasProps(component);
   }
 }

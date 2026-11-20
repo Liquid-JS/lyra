@@ -1,16 +1,12 @@
-import { Directive, ElementRef, AfterViewInit } from '@angular/core';
+import { Directive, ElementRef, AfterViewInit, inject } from '@angular/core';
 
-@Directive({
-    selector: '[ngdColorSwatch]',
-    standalone: false
-})
+@Directive({ selector: '[ngdColorSwatch]' })
 export class NgdColorSwatchDirective implements AfterViewInit {
-
-  constructor(private el: ElementRef) { }
+  private readonly el = inject(ElementRef);
 
   ngAfterViewInit() {
     this.el.nativeElement.innerHTML = this.el.nativeElement.innerHTML
-      .replace(/(#[a-f0-9]{6}|rgba.*?\))/ig , '$&<span class="color-swatch" style="background: $&"></span>');
+      .replace(/(#[a-f0-9]{6}|rgba.*?\))/ig, '$&<span class="color-swatch" style="background: $&"></span>');
     this.el.nativeElement.innerHTML = this.el.nativeElement.innerHTML.replace(/,/g, ', ');
   }
 }

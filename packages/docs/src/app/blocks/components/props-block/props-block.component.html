@@ -1,0 +1,20 @@
+@if (inputs().length > 0) {
+<ngd-prop-block [properties]="inputs()"
+  name="Inputs"
+  [slag]="slag()"
+  class="widget-block" />
+}
+
+@if (outputs().length > 0) {
+<ngd-prop-block [properties]="outputs()"
+  name="Outputs"
+  [slag]="slag()"
+  class="widget-block" />
+}
+
+@if (props().length > 0) {
+<ngd-prop-block [properties]="props()"
+  name="Properties"
+  [slag]="slag()"
+  class="widget-block" />
+}

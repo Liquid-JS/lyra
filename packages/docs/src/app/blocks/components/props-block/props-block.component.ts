@@ -1,55 +1,25 @@
-
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { Component, computed, inject, input } from '@angular/core';
 import { NgdMetadataService } from '../../../@theme/services';
+import { NgdDocProp, NgdPreparedComponent } from '../../../docs.model';
+import { NgdPropBlockComponent } from '../prop-block/prop-block.component';
 
 @Component({
-    selector: 'ngd-props-block',
-    template: `
-    <ngd-prop-block *ngIf="inputs.length > 0"
-                    [properties]="inputs"
-                    name="Inputs"
-                    [slag]="slag"
-                    class="widget-block">
-    </ngd-prop-block>
-
-    <ngd-prop-block *ngIf="outputs.length > 0"
-                    [properties]="outputs"
-                    name="Outputs"
-                    [slag]="slag"
-                    class="widget-block">
-    </ngd-prop-block>
-
-    <ngd-prop-block *ngIf="props.length > 0"
-                    [properties]="props"
-                    name="Properties"
-                    [slag]="slag"
-                    class="widget-block">
-    </ngd-prop-block>
-  `,
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  selector: 'ngd-props-block',
+  templateUrl: './props-block.component.html',
+  imports: [NgdPropBlockComponent],
 })
 export class NgdPropsBlockComponent {
-  outputs: any = [];
-  inputs: any = [];
-  props: any = [];
-  name: string;
-  slag: string;
+  private readonly metadataService = inject(NgdMetadataService);
 
-  @Input('source')
-  set setSource(source: any) {
-    this.inputs = source.props.filter(item => item.kind === 'input').filter(m => this.metadataService.isPublic(m));
-    this.outputs = source.props.filter(item => item.kind === 'output').filter(m => this.metadataService.isPublic(m));
-    this.props = source.props.filter(item => item.kind === 'property').filter(m => this.metadataService.isPublic(m));
-    this.name = source.name;
-    this.slag = source.slag;
+  readonly source = input.required<NgdPreparedComponent>();
+
+  readonly inputs = computed(() => this.publicProps('input'));
+  readonly outputs = computed(() => this.publicProps('output'));
+  readonly props = computed(() => this.publicProps('property'));
+  readonly name = computed(() => this.source().name);
+  readonly slag = computed(() => this.source().slag);
+
+  private publicProps(kind: NgdDocProp['kind']): NgdDocProp[] {
+    return this.source().props.filter((item) => item.kind === kind).filter((m) => this.metadataService.isPublic(m));
   }
-
-  constructor(private metadataService: NgdMetadataService) {}
 }

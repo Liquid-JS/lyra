@@ -1,16 +1,11 @@
+@use 'sass:map';
 @use '../../../@theme/styles/themes' as *;
+// Lyra's own themes, which the examples show, registered so their colours can be read here.
+@use '../../../../../../core/src/styles/themes' as lyra-themes;
 
 @include nb-install-component() {
-  // TODO: move some variables in Nebular themes
-  // colors
   $action-bg: white;
   $action-fg: nb-theme(color-fg-heading-light);
-  $block-bg-default: #edf0f4;
-  $block-bg-cosmic: #1b1b38;
-  $block-fg-cosmic: #e8e9fa;
-  $block-bg-corporate: #edf0f4;
-  $block-bg-dark: #151a30;
-  $block-fg-dark: #f7f8fa;
 
   display: flex;
   flex-direction: column;
@@ -89,28 +84,17 @@
     }
   }
 
-  &.theme-default {
-    background-color: $block-bg-default;
-  }
+  // Each theme's own layout background and text, so the example blends into the block around it.
+  @each $name in (default, dark, cosmic, corporate, material-light, material-dark) {
+    $theme: nb-process-theme(map.get($nb-themes, $name));
 
-  &.theme-cosmic {
-    background-color: $block-bg-cosmic;
+    &.theme-#{$name} {
+      background-color: map.get($theme, layout-background-color);
 
-    .title {
-      color: white;
+      .title {
+        color: map.get($theme, text-basic-color);
+      }
     }
-  }
-
-  &.theme-dark {
-    background-color: $block-bg-dark;
-
-    .title {
-      color: white;
-    }
-  }
-
-  &.theme-corporate {
-    background-color: $block-bg-corporate;
   }
 
   .iframe-container {

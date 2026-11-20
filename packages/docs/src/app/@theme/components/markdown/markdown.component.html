@@ -1,0 +1,73 @@
+<remark [markdown]="markdown()"
+  [processor]="processor">
+  <ng-template remarkTemplate="link"
+    let-node>
+    @if (isExternal(node.url)) {
+    <a [href]="node.url"
+      target="_blank"
+      rel="noopener"
+      [attr.title]="node.title"
+      [remarkNode]="node"></a>
+    } @else {
+    @let target = route(node.url);
+    @if (target.path) {
+    <a [routerLink]="target.path"
+      [fragment]="target.fragment"
+      [attr.title]="node.title"
+      [remarkNode]="node"></a>
+    } @else {
+    <a [routerLink]="[]"
+      [fragment]="target.fragment"
+      [attr.title]="node.title"
+      [remarkNode]="node"></a>
+    }
+    }
+  </ng-template>
+
+  <img *remarkTemplate="'image'; let node"
+    [src]="asset(node.url)"
+    [alt]="node.alt ?? ''"
+    [attr.title]="node.title" />
+
+  <!-- In a box of its own that scrolls sideways where the table is wider, e.g. on a phone, not the whole card. -->
+  <div *remarkTemplate="'table'; let node"
+    class="table-scroll">
+    <table>
+      <thead>
+        @if (node.children[0]; as row) {
+        <tr>
+          @for (cell of row.children; track $index; let i = $index) {
+          <th [remarkNode]="cell"
+            [style.text-align]="node.align?.[i]"></th>
+          }
+        </tr>
+        }
+      </thead>
+      <tbody>
+        @for (row of node.children.slice(1); track $index) {
+        <tr>
+          @for (cell of row.children; track $index; let i = $index) {
+          <td [remarkNode]="cell"
+            [style.text-align]="node.align?.[i]"></td>
+          }
+        </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <pre *remarkTemplate="'code'; let node"><code [nxtHighlight]="node.value" [language]="node.lang ?? undefined"></code></pre>
+
+  <ng-template remarkTemplate="html"
+    let-node
+    let-parent="parent">
+    @if (description()) {
+    {{ node.value }}
+    } @else if (blockParents.has(parent.type)) {
+    <div [innerHTML]="node.value"></div>
+    } @else {
+    <!-- A tag in a line of text, e.g. a line break or an anchor. -->
+    <span [innerHTML]="node.value"></span>
+    }
+  </ng-template>
+</remark>

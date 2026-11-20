@@ -1,5 +1,5 @@
 @use '../../../@theme/styles/themes' as *;
-@use '../../../../../src/framework/theme/styles/globals' as *;
+@use '../../../../../../core/src/styles/globals' as *;
 
 @include nb-install-component() {
   $text-fg: nb-theme(footer-text-color);

@@ -1,62 +1,47 @@
-import { Component, Input } from '@angular/core';
+import { Component, inject, input } from '@angular/core';
 
 import { NgdExampleView } from '../../enum.example-view';
 import { NgdAnalytics } from '../../../@theme/services';
-import { animate, animation, keyframes, style, transition, trigger, useAnimation } from '@angular/animations';
-
-export const pulse = animation(
-  animate(
-    '{{ timing }}s {{ delay }}s',
-    keyframes([
-      style({ transform: 'scale3d(1, 1, 1)' }),
-      style({ transform: 'scale3d({{ scale }}, {{ scale }}, {{ scale }})' }),
-      style({ transform: 'scale3d(1, 1, 1)' }),
-    ]),
-  ),
-  { params: { scale: 1.02, timing: 0.5, delay: 0 } },
-);
+import { NgdLiveExampleBlockComponent } from '../live-example-block/live-example-block.component';
+import { NgdTabbedExampleBlockComponent } from '../tabbed-example-block/tabbed-example-block.component';
+import { NgdExampleContent } from '../../../docs.model';
 
 @Component({
-    selector: 'ngd-stacked-example-block',
-    template: `
-    <div>
-      <ngd-live-example-block [hidden]="!isLive"
-                              [@exampleState]="isLive ? 'live': 'code'"
-                              [content]="content"
-                              [hasViewSwitch]="true"
-                              (changeView)="changeView($event)">
-      </ngd-live-example-block>
-
-      <ngd-tabbed-example-block [hidden]="isLive"
-                                [@exampleState]="isLive ? 'live': 'code'"
-                                [content]="content"
-                                [hasViewSwitch]="true"
-                                (changeView)="changeView($event)">
-      </ngd-tabbed-example-block>
-    </div>
-  `,
-    animations: [
-        trigger('exampleState', [
-            transition('live => code', [
-                useAnimation(pulse),
-            ]),
-            transition('code => live', [
-                useAnimation(pulse),
-            ]),
-        ]),
-    ],
-    standalone: false
+  selector: 'ngd-stacked-example-block',
+  templateUrl: './stacked-examples.component.html',
+  styles: [
+    `
+      @keyframes ngd-example-pulse-a {
+        50% {
+          transform: scale3d(1.02, 1.02, 1.02);
+        }
+      }
+      @keyframes ngd-example-pulse-b {
+        50% {
+          transform: scale3d(1.02, 1.02, 1.02);
+        }
+      }
+      .pulse-a {
+        animation: ngd-example-pulse-a 0.5s;
+      }
+      .pulse-b {
+        animation: ngd-example-pulse-b 0.5s;
+      }
+    `,
+  ],
+  imports: [NgdLiveExampleBlockComponent, NgdTabbedExampleBlockComponent],
 })
 export class NgdStackedExampleComponent {
+  private readonly analytics = inject(NgdAnalytics);
 
-  @Input() content: any;
+  readonly content = input.required<NgdExampleContent>();
   isLive = true;
-
-  constructor(private analytics: NgdAnalytics) {
-  }
+  /** Alternates between two identical keyframe animations so each view switch restarts the pulse. */
+  pulse: 0 | 1 | 2 = 0;
 
   changeView(view: NgdExampleView) {
     this.analytics.trackEvent('changeExampleView', view);
     this.isLive = view === NgdExampleView.LIVE;
+    this.pulse = this.pulse === 1 ? 2 : 1;
   }
 }

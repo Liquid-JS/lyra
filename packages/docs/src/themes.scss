@@ -1,0 +1,7 @@
+@use '../../core/src/styles/theming-variables';
+theming-variables.$nb-theme-export-mode: true;
+@use '../../core/src/styles/theming';
+@use '../../core/src/styles/themes';
+@use '../../core/src/styles/themes/mapping';
+
+$v: export('output.json', theming-variables.$nb-themes-export, mapping.$nb-mapping);

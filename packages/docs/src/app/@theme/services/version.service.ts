@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { inject, Service } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { map, shareReplay, catchError } from 'rxjs/operators';
@@ -14,13 +14,15 @@ export interface Version {
 
 import { VERSION_NAME } from '../../../version';
 
-@Injectable()
+@Service()
 export class NgdVersionService {
+  private readonly http = inject(HttpClient);
+
   protected readonly devVersion: Version = { name: VERSION_NAME, path: '.', checkoutTarget: 'master', isCurrent: true };
 
   supportedVersions$: Observable<Version[]>;
 
-  constructor(private http: HttpClient) {
+  constructor() {
     if (environment.production) {
       this.supportedVersions$ = this.http.get<Version[]>(environment.versionsUrl).pipe(
         catchError(() => of([])),
@@ -29,7 +31,7 @@ export class NgdVersionService {
     } else this.supportedVersions$ = of([this.devVersion]).pipe(shareReplay(1));
   }
 
-  getCurrentVersion(): Observable<Version> {
+  getCurrentVersion(): Observable<Version | undefined> {
     if (environment.production) {
       return this.supportedVersions$.pipe(
         map((versions: Version[]) => versions.find(({ name }) => name === VERSION_NAME)),

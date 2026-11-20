@@ -1,25 +1,15 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { Component, input } from '@angular/core';
+import { NgdPreparedComponent } from '../../../docs.model';
+import { NbCardComponent, NbCardBodyComponent } from '@liquid-js/lyr-core';
+import { NgdFragmentTargetDirective } from '../../../@theme/components/fragment-target/fragment-target.directive';
+import { NgdStylesTableBlockComponent } from '../styles-table-block/styles-table-block.component';
 
 @Component({
-    selector: 'ngd-styles-block',
-    template: `
-    <nb-card [ngdFragment]="source.slag">
-      <nb-card-body>
-        <h2>{{ source.name }}</h2>
-        <ngd-styles-table-block [source]="source"></ngd-styles-table-block>
-      </nb-card-body>
-    </nb-card>
-  `,
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  selector: 'ngd-styles-block',
+  templateUrl: './styles-block.component.html',
+  imports: [NbCardComponent, NgdFragmentTargetDirective, NbCardBodyComponent, NgdStylesTableBlockComponent],
 })
 export class NgdStylesBlockComponent {
 
-  @Input() source;
+  readonly source = input.required<NgdPreparedComponent>();
 }

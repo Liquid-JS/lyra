@@ -1,29 +1,16 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { NgdTabbedService } from '../../../@theme/services';
+import { Component, input } from '@angular/core';
+import { NgdPreparedComponent } from '../../../docs.model';
+import { NbCardComponent, NbCardBodyComponent } from '@liquid-js/lyr-core';
+import { NgdFragmentTargetDirective } from '../../../@theme/components/fragment-target/fragment-target.directive';
+import { NgdStackedExampleComponent } from '../stacked-example-block/stacked-examples.component';
 
 @Component({
-    selector: 'ngd-examples-block',
-    template: `
-    <nb-card [ngdFragment]="source.slag">
-      <nb-card-body>
-        <h2>{{ source.name }}</h2>
-        <ngd-stacked-example-block *ngFor="let example of source.liveExamples" [content]="example.content"
-                                   class="widget-block">
-        </ngd-stacked-example-block>
-      </nb-card-body>
-    </nb-card>
-  `,
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  selector: 'ngd-examples-block',
+  templateUrl: './examples-block.component.html',
+  imports: [NbCardComponent, NgdFragmentTargetDirective, NbCardBodyComponent, NgdStackedExampleComponent],
 })
 export class NgdExamplesBlockComponent {
 
-  @Input('source') source;
+  readonly source = input.required<NgdPreparedComponent>();
 
 }

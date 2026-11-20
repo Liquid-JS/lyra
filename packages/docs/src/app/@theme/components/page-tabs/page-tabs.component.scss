@@ -1,5 +1,8 @@
 @use '../../../@theme/styles/themes' as *;
 
+// The height of the bar the tabs make on a phone, which the docs keep room for below the page.
+$tabs-bar-height: 4rem;
+
 @include nb-install-component() {
   display: flex;
   flex-wrap: wrap;
@@ -76,6 +79,53 @@
   .line {
     order: -1;
     margin-bottom: 1.3rem;
+  }
+
+  // On a phone, a bar along the bottom, as a mobile app's tabs: always at hand, and the title's card stays a title.
+  @media screen and (max-width: 39.99em) {
+    position: fixed;
+    inset-inline: 0;
+    bottom: 0;
+    // Under the sidebar, which opens over the page.
+    z-index: 998;
+    flex-wrap: nowrap;
+    height: $tabs-bar-height;
+    padding-bottom: env(safe-area-inset-bottom);
+    border-top: 1px solid nb-theme(divider-color);
+    background: white;
+
+    a {
+      position: relative;
+      flex: 1 1 0;
+      justify-content: center;
+      padding: 0;
+      font-size: 0.75rem;
+
+      &.selected {
+        box-shadow: none;
+      }
+
+      .text-container {
+        flex-direction: column;
+      }
+
+      .title,
+      ::ng-deep nb-icon {
+        margin: 0;
+        padding: 0;
+      }
+
+      ::ng-deep nb-icon {
+        margin-bottom: 0.25rem;
+        font-size: 1.5rem;
+      }
+
+      .line {
+        position: absolute;
+        top: 0;
+        margin: 0;
+      }
+    }
   }
 
   @media screen and (min-width: 40em) {

@@ -1,25 +1,16 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { NgdAnalytics } from './@theme/services/analytics.service';
+import { RouterOutlet } from '@angular/router';
 
 @Component({
-    selector: 'ngd-app-root',
-    template: `
-    <router-outlet></router-outlet>
-  `,
-    standalone: false
+  selector: 'ngd-app-root',
+  template: ` <router-outlet /> `,
+  imports: [RouterOutlet],
 })
 export class NgdAppComponent implements OnInit {
+  private readonly analytics = inject(NgdAnalytics);
 
-  constructor(private analytics: NgdAnalytics) {
-  }
-
-  ngOnInit(): void {
+  ngOnInit() {
     this.analytics.trackPageViews();
   }
 }

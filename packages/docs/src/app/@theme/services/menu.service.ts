@@ -1,14 +1,9 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { Injectable } from '@angular/core';
-import { NbMenuItem } from '@nebular/theme';
+import { inject, Service } from '@angular/core';
+import { NbMenuItem } from '@liquid-js/lyr-core';
 
 import { NgdStructureService } from './structure.service';
 import { NgdTextService } from './text.service';
+import { NgdPreparedEntry, NgdPreparedMenuEntry } from '../../docs.model';
 
 interface IItemLink {
   title: string;
@@ -17,43 +12,46 @@ interface IItemLink {
   };
 }
 
-@Injectable()
+@Service()
 export class NgdMenuService {
+  private readonly structureService = inject(NgdStructureService);
+  private readonly textService = inject(NgdTextService);
 
-  constructor(private structureService: NgdStructureService,
-              private textService: NgdTextService) {
+  /** The sidebar menu of the area at `/<area>`. */
+  getPreparedMenu(area: string): NbMenuItem<NgdPreparedMenuEntry>[] {
+    return this.prepareMenu(this.structureService.getPreparedStructure(area), `/${area}`);
   }
 
-  getPreparedMenu(basePath: string): any {
-    return this.prepareMenu(this.structureService.getPreparedStructure(), { link: basePath });
-  }
-
-  prepareMenu(structure, parent = null) {
+  /**
+   * The menu of the structure under `path`. Only pages and tabs have a route, so only they link; a section opens and
+   * closes its items, and a group heads them.
+   */
+  prepareMenu(
+    structure: NgdPreparedEntry[],
+    path: string,
+    parent?: NbMenuItem<NgdPreparedMenuEntry>,
+  ): NbMenuItem<NgdPreparedMenuEntry>[] {
     return structure
-      .filter(item => item.name && item.type !== 'block')
-      .map((item: any) => {
-        const menuItem: NbMenuItem = {
+      .filter((item) => item.type !== 'block')
+      .map((item) => {
+        const itemPath = `${path}/${this.textService.createSlag(item.name)}`;
+        const menuItem: NbMenuItem<NgdPreparedMenuEntry> = {
           title: item.name,
           pathMatch: 'prefix',
-          parent: parent,
+          parent,
           data: item,
           group: item.type === 'group',
         };
-        menuItem.link = this.createItemLink<NbMenuItem>(menuItem);
+        if (item.type === 'page' || item.type === 'tabs') {
+          menuItem.link = itemPath;
+        }
 
-        if (item.children && item.children.some(child => child.type === 'page' || child.type === 'tabs')) {
-          menuItem.children = this.prepareMenu(item.children, menuItem);
+        if ('children' in item && item.children.some((child) => child.type === 'page' || child.type === 'tabs')) {
+          menuItem.children = this.prepareMenu(item.children, itemPath, menuItem);
         }
 
         return menuItem;
       });
-  }
-
-  protected getTocForMd(block: any) {
-    return block.children.map((section: any) => ({
-      title: section.title,
-      fragment: section.fragment,
-    }));
   }
 
   createItemLink<T extends IItemLink>(item: T): string {

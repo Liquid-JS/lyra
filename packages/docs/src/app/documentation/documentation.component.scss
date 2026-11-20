@@ -1,5 +1,5 @@
 @use '../@theme/styles/themes' as *;
-@use '../../../src/framework/theme/styles/globals' as *;
+@use '../../../../core/src/styles/globals' as *;
 
 @include nb-install-component() {
   $content-width: nb-theme(content-width);
@@ -35,17 +35,6 @@
     }
   }
 
-  .collapse-all {
-    position: absolute;
-    right: 0.5rem;
-    top: 1.05rem;
-    font-size: 0.75rem;
-    color: nb-theme(text-hint-color);
-    appearance: none;
-    background: none;
-    border: none;
-  }
-
   ::ng-deep nb-layout .main-container {
     padding-top: 3rem;
 
@@ -66,7 +55,8 @@
       padding-left: 0;
     }
 
-    nb-icon {
+    // Items have no icons of their own; sections keep their expand chevrons.
+    .menu-icon {
       display: none;
     }
 
@@ -89,6 +79,13 @@
 
   ::ng-deep nb-layout-footer ngd-footer .contact {
     display: none;
+  }
+
+  // Room below the page for its tabs, which a phone shows as a bar along the bottom.
+  @media screen and (max-width: 39.99em) {
+    &:has(ngd-page-tabs.horizontal) ::ng-deep nb-layout-footer {
+      padding-bottom: 4rem;
+    }
   }
 
   @include media-breakpoint-up(xl) {

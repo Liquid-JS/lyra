@@ -1,19 +1,28 @@
-import { Injectable, Inject } from '@angular/core';
+import { inject, Service } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
 import { Location } from '@angular/common';
 
 import { filter, delay, map } from 'rxjs/operators';
-import { NB_WINDOW } from '@nebular/theme';
-declare const ga: any;
+import { NB_WINDOW } from '@liquid-js/lyr-core';
 
-@Injectable()
+declare global {
+  interface Window {
+    // Google Tag Manager's queue.
+    dataLayer: unknown[];
+  }
+}
+
+@Service()
 export class NgdAnalytics {
+  private readonly window = inject(NB_WINDOW);
+  private readonly location = inject(Location);
+  private readonly router = inject(Router);
+
   private enabled: boolean;
 
-  constructor(@Inject(NB_WINDOW) private window,
-              private location: Location,
-              private router: Router) {
-    this.enabled = this.window.location.href.indexOf('akveo.github.io') >= 0;
+  constructor() {
+    // No analytics backend is configured for the Lyra docs.
+    this.enabled = false;
   }
 
   trackPageViews() {
@@ -25,7 +34,7 @@ export class NgdAnalytics {
         delay(50),
       )
         .subscribe((location: string) => {
-          this.gtmPushToDataLayer({event: 'pageView' , path: location});
+          this.gtmPushToDataLayer({ event: 'pageView', path: location });
         });
     }
   }
@@ -37,16 +46,16 @@ export class NgdAnalytics {
   }
 
   private trackLocation(path: string) {
-    if (path.match(/\/components\/[a-zA-Z-]+\/?$/)
-      || path.match(/\/docs\/?$/)
-      || path.match(/\/example\//)) {
+    if (path.match(/\/components\/[a-zA-Z-]+\/?$/) ||
+      path.match(/\/docs\/?$/) ||
+      path.match(/\/example\//)) {
 
       return !!path.match(/\/components\/components-overview\/?$/);
     }
     return true;
   }
 
-  private gtmPushToDataLayer(params) {
-    this.window.dataLayer.push(params);
+  private gtmPushToDataLayer(params: Record<string, string>) {
+    this.window?.dataLayer.push(params);
   }
 }

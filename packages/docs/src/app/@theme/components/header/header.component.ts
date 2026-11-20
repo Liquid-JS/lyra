@@ -1,116 +1,130 @@
-import { ChangeDetectionStrategy, Component, HostBinding, Inject, Input, OnInit } from '@angular/core';
-import { NB_WINDOW, NbMenuItem, NbSidebarService } from '@nebular/theme';
-import { Observable } from 'rxjs';
-import { map, startWith } from 'rxjs/operators';
+import {
+  Component,
+  DestroyRef,
+  ElementRef,
+  afterNextRender,
+  computed,
+  inject,
+  input,
+  signal,
+  viewChild,
+} from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import {
+  NB_DOCUMENT,
+  NB_WINDOW,
+  NbContextMenuDirective,
+  NbMenuItem,
+  NbSidebarService,
+  NbIconComponent,
+  NbSelectComponent,
+  NbOptionComponent,
+} from '@liquid-js/lyr-core';
+import { filter, map, startWith } from 'rxjs/operators';
 
 import { NgdVersionService, Version } from '../../services';
+import { NavigationEnd, Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { STRUCTURE } from '../../../app.options';
 
 @Component({
-    selector: 'ngd-header',
-    styleUrls: ['./header.component.scss'],
-    template: `
-    <div class="section left">
-      <button *ngIf="sidebarTag" class="sidebar-toggle" (click)="toggleSidebar()">
-        <nb-icon icon="menu-2"></nb-icon>
-      </button>
-      <div class="logo">
-        <a routerLink="/">Nebular</a>
-        <span class="version" *ngIf="currentVersionName$ | async">
-          v{{ currentVersionName$ | async }}
-        </span>
-      </div>
-    </div>
-    <div class="section middle">
-      <nb-menu [items]="mainMenu"></nb-menu>
-      <ngd-search *ngIf="showSearch"></ngd-search>
-      <nb-select class="version-select"
-                 *ngIf="(showVersionSelect$ | async)"
-                 [selected]="currentVersion$ | async"
-                 (selectedChange)="redirectToVersion($event)">
-        <nb-option *ngFor="let version of supportedVersions$ | async" [value]="version">
-          {{ version.name }}
-        </nb-option>
-      </nb-select>
-    </div>
-    <div class="section right">
-      <iframe class="stars"
-              src="https://ghbtns.com/github-btn.html?user=akveo&repo=nebular&type=star&count=true"
-              frameborder="0"
-              scrolling="0">
-      </iframe>
-    </div>
-  `,
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  selector: 'ngd-header',
+  styleUrls: ['./header.component.scss'],
+  templateUrl: './header.component.html',
+  host: { '[class.docs-page]': 'isDocs()' },
+  imports: [
+    NbContextMenuDirective,
+    NbIconComponent,
+    RouterLink,
+    RouterLinkActive,
+    NbSelectComponent,
+    NbOptionComponent,
+  ],
 })
-export class NgdHeaderComponent implements OnInit {
+export class NgdHeaderComponent {
+  private readonly versionService = inject(NgdVersionService);
+  private readonly sidebarService = inject(NbSidebarService);
 
-  @Input() showSearch = true;
-  @HostBinding('class.docs-page') @Input() isDocs = false;
+  readonly showSearch = input(true);
+  readonly isDocs = input(false);
 
-  private window: Window;
-  supportedVersions$: Observable<Version[]>;
-  currentVersion$: Observable<Version>;
-  currentVersionName$: Observable<string>;
-  showVersionSelect$: Observable<boolean>;
+  private readonly window = inject(NB_WINDOW);
+  readonly supportedVersions = toSignal(this.versionService.getSupportedVersions(), { initialValue: [] });
+  readonly currentVersion = toSignal(this.versionService.getCurrentVersion());
+  readonly currentVersionName = computed(() => this.currentVersion()?.name);
+  readonly showVersionSelect = computed(() => this.supportedVersions().length > 0);
 
-  mainMenu: NbMenuItem[] = [
-    {
-      title: 'Docs',
-      link: '/docs',
-    },
-    {
-      title: 'Components',
-      link: '/docs/components/components-overview',
-    },
-    {
-      title: 'Design System',
-      link: '/docs/design-system/eva-design-system-intro',
-    },
-    {
-      title: 'Auth',
-      link: '/docs/auth/introduction',
-    },
-    {
-      title: 'Security',
-      link: '/docs/security/introduction',
-    },
-  ];
+  // The docs areas, each selected on any of its pages.
+  readonly mainMenu: NbMenuItem[] = inject(STRUCTURE).map((area) => ({
+    title: area.name,
+    link: `/${area.path}`,
+    pathMatch: 'prefix',
+  }));
 
-  @Input() sidebarTag: string;
+  /** How many areas fit in the header; the rest are under More. */
+  protected readonly fit = signal(this.mainMenu.length);
+  /** The areas that don't fit, under More. */
+  protected readonly overflowItems = computed(() => this.mainMenu.slice(this.fit()));
+  private readonly url = toSignal(
+    inject(Router).events.pipe(
+      filter((event) => event instanceof NavigationEnd),
+      map((event) => event.urlAfterRedirects),
+      startWith(inject(Router).url),
+    ),
+    { initialValue: '' },
+  );
+  /** More holds the area shown. */
+  protected readonly moreActive = computed(() => {
+    const url = this.url();
+    return this.overflowItems().some(({ link }) => link && url.startsWith(link));
+  });
 
-  constructor(
-    @Inject(NB_WINDOW) window,
-    private versionService: NgdVersionService,
-    private sidebarService: NbSidebarService,
-  ) {
-    this.window = window;
+  private readonly areas = viewChild.required<ElementRef<HTMLElement>>('areas');
+  private readonly more = viewChild.required<ElementRef<HTMLElement>>('more');
+
+  constructor() {
+    const document = inject(NB_DOCUMENT);
+    const destroyRef = inject(DestroyRef);
+    afterNextRender(() => {
+      const observer = new ResizeObserver(() => this.fitAreas());
+      observer.observe(this.areas().nativeElement);
+      destroyRef.onDestroy(() => observer.disconnect());
+      // Text takes its width once its font loads.
+      void document.fonts?.ready.then(() => this.fitAreas());
+    });
   }
 
-  ngOnInit() {
-    this.currentVersion$ = this.versionService.getCurrentVersion();
-    this.currentVersionName$ = this.currentVersion$.pipe(map((version: Version) => version.name));
-    this.supportedVersions$ = this.versionService.getSupportedVersions();
-
-    this.showVersionSelect$ = this.supportedVersions$
-      .pipe(
-        map((versions: Version[]) => versions.length > 0),
-        startWith(false),
-      );
-
-    if (!this.isDocs) {
-      this.mainMenu.push({
-        title: 'Professional Services',
-        link: '/docs/getting-started/professional-services',
-      });
+  // As many areas as the header has room for, in order, with room for More when some don't fit. Areas that don't fit
+  // keep their width out of the flow, so they're measured all the same.
+  private fitAreas() {
+    const nav = this.areas().nativeElement;
+    const widths = [...nav.querySelectorAll<HTMLElement>('a.area')].map((area) => area.getBoundingClientRect().width);
+    const room = nav.getBoundingClientRect().width;
+    const more = this.more().nativeElement.getBoundingClientRect().width;
+    let fit = 0;
+    let used = 0;
+    while (fit < widths.length) {
+      const next = used + widths[fit];
+      const last = fit === widths.length - 1;
+      if (next + (last ? 0 : more) > room + 0.5) {
+        break;
+      }
+      used = next;
+      fit++;
+    }
+    if (fit !== this.fit()) {
+      this.fit.set(fit);
     }
   }
 
+  readonly sidebarTag = input<string>();
+
   toggleSidebar() {
-    this.sidebarService.toggle(false, this.sidebarTag);
+    this.sidebarService.toggle(false, this.sidebarTag());
   }
 
-  redirectToVersion(version: Version): void {
-    this.window.location.href = version.path;
+  redirectToVersion(version: Version | null) {
+    if (version) {
+      this.window?.location.assign(version.path);
+    }
   }
 }

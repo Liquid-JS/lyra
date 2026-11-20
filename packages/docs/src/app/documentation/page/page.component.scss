@@ -1,8 +1,13 @@
 @use '../../@theme/styles/themes' as *;
-@use '../../../../src/framework/theme/styles/globals' as *;
+@use '../../../../../core/src/styles/globals' as *;
 
 @include nb-install-component() {
   display: flex;
+  // How far a card's text is from its sides, which a card's header keeps too, so a title lines up with what's below.
+  --ngd-content-inset: 1rem;
+  // How far text outside a card is from the page's sides: none beside cards set in from them, as wide screens set
+  // them; as far as a card's text and its border where cards span the screen.
+  --ngd-edge-inset: calc(var(--ngd-content-inset) + 1px);
 
   $note-fg-info: nb-theme(color-info-500);
   $note-bg-info: #f0f6ff;
@@ -12,9 +17,10 @@
   $settings-margin: nb-theme(settings-col-margin);
   $heading-light: nb-theme(color-fg-heading-light);
   $code-bg: #f1f2f3;
-  $code-fg: nb-theme(color-info-500);
+  // Inline code, readable on its grey (WCAG AA).
+  $code-fg: nb-theme(color-info-700);
   $code-block-bg: nb-theme(code-block-bg);
-  $table-head-fg: #8994a3;
+  $table-head-fg: nb-theme(color-fg-heading-light);
   $table-border: 1px solid #f1f2f3;
   $table-stripe-bg: #f5f6f7;
 
@@ -32,8 +38,12 @@
     }
 
     ::ng-deep nb-card {
+      nb-card-header {
+        padding-inline: var(--ngd-content-inset);
+      }
+
       nb-card-body {
-        padding: 2rem 1rem;
+        padding: 2rem var(--ngd-content-inset);
 
         > *:last-child {
           margin-bottom: 0 !important;
@@ -59,6 +69,11 @@
         &:not(:first-child) {
           margin-top: 3rem;
         }
+      }
+
+      // A card header's title sits in the header's padding, as on a page without the side column.
+      nb-card-header :is(h1, h2, h3, h4, h5, h6) {
+        margin-bottom: 0;
       }
 
       h1,
@@ -108,9 +123,30 @@
           margin-bottom: 2rem;
         }
 
-        ngd-styles-table-block table {
+        ngd-styles-table-block :is(.table-scroll, table) {
           margin-bottom: 0;
         }
+      }
+
+      // A table's box, which scrolls sideways where the table is wider than the card, e.g. on a phone, so the card
+      // doesn't; it takes the table's space below.
+      .table-scroll {
+        overflow-x: auto;
+        margin-bottom: 3rem;
+
+        > table {
+          margin-bottom: 0;
+        }
+      }
+
+      // A long name in a heading, e.g. a component's, breaks rather than run past a phone's card.
+      h1,
+      h2,
+      h3,
+      h4,
+      h5,
+      h6 {
+        overflow-wrap: break-word;
       }
 
       table {
@@ -156,7 +192,8 @@
         }
       }
 
-      ul {
+      // The article's lists; a tab bar is a list too, with spacing of its own.
+      ul:not(nb-tabset ul) {
         margin-bottom: 1.5rem;
         ul {
           padding-left: 2.5rem;
@@ -237,12 +274,22 @@
   }
 
   @include media-breakpoint-up(md) {
-    .middle-column ::ng-deep nb-card nb-card-body {
-      padding: 2rem 3rem 2rem 2rem;
+    --ngd-content-inset: 2rem;
+
+    .middle-column ::ng-deep nb-card {
+      nb-card-header {
+        padding-inline-end: 3rem;
+      }
+
+      nb-card-body {
+        padding-inline-end: 3rem;
+      }
     }
   }
 
   @include media-breakpoint-up(lg) {
+    --ngd-edge-inset: 0;
+
     .horizontal-nav {
       margin-top: 0;
     }
@@ -260,6 +307,57 @@
 
       ngd-page-tabs {
         margin-bottom: 1.5rem;
+      }
+
+      // The page's sections: the current one darker and bold, with an accent line before it.
+      .toc-title {
+        display: none;
+        margin: 0 0 2.5rem;
+        padding-left: 1rem;
+        color: nb-theme(color-fg-heading-light);
+        font-size: 1.25rem;
+        font-weight: normal;
+
+        &:has(+ nb-toc li) {
+          display: block;
+        }
+      }
+
+      nb-toc {
+        padding-left: 1rem;
+        font-size: 0.9375rem;
+
+        ::ng-deep {
+          ul {
+            padding-left: 3.25rem;
+          }
+
+          li {
+            margin-bottom: 0.9375rem;
+          }
+
+          a {
+            position: relative;
+            color: nb-theme(color-fg-heading-light);
+
+            &.active {
+              color: #202020;
+              font-weight: 500;
+
+              &::after {
+                content: '';
+                position: absolute;
+                top: 50%;
+                left: -3.25rem;
+                width: 2rem;
+                height: 0.1875rem;
+                border-radius: 1.5px;
+                background: nb-theme(color-fg-highlight);
+                transform: translateY(-50%);
+              }
+            }
+          }
+        }
       }
     }
 

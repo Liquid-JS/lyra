@@ -1,27 +1,31 @@
 import { isPlatformBrowser } from '@angular/common';
-import { Inject, Injectable, PLATFORM_ID } from '@angular/core';
-import { NB_WINDOW } from '@nebular/theme';
+import { PLATFORM_ID, inject, Service } from '@angular/core';
+import { NB_WINDOW } from '@liquid-js/lyr-core';
 import { EMPTY, Observable, Subject } from 'rxjs';
-import { distinctUntilChanged, filter, finalize, map, publish, refCount, takeUntil, tap } from 'rxjs/operators';
+import { distinctUntilChanged, filter, finalize, map, takeUntil, tap, share } from 'rxjs/operators';
 
 interface ObserverWithStream {
   intersectionObserver: IntersectionObserver;
   visibilityChange$: Observable<IntersectionObserverEntry[]>;
 }
 
-@Injectable()
+@Service()
 export class NgdVisibilityService {
+  private readonly window = inject(NB_WINDOW);
+
   private readonly isBrowser: boolean;
   private readonly supportsIntersectionObserver: boolean;
 
   private readonly visibilityObservers = new Map<IntersectionObserverInit, ObserverWithStream>();
-  private readonly topmostObservers = new Map<IntersectionObserverInit, Observable<Element>>();
+  private readonly topmostObservers = new Map<IntersectionObserverInit, Observable<Element | undefined>>();
   private readonly visibleElements = new Map<IntersectionObserverInit, Element[]>();
   private readonly unobserve$ = new Subject<{ target: Element; options: IntersectionObserverInit }>();
 
-  constructor(@Inject(PLATFORM_ID) platformId: Object, @Inject(NB_WINDOW) private window) {
+  constructor() {
+    const platformId = inject(PLATFORM_ID);
+
     this.isBrowser = isPlatformBrowser(platformId);
-    this.supportsIntersectionObserver = !!this.window.IntersectionObserver;
+    this.supportsIntersectionObserver = !!this.window?.IntersectionObserver;
   }
 
   visibilityChange(target: Element, options: IntersectionObserverInit): Observable<IntersectionObserverEntry> {
@@ -40,7 +44,7 @@ export class NgdVisibilityService {
 
     return visibilityChange$.pipe(
       map((entries: IntersectionObserverEntry[]) => entries.find((entry) => entry.target === target)),
-      filter((entry: IntersectionObserverEntry | undefined) => !!entry),
+      filter((entry): entry is IntersectionObserverEntry => !!entry),
       finalize(() => {
         intersectionObserver.unobserve(target);
         this.removeFromVisible(options, target);
@@ -57,7 +61,7 @@ export class NgdVisibilityService {
     const targetUnobserve$ = this.unobserve$.pipe(filter((e) => e.target === target && e.options === options));
     const topmostChange$ = this.topmostObservers.get(options) || this.addTopmostChangeObserver(options);
 
-    const { intersectionObserver } = this.visibilityObservers.get(options);
+    const { intersectionObserver } = this.visibilityObservers.get(options) || this.addVisibilityChangeObserver(options);
     intersectionObserver.observe(target);
 
     return topmostChange$.pipe(
@@ -65,13 +69,13 @@ export class NgdVisibilityService {
         intersectionObserver.unobserve(target);
         this.removeFromVisible(options, target);
       }),
-      map((element: Element) => element === target),
+      map((element) => element === target),
       distinctUntilChanged(),
       takeUntil(targetUnobserve$),
     );
   }
 
-  unobserve(target: Element, options: IntersectionObserverInit): void {
+  unobserve(target: Element, options: IntersectionObserverInit) {
     this.unobserve$.next({ target, options });
   }
 
@@ -88,8 +92,7 @@ export class NgdVisibilityService {
         intersectionObserver.disconnect();
       }),
       tap((entries: IntersectionObserverEntry[]) => this.updateVisibleItems(options, entries)),
-      publish(),
-      refCount(),
+      share({ resetOnError: false, resetOnComplete: false, resetOnRefCountZero: false }),
     );
 
     const observerWithStream = { intersectionObserver, visibilityChange$: refCountedObserver };
@@ -97,22 +100,21 @@ export class NgdVisibilityService {
     return observerWithStream;
   }
 
-  private addTopmostChangeObserver(options: IntersectionObserverInit): Observable<Element> {
+  private addTopmostChangeObserver(options: IntersectionObserverInit): Observable<Element | undefined> {
     const { visibilityChange$ } = this.visibilityObservers.get(options) || this.addVisibilityChangeObserver(options);
 
     const topmostChange$ = visibilityChange$.pipe(
       finalize(() => this.topmostObservers.delete(options)),
       map(() => this.findTopmostElement(options)),
       distinctUntilChanged(),
-      publish(),
-      refCount(),
+      share({ resetOnError: false, resetOnComplete: false, resetOnRefCountZero: false }),
     );
 
     this.topmostObservers.set(options, topmostChange$);
     return topmostChange$;
   }
 
-  private updateVisibleItems(options, entries: IntersectionObserverEntry[]) {
+  private updateVisibleItems(options: IntersectionObserverInit, entries: IntersectionObserverEntry[]) {
     for (const entry of entries) {
       if (entry.isIntersecting) {
         this.addToVisible(options, entry.target);
@@ -122,18 +124,16 @@ export class NgdVisibilityService {
     }
   }
 
-  private addToVisible(options: IntersectionObserverInit, element: Element): void {
-    if (!this.visibleElements.has(options)) {
-      this.visibleElements.set(options, []);
-    }
-
+  private addToVisible(options: IntersectionObserverInit, element: Element) {
     const existing = this.visibleElements.get(options);
-    if (existing.indexOf(element) === -1) {
+    if (!existing) {
+      this.visibleElements.set(options, [element]);
+    } else if (!existing.includes(element)) {
       existing.push(element);
     }
   }
 
-  private removeFromVisible(options: IntersectionObserverInit, element: Element): void {
+  private removeFromVisible(options: IntersectionObserverInit, element: Element) {
     const visibleEntries = this.visibleElements.get(options);
     if (!visibleEntries) {
       return;
@@ -151,7 +151,7 @@ export class NgdVisibilityService {
       return undefined;
     }
 
-    let topmost: Element;
+    let topmost: Element | undefined;
     for (const element of visibleElements) {
       if (!topmost || element.getBoundingClientRect().top < topmost.getBoundingClientRect().top) {
         topmost = element;

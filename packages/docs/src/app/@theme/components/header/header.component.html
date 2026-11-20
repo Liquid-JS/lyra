@@ -1,0 +1,63 @@
+<div class="section left">
+  @if (sidebarTag()) {
+  <button class="sidebar-toggle"
+    (click)="toggleSidebar()">
+    <nb-icon icon="menu-2-outline" />
+  </button>
+  }
+  <div class="logo">
+    <a routerLink="/">Lyra</a>
+    @if (currentVersionName()) {
+    <span class="version">
+      v{{ currentVersionName() }}
+    </span>
+    }
+  </div>
+</div>
+<div class="section middle">
+  <!-- Not a nav element, which the layout header's theme gives its own look. -->
+  <div #areas
+    class="areas"
+    role="navigation"
+    aria-label="Docs areas">
+    @for (item of mainMenu; track item.link; let i = $index) {
+    <a class="area"
+      routerLinkActive="active"
+      [routerLink]="item.link"
+      [class.overflow]="i >= fit()"
+      [attr.aria-hidden]="i >= fit() || null"
+      [attr.tabindex]="i >= fit() ? -1 : null">{{ item.title }}</a>
+    }
+    <button #more
+      class="area more"
+      type="button"
+      nbContextMenuPlacement="bottom"
+      nbContextMenuTag="docs-areas"
+      [class.overflow]="!overflowItems().length"
+      [class.active]="moreActive()"
+      [attr.aria-hidden]="!overflowItems().length || null"
+      [attr.tabindex]="overflowItems().length ? null : -1"
+      [nbContextMenu]="overflowItems().length ? overflowItems() : mainMenu">More
+      <nb-icon icon="chevron-down-outline" /></button>
+  </div>
+  @if (showVersionSelect()) {
+  <nb-select class="version-select"
+    appearance="ghost"
+    [status]="isDocs() ? 'basic' : 'control'"
+    [selected]="currentVersion()"
+    (selectedChange)="redirectToVersion($event)">
+    @for (version of supportedVersions(); track version) {
+    <nb-option [value]="version">
+      {{ version.name }}
+    </nb-option>
+    }
+  </nb-select>
+  }
+</div>
+<div class="section right">
+  <iframe class="stars"
+    src="https://ghbtns.com/github-btn.html?user=Liquid-JS&repo=lyra&type=star&count=true"
+    frameborder="0"
+    scrolling="0">
+  </iframe>
+</div>

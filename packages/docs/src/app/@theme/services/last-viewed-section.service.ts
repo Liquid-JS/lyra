@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Service } from '@angular/core';
 import { Observable, ReplaySubject } from 'rxjs';
 import { NgdMdSection } from './text.service';
 
@@ -8,11 +8,11 @@ import { NgdMdSection } from './text.service';
  * This service replays the last viewed article to the newly created `ngd-md-block` to show it
  * while a requested article is loading.
  * */
-@Injectable()
+@Service()
 export class NgdLastViewedSectionService {
   private _sections = new ReplaySubject<NgdMdSection[]>(1);
 
-  setSection(section: NgdMdSection[]): void {
+  setSection(section: NgdMdSection[]) {
     this._sections.next(section);
   }
 

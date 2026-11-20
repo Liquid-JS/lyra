@@ -1,0 +1,47 @@
+<h3>Methods</h3>
+<!-- Scrolls sideways itself where the table is wider than the card, e.g. on a phone. -->
+<div class="table-scroll">
+  <table>
+    <thead>
+      <tr>
+        <td width="25%">Name</td>
+        <td>Description</td>
+      </tr>
+    </thead>
+    <tbody>
+      @for (method of methods(); track method) {
+      @if (method.shortDescription || method.description) {
+      <tr>
+        <td>{{ method.name }}() <br>@if (method.isStatic) {
+          <i>static method</i>
+          }
+        </td>
+        <td>
+          <div class="method-signature">
+            @if (method.params.length > 0) {
+            <div>
+              <i>parameters:</i>
+              @for (param of method.params; track param; let last = $last) {
+              <span>
+                {{ param.name }}: <code>{{ param.type }}</code>@if (!last) {
+                <span>,</span>
+                }
+              </span>
+              }
+            </div>
+            }
+            <i>returns:</i>
+            <code>{{ method.type.join(",\n") }}</code>
+          </div>
+          @if (method.shortDescription || method.description) {
+          <ngd-markdown class="method-description"
+            description
+            [markdown]="(method.shortDescription ?? '') + '  \n' + (method.description ?? '')" />
+          }
+        </td>
+      </tr>
+      }
+      }
+    </tbody>
+  </table>
+</div>

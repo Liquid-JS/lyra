@@ -1,0 +1,9 @@
+<div [nbSpinner]="loading()">
+  @for (section of sections(); track section) {
+  <nb-card [ngdFragment]="section.fragment">
+    <nb-card-body>
+      <ngd-markdown [markdown]="section.source" />
+    </nb-card-body>
+  </nb-card>
+  }
+</div>

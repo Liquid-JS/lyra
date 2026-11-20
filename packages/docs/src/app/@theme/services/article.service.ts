@@ -1,16 +1,17 @@
-import { Injectable } from '@angular/core';
+import { inject, Service } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map, shareReplay } from 'rxjs/operators';
 import { NgdMdSection, NgdTextService } from './text.service';
 
-@Injectable()
+@Service()
 export class NgdArticleService {
-  constructor(private http: HttpClient, private textService: NgdTextService) {}
+  private readonly http = inject(HttpClient);
+  private readonly textService = inject(NgdTextService);
 
   getArticle(source: string): Observable<NgdMdSection[]> {
     return this.http.get(`articles/${source}`, { responseType: 'text' }).pipe(
-      map((article) => this.textService.mdToSectionsHTML(article)),
+      map((article) => this.textService.mdToSections(article)),
       shareReplay(1),
     );
   }

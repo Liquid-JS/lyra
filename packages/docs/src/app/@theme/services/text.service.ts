@@ -1,54 +1,52 @@
-import { Injectable } from '@angular/core';
-import { Location } from '@angular/common';
-import * as marked from 'marked';
-
-import { NgdHighlightService } from './highlight.service';
+import { Service } from '@angular/core';
+import remarkParse from 'remark-parse';
+import { unified } from 'unified';
 
 export interface NgdMdSection {
   fragment: string;
-  html: string;
   source: string;
   title: string;
 }
 
-@Injectable()
+/** A URL segment or fragment for a name: `Built-in Themes` is `built-in-themes`, `Modals & Overlays` `modals-overlays`. */
+export function createSlag(name: string) {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
+}
+
+@Service()
 export class NgdTextService {
-
-  private readonly SECTION_SPLIT = '<hr>';
   private readonly TITLE_MASK = '^#{1,6}[^#]?(.+)\n';
-  private readonly STRIP_HTML = '<\\/?[^>]+(>|$)';
+  // Markdown's syntax and HTML tags, for the words of a section without a heading.
+  private readonly STRIP_MARKDOWN = '<\\/?[^>]+(>|$)|[#*_`>\\[\\]()]';
 
-  constructor(private highlight: NgdHighlightService, private location: Location) {
-  }
-
-  mdToSectionsHTML(markdown: string): NgdMdSection[] {
+  mdToSections(markdown: string): NgdMdSection[] {
     return this.splitIntoSections(markdown)
       .map((section) => {
-        const html = this.mdToHTML(section);
-        const title = this.extractTitle(section) || this.extractFirstTwoWords(html);
+        const source = section.trim();
+        const title = this.extractTitle(section) || this.extractFirstTwoWords(source);
         const fragment = this.createSlag(title);
         return {
-          source: section,
+          source: source,
           title: title,
           fragment: fragment,
-          html: html,
         };
       });
   }
 
-  mdToHTML(markdown: string) {
-    return marked
-      .setOptions({
-        baseUrl: this.location.prepareExternalUrl(''),
-        langPrefix: 'hljs ',
-        highlight: (code) => this.highlight.highlight(code),
-      } as any)
-      .parse(markdown.trim());
-  }
-
+  /** The markdown between its rules, `---`; one in code or a list doesn't split it. */
   splitIntoSections(markdown: string) {
-    return markdown.split(new RegExp(this.SECTION_SPLIT, 'g'))
-      .filter(section => section.trim());
+    const rules = unified()
+      .use(remarkParse)
+      .parse(markdown)
+      .children.filter((node) => node.type === 'thematicBreak')
+      .map(({ position }) => [position?.start.offset ?? 0, position?.end.offset ?? 0]);
+    const ends = [...rules, [markdown.length, markdown.length]];
+    return ends
+      .map(([start], i) => markdown.slice(i ? ends[i - 1][1] : 0, start))
+      .filter((section) => section.trim());
   }
 
   extractTitle(section: string) {
@@ -58,17 +56,15 @@ export class NgdTextService {
 
   extractFirstTwoWords(section: string) {
     return section
-      .replace(new RegExp(this.STRIP_HTML, 'g'), '')
+      .replace(new RegExp(this.STRIP_MARKDOWN, 'g'), '')
       .trim()
       .split(/\s+/g)
       .slice(0, 2)
       .join(' ');
   }
 
+  /** A URL segment or fragment for a name, see {@link createSlag}. */
   createSlag(name: string) {
-    return name
-      .replace(/[^a-zA-Z0-9\s]+/g, '')
-      .replace(/\s/g, '-')
-      .toLowerCase();
+    return createSlag(name);
   }
 }

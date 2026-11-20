@@ -1,18 +1,16 @@
-import { Injectable } from '@angular/core';
+import { inject, Service } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { publishReplay ,  refCount } from 'rxjs/operators';
+import { Observable, ReplaySubject } from 'rxjs';
+import { share } from 'rxjs/operators';
 
-@Injectable()
+@Service()
 export class NgdCodeLoaderService {
+  private readonly http = inject(HttpClient);
 
   /**
    * Contains cached files by url.
    * */
-  private cache: Map<string, Observable<string>> = new Map();
-
-  constructor(private http: HttpClient) {
-  }
+  private cache = new Map<string, Observable<string>>();
 
   load(path: string): Observable<string> {
     const url = this.buildFilePath(path);
@@ -25,11 +23,15 @@ export class NgdCodeLoaderService {
     return `assets/examples/${path}`;
   }
 
-  private buildRequest(url): Observable<string> {
+  private buildRequest(url: string): Observable<string> {
     const request = this.http.get(url, { responseType: 'text' })
       .pipe(
-        publishReplay(1),
-        refCount(),
+        share({
+          connector: () => new ReplaySubject(1),
+          resetOnError: false,
+          resetOnComplete: false,
+          resetOnRefCountZero: false,
+        }),
       );
 
     this.cache.set(url, request);
