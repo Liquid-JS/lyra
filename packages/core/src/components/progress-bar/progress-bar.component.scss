@@ -1,19 +1,59 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 :host {
   display: block;
+}
+
+:host(.shape-ring) {
+  display: inline-block;
+}
+
+// The ring's fill, in percent: registered so it transitions between values, and inherited by the ring's drawing.
+@property --nb-progress {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 0;
+}
+
+.progress-ring {
+  position: relative;
+  border-radius: 50%;
+}
+
+// The two colours as a ring: the middle is left out.
+.progress-ring::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(var(--nb-progress-fill) calc(var(--nb-progress) * 1%), var(--nb-progress-track) 0);
+  -webkit-mask: radial-gradient(
+    farthest-side,
+    transparent calc(100% - var(--nb-progress-thickness)),
+    #000 calc(100% - var(--nb-progress-thickness) + 0.5px)
+  );
+  mask: radial-gradient(
+    farthest-side,
+    transparent calc(100% - var(--nb-progress-thickness)),
+    #000 calc(100% - var(--nb-progress-thickness) + 0.5px)
+  );
+}
+
+.progress-ring-content {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
 }
 
 .progress-container {
   overflow: hidden;
 }
 
+// Its end as round as the track's.
 .progress-value {
   height: 100%;
+  border-radius: inherit;
   text-align: center;
   overflow: hidden;
 }

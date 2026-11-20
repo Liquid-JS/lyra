@@ -1,0 +1,10 @@
+// The default theme's progress bar styles, which specs don't load otherwise.
+@use '@liquid-js/lyr-core/styles/all' as *;
+@use 'progress-bar.component.theme' as progress-bar;
+
+$nb-enabled-themes: (default);
+
+@include nb-install() {
+  @include nb-theme-base();
+  @include progress-bar.nb-progress-bar-theme();
+}

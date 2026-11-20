@@ -1,0 +1,23 @@
+<!-- One projection slot, shown in either shape. -->
+<ng-template #content>
+  @if (displayValue()) {
+  <span>{{ value() }}%</span>
+  }
+  <ng-content />
+</ng-template>
+
+@if (shape() === 'ring') {
+<div class="progress-ring"
+  [style.--nb-progress]="shownValue()">
+  <div class="progress-ring-content">
+    <ng-container [ngTemplateOutlet]="content" />
+  </div>
+</div>
+} @else {
+<div class="progress-container">
+  <div class="progress-value"
+    [style.width.%]="value()">
+    <ng-container [ngTemplateOutlet]="content" />
+  </div>
+</div>
+}

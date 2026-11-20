@@ -1,9 +1,3 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 @use '../../styles/theming' as *;
 
 @mixin nb-progress-bar-theme() {
@@ -20,6 +14,12 @@
       transition-duration: nb-theme(progress-bar-animation-duration);
       transition-property: width, background-color;
     }
+
+    .progress-ring {
+      font-family: nb-theme(progress-bar-text-font-family);
+      color: nb-theme(progress-bar-ring-text-color);
+      transition: --nb-progress nb-theme(progress-bar-animation-duration);
+    }
   }
 
   @each $size in nb-get-sizes() {
@@ -32,6 +32,15 @@
         font-size: nb-theme(progress-bar-#{$size}-text-font-size);
         font-weight: nb-theme(progress-bar-#{$size}-text-font-weight);
         line-height: nb-theme(progress-bar-#{$size}-text-line-height);
+      }
+
+      .progress-ring {
+        width: nb-theme(progress-bar-#{$size}-ring-size);
+        height: nb-theme(progress-bar-#{$size}-ring-size);
+        --nb-progress-thickness: #{nb-theme(progress-bar-#{$size}-ring-thickness)};
+        font-size: nb-theme(progress-bar-#{$size}-ring-text-font-size);
+        font-weight: nb-theme(progress-bar-#{$size}-text-font-weight);
+        line-height: 1;
       }
     }
   }
@@ -46,6 +55,16 @@
         background-color: nb-theme(progress-bar-#{$status}-filled-background-color);
         color: nb-theme(progress-bar-#{$status}-text-color);
       }
+
+      .progress-ring {
+        --nb-progress-track: #{nb-theme(progress-bar-#{$status}-background-color)};
+        --nb-progress-fill: #{nb-theme(progress-bar-#{$status}-filled-background-color)};
+      }
     }
+  }
+
+  // A control ring sits on a status colour's fill, like the card it's in, so its value reads in the controls' text.
+  nb-progress-bar.status-control .progress-ring {
+    color: nb-theme(progress-bar-control-ring-text-color);
   }
 }

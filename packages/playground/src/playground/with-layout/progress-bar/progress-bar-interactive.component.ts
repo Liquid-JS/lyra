@@ -1,27 +1,40 @@
 import { Component } from '@angular/core';
+import {
+  NbCardComponent,
+  NbCardBodyComponent,
+  NbActionsComponent,
+  NbActionComponent,
+  NbProgressBarComponent,
+} from '@liquid-js/lyr-core';
 
 @Component({
-    selector: 'nb-progress-bar-interactive',
-    templateUrl: './progress-bar-interactive.component.html',
-    styles: [`
-    .container {
-      display: flex;
-      align-items: center;
-    }
+  selector: 'nb-progress-bar-interactive',
+  templateUrl: './progress-bar-interactive.component.html',
+  styles: [
+    `
+      .container {
+        display: flex;
+        align-items: center;
+      }
 
-    nb-progress-bar {
-      flex: 1;
-    }
-  `],
-    standalone: false
+      nb-progress-bar {
+        flex: 1;
+      }
+    `,
+  ],
+  imports: [
+    NbCardComponent,
+    NbCardBodyComponent,
+    NbActionsComponent,
+    NbActionComponent,
+    NbProgressBarComponent,
+  ],
 })
-
 export class ProgressBarInteractiveComponent {
-
   value = 25;
 
-  setValue(newValue) {
-    this.value = Math.min(Math.max(newValue, 0), 100)
+  setValue(newValue: number) {
+    this.value = Math.min(Math.max(newValue, 0), 100);
   }
 
   get status() {
@@ -35,5 +48,4 @@ export class ProgressBarInteractiveComponent {
       return 'success';
     }
   }
-
 }

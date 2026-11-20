@@ -1,24 +1,31 @@
+import { NgTemplateOutlet } from '@angular/common';
+import { Component, input, computed } from '@angular/core';
+
+import { ɵconvertToBoolProperty as convertToBoolProperty, NbBooleanInput } from '@liquid-js/lyr-core/base';
+import { NbComponentSize } from '@liquid-js/lyr-core/base';
+import { NbComponentOrCustomStatus } from '@liquid-js/lyr-core/base';
+import { injectNbTexts, NbLocalize } from '@liquid-js/lyr-core/base';
+
+/** @internal */
+declare const $localize: NbLocalize;
+
 /**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { Component, HostBinding, Input } from '@angular/core';
-
-import { NbStatusService } from '../../services/status.service';
-import { NbComponentSize } from '../component-size';
-import { NbComponentOrCustomStatus } from '../component-status';
-
-/**
- * Progress Bar is a component for indicating progress.
- *
- * Simple usage:
+ * Shows how far something has progressed, as a bar or a ring.
  *
  * ```html
  * <nb-progress-bar [value]="50"></nb-progress-bar>
  * ```
  * ### Installation
+ *
+ * Import `NbProgressBarComponent` into your standalone component:
+ * ```ts
+ * @Component({
+ *   imports: [NbProgressBarComponent],
+ * })
+ * export class PageComponent { }
+ * ```
+ *
+ * With NgModules:
  *
  * Import `NbProgressBarModule` to your feature module.
  * ```ts
@@ -32,19 +39,28 @@ import { NbComponentOrCustomStatus } from '../component-status';
  * ```
  * ### Usage
  *
- * Progress bar accepts property `value` in range 0-100
+ * `value` is a percentage, 0 to 100. It's a `progressbar` for assistive technologies, with its value; name it with
+ * `aria-label` or `aria-labelledby`:
+ *
+ * ```html
+ * <nb-progress-bar [value]="uploaded" aria-label="Upload" />
+ * ```
  * @stacked-example(Progress bar, progress-bar/progress-bar-showcase.component)
  *
- * Progress bar background could be configured by providing a `status` property:
+ * `status` colours it:
  * @stacked-example(Progress bar status, progress-bar/progress-bar-status.component)
  *
- * Progress bar size (height and font-size) could be configured by providing a `size` property:
+ * `size` sets its height and font size:
  * @stacked-example(Progress bar size, progress-bar/progress-bar-size.component)
  *
- * `displayValue` property shows current value inside progress bar. It's also possible to add custom text inside:
+ * `displayValue` shows the value in the bar; content shows custom text instead:
  * @stacked-example(Progress bar value, progress-bar/progress-bar-value.component)
  *
- * Progress bar supports `width` and `background-color` transition:
+ * `shape="ring"` draws the progress as a ring, filling clockwise from the top, with the value or custom text in its
+ * middle:
+ * @stacked-example(Progress ring, progress-bar/progress-bar-ring.component)
+ *
+ * The filled part animates as the value and the status change:
  * @stacked-example(Progress bar interactive, progress-bar/progress-bar-interactive.component)
  *
  * @styles
@@ -91,112 +107,72 @@ import { NbComponentOrCustomStatus } from '../component-status';
  * progress-bar-danger-filled-background-color:
  * progress-bar-danger-text-color:
  * progress-bar-control-background-color:
+ * progress-bar-control-ring-text-color:
  * progress-bar-control-filled-background-color:
  * progress-bar-control-text-color:
+ * progress-bar-ring-text-color:
+ * progress-bar-tiny-ring-size:
+ * progress-bar-tiny-ring-thickness:
+ * progress-bar-tiny-ring-text-font-size:
+ * progress-bar-small-ring-size:
+ * progress-bar-small-ring-thickness:
+ * progress-bar-small-ring-text-font-size:
+ * progress-bar-medium-ring-size:
+ * progress-bar-medium-ring-thickness:
+ * progress-bar-medium-ring-text-font-size:
+ * progress-bar-large-ring-size:
+ * progress-bar-large-ring-thickness:
+ * progress-bar-large-ring-text-font-size:
+ * progress-bar-giant-ring-size:
+ * progress-bar-giant-ring-thickness:
+ * progress-bar-giant-ring-text-font-size:
  */
 @Component({
-    selector: 'nb-progress-bar',
-    styleUrls: ['./progress-bar.component.scss'],
-    template: `
-    <div class="progress-container">
-      <div class="progress-value" [style.width.%]="value">
-        <span *ngIf="displayValue">{{ value }}%</span>
-        <ng-content></ng-content>
-      </div>
-    </div>
-  `,
-    standalone: false
+  selector: 'nb-progress-bar',
+  styleUrls: ['./progress-bar.component.scss'],
+  templateUrl: './progress-bar.component.html',
+  imports: [NgTemplateOutlet],
+  host: {
+    '[class]': 'hostClasses()',
+    role: 'progressbar',
+    'aria-valuemin': '0',
+    'aria-valuemax': '100',
+    '[attr.aria-valuenow]': 'shownValue()',
+    // Named as a progress bar must be: by `aria-label`, or "Progress", as a spinner is "Loading...".
+    '[attr.aria-label]': 'ariaLabel() ?? texts().label',
+  },
 })
 export class NbProgressBarComponent {
+  protected readonly texts = injectNbTexts('progressBar', () => ({
+    label: $localize`:@@nb.progressBar.label:Progress`,
+  }));
 
-  /**
-   * Progress bar value in percent (0 - 100)
-   */
-  @Input() value: number = 0;
+  /** Names the progress bar, e.g. "Upload"; "Progress" by default. An `aria-labelledby` names it instead. */
+  readonly ariaLabel = input<string | undefined>(undefined, { alias: 'aria-label' });
 
-  /**
-   * Progress bar background (`basic` (default), `primary`, `info`, `success`, `warning`, `danger`, `control`)
-   */
-  @Input() status: NbComponentOrCustomStatus = 'basic';
+  /** The progress in percent, 0 to 100. */
+  readonly value = input<number>(0);
 
-  /**
-   * Progress bar size (`tiny`, `small`, `medium` (default), `large`, `giant`)
-   */
-  @Input() size: NbComponentSize = 'medium';
+  /** `basic` (default), `primary`, `info`, `success`, `warning`, `danger` or `control`. */
+  readonly status = input<NbComponentOrCustomStatus>('basic');
 
-  /**
-   * Displays value inside progress bar
-   */
-  @Input() displayValue: boolean = false;
+  /** `tiny`, `small`, `medium` (default), `large` or `giant`: the height and the font size. */
+  readonly size = input<NbComponentSize>('medium');
 
-  @HostBinding('class.size-tiny')
-  get tiny(): boolean {
-    return this.size === 'tiny';
-  }
+  /** Shows the value, as a percentage, in the bar or the ring's middle; on its own, `displayValue` does. */
+  readonly displayValue = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
 
-  @HostBinding('class.size-small')
-  get small(): boolean {
-    return this.size === 'small';
-  }
+  /** The progress bar's shape: `bar` (default), or `ring`, a circle that fills clockwise from the top. */
+  readonly shape = input<'bar' | 'ring'>('bar');
 
-  @HostBinding('class.size-medium')
-  get medium(): boolean {
-    return this.size === 'medium';
-  }
+  /** The value for assistive technologies, within 0 and 100. */
+  protected readonly shownValue = computed(() => Math.min(100, Math.max(0, Number(this.value()) || 0)));
 
-  @HostBinding('class.size-large')
-  get large(): boolean {
-    return this.size === 'large';
-  }
-
-  @HostBinding('class.size-giant')
-  get giant(): boolean {
-    return this.size === 'giant';
-  }
-
-  @HostBinding('class.status-primary')
-  get primary(): boolean {
-    return this.status === 'primary';
-  }
-
-  @HostBinding('class.status-success')
-  get success(): boolean {
-    return this.status === 'success';
-  }
-
-  @HostBinding('class.status-info')
-  get info(): boolean {
-    return this.status === 'info';
-  }
-
-  @HostBinding('class.status-warning')
-  get warning(): boolean {
-    return this.status === 'warning';
-  }
-
-  @HostBinding('class.status-danger')
-  get danger(): boolean {
-    return this.status === 'danger';
-  }
-
-  @HostBinding('class.status-basic')
-  get basic(): boolean {
-    return this.status === 'basic';
-  }
-
-  @HostBinding('class.status-control')
-  get control(): boolean {
-    return this.status === 'control';
-  }
-
-  @HostBinding('class')
-  get additionalClasses(): string[] {
-    if (this.statusService.isCustomStatus(this.status)) {
-      return [this.statusService.getStatusClass(this.status)];
-    }
-    return [];
-  }
-
-  constructor(protected statusService: NbStatusService) {
-  }
+  protected readonly hostClasses = computed(() =>
+    [
+      this.size() && `size-${this.size()}`,
+      this.status() && `status-${this.status()}`,
+      `shape-${this.shape()}`,
+    ].filter(Boolean),
+  );
 }

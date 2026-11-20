@@ -1,0 +1,30 @@
+<nb-card>
+  <nb-card-body>
+    <div class="rings">
+      @for (size of sizes; track size) {
+      <nb-progress-bar shape="ring"
+        status="primary"
+        [size]="size"
+        [value]="value()"
+        [displayValue]="size !== 'tiny'"
+        [attr.aria-label]="'Upload, ' + size" />
+      }
+      <nb-progress-bar shape="ring"
+        status="success"
+        size="giant"
+        [value]="40"
+        aria-label="Profile">
+        <span class="steps"><strong>2 of 5</strong><span class="caption">steps</span></span>
+      </nb-progress-bar>
+    </div>
+
+    <div class="actions">
+      <button nbButton
+        size="small"
+        (click)="change(-10)">Less</button>
+      <button nbButton
+        size="small"
+        (click)="change(10)">More</button>
+    </div>
+  </nb-card-body>
+</nb-card>
