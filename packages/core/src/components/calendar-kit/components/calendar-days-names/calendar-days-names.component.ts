@@ -1,72 +1,56 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { ChangeDetectionStrategy, Component, OnInit, Input, HostBinding, SimpleChanges, OnChanges } from '@angular/core';
+import {
+  Component,
+  computed,
+  inject,
+  input,
+} from '@angular/core';
 
 import { NbCalendarDay, NbCalendarSize, NbCalendarSizeValues } from '../../model';
 import { NbDateService } from '../../services/date.service';
 
-
+/**
+ * The row of weekday names above a day picker, the locale's weekend marked as holidays.
+ */
 @Component({
-    selector: 'nb-calendar-days-names',
-    styleUrls: ['./calendar-days-names.component.scss'],
-    template: `
-    <div class="day" *ngFor="let day of days" [class.holiday]="day.isHoliday">{{ day.name }}</div>
-  `,
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  selector: 'nb-calendar-days-names',
+  styleUrls: ['./calendar-days-names.component.scss'],
+  templateUrl: './calendar-days-names.component.html',
+  host: {
+    '[class.size-large]': 'isLarge()',
+  },
 })
-export class NbCalendarDaysNamesComponent<D> implements OnInit, OnChanges {
+export class NbCalendarDaysNamesComponent<D> {
+  protected readonly dateService = inject<NbDateService<D>>(NbDateService);
 
-  days: NbCalendarDay[];
-
-  @Input() size: NbCalendarSize;
+  readonly size = input<NbCalendarSize>();
   static ngAcceptInputType_size: NbCalendarSizeValues;
 
-  @HostBinding('class.size-large')
-  get isLarge(): boolean {
-    return this.size === NbCalendarSize.LARGE;
-  }
+  readonly isLarge = computed((): boolean => {
+    return this.size() === NbCalendarSize.LARGE;
+  });
 
   /**
-   * Sets first day of the week, it can be 1 if week starts from monday and 0 if from sunday and so on.
-   * `undefined` means that default locale setting will be used.
-   * */
-  @Input() firstDayOfWeek: number | undefined;
+   * The first day of the week: 0 for Sunday, 1 for Monday and so on; the locale's by default.
+   */
+  readonly firstDayOfWeek = input<number>();
 
-  constructor(private dateService: NbDateService<D>) {
-  }
-
-  ngOnInit() {
-    const days: NbCalendarDay[] = this.createDaysNames();
-    this.days = this.shiftStartOfWeek(days);
-  }
-
-  ngOnChanges({firstDayOfWeek}: SimpleChanges) {
-    if (firstDayOfWeek) {
-      const days: NbCalendarDay[] = this.createDaysNames();
-      this.days = this.shiftStartOfWeek(days);
-    }
-  }
+  readonly days = computed<NbCalendarDay[]>(() => this.shiftStartOfWeek(this.createDaysNames()));
 
   private createDaysNames(): NbCalendarDay[] {
+    const weekend = this.dateService.getWeekendDays();
     return this.dateService.getDayOfWeekNames()
-      .map(this.markIfHoliday);
+      .map((name, i) => ({ name, isHoliday: weekend.includes(i) }));
   }
 
   private shiftStartOfWeek(days: NbCalendarDay[]): NbCalendarDay[] {
-    const firstDayOfWeek = this.firstDayOfWeek ?? this.dateService.getFirstDayOfWeek();
+    const firstDayOfWeek = this.firstDayOfWeek() ?? this.dateService.getFirstDayOfWeek();
     for (let i = 0; i < firstDayOfWeek; i++) {
-      days.push(days.shift());
+      const day = days.shift();
+      if (day) {
+        days.push(day);
+      }
     }
 
     return days;
-  }
-
-  private markIfHoliday(name, i) {
-    return { name, isHoliday: i % 6 === 0 };
   }
 }

@@ -1,14 +1,15 @@
-import { NbNativeDateService, NbCalendarYearModelService } from '@nebular/theme';
+import { TestBed } from '@angular/core/testing';
+import { NbNativeDateService, NbCalendarYearModelService, NbDateService } from '@liquid-js/lyr-core';
 
 describe('NbCalendarYearModelService', () => {
   let yearModelService: NbCalendarYearModelService<Date>;
-  let yearsInView: number;
-  let yearsInRow: number;
 
   beforeEach(() => {
-    yearModelService = new NbCalendarYearModelService(new NbNativeDateService('en-US'));
-    yearsInView = yearModelService.getYearsInView();
-    yearsInRow = yearModelService.getYearsInRow();
+    TestBed.configureTestingModule({
+      providers: [{ provide: NbDateService, useClass: NbNativeDateService }, NbCalendarYearModelService],
+    });
+    TestBed.inject(NbDateService).setLocale('en-US');
+    yearModelService = TestBed.inject(NbCalendarYearModelService);
   });
 
   it('should return correct years range', () => {

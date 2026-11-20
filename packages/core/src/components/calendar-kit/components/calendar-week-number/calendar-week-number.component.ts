@@ -1,63 +1,45 @@
-/*
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { Component, Input, HostBinding, ChangeDetectionStrategy, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, computed, inject, input } from '@angular/core';
 
 import { NbDateService } from '../../services/date.service';
 import { NbCalendarSize, NbCalendarSizeValues } from '../../model';
+import { injectNbCalendarTexts } from '../../calendar-texts';
 
+/**
+ * The column of week numbers beside a day picker's weeks.
+ */
 @Component({
-    selector: 'nb-calendar-week-numbers',
-    template: `
-    <div class="sign-container">
-      <div class="sign">{{ weekNumberSymbol }}</div>
-    </div>
-    <div class="week-number" *ngFor="let weekNumber of weekNumbers">{{ weekNumber }}</div>
-  `,
-    styleUrls: ['./calendar-week-number.component.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  selector: 'nb-calendar-week-numbers',
+  templateUrl: './calendar-week-number.component.html',
+  styleUrls: ['./calendar-week-number.component.scss'],
+  host: {
+    '[class.size-large]': 'isLarge()',
+  },
 })
-export class NbCalendarWeekNumberComponent<D> implements OnChanges {
+export class NbCalendarWeekNumberComponent<D> {
+  protected readonly texts = injectNbCalendarTexts();
 
-  weekNumbers: number[];
+  protected readonly dateService = inject<NbDateService<D>>(NbDateService);
 
-  @Input()
-  weeks: D[][];
+  readonly weeks = input.required<(D | undefined)[][]>();
 
-  @Input()
-  size: NbCalendarSize;
+  readonly size = input<NbCalendarSize>();
   static ngAcceptInputType_size: NbCalendarSizeValues;
 
   /**
-   * Sets symbol used as a header for week numbers column
-   * */
-  @Input() weekNumberSymbol: string;
+   * The header of the column; `#` by default.
+   */
+  readonly weekNumberSymbol = input<string>();
 
-  @HostBinding('class.size-large')
-  get isLarge() {
-    return this.size === NbCalendarSize.LARGE;
-  }
+  readonly isLarge = computed(() => {
+    return this.size() === NbCalendarSize.LARGE;
+  });
 
-  constructor(private dateService: NbDateService<D>) {}
-
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes.weeks) {
-      this.weekNumbers = this.getWeeks();
-    }
-  }
-
-  getWeeks(): number[] {
-    return this.weeks.map((week: D[]) => {
-      // Find last defined day as week could contain null days in case
-      // boundingMonth set to false
-      const lastDay = [ ...week ].reverse().find((day: D) => !!day);
-      // Use last day of the week to determine week number.
-      // This way weeks which span between sibling years is marked first
-      return this.dateService.getWeekNumber(lastDay);
-    });
-  }
+  readonly weekNumbers = computed<number[]>(() =>
+    this.weeks().flatMap((week) => {
+      // The week's number is its last day's, so a week spanning two years is the first of the new one; the last cells
+      // are empty without bounding months.
+      const lastDay = [...week].reverse().find((day): day is D => !!day);
+      return lastDay ? [this.dateService.getWeekNumber(lastDay)] : [];
+    }),
+  );
 }

@@ -1,40 +1,34 @@
-import { Component, EventEmitter } from '@angular/core';
-import { TranslationWidth } from '@angular/common';
+import { Component, computed, inject, input, output } from '@angular/core';
 import {
   NbCalendarCell,
   NbCalendarDayPickerComponent,
-  NbCalendarMonthModelService,
   NbDateService,
-} from '@nebular/theme';
+  NbCalendarDayPickerComponent as NbCalendarDayPickerComponent_1,
+} from '@liquid-js/lyr-core';
 
 @Component({
-    selector: 'nb-calendar-kit-month-cell',
-    template: `
-    <h4>{{ title }}</h4>
-    <nb-calendar-day-picker [boundingMonths]="false"
-                            [visibleDate]="date"
-                            [date]="selectedValue"
-                            (dateChange)="select.emit($event)">
-    </nb-calendar-day-picker>
-  `,
-    styles: [`
-    :host {
-      flex: 1 0 auto;
-      padding: 1rem;
-    }
-  `],
-    standalone: false
+  selector: 'nb-calendar-kit-month-cell',
+  templateUrl: './calendar-kit-month-cell.component.html',
+  styles: [
+    `
+      :host {
+        flex: 1 0 auto;
+        padding: 1rem;
+      }
+    `,
+  ],
+  imports: [NbCalendarDayPickerComponent_1],
 })
-export class CalendarKitMonthCellComponent extends NbCalendarDayPickerComponent<Date, Date>
+export class CalendarKitMonthCellComponent
+  extends NbCalendarDayPickerComponent<Date, Date>
   implements NbCalendarCell<Date, Date> {
-  select: EventEmitter<Date> = new EventEmitter();
-  selectedValue: Date;
+  private readonly dateService = inject<NbDateService<Date>>(NbDateService);
 
-  constructor(private dateService: NbDateService<Date>, monthModel: NbCalendarMonthModelService<Date>) {
-    super(monthModel);
-  }
+  readonly select = output<Date>();
+  readonly selectedValue = input<Date>();
 
-  get title() {
-    return this.dateService.getMonthName(this.date, TranslationWidth.Wide);
-  }
+  readonly title = computed(() => {
+    const date = this.date();
+    return date && this.dateService.getMonthName(date, 'wide');
+  });
 }

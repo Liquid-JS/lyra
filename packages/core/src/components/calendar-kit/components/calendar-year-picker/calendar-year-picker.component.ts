@@ -1,84 +1,54 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import {
-  ChangeDetectionStrategy,
-  Component,
-  EventEmitter,
-  HostBinding,
-  Input,
-  OnChanges,
-  Output,
-  Type,
-} from '@angular/core';
+import { Component, computed, inject, input, output, Type } from '@angular/core';
 import { NbCalendarCell, NbCalendarSize, NbCalendarSizeValues } from '../../model';
 import { NbCalendarYearCellComponent } from './calendar-year-cell.component';
 import { NbDateService } from '../../services/date.service';
 import { NbCalendarYearModelService } from '../../services/calendar-year-model.service';
+import { NbCalendarPickerComponent } from '../calendar-picker/calendar-picker.component';
 
+/**
+ * A page of twelve years to pick from, in rows of four: the page, aligned to multiples of twelve, with `year`.
+ */
 @Component({
-    selector: 'nb-calendar-year-picker',
-    template: `
-    <nb-calendar-picker
-      [data]="years"
-      [min]="min"
-      [max]="max"
-      [filter]="filter"
-      [selectedValue]="date"
-      [visibleDate]="year"
-      [cellComponent]="cellComponent"
-      [size]="size"
-      (select)="onSelect($event)">
-    </nb-calendar-picker>
-  `,
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  selector: 'nb-calendar-year-picker',
+  templateUrl: './calendar-year-picker.component.html',
+  imports: [NbCalendarPickerComponent],
+  host: {
+    '[class.size-large]': 'large()',
+  },
 })
-export class NbCalendarYearPickerComponent<D> implements OnChanges {
+export class NbCalendarYearPickerComponent<D> {
+  protected readonly dateService = inject<NbDateService<D>>(NbDateService);
+  protected readonly yearModelService = inject<NbCalendarYearModelService<D>>(NbCalendarYearModelService);
 
-  @Input() date: D;
+  readonly date = input<D>();
 
-  @Input() min: D;
+  readonly min = input<D>();
 
-  @Input() max: D;
+  readonly max = input<D>();
 
-  @Input() filter: (D) => boolean;
+  readonly filter = input<(date: D) => boolean>();
 
-  @Input('cellComponent')
-  set _cellComponent(cellComponent: Type<NbCalendarCell<D, D>>) {
-    if (cellComponent) {
-      this.cellComponent = cellComponent;
-    }
-  }
-  cellComponent: Type<NbCalendarCell<D, D>> = NbCalendarYearCellComponent;
+  readonly cellComponentInput = input<Type<NbCalendarCell<D, unknown>>>(undefined, { alias: 'cellComponent' });
+  readonly cellComponent = computed<Type<NbCalendarCell<D, unknown>>>(
+    () => this.cellComponentInput() || NbCalendarYearCellComponent<D>,
+  );
 
-  @Input() size: NbCalendarSize = NbCalendarSize.MEDIUM;
-  static ngAcceptInputType_size: NbCalendarSizeValues;
+  readonly size = input<NbCalendarSize, NbCalendarSizeValues>(NbCalendarSize.MEDIUM, {
+    transform: (size) => size as NbCalendarSize,
+  });
 
-  @Input() year: D;
+  /** A date in the page of years shown. */
+  readonly year = input.required<D>();
 
-  @Output() yearChange = new EventEmitter<D>();
+  readonly yearChange = output<D>();
 
-  @HostBinding('class.size-large')
-  get large() {
-    return this.size === NbCalendarSize.LARGE;
-  }
+  readonly large = computed(() => {
+    return this.size() === NbCalendarSize.LARGE;
+  });
 
-  years: D[][];
+  readonly years = computed<D[][]>(() => this.yearModelService.getViewYears(this.year()));
 
-  constructor(
-    protected dateService: NbDateService<D>,
-    protected yearModelService: NbCalendarYearModelService<D>,
-  ) {}
-
-  ngOnChanges() {
-    this.years = this.yearModelService.getViewYears(this.year);
-  }
-
-  onSelect(year) {
+  onSelect(year: D) {
     this.yearChange.emit(year);
   }
 }

@@ -1,18 +1,15 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { DebugElement, NO_ERRORS_SCHEMA, SimpleChange } from '@angular/core';
-import { ComponentFixture, fakeAsync, flush, TestBed } from '@angular/core/testing';
+import { DatePipe } from '@angular/common';
+import { DebugElement, NO_ERRORS_SCHEMA } from '@angular/core';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import {
   NbCalendarDayPickerComponent,
   NbCalendarDayCellComponent,
   NbCalendarMonthModelService,
   NbCalendarKitModule,
-} from '@nebular/theme';
+  NbDateService,
+  NbNativeDateService,
+} from '@liquid-js/lyr-core';
 
 describe('Component: NbCalendarDayPicker', () => {
   let component: NbCalendarDayPickerComponent<Date, Date>;
@@ -22,19 +19,15 @@ describe('Component: NbCalendarDayPicker', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [NbCalendarKitModule],
-      providers: [NbCalendarMonthModelService],
+      providers: [NbCalendarMonthModelService, DatePipe, { provide: NbDateService, useClass: NbNativeDateService }],
       schemas: [NO_ERRORS_SCHEMA],
     });
     fixture = TestBed.createComponent<NbCalendarDayPickerComponent<Date, Date>>(NbCalendarDayPickerComponent);
     component = fixture.componentInstance;
     componentEl = fixture.debugElement;
 
-    component.visibleDate = new Date();
-    component.date = new Date();
-    component.ngOnChanges({
-      activeMonth: new SimpleChange(null, component.visibleDate, true),
-      value: new SimpleChange(null, component.date, true),
-    });
+    fixture.componentRef.setInput('visibleDate', new Date());
+    fixture.componentRef.setInput('date', new Date());
     fixture.detectChanges();
   });
 
@@ -47,11 +40,11 @@ describe('Component: NbCalendarDayPicker', () => {
   });
 
   it('should provide default cell component', () => {
-    expect(component.cellComponent).toBe(NbCalendarDayCellComponent);
+    expect(component.cellComponent()).toBe(NbCalendarDayCellComponent);
   });
 
   it('should fire dateChange when cell selected', () => {
-    const dateChangeSpy = jasmine.createSpy('dateChange spy');
+    const dateChangeSpy = vi.fn();
     component.dateChange.subscribe(dateChangeSpy);
     componentEl.query(By.css('nb-calendar-picker')).nativeElement.dispatchEvent(new CustomEvent('select'));
     expect(dateChangeSpy).toHaveBeenCalled();

@@ -1,0 +1,16 @@
+@if (showCurrentTimeButton()) {
+<button type="button"
+  nbButton
+  ghost
+  status="primary"
+  size="small"
+  (click)="setCurrentTime.emit()">
+  {{ currentTimeText() }}</button>
+}
+<button type="button"
+  class="apply-text-button"
+  nbButton
+  status="primary"
+  size="small"
+  (click)="saveValue.emit()">
+  {{ applyText() }}</button>

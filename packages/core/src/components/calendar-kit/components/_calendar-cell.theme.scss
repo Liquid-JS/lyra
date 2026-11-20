@@ -1,13 +1,18 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 @use '../../../styles/theming' as *;
 
 @mixin nb-calendar-cell-theme() {
   nb-calendar-picker {
+    // The keyboard's cell shows the theme's focus ring on what the cell draws, not the browser's on the whole cell.
+    [role='gridcell'] {
+      &:focus {
+        outline: none;
+      }
+
+      &:focus-visible .cell-content {
+        @include nb-outline(nb-theme(outline-width), nb-theme(outline-color));
+      }
+    }
+
     .day-cell {
       width: nb-theme(calendar-day-cell-width);
       height: nb-theme(calendar-day-cell-height);
@@ -171,6 +176,23 @@
       background-color: nb-theme(calendar-cell-selected-background-color);
       border-radius: 0;
 
+      // Today, inside the range rather than at one of its ends.
+      &.today:not(.start):not(.end) .cell-content {
+        background-color: nb-theme(calendar-cell-today-in-range-background-color);
+        border-color: nb-theme(calendar-cell-today-in-range-border-color);
+        color: nb-theme(calendar-cell-today-in-range-text-color);
+
+        &:hover {
+          background-color: nb-theme(calendar-cell-today-in-range-hover-background-color);
+          border-color: nb-theme(calendar-cell-today-in-range-hover-border-color);
+        }
+
+        &:active {
+          background-color: nb-theme(calendar-cell-today-in-range-active-background-color);
+          border-color: nb-theme(calendar-cell-today-in-range-active-border-color);
+        }
+      }
+
       &.start {
         @include nb-ltr() {
           border-top-left-radius: nb-theme(calendar-border-radius);
@@ -191,6 +213,22 @@
           border-top-left-radius: nb-theme(calendar-border-radius);
           border-bottom-left-radius: nb-theme(calendar-border-radius);
         }
+      }
+    }
+
+    // Where the range goes on in the cell under its start, or over its end, that corner is inside the range, and has the
+    // joined radius. The cells of a row are its children, so a cell's column is its place in the row.
+    $in-range: '.range-cell.in-range.selected:not(.disabled):not(.empty)';
+    @for $column from 1 through 7 {
+      nb-calendar-picker-row:has(+ nb-calendar-picker-row > #{$in-range}:nth-child(#{$column}))
+      > #{$in-range}.start:nth-child(#{$column}) {
+        border-end-start-radius: nb-theme(calendar-cell-range-joined-border-radius);
+      }
+
+      nb-calendar-picker-row:has(> #{$in-range}:nth-child(#{$column}))
+      + nb-calendar-picker-row
+      > #{$in-range}.end:nth-child(#{$column}) {
+        border-start-end-radius: nb-theme(calendar-cell-range-joined-border-radius);
       }
     }
   }

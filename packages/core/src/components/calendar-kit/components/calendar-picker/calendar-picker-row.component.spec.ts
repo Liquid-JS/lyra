@@ -1,9 +1,4 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
+import { assert } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
@@ -15,7 +10,7 @@ import {
   NbDateService,
   NbNativeDateService,
   NbCalendarKitModule,
-} from '@nebular/theme';
+} from '@liquid-js/lyr-core';
 
 describe('Component: NbCalendarPickerRow', () => {
   let fixture: ComponentFixture<NbCalendarPickerRowComponent<Date, Date>>;
@@ -35,12 +30,12 @@ describe('Component: NbCalendarPickerRow', () => {
     fixture = TestBed.createComponent<NbCalendarPickerRowComponent<Date, Date>>(NbCalendarPickerRowComponent);
     component = fixture.componentInstance;
     componentEl = fixture.debugElement.nativeElement;
-    component.component = NbCalendarDayCellComponent;
-    component.row = [new Date()];
+    fixture.componentRef.setInput('component', NbCalendarDayCellComponent);
+    fixture.componentRef.setInput('row', [new Date()]);
   });
 
   it('should render row of data', function () {
-    component.row = [new Date(), new Date()];
+    fixture.componentRef.setInput('row', [new Date(), new Date()]);
     component.ngOnChanges();
     fixture.detectChanges();
     expect(componentEl.querySelectorAll('nb-calendar-day-cell').length).toBe(2);
@@ -48,61 +43,61 @@ describe('Component: NbCalendarPickerRow', () => {
 
   it('should provide date for cell', () => {
     const date = new Date();
-    component.row = [date];
+    fixture.componentRef.setInput('row', [date]);
     component.ngOnChanges();
     fixture.detectChanges();
     const cell: NbCalendarDayCellComponent<Date> = queryTestCell();
-    expect(cell.date).toBe(date);
+    expect(cell.date()).toBe(date);
   });
 
   it('should provide year for cell', () => {
     const activeMonth = new Date();
-    component.visibleDate = activeMonth;
+    fixture.componentRef.setInput('visibleDate', activeMonth);
     component.ngOnChanges();
     fixture.detectChanges();
     const cell: NbCalendarDayCellComponent<Date> = queryTestCell();
-    expect(cell.visibleDate).toBe(activeMonth);
+    expect(cell.visibleDate()).toBe(activeMonth);
   });
 
   it('should provide selectedValue for cell', () => {
     const selectedValue = new Date();
-    component.selectedValue = selectedValue;
+    fixture.componentRef.setInput('selectedValue', selectedValue);
     component.ngOnChanges();
     fixture.detectChanges();
     const cell: NbCalendarDayCellComponent<Date> = queryTestCell();
-    expect(cell.selectedValue).toBe(selectedValue);
+    expect(cell.selectedValue()).toBe(selectedValue);
   });
 
   it('should provide min for cell', () => {
     const min = new Date();
-    component.min = min;
+    fixture.componentRef.setInput('min', min);
     component.ngOnChanges();
     fixture.detectChanges();
     const cell: NbCalendarDayCellComponent<Date> = queryTestCell();
-    expect(cell.min).toBe(min);
+    expect(cell.min()).toBe(min);
   });
 
   it('should provide max for cell', () => {
     const max = new Date();
-    component.max = max;
+    fixture.componentRef.setInput('max', max);
     component.ngOnChanges();
     fixture.detectChanges();
     const cell: NbCalendarDayCellComponent<Date> = queryTestCell();
-    expect(cell.max).toBe(max);
+    expect(cell.max()).toBe(max);
   });
 
   it('should provide filter for cell', () => {
     const filter = () => true;
-    component.filter = filter;
+    fixture.componentRef.setInput('filter', filter);
     component.ngOnChanges();
     fixture.detectChanges();
     const cell: NbCalendarDayCellComponent<Date> = queryTestCell();
-    expect(cell.filter).toBe(filter);
+    expect(cell.filter()).toBe(filter);
   });
 
-  it('should fire select when entire cell selected', (done) => {
+  it('should fire select when entire cell selected', () => new Promise<void>((done) => {
     const date = new Date();
-    component.row = [date];
+    fixture.componentRef.setInput('row', [date]);
     component.ngOnChanges();
     fixture.detectChanges();
     const cell: NbCalendarDayCellComponent<Date> = queryTestCell();
@@ -110,6 +105,8 @@ describe('Component: NbCalendarPickerRow', () => {
       expect(e).toBe(date);
       done();
     });
-    cell.select.emit(cell.date);
-  });
+    const cellDate = cell.date();
+    assert(cellDate);
+    cell.select.emit(cellDate);
+  }));
 });

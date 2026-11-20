@@ -1,10 +1,4 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { EventEmitter } from '@angular/core';
+import { OutputRef, Signal } from '@angular/core';
 
 export interface NbCalendarDay {
   name: string;
@@ -12,6 +6,9 @@ export interface NbCalendarDay {
 }
 
 export type NbCalendarViewModeValues = 'year' | 'month' | 'date';
+
+/** What a calendar picks: a day (`date`), a month or a year. */
+export type NbCalendarPickerMode = 'date' | 'month' | 'year';
 export enum NbCalendarViewMode {
   YEAR = 'year',
   MONTH = 'month',
@@ -24,13 +21,16 @@ export enum NbCalendarSize {
   LARGE = 'large',
 }
 
+/**
+ * A calendar cell, which the calendar pickers render with signal inputs and listen to through `select`.
+ */
 export interface NbCalendarCell<D, T> {
-  date: D;
-  select: EventEmitter<D>;
-  selectedValue?: T;
-  visibleDate?: D;
-  min?: D;
-  max?: D;
-  filter?: (D) => boolean;
-  size?: NbCalendarSize;
+  date: Signal<D | undefined>;
+  select: OutputRef<D>;
+  selectedValue?: Signal<T | undefined>;
+  visibleDate?: Signal<D | undefined>;
+  min?: Signal<D | undefined>;
+  max?: Signal<D | undefined>;
+  filter?: Signal<((date: D) => boolean) | undefined>;
+  size?: Signal<NbCalendarSize>;
 }

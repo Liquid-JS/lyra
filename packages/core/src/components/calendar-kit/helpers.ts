@@ -1,9 +1,3 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 export const batch = <T>(target: T[], batchSize: number, offset: number = 0): T[][] => {
   return target.reduce((res, item, index) => {
     const chunkIndex = Math.floor((index + offset) / batchSize);
@@ -12,24 +6,28 @@ export const batch = <T>(target: T[], batchSize: number, offset: number = 0): T[
     }
     res[chunkIndex].push(item);
     return res;
-  }, [])
+  }, new Array<T[]>());
 };
 /**
- * returns array with numbers from first argument to bound.
- * */
-export const rangeFromTo = <T>(from: number, to = 0, producer: (number) => T = i => i) => {
-  const arr = [];
+ * The numbers from `from` up to, not including, `to`, or what `producer` makes of each.
+ */
+export function rangeFromTo(from: number, to?: number): number[];
+export function rangeFromTo<T>(from: number, to: number, producer: (i: number) => T): T[];
+export function rangeFromTo<T>(from: number, to = 0, producer?: (i: number) => T): (T | number)[] {
+  const arr = new Array<T | number>();
 
   for (let i = from; i < to; i++) {
-    arr.push(producer(i));
+    arr.push(producer ? producer(i) : i);
   }
 
   return arr;
-};
+}
 
 /**
- * returns array with numbers from zero to bound.
- * */
-export const range = <T>(bound: number, producer: (number) => T = i => i) => {
-  return rangeFromTo(0, bound, producer);
-};
+ * The numbers from 0 up to, not including, `bound`, or what `producer` makes of each.
+ */
+export function range(bound: number): number[];
+export function range<T>(bound: number, producer: (i: number) => T): T[];
+export function range<T>(bound: number, producer?: (i: number) => T): (T | number)[] {
+  return producer ? rangeFromTo(0, bound, producer) : rangeFromTo(0, bound);
+}

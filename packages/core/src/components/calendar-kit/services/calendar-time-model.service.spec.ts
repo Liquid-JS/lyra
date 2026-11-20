@@ -1,11 +1,5 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { inject, TestBed, waitForAsync } from '@angular/core/testing';
-import { NbDateService, NbNativeDateService, NbCalendarTimeModelService } from '@nebular/theme';
+import { inject, TestBed } from '@angular/core/testing';
+import { NbDateService, NbNativeDateService, NbCalendarTimeModelService } from '@liquid-js/lyr-core';
 
 describe('time-model-service', () => {
   let timeModel: NbCalendarTimeModelService<Date>;
@@ -17,11 +11,9 @@ describe('time-model-service', () => {
   });
 
   beforeEach(
-    waitForAsync(
-      inject([NbCalendarTimeModelService], (_monthModel) => {
-        timeModel = _monthModel;
-      }),
-    ),
+    inject([NbCalendarTimeModelService], (_monthModel: NbCalendarTimeModelService<Date>) => {
+      timeModel = _monthModel;
+    }),
   );
 
   it('should format number', () => {

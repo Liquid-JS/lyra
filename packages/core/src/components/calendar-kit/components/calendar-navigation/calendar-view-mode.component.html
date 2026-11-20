@@ -1,0 +1,14 @@
+@if (changeable()) {
+<button type="button"
+  nbButton
+  (click)="onClick()"
+  ghost
+  size="medium"
+  status="basic">
+  <span class="calendar-view-mode-text">{{ getText() }}</span>
+  <nb-icon [icon]="getIcon()"
+    pack="essentials" />
+</button>
+} @else {
+<span class="calendar-view-mode-label">{{ getText() }}</span>
+}

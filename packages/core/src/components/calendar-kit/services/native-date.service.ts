@@ -1,11 +1,8 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { Inject, Injectable, LOCALE_ID } from '@angular/core';
-import { FormatWidth, getLocaleTimeFormat } from '@angular/common';
+import { LOCALE_ID, inject, Service } from '@angular/core';
+import {
+  FormatWidth,
+  getLocaleTimeFormat,
+} from '@angular/common';
 import {
   DatePipe,
   FormStyle,
@@ -15,26 +12,36 @@ import {
   TranslationWidth,
 } from '@angular/common';
 
-import { NbDateService } from './date.service';
+import { NbDateNameWidth, NbDateService } from './date.service';
+import { nbParseDateFormat } from './native-date-parse';
+
+/* eslint-disable @typescript-eslint/no-deprecated -- Angular's bundled locale data, see getLocaleTimeFormat() */
+const TRANSLATION_WIDTHS: Record<NbDateNameWidth, TranslationWidth> = {
+  narrow: TranslationWidth.Narrow,
+  abbreviated: TranslationWidth.Abbreviated,
+  short: TranslationWidth.Short,
+  wide: TranslationWidth.Wide,
+};
+/* eslint-enable @typescript-eslint/no-deprecated */
 
 /**
- * The `NbNativeDateService` is basic implementation of `NbDateService` using
- * native js date objects and angular localization services.
- * */
-@Injectable()
+ * The `NbDateService` for JavaScript `Date` objects, with names and formats from Angular's bundled locale data.
+ */
+@Service({ autoProvided: false })
 export class NbNativeDateService extends NbDateService<Date> {
-  protected datePipe: DatePipe;
+  protected datePipe = new DatePipe(this.locale);
 
-  constructor(@Inject(LOCALE_ID) locale: string) {
+  constructor() {
+    const locale = inject(LOCALE_ID);
+
     super();
     this.setLocale(locale);
   }
 
-  setLocale(locale: string) {
+  override setLocale(locale: string) {
     super.setLocale(locale);
     this.datePipe = new DatePipe(locale);
   }
-
 
   setHours(date: Date, hour: number): Date {
     const result: Date = this.clone(date);
@@ -64,7 +71,7 @@ export class NbNativeDateService extends NbDateService<Date> {
     return result;
   }
 
-  isValidDateString(date: string, format: string): boolean {
+  isValidDateString(date: string, format?: string): boolean {
     return !isNaN(this.parse(date, format).getTime());
   }
 
@@ -76,9 +83,14 @@ export class NbNativeDateService extends NbDateService<Date> {
     return new Date();
   }
 
+  // Angular's locale data getters are deprecated in favour of Intl, but they read the CLDR data compiled into the app,
+  // so names, the first weekday and the time pattern are the same in every browser; Intl follows each browser's own
+  // CLDR version (in Safari, the OS's).
+  /* eslint-disable @typescript-eslint/no-deprecated */
   getLocaleTimeFormat(): string {
     return getLocaleTimeFormat(this.locale, FormatWidth.Short);
   }
+  /* eslint-enable @typescript-eslint/no-deprecated */
 
   getDate(date: Date): number {
     return date.getDate();
@@ -96,35 +108,52 @@ export class NbNativeDateService extends NbDateService<Date> {
     return date.getDay();
   }
 
-  /**
-   * returns first day of the week, it can be 1 if week starts from monday
-   * and 0 if from sunday and so on.
-   * */
+  /* eslint-disable @typescript-eslint/no-deprecated -- Angular's bundled locale data, as in getLocaleTimeFormat() */
   getFirstDayOfWeek(): number {
     return getLocaleFirstDayOfWeek(this.locale);
   }
 
-  getMonthName(date: Date, style: TranslationWidth = TranslationWidth.Abbreviated): string {
-    const index: number = date.getMonth();
-    return this.getMonthNameByIndex(index, style);
+  getMonthName(date: Date, style: NbDateNameWidth = 'abbreviated'): string {
+    return this.getMonthNameByIndex(date.getMonth(), style);
   }
 
-  getMonthNameByIndex(index: number, style: TranslationWidth = TranslationWidth.Abbreviated): string {
-    return getLocaleMonthNames(this.locale, FormStyle.Format, style)[index];
+  getMonthNameByIndex(index: number, style: NbDateNameWidth = 'abbreviated'): string {
+    return getLocaleMonthNames(this.locale, FormStyle.Format, TRANSLATION_WIDTHS[style])[index];
   }
 
-  getDayOfWeekNames(): string[] {
-    return [...getLocaleDayNames(this.locale, FormStyle.Format, TranslationWidth.Short)];
+  getDayOfWeekNames(style: NbDateNameWidth = 'short'): string[] {
+    return [...getLocaleDayNames(this.locale, FormStyle.Format, TRANSLATION_WIDTHS[style])];
   }
+  /* eslint-enable @typescript-eslint/no-deprecated */
 
-  format(date: Date, format: string): string {
-    return this.datePipe.transform(date, format);
+  format(date: Date, format?: string): string {
+    // `DatePipe` returns null only for an empty value, never for a date.
+    return this.datePipe.transform(date, format) ?? '';
   }
 
   /**
-   * We haven't got capability to parse date using formatting without third party libraries.
-   * */
-  parse(date: string, format: string): Date {
+   * Reads a date in the format given, as `format` writes it: its years, months, days, weekdays, times and text, with
+   * the locale's names, or a named date format such as `mediumDate`. Text that doesn't follow it, and any text without
+   * a format or with one that has other parts, it reads as `Date.parse` does.
+   *
+   * A date in ISO form without a time, e.g. `2026-03-15`, `2026-03` or `2026`, is that local day; `Date.parse` takes
+   * it as midnight UTC, which is the day before west of UTC.
+   */
+  parse(date: string, format?: string): Date {
+    const create = (year: number, month: number, day: number) => this.createDate(year, month, day);
+    const formatted = format ? nbParseDateFormat(date, format, this.locale, create) : undefined;
+    // In the format first, a day that doesn't exist included; text that doesn't follow it, e.g. another way of
+    // writing the date, as `Date.parse` reads it.
+    if (formatted) {
+      return formatted;
+    }
+    const iso = /^(\d{4})(?:-(\d{2})(?:-(\d{2}))?)?$/.exec(date.trim());
+    if (iso) {
+      const [year, month, day] = [Number(iso[1]), Number(iso[2] ?? 1) - 1, Number(iso[3] ?? 1)];
+      const local = this.createDate(year, month, day);
+      // Not a day that exists, e.g. 2026-02-30.
+      return local.getMonth() === month && local.getDate() === day ? local : new Date(NaN);
+    }
     return new Date(Date.parse(date));
   }
 
@@ -134,8 +163,7 @@ export class NbNativeDateService extends NbDateService<Date> {
 
   addMonth(date: Date, num: number): Date {
     const month = this.createDate(date.getFullYear(), date.getMonth() + num, 1);
-    // In case of date has more days than calculated month js Date will change that month to the next one
-    // because of the date overflow.
+    // The day is clamped to the month's length; `Date` would overflow into the next month instead.
     month.setDate(Math.min(date.getDate(), this.getMonthEnd(month).getDate()));
     return month;
   }
@@ -185,8 +213,7 @@ export class NbNativeDateService extends NbDateService<Date> {
   createDate(year: number, month: number, date: number): Date {
     const result = new Date(year, month, date);
 
-    // We need to correct for the fact that JS native Date treats years in range [0, 99] as
-    // abbreviations for 19xx.
+    // `Date` takes the years 0 to 99 as 1900 to 1999.
     if (year >= 0 && year < 100) {
       result.setFullYear(result.getFullYear() - 1900);
     }
@@ -236,7 +263,8 @@ export class NbNativeDateService extends NbDateService<Date> {
   }
 
   getWeekNumber(date: Date): number {
-    return parseInt(this.datePipe.transform(date, 'w'), 10);
+    // `DatePipe` returns null only for an empty value, never for a date.
+    return parseInt(this.datePipe.transform(date, 'w') ?? '', 10);
   }
 
   getDateFormat(): string {

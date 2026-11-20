@@ -1,12 +1,6 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { DatePipe } from '@angular/common';
-import { NbCalendarDaysNamesComponent, NbDateService, NbNativeDateService } from '@nebular/theme';
+import { NbCalendarDaysNamesComponent, NbDateService, NbNativeDateService } from '@liquid-js/lyr-core';
 
 describe('Component: NbCalendarDaysNames', () => {
   let fixture: ComponentFixture<NbCalendarDaysNamesComponent<Date>>;
@@ -14,7 +8,7 @@ describe('Component: NbCalendarDaysNames', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      declarations: [NbCalendarDaysNamesComponent],
+      imports: [NbCalendarDaysNamesComponent],
       providers: [{ provide: NbDateService, useClass: NbNativeDateService }, DatePipe],
     });
     fixture = TestBed.createComponent<NbCalendarDaysNamesComponent<Date>>(NbCalendarDaysNamesComponent);
@@ -37,5 +31,40 @@ describe('Component: NbCalendarDaysNames', () => {
     days.forEach((day) => {
       expect(day.textContent.length).toBe(2);
     });
+  });
+});
+
+describe('Component: NbCalendarDaysNames with a locale weekend', () => {
+  it('should mark the weekend days of the locale', () => {
+    TestBed.configureTestingModule({
+      imports: [NbCalendarDaysNamesComponent],
+      providers: [{ provide: NbDateService, useClass: NbNativeDateService }, DatePipe],
+    });
+    // Friday and Saturday, e.g. in Israel
+    vi.spyOn(TestBed.inject(NbDateService), 'getWeekendDays').mockReturnValue([5, 6]);
+    const fixture = TestBed.createComponent<NbCalendarDaysNamesComponent<Date>>(NbCalendarDaysNamesComponent);
+    fixture.componentRef.setInput('firstDayOfWeek', 0);
+    fixture.detectChanges();
+
+    const days: HTMLElement[] = Array.from(fixture.nativeElement.querySelectorAll('.day'));
+    const holidays = days.map((day) => day.classList.contains('holiday'));
+    expect(holidays).toEqual([false, false, false, false, false, true, true]);
+  });
+});
+
+describe('NbDateService.getWeekendDays', () => {
+  const weekendOf = (locale: string) => {
+    const dateService = TestBed.runInInjectionContext(() => new NbNativeDateService());
+    dateService.setLocale(locale);
+    return dateService.getWeekendDays().sort();
+  };
+
+  it('should return the weekend of the locale', () => {
+    expect(weekendOf('en-US')).toEqual([0, 6]);
+    expect(weekendOf('he-IL')).toEqual([5, 6]);
+  });
+
+  it('should fall back to Saturday and Sunday for an invalid locale', () => {
+    expect(weekendOf('not a locale')).toEqual([0, 6]);
   });
 });

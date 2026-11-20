@@ -1,262 +1,265 @@
-/*
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
+import { inject, LOCALE_ID } from '@angular/core';
 
-import { TranslationWidth } from '@angular/common';
-
-export const enum NbDayPeriod {
+export enum NbDayPeriod {
   AM = 'AM', // before midday, 0 - 11 in 24-hour format.
   PM = 'PM', // after midday, 12 - 23 in 24-hour format.
 }
+
+/**
+ * How long a month or weekday name is: `narrow` ("J", "S"), `abbreviated` ("Jan", "Sun"), `short` ("Su", for weekdays)
+ * or `wide` ("January", "Sunday").
+ */
+export type NbDateNameWidth = 'narrow' | 'abbreviated' | 'short' | 'wide';
 
 export abstract class NbDateService<D> {
   readonly DAYS_IN_WEEK: number = 7;
 
   /**
-   * Number of hours in AM/PM day periods.
-   **/
+   * Number of hours in an AM or PM day period.
+   */
   readonly HOURS_IN_DAY_PERIOD = 12;
 
-  protected locale: string;
+  protected locale = inject(LOCALE_ID);
 
-  setLocale(locale: any) {
+  setLocale(locale: string) {
     this.locale = locale;
   }
 
   /**
-   * Checks if the date is between the start date and the end date.
-   * */
+   * Whether the date is after `start` and before `end`, neither included.
+   */
   isBetween(date: D, start: D, end: D): boolean {
     return this.compareDates(date, start) > 0 && this.compareDates(date, end) < 0;
   };
 
   /**
-   * Checks is two dates have the same day.
-   * */
-  isSameDaySafe(date1: D, date2: D): boolean {
-    return date1 && date2 && this.isSameDay(date1, date2);
+   * Whether two dates are on the same day; `false` when either is missing.
+   */
+  isSameDaySafe(date1?: D, date2?: D): boolean {
+    return !!date1 && !!date2 && this.isSameDay(date1, date2);
   };
 
   /**
-   * Checks is two dates have the same month.
-   * */
-  isSameMonthSafe(date1: D, date2: D): boolean {
-    return date1 && date2 && this.isSameMonth(date1, date2);
+   * Whether two dates are in the same month; `false` when either is missing.
+   */
+  isSameMonthSafe(date1?: D, date2?: D): boolean {
+    return !!date1 && !!date2 && this.isSameMonth(date1, date2);
   }
 
   /**
-   * Checks is two dates have the same year.
-   * */
-  isSameYearSafe(date1: D, date2: D): boolean {
-    return date1 && date2 && this.isSameYear(date1, date2);
+   * Whether two dates are in the same year; `false` when either is missing.
+   */
+  isSameYearSafe(date1?: D, date2?: D): boolean {
+    return !!date1 && !!date2 && this.isSameYear(date1, date2);
   }
 
   /**
-   * Returns date with selected hour
-   * */
+   * A copy of the date with the hour set.
+   */
   abstract setHours(date: D, hour: number): D;
 
   /**
-   * Returns date with selected minute
-   * */
+   * A copy of the date with the minute set.
+   */
   abstract setMinutes(date: D, minute: number): D;
 
   /**
-   * Returns date with selected second
-   * */
+   * A copy of the date with the second set.
+   */
   abstract setSeconds(date: D, second: number): D;
 
   /**
-   * Returns date with selected milliseconds
-   * */
+   * A copy of the date with the milliseconds set.
+   */
   abstract setMilliseconds(date: D, second: number): D;
   /**
-   * Returns true if date string is valid date string according to the provided format.
-   * */
-  abstract isValidDateString(date: string, format: string): boolean;
+   * Whether the text is a date `parse` reads in the format given.
+   */
+  abstract isValidDateString(date: string, format?: string): boolean;
 
   /**
-   * Returns true if time string is valid time string according to the provided format.
-   * */
+   * Whether the text is a time `parse` reads in the format given.
+   */
   abstract isValidTimeString(date: string, format: string): boolean;
 
-  /**
-   * Returns today date.
-   * */
   abstract today(): D;
 
   /**
-   * Gets the time format based on locale
-   * */
+   * The locale's short time format, e.g. `h:mm a`.
+   */
   abstract getLocaleTimeFormat(): string;
 
   /**
-   * Gets the date of the month component of the given date.
+   * The day of the month, from 1.
    */
   abstract getDate(date: D): number;
 
-  /**
-   * Gets the hour component of the given date.
-   */
   abstract getHours(date: D): number;
 
-  /**
-   * Gets the minute component of the given date.
-   */
   abstract getMinutes(date: D): number;
 
-  /**
-   * Gets the second component of the given date.
-   */
   abstract getSeconds(date: D): number;
 
-  /**
-   * Gets the second component of the given date.
-   */
   abstract getMilliseconds(date: D): number;
 
   /**
-   * Gets the month component of the given date.
-   * */
+   * The month, 0 for January.
+   */
   abstract getMonth(date: D): number;
 
-  /**
-   * Gets the year component of the given date.
-   * */
   abstract getYear(date: D): number;
 
   /**
-   * Returns day of the week of the given date.
+   * The day of the week, 0 for Sunday.
    */
   abstract getDayOfWeek(date: D): number;
 
   /**
-   * Returns first day of the week, it can be 1 if week starts from monday
-   * and 0 if from sunday and so on.
-   * */
+   * The locale's first day of the week: 0 for Sunday, 1 for Monday and so on.
+   */
   abstract getFirstDayOfWeek(): number;
 
   /**
-   * Returns localized month name by date and style.
-   * */
-  abstract getMonthName(date: D, style?: TranslationWidth): string;
+   * The weekend days of the current locale, 0 being Sunday; Saturday and Sunday where the browser doesn't provide
+   * the locale's week info.
+   */
+  getWeekendDays(): number[] {
+    try {
+      const locale = new Intl.Locale(this.locale) as Intl.Locale & {
+        getWeekInfo?: () => { weekend: number[] };
+        weekInfo?: { weekend: number[] };
+      };
+      const weekend = (locale.getWeekInfo?.() ?? locale.weekInfo)?.weekend;
+      if (weekend) {
+        // Intl numbers the days from 1 (Monday) to 7 (Sunday).
+        return weekend.map((day) => day % 7);
+      }
+    } catch {
+      // An unknown locale, fall back to the default weekend.
+    }
+    return [6, 0];
+  }
 
   /**
-   * Returns localized month name by month index and style.
-   * */
-  abstract getMonthNameByIndex(month: number, style?: TranslationWidth): string;
+   * The locale's name of the date's month, abbreviated by default.
+   */
+  abstract getMonthName(date: D, style?: NbDateNameWidth): string;
 
   /**
-   * Returns localized days names.
-   * */
-  abstract getDayOfWeekNames(style?: TranslationWidth): string[];
+   * The locale's name of a month, 0 for January, abbreviated by default.
+   */
+  abstract getMonthNameByIndex(month: number, style?: NbDateNameWidth): string;
 
   /**
-   * Parses the date string according to the passed format.
-   * */
-  abstract parse(date: string, format: string): D;
+   * The locale's weekday names, Sunday first, short by default.
+   */
+  abstract getDayOfWeekNames(style?: NbDateNameWidth): string[];
 
   /**
-   * Transforms the date to the string according to the passed format.
-   * */
-  abstract format(date: D, format: string): string;
+   * Reads a date from text in the format given.
+   */
+  abstract parse(date: string, format?: string): D;
 
   /**
-   * Creates new date from year, month and date.
-   * */
+   * Writes the date in the format given.
+   */
+  abstract format(date: D, format?: string): string;
+
+  /**
+   * A date from a year, a month (0 for January) and a day of the month.
+   */
   abstract createDate(year: number, month: number, date: number): D;
 
-  /**
-   * Checks is two dates have the same year.
-   * */
   abstract isSameYear(date1: D, date2: D): boolean;
 
-  /**
-   * Checks is two dates have the same month.
-   * */
   abstract isSameMonth(date1: D, date2: D): boolean;
 
-  /**
-   * Checks is two dates have the same day.
-   * */
   abstract isSameDay(date1: D, date2: D): boolean;
 
   /**
-   * Compares two dates.
-   * Returns 0 if dates are the same.
-   * Returns 1 if the first date is greater than the second.
-   * Returns -1 if the second date is greater than the first.
-   * */
+   * Negative when the first date is earlier than the second, positive when later, and 0 when they are the same.
+   */
   abstract compareDates(date1: D, date2: D): number;
 
-  /**
-   * Clones passed date.
-   * */
   abstract clone(date: D): D;
 
   /**
-   * Creates the same date but with day equals to 1.
-   * */
+   * The first day of the date's month.
+   */
   abstract getMonthStart(date: D): D;
 
   /**
-   * Creates the same date but with day equals to the last day in this month.
-   * */
+   * The last day of the date's month.
+   */
   abstract getMonthEnd(date: D): D;
 
   /**
-   * Creates the same date but with month equals to 0 and day equals to 1.
-   * */
+   * The first day of the date's year.
+   */
   abstract getYearStart(date: D): D;
 
   /**
-   * Creates the same date but with month equals to 11 and day equals to 31.
-   * */
+   * The last day of the date's year.
+   */
   abstract getYearEnd(date: D): D;
 
   /**
-   * Returns number of days in the date.
-   * */
+   * The number of days in the date's month.
+   */
   abstract getNumberOfDaysInMonth(date: D): number;
 
   /**
-   * Returns date with added number of days.
-   * */
+   * A copy of the date, `days` days later, or earlier when negative.
+   */
   abstract addDay(date: D, days: number): D;
 
   /**
-   * Returns date with added number of months.
-   * */
+   * A copy of the date, `months` months later, or earlier when negative.
+   */
   abstract addMonth(date: D, months: number): D;
 
   /**
-   * Returns date with added number of hours.
-   * */
+   * A copy of the date, `hour` hours later, or earlier when negative.
+   */
   abstract addHours(date: D, hour: number): D;
 
-   /**
-   * Returns date with added number of minutes.
-   * */
+  /**
+   * A copy of the date, `minute` minutes later, or earlier when negative.
+   */
   abstract addMinutes(date: D, minute: number): D;
 
   /**
-   * Returns date with added number of years.
-   * */
+   * A copy of the date, `years` years later, or earlier when negative.
+   */
   abstract addYear(date: D, years: number): D;
 
+  /**
+   * Names the service, e.g. `native`.
+   */
   abstract getId(): string;
 
   abstract getWeekNumber(date: D): number;
 
+  /**
+   * The format of a date, e.g. in a datepicker's input.
+   */
   abstract getDateFormat(): string;
+
+  /** The format of a month and its year, e.g. for a month picker; in ISO form, `yyyy-MM`, unless overridden. */
+  getMonthFormat(): string {
+    return 'yyyy-MM';
+  }
+
+  /** The format of a year, e.g. for a year picker; `yyyy`, unless overridden. */
+  getYearFormat(): string {
+    return 'yyyy';
+  }
 
   abstract getTwelveHoursFormat(): string;
 
   /**
-   * Returns date with added number of years.
-   * */
+   * The date as a number, e.g. its milliseconds since the epoch.
+   */
   abstract valueOf(date: D): number;
 
   isSameHourAndMinute(date1: D, date2: D): boolean {
@@ -276,7 +279,7 @@ export abstract class NbDateService<D> {
   }
 
   getTwentyFourHoursFormatWithSeconds(): string {
-    return 'HH:mm:ss'
+    return 'HH:mm:ss';
   }
 
   getTwelveHoursFormatWithSeconds(): string {

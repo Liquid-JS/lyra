@@ -1,22 +1,13 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { Injectable } from '@angular/core';
+import { inject, Service } from '@angular/core';
 
 import { NbDateService } from './date.service';
 import { batch, range } from '../helpers';
 
-
-@Injectable()
+@Service()
 export class NbCalendarMonthModelService<D> {
+  protected readonly dateService = inject<NbDateService<D>>(NbDateService);
 
-  constructor(protected dateService: NbDateService<D>) {
-  }
-
-  createDaysGrid(activeMonth: D, boundingMonth: boolean = true, firstDayOfWeek?: number): D[][] {
+  createDaysGrid(activeMonth: D, boundingMonth: boolean = true, firstDayOfWeek?: number): (D | undefined)[][] {
     const weeks = this.createDates(activeMonth, firstDayOfWeek);
     return this.withBoundingMonths(weeks, activeMonth, boundingMonth);
   }
@@ -27,8 +18,8 @@ export class NbCalendarMonthModelService<D> {
     return batch(days, this.dateService.DAYS_IN_WEEK, startOfWeekDayDiff);
   }
 
-  private withBoundingMonths(weeks: D[][], activeMonth: D, boundingMonth: boolean): D[][] {
-    let withBoundingMonths = weeks;
+  private withBoundingMonths(weeks: D[][], activeMonth: D, boundingMonth: boolean): (D | undefined)[][] {
+    let withBoundingMonths: (D | undefined)[][] = weeks;
 
     if (this.isShouldAddPrevBoundingMonth(withBoundingMonths)) {
       withBoundingMonths = this.addPrevBoundingMonth(withBoundingMonths, activeMonth, boundingMonth);
@@ -41,33 +32,44 @@ export class NbCalendarMonthModelService<D> {
     return withBoundingMonths;
   }
 
-  private addPrevBoundingMonth(weeks: D[][], activeMonth: D, boundingMonth: boolean): D[][] {
-    const firstWeek = weeks.shift();
+  private addPrevBoundingMonth(
+    weeks: (D | undefined)[][],
+    activeMonth: D,
+    boundingMonth: boolean,
+  ): (D | undefined)[][] {
+    const [firstWeek, ...nextWeeks] = weeks;
     const requiredItems: number = this.dateService.DAYS_IN_WEEK - firstWeek.length;
     firstWeek.unshift(...this.createPrevBoundingDays(activeMonth, boundingMonth, requiredItems));
-    return [firstWeek, ...weeks];
+    return [firstWeek, ...nextWeeks];
   }
 
-  private addNextBoundingMonth(weeks: D[][], activeMonth: D, boundingMonth: boolean): D[][] {
-    const lastWeek = weeks.pop();
+  private addNextBoundingMonth(
+    weeks: (D | undefined)[][],
+    activeMonth: D,
+    boundingMonth: boolean,
+  ): (D | undefined)[][] {
+    const lastWeek = weeks.at(-1);
+    if (!lastWeek) {
+      return weeks;
+    }
     const requiredItems: number = this.dateService.DAYS_IN_WEEK - lastWeek.length;
     lastWeek.push(...this.createNextBoundingDays(activeMonth, boundingMonth, requiredItems));
-    return [...weeks, lastWeek];
+    return [...weeks.slice(0, -1), lastWeek];
   }
 
-  private createPrevBoundingDays(activeMonth: D, boundingMonth: boolean, requiredItems: number): D[] {
+  private createPrevBoundingDays(activeMonth: D, boundingMonth: boolean, requiredItems: number): (D | undefined)[] {
     const month = this.dateService.addMonth(activeMonth, -1);
     const daysInMonth = this.dateService.getNumberOfDaysInMonth(month);
     return this.createDateRangeForMonth(month)
       .slice(daysInMonth - requiredItems)
-      .map(date => boundingMonth ? date : null);
+      .map((date) => boundingMonth ? date : undefined);
   }
 
-  private createNextBoundingDays(activeMonth: D, boundingMonth: boolean, requiredItems: number): D[] {
+  private createNextBoundingDays(activeMonth: D, boundingMonth: boolean, requiredItems: number): (D | undefined)[] {
     const month = this.dateService.addMonth(activeMonth, 1);
     return this.createDateRangeForMonth(month)
       .slice(0, requiredItems)
-      .map(date => boundingMonth ? date : null);
+      .map((date) => boundingMonth ? date : undefined);
   }
 
   private getStartOfWeekDayDiff(date: D, firstDayOfWeek?: number): number {
@@ -80,20 +82,20 @@ export class NbCalendarMonthModelService<D> {
     return (7 - weekOfset + this.dateService.getDayOfWeek(date)) % 7;
   }
 
-  private isShouldAddPrevBoundingMonth(weeks: D[][]): boolean {
+  private isShouldAddPrevBoundingMonth(weeks: (D | undefined)[][]): boolean {
     return weeks[0].length < this.dateService.DAYS_IN_WEEK;
   }
 
-  private isShouldAddNextBoundingMonth(weeks: D[][]): boolean {
+  private isShouldAddNextBoundingMonth(weeks: (D | undefined)[][]): boolean {
     return weeks[weeks.length - 1].length < this.dateService.DAYS_IN_WEEK;
   }
 
   private createDateRangeForMonth(date: D): D[] {
     const daysInMonth: number = this.dateService.getNumberOfDaysInMonth(date);
-    return range(daysInMonth, i => {
+    return range(daysInMonth, (i) => {
       const year = this.dateService.getYear(date);
       const month = this.dateService.getMonth(date);
-      return this.dateService.createDate(year, month, i + 1)
+      return this.dateService.createDate(year, month, i + 1);
     });
   }
 }

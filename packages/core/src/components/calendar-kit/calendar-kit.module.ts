@@ -1,18 +1,7 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 import { NgModule } from '@angular/core';
-import { DatePipe } from '@angular/common';
 
-import { NbSharedModule } from '../shared/shared.module';
-import { NbButtonModule } from '../button/button.module';
-import { NbIconModule } from '../icon/icon.module';
-
-import { NbCalendarMonthModelService } from './services/calendar-month-model.service';
-import { NbDateService } from './services/date.service';
+import { NbButtonModule } from '@liquid-js/lyr-core/button';
+import { NbIconModule } from '@liquid-js/lyr-core/icon';
 
 import { NbCalendarDayCellComponent } from './components/calendar-day-picker/calendar-day-cell.component';
 import { NbCalendarDayPickerComponent } from './components/calendar-day-picker/calendar-day-picker.component';
@@ -29,19 +18,7 @@ import { NbCalendarYearCellComponent } from './components/calendar-year-picker/c
 import { NbCalendarYearPickerComponent } from './components/calendar-year-picker/calendar-year-picker.component';
 import { NbCalendarWeekNumberComponent } from './components/calendar-week-number/calendar-week-number.component';
 
-import { NbNativeDateService } from './services/native-date.service';
-import { NbCalendarYearModelService } from './services/calendar-year-model.service';
-import { NbCalendarTimeModelService } from './services/calendar-time-model.service';
 import { NbCalendarActionsComponent } from './components/calendar-actions/calendar-actions.component';
-
-
-const SERVICES = [
-  { provide: NbDateService, useClass: NbNativeDateService },
-  DatePipe,
-  NbCalendarMonthModelService,
-  NbCalendarYearModelService,
-  NbCalendarTimeModelService,
-];
 
 const COMPONENTS = [
   NbCalendarViewModeComponent,
@@ -60,27 +37,16 @@ const COMPONENTS = [
 ];
 
 /**
- * `NbCalendarKitModule` is a module that contains multiple useful components for building custom calendars.
- * So if you think our calendars is not enough powerful for you just use calendar-kit and build your own calendar!
+ * The parts the calendars are built from, for building a calendar of your own: the day, month and year pickers and
+ * their cells, the weekday names, the week numbers, the view mode and previous/next navigation, and the actions of a
+ * time picker.
  *
- * Available components:
- * - `NbCalendarDayPicker`
- * - `NbCalendarDayCell`
- * - `NbCalendarMonthPicker`
- * - `NbCalendarMonthCell`
- * - `NbCalendarYearPicker`
- * - `NbCalendarYearCell`
- * - `NbCalendarViewModeComponent`
- * - `NbCalendarPageableNavigation`
- *
- * For example you can easily build full calendar:
+ * For example, a full calendar:
  * @stacked-example(Full calendar, calendar-kit/calendar-kit-full-calendar.component)
- * */
+ */
 @NgModule({
-  imports: [ NbSharedModule, NbButtonModule, NbIconModule ],
+  imports: [NbButtonModule, NbIconModule, ...COMPONENTS],
   exports: [...COMPONENTS],
-  declarations: [...COMPONENTS],
-  providers: [...SERVICES],
 })
 export class NbCalendarKitModule {
 }

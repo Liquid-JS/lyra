@@ -1,11 +1,12 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
+import { assert } from 'vitest';
+import { DatePipe } from '@angular/common';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { NbCalendarYearPickerComponent, NbCalendarKitModule } from '@nebular/theme';
+import {
+  NbCalendarYearPickerComponent,
+  NbCalendarKitModule,
+  NbDateService,
+  NbNativeDateService,
+} from '@liquid-js/lyr-core';
 
 describe('Component: NbCalendarYearPicker', () => {
   let fixture: ComponentFixture<NbCalendarYearPickerComponent<Date>>;
@@ -15,6 +16,7 @@ describe('Component: NbCalendarYearPicker', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [NbCalendarKitModule],
+      providers: [DatePipe, { provide: NbDateService, useClass: NbNativeDateService }],
     });
     fixture = TestBed.createComponent<NbCalendarYearPickerComponent<Date>>(NbCalendarYearPickerComponent);
     component = fixture.componentInstance;
@@ -22,9 +24,8 @@ describe('Component: NbCalendarYearPicker', () => {
   });
 
   beforeEach(() => {
-    component.date = new Date(2018, 6, 23);
-    component.year = new Date(2018, 6, 23);
-    component.ngOnChanges();
+    fixture.componentRef.setInput('date', new Date(2018, 6, 23));
+    fixture.componentRef.setInput('year', new Date(2018, 6, 23));
     fixture.detectChanges();
   });
 
@@ -33,10 +34,12 @@ describe('Component: NbCalendarYearPicker', () => {
   });
 
   it('should fire yearChange when click on a year', () => {
-    const yearChangeSpy = jasmine.createSpy('yearChange spy');
+    const yearChangeSpy = vi.fn();
 
     component.yearChange.subscribe(yearChangeSpy);
-    componentEl.querySelector('nb-calendar-picker').dispatchEvent(new CustomEvent('select'));
+    const picker = componentEl.querySelector('nb-calendar-picker');
+    assert(picker);
+    picker.dispatchEvent(new CustomEvent('select'));
 
     expect(yearChangeSpy).toHaveBeenCalled();
   });

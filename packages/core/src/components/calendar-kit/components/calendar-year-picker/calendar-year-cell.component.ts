@@ -1,95 +1,82 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import {
-  ChangeDetectionStrategy,
-  Component,
-  EventEmitter,
-  HostBinding,
-  HostListener,
-  Input,
-  Output,
-} from '@angular/core';
+import { Component, computed, DestroyRef, inject, input, output } from '@angular/core';
 import { NbDateService } from '../../services/date.service';
 import { NbCalendarCell, NbCalendarSize, NbCalendarSizeValues } from '../../model';
 
-
 @Component({
-    selector: 'nb-calendar-year-cell',
-    template: `
-    <div class="cell-content">
-      {{ year }}
-    </div>
-  `,
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  selector: 'nb-calendar-year-cell',
+  templateUrl: './calendar-year-cell.component.html',
+  host: {
+    '[class.selected]': 'selected()',
+    '[class.today]': 'today()',
+    '[class.disabled]': 'disabled()',
+    '[class.size-large]': 'isLarge()',
+    class: 'year-cell',
+    '(click)': 'onClick()',
+  },
 })
 export class NbCalendarYearCellComponent<D> implements NbCalendarCell<D, D> {
-  @Input() date: D;
+  protected readonly destroyRef = inject(DestroyRef);
+  protected readonly dateService = inject<NbDateService<D>>(NbDateService);
 
-  @Input() min: D;
+  readonly date = input.required<D>();
 
-  @Input() max: D;
+  readonly min = input<D>();
 
-  @Input() selectedValue: D;
+  readonly max = input<D>();
 
-  @Input() size: NbCalendarSize = NbCalendarSize.MEDIUM;
-  static ngAcceptInputType_size: NbCalendarSizeValues;
+  readonly selectedValue = input<D>();
 
-  @Output() select: EventEmitter<D> = new EventEmitter(true);
+  readonly size = input<NbCalendarSize, NbCalendarSizeValues>(NbCalendarSize.MEDIUM, {
+    transform: (size) => size as NbCalendarSize,
+  });
 
-  constructor(protected dateService: NbDateService<D>) {
-  }
+  readonly select = output<D>();
 
-  @HostBinding('class.selected') get selected(): boolean {
-    return this.dateService.isSameYearSafe(this.date, this.selectedValue);
-  }
+  readonly selected = computed((): boolean => {
+    return this.dateService.isSameYearSafe(this.date(), this.selectedValue());
+  });
 
-  @HostBinding('class.today') get today(): boolean {
-    return this.dateService.isSameYearSafe(this.date, this.dateService.today());
-  }
+  readonly today = computed((): boolean => {
+    return this.dateService.isSameYearSafe(this.date(), this.dateService.today());
+  });
 
-  @HostBinding('class.disabled') get disabled(): boolean {
+  readonly disabled = computed((): boolean => {
     return this.smallerThanMin() || this.greaterThanMax();
-  }
+  });
 
-  @HostBinding('class.size-large')
-  get isLarge(): boolean {
-    return this.size === NbCalendarSize.LARGE;
-  }
-
-  @HostBinding('class.year-cell')
-  yearCellClass = true;
+  readonly isLarge = computed((): boolean => {
+    return this.size() === NbCalendarSize.LARGE;
+  });
 
   get year(): number {
-    return this.dateService.getYear(this.date);
+    return this.dateService.getYear(this.date());
   }
 
-  @HostListener('click')
   onClick() {
-    if (this.disabled) {
+    if (this.disabled()) {
       return;
     }
 
-    this.select.emit(this.date);
+    // Emitted once the click is handled, as the calendar's cells always did.
+    const date = this.date();
+    queueMicrotask(() => !this.destroyRef.destroyed && this.select.emit(date));
   }
 
   private smallerThanMin(): boolean {
-    return this.date && this.min && this.dateService.compareDates(this.yearEnd(), this.min) < 0;
+    const min = this.min();
+    return !!this.date() && !!min && this.dateService.compareDates(this.yearEnd(), min) < 0;
   }
 
   private greaterThanMax(): boolean {
-    return this.date && this.max && this.dateService.compareDates(this.yearStart(), this.max) > 0;
+    const max = this.max();
+    return !!this.date() && !!max && this.dateService.compareDates(this.yearStart(), max) > 0;
   }
 
   private yearStart(): D {
-    return this.dateService.getYearStart(this.date);
+    return this.dateService.getYearStart(this.date());
   }
 
   private yearEnd(): D {
-    return this.dateService.getYearEnd(this.date);
+    return this.dateService.getYearEnd(this.date());
   }
 }

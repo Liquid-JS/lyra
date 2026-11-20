@@ -1,95 +1,82 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import {
-  ChangeDetectionStrategy,
-  Component,
-  EventEmitter,
-  HostBinding,
-  HostListener,
-  Input,
-  Output,
-} from '@angular/core';
+import { Component, computed, DestroyRef, inject, input, output } from '@angular/core';
 import { NbCalendarCell, NbCalendarSize, NbCalendarSizeValues } from '../../model';
 import { NbDateService } from '../../services/date.service';
 
-
 @Component({
-    selector: 'nb-calendar-month-cell',
-    template: `
-    <div class="cell-content">
-      {{ month }}
-    </div>
-  `,
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  selector: 'nb-calendar-month-cell',
+  templateUrl: './calendar-month-cell.component.html',
+  host: {
+    '[class.selected]': 'selected()',
+    '[class.today]': 'today()',
+    '[class.disabled]': 'disabled()',
+    '[class.size-large]': 'isLarge()',
+    class: 'month-cell',
+    '(click)': 'onClick()',
+  },
 })
 export class NbCalendarMonthCellComponent<D> implements NbCalendarCell<D, D> {
-  @Input() date: D;
+  protected readonly destroyRef = inject(DestroyRef);
+  protected readonly dateService = inject<NbDateService<D>>(NbDateService);
 
-  @Input() selectedValue: D;
+  readonly date = input.required<D>();
 
-  @Input() min: D;
+  readonly selectedValue = input<D>();
 
-  @Input() max: D;
+  readonly min = input<D>();
 
-  @Input() size: NbCalendarSize = NbCalendarSize.MEDIUM;
-  static ngAcceptInputType_size: NbCalendarSizeValues;
+  readonly max = input<D>();
 
-  @Output() select: EventEmitter<D> = new EventEmitter(true);
+  readonly size = input<NbCalendarSize, NbCalendarSizeValues>(NbCalendarSize.MEDIUM, {
+    transform: (size) => size as NbCalendarSize,
+  });
 
-  constructor(private dateService: NbDateService<D>) {
-  }
+  readonly select = output<D>();
 
-  @HostBinding('class.selected') get selected(): boolean {
-    return this.dateService.isSameMonthSafe(this.date, this.selectedValue);
-  }
+  readonly selected = computed((): boolean => {
+    return this.dateService.isSameMonthSafe(this.date(), this.selectedValue());
+  });
 
-  @HostBinding('class.today') get today(): boolean {
-    return this.dateService.isSameMonthSafe(this.date, this.dateService.today());
-  }
+  readonly today = computed((): boolean => {
+    return this.dateService.isSameMonthSafe(this.date(), this.dateService.today());
+  });
 
-  @HostBinding('class.disabled') get disabled(): boolean {
+  readonly disabled = computed((): boolean => {
     return this.smallerThanMin() || this.greaterThanMax();
-  }
+  });
 
-  @HostBinding('class.size-large')
-  get isLarge(): boolean {
-    return this.size === NbCalendarSize.LARGE;
-  }
-
-  @HostBinding('class.month-cell')
-  monthCellClass = true;
+  readonly isLarge = computed((): boolean => {
+    return this.size() === NbCalendarSize.LARGE;
+  });
 
   get month(): string {
-    return this.dateService.getMonthName(this.date);
+    return this.dateService.getMonthName(this.date());
   }
 
-  @HostListener('click')
   onClick() {
-    if (this.disabled) {
+    if (this.disabled()) {
       return;
     }
 
-    this.select.emit(this.date);
+    // Emitted once the click is handled, as the calendar's cells always did.
+    const date = this.date();
+    queueMicrotask(() => !this.destroyRef.destroyed && this.select.emit(date));
   }
 
   protected smallerThanMin(): boolean {
-    return this.date && this.min && this.dateService.compareDates(this.monthEnd(), this.min) < 0;
+    const min = this.min();
+    return !!this.date() && !!min && this.dateService.compareDates(this.monthEnd(), min) < 0;
   }
 
   protected greaterThanMax(): boolean {
-    return this.date && this.max && this.dateService.compareDates(this.monthStart(), this.max) > 0;
+    const max = this.max();
+    return !!this.date() && !!max && this.dateService.compareDates(this.monthStart(), max) > 0;
   }
 
   protected monthStart(): D {
-    return this.dateService.getMonthStart(this.date);
+    return this.dateService.getMonthStart(this.date());
   }
 
   protected monthEnd(): D {
-    return this.dateService.getMonthEnd(this.date);
+    return this.dateService.getMonthEnd(this.date());
   }
 }

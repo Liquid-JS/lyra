@@ -1,22 +1,14 @@
-/*
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { Injectable } from '@angular/core';
+import { inject, Service } from '@angular/core';
 
 import { range, batch } from '../helpers';
 import { NbDateService } from './date.service';
 
-@Injectable()
+@Service()
 export class NbCalendarYearModelService<D> {
+  protected readonly dateService = inject<NbDateService<D>>(NbDateService);
 
   protected yearsInView = 12;
   protected yearsInRow = 4;
-
-  constructor(protected dateService: NbDateService<D>) {
-  }
 
   getYearsInView(): number {
     return this.yearsInView;
@@ -34,7 +26,7 @@ export class NbCalendarYearModelService<D> {
     } else {
       viewStartYear = year - (year % this.yearsInView + this.yearsInView);
     }
-    const years = range(this.yearsInView).map(i => this.copyWithYear(viewStartYear + i, viewYear));
+    const years = range(this.yearsInView).map((i) => this.copyWithYear(viewStartYear + i, viewYear));
 
     return batch(years, this.yearsInRow);
   }

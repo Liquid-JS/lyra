@@ -1,0 +1,6 @@
+<div class="sign-container">
+  <div class="sign">{{ weekNumberSymbol() ?? texts().weekNumber }}</div>
+</div>
+@for (weekNumber of weekNumbers(); track weekNumber) {
+<div class="week-number">{{ weekNumber }}</div>
+}

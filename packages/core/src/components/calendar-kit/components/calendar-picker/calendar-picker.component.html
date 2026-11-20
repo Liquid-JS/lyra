@@ -1,0 +1,11 @@
+@for (row of data(); track $index) {
+<nb-calendar-picker-row [row]="row"
+  [visibleDate]="visibleDate()"
+  [selectedValue]="selectedValue()"
+  [component]="cellComponent()"
+  [min]="min()"
+  [max]="max()"
+  [filter]="filter()"
+  [size]="size()"
+  (select)="onSelect($event)" />
+}

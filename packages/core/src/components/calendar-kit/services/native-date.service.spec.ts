@@ -1,20 +1,13 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 import { TestBed } from '@angular/core/testing';
-import { LOCALE_ID } from '@angular/core';
 
-import { NbNativeDateService, NbDateService, NbDayPeriod } from '@nebular/theme';
+import { NbNativeDateService, NbDateService, NbDayPeriod } from '@liquid-js/lyr-core';
 
 describe('native-date-service', () => {
   let dateService: NbDateService<Date>;
 
   beforeEach(() => {
     TestBed.configureTestingModule({});
-    dateService = new NbNativeDateService(TestBed.inject(LOCALE_ID));
+    dateService = TestBed.runInInjectionContext(() => new NbNativeDateService());
   });
 
   it('should set locale to en', () => {
@@ -49,9 +42,9 @@ describe('native-date-service', () => {
 
   it('should validate as correct if time string is valid according to the twelve hours format',
     () => {
-    const isValid = dateService.isValidTimeString('04:23 00 AM', 'hh:mm:ss A');
-    expect(isValid).toBeTruthy();
-  });
+      const isValid = dateService.isValidTimeString('04:23 00 AM', 'hh:mm:ss A');
+      expect(isValid).toBeTruthy();
+    });
 
   it('should validate as incorrect if time string is invalid according to the format', () => {
     const isValid = dateService.isValidTimeString('24:23:00 AM', 'hh:mm:ss A');
@@ -94,7 +87,7 @@ describe('native-date-service', () => {
     expect(dateService.getSeconds(second)).toBe(24);
   });
 
-  it('should get second', () => {
+  it('should get milliseconds', () => {
     const second = new Date(2018, 5, 15, 12, 10, 24, 22);
     expect(dateService.getMilliseconds(second)).toBe(22);
   });
@@ -131,9 +124,34 @@ describe('native-date-service', () => {
     expect(dateService.format(date, 'MM.dd.yyyy')).toBe('06.15.2018');
   });
 
+  it('should parse a date in ISO form as that local day', () => {
+    expect(dateService.parse('2026-03-15', '')).toEqual(new Date(2026, 2, 15));
+    expect(dateService.parse('2026-03', '')).toEqual(new Date(2026, 2, 1));
+    expect(dateService.parse('2026', '')).toEqual(new Date(2026, 0, 1));
+    expect(dateService.isValidDateString('2026-02-30', '')).toBe(false);
+    expect(dateService.isValidDateString('2026-13', '')).toBe(false);
+  });
+
   it('should parse date', () => {
     const date = '06.15.2018';
     expect(dateService.parse(date, '')).toEqual(new Date(2018, 5, 15));
+  });
+
+  it('should parse a date in the format it is written in, as DatePipe writes it', () => {
+    expect(dateService.parse('Mar 19, 2027', 'MMM d, y')).toEqual(new Date(2027, 2, 19));
+    expect(dateService.parse('19.03.2027', 'dd.MM.yyyy')).toEqual(new Date(2027, 2, 19));
+    expect(dateService.parse('Friday, March 19, 2027', 'EEEE, MMMM d, y')).toEqual(new Date(2027, 2, 19));
+    // A named format, as the locale writes it.
+    expect(dateService.parse('Mar 19, 2027', 'mediumDate')).toEqual(new Date(2027, 2, 19));
+    // A format without the year reads this year's date.
+    expect(dateService.parse('Mar 19', 'MMM d')).toEqual(new Date(new Date().getFullYear(), 2, 19));
+    expect(dateService.parse('3/19/27, 2:30 PM', 'M/d/yy, h:mm a')).toEqual(new Date(2027, 2, 19, 14, 30));
+  });
+
+  it('should not read a day that does not exist, and read text not in the format as Date.parse does', () => {
+    expect(dateService.isValidDateString('Feb 30, 2027', 'MMM d, y')).toBe(false);
+    // Another way of writing it.
+    expect(dateService.parse('2027-03-19', 'MMM d, y')).toEqual(new Date(2027, 2, 19));
   });
 
   it('should get year end', () => {

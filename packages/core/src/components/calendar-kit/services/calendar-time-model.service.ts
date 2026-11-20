@@ -1,20 +1,18 @@
-import { Injectable } from '@angular/core';
+import { inject, Service } from '@angular/core';
 import { NbDateService } from './date.service';
 
-
-@Injectable()
+@Service()
 export class NbCalendarTimeModelService<D> {
-  readonly MINUTES_AND_SECONDS = 60;
+  protected readonly dateService = inject<NbDateService<D>>(NbDateService);
 
-  constructor(protected dateService: NbDateService<D>) {
-  }
+  readonly MINUTES_AND_SECONDS = 60;
 
   getHoursRange(step: number = this.MINUTES_AND_SECONDS): D[] {
     let date: D = this.getResetTime();
 
     const endDate = this.dateService.addDay(date, 1);
 
-    const result: D[] = [];
+    const result = new Array<D>();
 
     while (this.dateService.compareDates(date, endDate) < 0) {
       result.push(date);
@@ -44,13 +42,13 @@ export class NbCalendarTimeModelService<D> {
 
   buildDateFormat(twelveHoursFormat: boolean, withSeconds: boolean = false): string {
     if (twelveHoursFormat) {
-      return `${this.dateService.getDateFormat()} ${this.dateService.getTwelveHoursFormat()}`
+      return `${this.dateService.getDateFormat()} ${this.dateService.getTwelveHoursFormat()}`;
     }
 
     if (withSeconds) {
-      return `${this.dateService.getDateFormat()} ${this.dateService.getTwentyFourHoursFormatWithSeconds()}`
+      return `${this.dateService.getDateFormat()} ${this.dateService.getTwentyFourHoursFormatWithSeconds()}`;
     }
 
-    return `${this.dateService.getDateFormat()} ${this.dateService.getTwentyFourHoursFormat()}`
+    return `${this.dateService.getDateFormat()} ${this.dateService.getTwentyFourHoursFormat()}`;
   }
 }

@@ -1,51 +1,31 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, computed, input, output } from '@angular/core';
+import { NbButtonComponent } from '@liquid-js/lyr-core/button';
+import { injectNbCalendarTexts } from '../../calendar-texts';
+import { ɵconvertToOptionalBoolProperty as convertToOptionalBoolProperty, NbBooleanInput } from '@liquid-js/lyr-core/base';
 
+/**
+ * The buttons under a calendar with a time: one that sets the current time, shown with `showCurrentTimeButton`, and
+ * one that applies the value. Their texts are the app's calendar texts unless given.
+ */
 @Component({
-    selector: 'nb-calendar-actions',
-    template: `
-    <button
-      *ngIf="showCurrentTimeButton"
-      nbButton
-      ghost
-      status="primary"
-      size="small"
-      (click)="setCurrentTime.emit()">
-      {{ currentTimeText }}</button>
-    <button
-      class="apply-text-button"
-      nbButton
-      status="primary"
-      size="small"
-      (click)="saveValue.emit()">
-      {{ applyText }}</button>
-  `,
-    styleUrls: ['./calendar-actions.component.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  selector: 'nb-calendar-actions',
+  templateUrl: './calendar-actions.component.html',
+  styleUrls: ['./calendar-actions.component.scss'],
+  imports: [NbButtonComponent],
 })
 export class NbCalendarActionsComponent {
-  @Input() set applyButtonText(value: string) {
-    if (value) {
-      this._applyButtonText = value;
-    }
-  };
-  get applyText() {
-    return this._applyButtonText;
-  };
-  protected _applyButtonText = 'ok';
+  protected readonly texts = injectNbCalendarTexts();
 
-  @Input() set currentTimeButtonText(value: string) {
-    if (value) {
-      this._currentTimeButtonText = value;
-    }
-  }
-  get currentTimeText() {
-    return this._currentTimeButtonText;
-  };
-  _currentTimeButtonText = 'now';
+  readonly applyButtonText = input<string>();
+  readonly applyText = computed(() => this.applyButtonText() || this.texts().apply);
 
-  @Input() showCurrentTimeButton: boolean;
+  readonly currentTimeButtonText = input<string>();
+  readonly currentTimeText = computed(() => this.currentTimeButtonText() || this.texts().now);
 
-  @Output() setCurrentTime: EventEmitter<void> = new EventEmitter();
-  @Output() saveValue: EventEmitter<void> = new EventEmitter();
+  readonly showCurrentTimeButton = input<boolean | undefined, NbBooleanInput>(undefined, {
+    transform: convertToOptionalBoolProperty,
+  });
+
+  readonly setCurrentTime = output<void>();
+  readonly saveValue = output<void>();
 }
