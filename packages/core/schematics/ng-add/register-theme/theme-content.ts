@@ -1,27 +1,21 @@
-/*
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 export function createThemeContent(themeName: string): string {
-  return `@forward '@nebular/theme/styles/theming';
-@use '@nebular/theme/styles/theming' as *;
-@use '@nebular/theme/styles/themes/${themeName}';
+  return `@forward '@liquid-js/lyr-core/styles/theming';
+@use '@liquid-js/lyr-core/styles/theming' as *;
+@use '@liquid-js/lyr-core/styles/themes/${themeName}';
 
 $nb-themes: nb-register-theme((
 
   // add your variables here like:
 
-  // color-primary-100: #f2f6ff,
-  // color-primary-200: #d9e4ff,
-  // color-primary-300: #a6c1ff,
-  // color-primary-400: #598bff,
-  // color-primary-500: #3366ff,
-  // color-primary-600: #274bdb,
-  // color-primary-700: #1a34b8,
-  // color-primary-800: #102694,
-  // color-primary-900: #091c7a,
+  // color-primary-100: #f2f5ff,
+  // color-primary-200: #cedcfb,
+  // color-primary-300: #a0baf5,
+  // color-primary-400: #5c89e4,
+  // color-primary-500: #3469d1,
+  // color-primary-600: #2955b1,
+  // color-primary-700: #1e4396,
+  // color-primary-800: #16347a,
+  // color-primary-900: #0c225b,
 
 ), ${themeName}, ${themeName});
 `;
@@ -29,7 +23,7 @@ $nb-themes: nb-register-theme((
 
 export const stylesContent = `@use 'themes' as *;
 
-@use '@nebular/theme/styles/globals' as *;
+@use '@liquid-js/lyr-core/styles/globals' as *;
 
 @include nb-install() {
   @include nb-theme-global();

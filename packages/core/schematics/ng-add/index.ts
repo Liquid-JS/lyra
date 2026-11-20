@@ -1,60 +1,39 @@
-/*
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 import { Rule, SchematicContext, Tree } from '@angular-devkit/schematics';
-import { NodePackageInstallTask, RunSchematicTask } from '@angular-devkit/schematics/tasks';
+import { NodePackageInstallTask, RunSchematicTask } from '../util/devkit-tasks.js';
 
-import { Schema } from './schema';
-/**
- * This utils has to imported directly from the `/util/package`, not from the `/util/`.
- * Other utilities use `@angular/sdk/schematics` and `@schematics/angular` packages.
- * But these packages are not installed in this step.
- * */
+import { Schema } from './schema.js';
+// Imported from `util/package` directly, not from `util`: the other utilities use `@angular/cdk/schematics` and
+// `@schematics/angular`, which aren't installed yet at this step.
 import {
   addDependencyToPackageJson,
   addDevDependencyToPackageJson,
-  getDependencyVersionFromPackageJson,
   getDevDependencyVersionFromPackageJson,
-  getNebularPeerDependencyVersionFromPackageJson,
-  getNebularVersion,
-} from '../util/package';
+  getLyraPeerDependencyVersion,
+  getLyraVersion,
+} from '../util/package.js';
 
-/**
- * ng-add schematics, installs peer dependencies and runs project setup schematics.
- * */
-export default function (options: Schema): Rule {
+/** The `ng add` entry: adds the dependencies to `package.json`, installs them, then sets the project up. */
+export function ngAdd(options: Schema): Rule {
   return runSetupSchematics(options);
 }
 
-/**
- * Add required peer dependencies in package.json
- * */
 function installMainPeerDependencies(tree: Tree) {
-  const angularCoreVersion = getDependencyVersionFromPackageJson(tree, '@angular/core');
   const angularCliVersion = getDevDependencyVersionFromPackageJson(tree, '@angular/cli');
-  const nebularThemeVersion = getNebularVersion();
-  const angularCdkVersion = getNebularPeerDependencyVersionFromPackageJson('@angular/cdk');
+  const lyraVersion = getLyraVersion();
+  const angularCdkVersion = getLyraPeerDependencyVersion('@angular/cdk');
 
-  addDependencyToPackageJson(tree, '@angular/animations', angularCoreVersion);
   addDependencyToPackageJson(tree, '@angular/cdk', angularCdkVersion, true);
-  addDependencyToPackageJson(tree, '@nebular/theme', nebularThemeVersion);
-  addDependencyToPackageJson(tree, '@nebular/eva-icons', nebularThemeVersion);
+  addDependencyToPackageJson(tree, '@liquid-js/lyr-core', lyraVersion);
+  addDependencyToPackageJson(tree, '@liquid-js/lyr-icons', lyraVersion);
 
   addDevDependencyToPackageJson(tree, '@schematics/angular', angularCliVersion);
 }
 
 /**
- * Runs `npm install`, then `post-install` schematic and after complete runs `setup` schematics.
- * The rest part of the ng-add schematics uses `@angular/cdk/schematics` and `@schematics/angular`
- * utilities. That's why we have to install `@angular/cdk` and `@schematics/angular` package
- * before running Nebular setup in the project.
- *
- * The only possibility to run `setup` schematics after required packages installed
- * is to use context tasks and add `npm install` task as the dependency to `setup` schematics task.
- * */
+ * Queues the package install, then the `post-install` schematic, then `setup`. The setup uses
+ * `@angular/cdk/schematics` and `@schematics/angular`, which must be installed first, and tasks that depend on the
+ * install task are the only way to run a schematic after it.
+ */
 function runSetupSchematics(options: Schema) {
   return (tree: Tree, context: SchematicContext) => {
     installMainPeerDependencies(tree);

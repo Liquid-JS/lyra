@@ -1,26 +1,17 @@
-/*
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 import { SchematicsException, Tree } from '@angular-devkit/schematics';
-import { ProjectDefinition } from '@angular-devkit/core/src/workspace';
-import { join, normalize, Path } from '@angular-devkit/core';
+import { isJsonObject, join, JsonArray, JsonValue, normalize, Path, workspaces } from '@angular-devkit/core';
 
-import { createThemeContent, stylesContent } from './theme-content';
-import { Schema } from '../schema';
-import { getProject } from '../../util';
+import { createThemeContent, stylesContent } from './theme-content.js';
+import { Schema } from '../schema.js';
+import { getProject } from '../../util/index.js';
 import { getProjectFromWorkspace, getProjectStyleFile, getProjectTargetOptions } from '@angular/cdk/schematics';
 import { updateWorkspace, WorkspaceDefinition } from '@schematics/angular/utility';
 
 /**
- * Registers customizable scss theme in the specified project.
- * It creates `theme.scss` file which manages theme content and it's customization.
- * Also as importing `theme.scss` in the styles.scss file and installing the theme globally.
- * If the project uses *.css files it'll throw the error. Because we can't use scss themes
- * in the css Angular project.
- * */
+ * Creates `themes.scss`, where the chosen theme is registered with the project's own variables, and makes
+ * `styles.scss` use it and install the theme globally. Throws when the project has no `styles.scss`: an SCSS theme
+ * needs SCSS styles.
+ */
 export function registerCustomizableTheme(options: Schema) {
   return async (tree: Tree) => {
     const project = await getProject(tree, options.project);
@@ -35,22 +26,17 @@ export function registerCustomizableTheme(options: Schema) {
   };
 }
 
-/**
- * Registers prebuilt css themes by inserting them in the angular.json styles.
- * */
+/** Adds the chosen theme's prebuilt CSS to the build target's styles in `angular.json`. */
 export function registerPrebuiltTheme(options: Schema) {
   return updateWorkspace(async (workspace: WorkspaceDefinition) => {
     const project = getProjectFromWorkspace(workspace, options.project);
 
-    const themePath = `./node_modules/@nebular/theme/styles/prebuilt/${options.theme}.css`;
+    const themePath = `./node_modules/@liquid-js/lyr-core/styles/prebuilt/${options.theme}.css`;
 
     addStyleToTarget(project, 'build', themePath);
   });
 }
 
-/**
- * Creates theme.scss with Nebular theme setup.
- * */
 function createThemeSCSS(tree: Tree, theme: string, sourceRoot: string) {
   const themeContent: string = createThemeContent(theme);
 
@@ -58,35 +44,38 @@ function createThemeSCSS(tree: Tree, theme: string, sourceRoot: string) {
   tree.create(customThemePath, themeContent);
 }
 
-/**
- * Updates styles.scss and insert theme.scss import.
- * */
+/** Puts the `@use` of `themes.scss` and the global install at the top of `styles.scss`. */
 function insertThemeImportInStyles(tree: Tree, stylesPath: string) {
   const recorder = tree.beginUpdate(stylesPath).insertLeft(0, stylesContent);
 
   tree.commitUpdate(recorder);
 }
 
-/**
- * Adds a style entry to the given project target.
- * */
-function addStyleToTarget(project: ProjectDefinition, targetName: string, stylesPath: string) {
+/** Puts the style first in the target's styles, unless a Lyra theme is there already. */
+function addStyleToTarget(project: workspaces.ProjectDefinition, targetName: string, stylesPath: string) {
   const targetOptions = getProjectTargetOptions(project, targetName);
+  const styles = targetOptions['styles'];
 
-  if (!targetOptions.styles) {
-    targetOptions.styles = [stylesPath];
-  } else if (noNebularThemeIncluded(targetOptions, stylesPath)) {
-    (targetOptions.styles as (string | { input: string })[]).unshift(stylesPath);
+  if (!styles) {
+    targetOptions['styles'] = [stylesPath];
+  } else if (Array.isArray(styles) && noLyraThemeIncluded(styles, stylesPath)) {
+    styles.unshift(stylesPath);
   }
 }
 
-/**
- * Validates no Nebular styles already included into the specified project.
- * */
-function noNebularThemeIncluded(targetOptions: any, stylesPath: string): boolean {
-  const existingStyles = targetOptions.styles.map((s: any) => (typeof s === 'string' ? s : s.input));
-  const hasGivenTheme = existingStyles.find((s: any) => s.includes(stylesPath));
-  const hasOtherTheme = existingStyles.find((s: any) => s.includes('@nebular/theme/styles/prebuilt'));
+/** The path of a style entry: a string, or an object with the path as `input`; empty otherwise. */
+function stylePath(style: JsonValue): string {
+  if (typeof style === 'string') {
+    return style;
+  }
+  return isJsonObject(style) && typeof style['input'] === 'string' ? style['input'] : '';
+}
+
+/** Whether the styles hold neither the given theme nor any other prebuilt Lyra theme. */
+function noLyraThemeIncluded(styles: JsonArray, stylesPath: string): boolean {
+  const existingStyles = styles.map(stylePath);
+  const hasGivenTheme = existingStyles.some((s) => s.includes(stylesPath));
+  const hasOtherTheme = existingStyles.some((s) => s.includes('@liquid-js/lyr-core/styles/prebuilt'));
 
   return !hasGivenTheme && !hasOtherTheme;
 }

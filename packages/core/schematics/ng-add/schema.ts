@@ -1,13 +1,8 @@
-/*
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 export interface Schema {
   project: string;
-  theme: 'default' | 'dark' | 'cosmic' | 'corporate';
+  theme: 'default' | 'dark' | 'cosmic' | 'corporate' | 'material-light' | 'material-dark';
   customization: boolean;
   layout: boolean;
+  /** @deprecated Lyra animates without an animations provider, so this option has no effect. */
   animations: boolean;
 }

@@ -1,80 +1,77 @@
-/*
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { chain, Rule, SchematicContext, Tree } from '@angular-devkit/schematics';
+import { chain, Rule, Tree } from '@angular-devkit/schematics';
+import { addRootProvider } from '@schematics/angular/utility';
 import { getRouterModuleDeclaration } from '@schematics/angular/utility/ast-utils';
 import {
   addModuleImportToRootModule,
   getProjectMainFile,
-  hasNgModuleImport,
   parseSourceFile,
 } from '@angular/cdk/schematics';
-import { ProjectDefinition } from '@angular-devkit/core/src/workspace';
-import { normalize } from '@angular-devkit/core';
+import { normalize, workspaces } from '@angular-devkit/core';
 
-import { Schema } from '../schema';
-import { getAppModulePath, getProject, isImportedInMainModule } from '../../util';
-import { appRoutingModuleContent } from './app-routing-module-content';
-
+import { Schema } from '../schema.js';
+import {
+  getAppModulePath,
+  getProject,
+  hasRootProvider,
+  isImportedInMainModule,
+  isStandaloneProject,
+} from '../../util/index.js';
+import { appRoutingModuleContent } from './app-routing-module-content.js';
 
 export function registerModules(options: Schema): Rule {
   if (!options.theme) {
     options.theme = 'default';
   }
 
-  return chain([
-    registerAnimationsModule(options),
-    registerNebularModules(options),
-    registerRouterIfNeeded(options),
-  ]);
-}
-
-function registerAnimationsModule(options: Schema) {
-  return async (tree: Tree, context: SchematicContext) => {
-    const project = await getProject(tree, options.project);
-    const appModulePath = getAppModulePath(tree, getProjectMainFile(project));
-    const browserAnimationsModuleName = 'BrowserAnimationsModule';
-    const noopAnimationsModuleName = 'NoopAnimationsModule';
-    const animationsPackage = '@angular/platform-browser/animations';
-
-    if (options.animations) {
-      // In case the project explicitly uses the NoopAnimationsModule, we should print a warning
-      // message that makes the user aware of the fact that we won't automatically set up
-      // animations. If we would add the BrowserAnimationsModule while the NoopAnimationsModule
-      // is already configured, we would cause unexpected behavior and runtime exceptions.
-      if (hasNgModuleImport(tree, appModulePath, noopAnimationsModuleName)) {
-        return context.logger.warn(`\u001b[31mCould not set up "${browserAnimationsModuleName}" ` +
-          `because "${noopAnimationsModuleName}" is already imported. Please manually ` +
-          `set up browser animations.`);
-      }
-
-      addModuleImportToRootModule(tree, browserAnimationsModuleName, animationsPackage, project);
-    } else if (!hasNgModuleImport(tree, appModulePath, browserAnimationsModuleName)) {
-      // Do not add the NoopAnimationsModule module if the project already explicitly uses
-      // the BrowserAnimationsModule.
-      addModuleImportToRootModule(tree, noopAnimationsModuleName, animationsPackage, project);
-    }
-  }
-}
-
-function registerNebularModules(options: Schema): Rule {
   return async (tree: Tree) => {
     const project = await getProject(tree, options.project);
-    const nebularThemeModule = `NbThemeModule.forRoot({ name: '${options.theme}' })`;
 
-    addModuleImportToRootModule(tree, nebularThemeModule, '@nebular/theme', project);
-    addModuleImportToRootModule(tree, 'NbLayoutModule', '@nebular/theme', project);
-    addModuleImportToRootModule(tree, 'NbEvaIconsModule', '@nebular/eva-icons', project);
-  }
+    if (isStandaloneProject(tree, project)) {
+      return registerStandaloneProviders(options, project, tree);
+    }
+
+    return chain([
+      registerLyraModules(options),
+      registerRouterIfNeeded(options),
+    ]);
+  };
 }
 
 /**
- * Creates `AppRoutingModule` if no either `RouterModule` or `AppRoutingModule` already imported
- * in the `AppModule`.
+ * Adds the Lyra providers, and the router `NbLayoutComponent` needs if the app has none, to the providers of
+ * a standalone app: its app config, or its `bootstrapApplication` call.
  * */
+function registerStandaloneProviders(options: Schema, project: workspaces.ProjectDefinition, tree: Tree): Rule {
+  const rules = new Array<Rule>();
+
+  if (!hasRootProvider(tree, project, ['provideNbTheme', 'NbThemeModule'])) {
+    rules.push(addRootProvider(options.project, ({ code, external }) =>
+      code`${external('provideNbTheme', '@liquid-js/lyr-core')}({ name: '${options.theme}' })`));
+  }
+  if (!hasRootProvider(tree, project, ['provideNbIcons', 'provideNbIconSet', 'NbIconsModule'])) {
+    rules.push(addRootProvider(options.project, ({ code, external }) =>
+      code`${external('provideNbIcons', '@liquid-js/lyr-icons')}()`));
+  }
+  if (!hasRootProvider(tree, project, ['provideRouter', 'RouterModule'])) {
+    rules.push(addRootProvider(options.project, ({ code, external }) =>
+      code`${external('provideRouter', '@angular/router')}([])`));
+  }
+
+  return chain(rules);
+}
+
+function registerLyraModules(options: Schema): Rule {
+  return async (tree: Tree) => {
+    const project = await getProject(tree, options.project);
+    const themeModule = `NbThemeModule.forRoot({ name: '${options.theme}' })`;
+
+    addModuleImportToRootModule(tree, themeModule, '@liquid-js/lyr-core', project);
+    addModuleImportToRootModule(tree, 'NbLayoutModule', '@liquid-js/lyr-core', project);
+    addModuleImportToRootModule(tree, 'NbIconsModule', '@liquid-js/lyr-icons', project);
+  };
+}
+
+/** Creates and imports `AppRoutingModule` unless `AppModule` imports it or `RouterModule` already. */
 function registerRouterIfNeeded(options: Schema): Rule {
   return async (tree: Tree) => {
     const project = await getProject(tree, options.project);
@@ -82,13 +79,10 @@ function registerRouterIfNeeded(options: Schema): Rule {
     if (shouldRegisterRouter(tree, project)) {
       await registerRoutingModule(tree, options.project);
     }
-  }
+  };
 }
 
-/**
- * Checks if `RouterModule` or `AppRoutingModule` already imported in the `AppModule`.
- * */
-function shouldRegisterRouter(tree: Tree, project: ProjectDefinition): boolean {
+function shouldRegisterRouter(tree: Tree, project: workspaces.ProjectDefinition): boolean {
   const appRoutingModuleAlreadyImported = isImportedInMainModule(tree, project, 'AppRoutingModule');
 
   const appModulePath = getAppModulePath(tree, getProjectMainFile(project));
@@ -102,11 +96,7 @@ async function registerRoutingModule(tree: Tree, projectName: string) {
   await createAppRoutingModule(tree, projectName);
 }
 
-/**
- * We're just adding app-routing.module without any interpolations
- * and customization. So, I don't think we have to use schematics
- * template files.
- * */
+// The file has nothing to fill in, so it's a plain string rather than a schematic template.
 async function createAppRoutingModule(tree: Tree, projectName: string) {
   const project = await getProject(tree, projectName);
   const appRoutingModulePath = normalize(`${project.sourceRoot}/app/app-routing.module.ts`);

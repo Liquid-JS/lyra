@@ -1,21 +1,15 @@
-/*
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 import { chain, noop } from '@angular-devkit/schematics';
 
-import { Schema } from './schema';
-import { registerModules } from './register-modules';
-import { registerCustomizableTheme, registerPrebuiltTheme } from './register-theme';
-import { wrapRootComponentInLayout } from './wrap-in-layout';
+import { Schema } from './schema.js';
+import { registerModules } from './register-modules/index.js';
+import { registerCustomizableTheme, registerPrebuiltTheme } from './register-theme/index.js';
+import { wrapRootComponentInLayout } from './wrap-in-layout/index.js';
 
 /**
- * Setting up Nebular for the specified project by registering required modules,
- * adding Nebular themes and wrapping root component in the Nebular Layout.
- * */
-export default function (options: Schema) {
+ * Sets the project up: registers the providers or modules, adds the theme (customisable SCSS or prebuilt CSS), and
+ * wraps the root component in `nb-layout` when asked.
+ */
+export function setup(options: Schema) {
   return chain([
     registerModules(options),
     options.customization ? registerCustomizableTheme(options) : registerPrebuiltTheme(options),

@@ -1,11 +1,5 @@
-/*
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-export * from './package';
-export * from './file';
-export * from './project';
-export * from './component';
-export * from './ast';
+export * from './package.js';
+export * from './file.js';
+export * from './project.js';
+export * from './component.js';
+export * from './ast.js';

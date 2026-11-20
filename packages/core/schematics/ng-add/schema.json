@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/schema",
   "$id": "ng-add",
-  "title": "Nebular Theme ng-add schematics",
+  "title": "Lyra Theme ng-add schematics",
   "type": "object",
   "properties": {
     "project": {
@@ -12,10 +12,10 @@
       }
     },
     "theme": {
-      "enum": ["default", "dark", "cosmic", "corporate"],
+      "enum": ["default", "dark", "cosmic", "corporate", "material-light", "material-dark"],
       "description": "Visual theme to installed.",
       "default": "default",
-      "x-prompt": "Which Nebular theme do you want to use:"
+      "x-prompt": "Which Lyra theme do you want to use:"
     },
     "customization": {
       "type": "boolean",
@@ -31,8 +31,8 @@
     "animations": {
       "type": "boolean",
       "default": true,
-      "description": "Whether Angular browser animations should be set up or not.",
-      "x-prompt": "Set up browser animations for Nebular?"
+      "description": "No longer used: Lyra animates without an animations provider.",
+      "x-deprecated": "Lyra animates without an animations provider, so this option has no effect."
     }
   }
 }

@@ -1,30 +1,32 @@
-/*
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
+import { JsonObject } from '@angular-devkit/core';
 import { Tree } from '@angular-devkit/schematics';
-import { readJSON, writeJSON } from './file';
+import { readJSON, writeJSON } from './file.js';
+import { createRequire } from 'node:module';
+
+const require = createRequire(import.meta.url);
 
 const packageJsonName = 'package.json';
 
-interface PackageJson {
+interface PackageJson extends JsonObject {
   version: string;
   dependencies: { [key: string]: string };
   devDependencies: { [key: string]: string };
   peerDependencies: { [key: string]: string };
 }
 
-export function getNebularVersion(): string {
-  return getNebularPackageJson().version;
+/** The project's `package.json`; its shape isn't checked. */
+function readPackageJson(tree: Tree): PackageJson {
+  return readJSON(tree, packageJsonName) as PackageJson;
 }
 
-/**
- * Gets the version of the specified Nebular peerDependency
- * */
-export function getNebularPeerDependencyVersionFromPackageJson(packageName: string): string {
-  const packageJson: PackageJson = getNebularPackageJson();
+/** The version of the installed `@liquid-js/lyr-core`, which the other Lyra packages share. */
+export function getLyraVersion(): string {
+  return getLyraPackageJson().version;
+}
+
+/** The version range `@liquid-js/lyr-core` asks of a peer dependency; throws when it has no such peer. */
+export function getLyraPeerDependencyVersion(packageName: string): string {
+  const packageJson: PackageJson = getLyraPackageJson();
 
   if (noInfoAboutPeerDependency(packageJson, packageName)) {
     throwNoPackageInfoInPackageJson(packageName);
@@ -33,29 +35,13 @@ export function getNebularPeerDependencyVersionFromPackageJson(packageName: stri
   return packageJson.peerDependencies[packageName];
 }
 
-/**
- * Eva Icons version
- * */
-export function getEvaIconsVersion(): string {
-  const packageJson: PackageJson = getNebularEvaIconsPackageJson();
-  const packageName = 'eva-icons';
-
-  if (noInfoAboutPeerDependency(packageJson, packageName)) {
-    throwNoPackageInfoInPackageJson(packageName);
-  }
-
-  return packageJson.peerDependencies[packageName];
-}
-
-/**
- * Gets the version of the specified dependency by looking at the package.json in the specified tree
- * */
+/** The version of a dependency in the project's `package.json`; throws when there's no such dependency. */
 export function getDependencyVersionFromPackageJson(tree: Tree, packageName: string): string {
   if (!tree.exists(packageJsonName)) {
     throwNoPackageJsonError();
   }
 
-  const packageJson: PackageJson = readJSON(tree, packageJsonName);
+  const packageJson = readPackageJson(tree);
 
   if (noInfoAboutDependency(packageJson, packageName)) {
     throwNoPackageInfoInPackageJson(packageName);
@@ -64,12 +50,13 @@ export function getDependencyVersionFromPackageJson(tree: Tree, packageName: str
   return packageJson.dependencies[packageName];
 }
 
+/** Adds a dependency, keeping the dependencies sorted; an existing one is kept unless `force` is set. */
 export function addDependencyToPackageJson(tree: Tree, packageName: string, packageVersion: string, force = false) {
   if (!tree.exists(packageJsonName)) {
     throwNoPackageJsonError();
   }
 
-  const packageJson: PackageJson = readJSON(tree, packageJsonName);
+  const packageJson = readPackageJson(tree);
 
   if (!packageJson.dependencies) {
     packageJson.dependencies = {};
@@ -83,15 +70,13 @@ export function addDependencyToPackageJson(tree: Tree, packageName: string, pack
   writeJSON(tree, packageJsonName, packageJson);
 }
 
-/**
- * Gets the version of the specified dev dependency by looking at the package.json in the specified tree
- * */
+/** The version of a dev dependency in the project's `package.json`; throws when there's no such dependency. */
 export function getDevDependencyVersionFromPackageJson(tree: Tree, packageName: string): string {
   if (!tree.exists(packageJsonName)) {
     throwNoPackageJsonError();
   }
 
-  const packageJson: PackageJson = readJSON(tree, packageJsonName);
+  const packageJson = readPackageJson(tree);
 
   if (noInfoAboutDevDependency(packageJson, packageName)) {
     throwNoPackageInfoInPackageJson(packageName);
@@ -100,12 +85,13 @@ export function getDevDependencyVersionFromPackageJson(tree: Tree, packageName: 
   return packageJson.devDependencies[packageName];
 }
 
+/** Adds a dev dependency, keeping them sorted; an existing one is kept. */
 export function addDevDependencyToPackageJson(tree: Tree, packageName: string, packageVersion: string) {
   if (!tree.exists(packageJsonName)) {
     throwNoPackageJsonError();
   }
 
-  const packageJson: PackageJson = readJSON(tree, packageJsonName);
+  const packageJson = readPackageJson(tree);
 
   if (!packageJson.devDependencies) {
     packageJson.devDependencies = {};
@@ -127,52 +113,32 @@ function throwNoPackageInfoInPackageJson(packageName: string) {
   throw new Error(`No info found in package.json for ${packageName}`);
 }
 
-/**
- * Validates packageJson has dependencies, also as specified dependency not exists.
- * */
 function noInfoAboutDependency(packageJson: PackageJson, packageName: string): boolean {
   return !dependencyAlreadyExists(packageJson, packageName);
 }
 
-/**
- * Validates packageJson has devDependencies, also as specified devDependency not exists.
- * */
 function noInfoAboutDevDependency(packageJson: PackageJson, packageName: string): boolean {
   return !devDependencyAlreadyExists(packageJson, packageName);
 }
 
-/**
- * Validates packageJson has peerDependencies, also as specified peerDependency not exists.
- * */
 function noInfoAboutPeerDependency(packageJson: PackageJson, packageName: string): boolean {
   return !peerDependencyAlreadyExists(packageJson, packageName);
 }
 
-/**
- * Validates packageJson has dependencies, also as specified dependency exists.
- * */
+// The `*AlreadyExists` checks are false without the section too; `package.json` may lack it.
 function dependencyAlreadyExists(packageJson: PackageJson, packageName: string): boolean {
   return !!(packageJson.dependencies && packageJson.dependencies[packageName]);
 }
 
-/**
- * Validates packageJson has devDependencies, also as specified devDependency exists.
- * */
 function devDependencyAlreadyExists(packageJson: PackageJson, packageName: string): boolean {
   return !!(packageJson.devDependencies && packageJson.devDependencies[packageName]);
 }
 
-/**
- * Validates packageJson has peerDependencies, also as specified peerDependency exists.
- * */
 function peerDependencyAlreadyExists(packageJson: PackageJson, packageName: string): boolean {
   return !!(packageJson.peerDependencies && packageJson.peerDependencies[packageName]);
 }
 
-/**
- * Sorts the keys of the given object.
- * @returns A new object instance with sorted keys
- */
+/** A new object with the keys in sorted order. */
 function sortObjectByKeys(obj: { [key: string]: string }): { [key: string]: string } {
   return Object.keys(obj)
     .sort()
@@ -182,10 +148,6 @@ function sortObjectByKeys(obj: { [key: string]: string }): { [key: string]: stri
     }, {});
 }
 
-function getNebularPackageJson(): PackageJson {
+function getLyraPackageJson(): PackageJson {
   return require('../../package.json');
-}
-
-function getNebularEvaIconsPackageJson(): PackageJson {
-  return require('../../../eva-icons/package.json');
 }
