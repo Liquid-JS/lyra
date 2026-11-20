@@ -1,0 +1,40 @@
+{
+  "name": "@liquid-js/lyr-icons",
+  "version": "22.0.0",
+  "type": "module",
+  "description": "Icons for Lyra",
+  "author": "HitkoDev <development@hitko.si>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Liquid-JS/lyra.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Liquid-JS/lyra/issues"
+  },
+  "homepage": "https://github.com/Liquid-JS/lyra/tree/master/packages/icons#readme",
+  "keywords": [
+    "angular",
+    "typescript",
+    "lyra",
+    "ui",
+    "components",
+    "icons"
+  ],
+  "scripts": {
+    "build": "run -T ng build icons --configuration production",
+    "watch": "run -T ng build icons --configuration development --watch",
+    "test": "run -T ng test icons --no-watch",
+    "test:watch": "run -T ng test icons",
+    "lint": "run -T ng lint icons",
+    "lint:fix": "run -T ng lint icons --fix",
+    "lint:styles": "run -T stylelint \"**/*.scss\"",
+    "lint:styles:fix": "run -T stylelint \"**/*.scss\" --fix"
+  },
+  "peerDependencies": {
+    "@angular/core": "^22.0.0",
+    "@liquid-js/lyr-core": "^22.0.0",
+    "tslib": "^2.9.1"
+  },
+  "sideEffects": false
+}
