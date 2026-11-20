@@ -1,15 +1,21 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 @forward 'global/breakpoints';
+@use 'global/normalize';
 @use 'global/styles';
 @use 'global/components';
 @use 'global/overrides';
+@use '../components/cdk/overlay/overlay.theme';
 
+/// The page-wide rules every app needs once, outside any theme: normalize, helper classes and the overlays' structure.
+/// Loading this module writes nothing, so a component's styles can use its mixins without copying these.
+@mixin nb-theme-base() {
+  @include styles.nb-global-styles();
+  @include overlay.nb-overlay-base();
+  @include normalize.nb-normalize();
+}
+
+/// The base rules and every component's styles.
 @mixin nb-theme-global() {
+  @include nb-theme-base();
   @include components.nb-theme-components();
   @include overrides.nb-theme-overrides();
 }

@@ -1,10 +1,4 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { TestBed, inject, waitForAsync } from '@angular/core/testing';
+import { TestBed, inject } from '@angular/core/testing';
 import {
   DEFAULT_MEDIA_BREAKPOINTS,
   NbMediaBreakpointsService,
@@ -15,7 +9,7 @@ import {
   NB_JS_THEMES,
   NB_MEDIA_BREAKPOINTS,
   NB_THEME_OPTIONS,
-} from '@nebular/theme';
+} from '@liquid-js/lyr-core';
 
 describe('theme-service', () => {
   let breakpointService: NbMediaBreakpointsService;
@@ -38,11 +32,12 @@ describe('theme-service', () => {
 
   // Single async inject to save references; which are used in all tests below
   beforeEach(
-    waitForAsync(
-      inject([NbMediaBreakpointsService, NbThemeService], (_breakpointService, _themeService) => {
+    inject(
+      [NbMediaBreakpointsService, NbThemeService],
+      (_breakpointService: NbMediaBreakpointsService, _themeService: NbThemeService) => {
         breakpointService = _breakpointService;
         themeService = _themeService;
-      }),
+      },
     ),
   );
 
@@ -92,7 +87,7 @@ describe('theme-service', () => {
       expect(current).toBeUndefined();
 
       themeService.changeWindowWidth(1920);
-      expect(current[0].name).toEqual(breakpointService.getByWidth(undefined).name);
+      expect(current[0].name).toEqual('unknown');
 
       const xs = 200;
       themeService.changeWindowWidth(xs);
@@ -114,9 +109,8 @@ describe('theme-service', () => {
       current = change.variables;
     });
     try {
-      // TODO could be rewrite with usage of done()
       expect(current).not.toBeUndefined();
-      expect(current.fontMain).toEqual('Open Sans, sans-serif');
+      expect(current.fontMain).toEqual('Inter, sans-serif');
       expect(current.bg).toEqual('#ffffff');
 
       themeService.changeTheme('cosmic');

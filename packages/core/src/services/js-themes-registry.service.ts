@@ -1,70 +1,46 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { Inject, Injectable } from '@angular/core';
-
+import { inject, Service } from '@angular/core';
 
 import { NbJSThemeOptions } from './js-themes/theme.options';
-import { DEFAULT_THEME } from './js-themes/default.theme';
-import { COSMIC_THEME } from './js-themes/cosmic.theme';
-import { CORPORATE_THEME } from './js-themes/corporate.theme';
-import { DARK_THEME } from './js-themes/dark.theme';
 import { NB_BUILT_IN_JS_THEMES, NB_JS_THEMES } from '../theme.options';
 
-export const BUILT_IN_THEMES: NbJSThemeOptions[] = [
-  DEFAULT_THEME,
-  COSMIC_THEME,
-  CORPORATE_THEME,
-  DARK_THEME,
-];
+export { BUILT_IN_THEMES } from '../theme.options';
 
 /**
- * Js Themes registry - provides access to the JS themes' variables.
- * Usually shouldn't be used directly, but through the NbThemeService class methods (getJsTheme).
+ * The JS themes' variables, by theme name; `NbThemeService.getJsTheme` gives the current theme's.
+ *
+ * It starts with the built-in themes and those `provideNbTheme` adds (`NB_JS_THEMES`), a theme of the same name
+ * merged over the built-in one.
  */
-@Injectable()
+@Service()
 export class NbJSThemesRegistry {
 
-  private themes: any = {};
+  private themes: Record<string, NbJSThemeOptions> = {};
 
-  constructor(@Inject(NB_BUILT_IN_JS_THEMES) builtInThemes: NbJSThemeOptions[],
-              @Inject(NB_JS_THEMES) newThemes: NbJSThemeOptions[] = []) {
+  constructor() {
+    const builtInThemes = inject(NB_BUILT_IN_JS_THEMES);
+    const newThemes = inject(NB_JS_THEMES) ?? [];
 
     const themes = this.combineByNames(newThemes, builtInThemes);
 
-    themes.forEach((theme: any) => {
+    themes.forEach((theme: NbJSThemeOptions) => {
       this.register(theme, theme.name, theme.base);
     });
   }
 
   /**
-   * Registers a new JS theme
-   * @param config any
-   * @param themeName string
-   * @param baseTheme string
+   * Registers a theme's variables over its base theme's, when the base is registered, replacing a theme of the same
+   * name.
    */
-  register(config: any, themeName: string, baseTheme: string) {
-    const base = this.has(baseTheme) ? this.get(baseTheme) : {};
-    this.themes[themeName] = this.mergeDeep({}, base, config);
+  register(config: NbJSThemeOptions, themeName: string, baseTheme?: string) {
+    const base = baseTheme && this.has(baseTheme) ? this.get(baseTheme) : {};
+    this.themes[themeName] = this.mergeDeep<NbJSThemeOptions>({ name: config.name }, base, config);
   }
 
-  /**
-   * Checks whether the theme is registered
-   * @param themeName
-   * @returns boolean
-   */
   has(themeName: string): boolean {
     return !!this.themes[themeName];
   }
 
-  /**
-   * Return a theme
-   * @param themeName
-   * @returns NbJSThemeOptions
-   */
+  /** A copy of the theme, with its base's variables merged in; throws when it isn't registered. */
   get(themeName: string): NbJSThemeOptions {
     if (!this.themes[themeName]) {
       throw Error(`NbThemeConfig: no theme '${themeName}' found registered.`);
@@ -74,12 +50,12 @@ export class NbJSThemesRegistry {
 
   private combineByNames(newThemes: NbJSThemeOptions[], oldThemes: NbJSThemeOptions[]): NbJSThemeOptions[] {
     if (newThemes) {
-      const mergedThemes: NbJSThemeOptions[] = [];
+      const mergedThemes = new Array<NbJSThemeOptions>();
       newThemes.forEach((theme: NbJSThemeOptions) => {
-        const sameOld: NbJSThemeOptions = oldThemes.find((tm: NbJSThemeOptions) => tm.name === theme.name)
-          || <NbJSThemeOptions>{};
+        const sameOld: NbJSThemeOptions = oldThemes.find((tm: NbJSThemeOptions) => tm.name === theme.name) ||
+          <NbJSThemeOptions>{};
 
-        const mergedTheme = this.mergeDeep({}, sameOld, theme);
+        const mergedTheme = this.mergeDeep({ name: theme.name }, sameOld, theme);
         mergedThemes.push(mergedTheme);
       });
 
@@ -93,13 +69,11 @@ export class NbJSThemesRegistry {
     return oldThemes;
   }
 
-
-  private isObject(item) {
-    return item && typeof item === 'object' && !Array.isArray(item);
+  private isObject(item: unknown): item is Record<string, unknown> {
+    return !!item && typeof item === 'object' && !Array.isArray(item);
   }
 
-  // TODO: move to helpers
-  private mergeDeep(target, ...sources) {
+  private mergeDeep<T>(target: T, ...sources: unknown[]): T {
     if (!sources.length) {
       return target;
     }
@@ -107,13 +81,14 @@ export class NbJSThemesRegistry {
 
     if (this.isObject(target) && this.isObject(source)) {
       for (const key in source) {
-        if (this.isObject(source[key])) {
+        const value = source[key];
+        if (this.isObject(value)) {
           if (!target[key]) {
             Object.assign(target, { [key]: {} });
           }
-          this.mergeDeep(target[key], source[key]);
+          this.mergeDeep(target[key], value);
         } else {
-          Object.assign(target, { [key]: source[key] });
+          Object.assign(target, { [key]: value });
         }
       }
     }

@@ -1,8 +1,8 @@
 import { NbJSThemeOptions } from './theme.options';
 
 const palette = {
-  primary: '#a16eff',
-  success: '#00d68f',
+  primary: '#8a55f0',
+  success: '#03ce86',
   info: '#0095ff',
   warning: '#ffaa00',
   danger: '#ff3d71',
@@ -11,7 +11,7 @@ const palette = {
 export const COSMIC_THEME: NbJSThemeOptions = {
   name: 'cosmic',
   variables: {
-    fontMain: 'Open Sans, sans-serif',
+    fontMain: 'Inter, sans-serif',
     fontSecondary: 'Raleway, sans-serif',
 
     bg: '#323259',
@@ -38,7 +38,7 @@ export const COSMIC_THEME: NbJSThemeOptions = {
     warning: palette.warning,
     danger: palette.danger,
 
-    primaryLight: '#b18aff',
+    primaryLight: '#a37bf8',
     successLight: '#2ce69b',
     infoLight: '#42aaff',
     warningLight: '#ffc94d',

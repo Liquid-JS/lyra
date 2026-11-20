@@ -1,8 +1,8 @@
 import { NbJSThemeOptions } from './theme.options';
 
 const palette = {
-  primary: '#3366ff',
-  success: '#00d68f',
+  primary: '#3469d1',
+  success: '#03ce86',
   info: '#0095ff',
   warning: '#ffaa00',
   danger: '#ff3d71',
@@ -11,7 +11,7 @@ const palette = {
 export const DARK_THEME: NbJSThemeOptions = {
   name: 'dark',
   variables: {
-    fontMain: 'Open Sans, sans-serif',
+    fontMain: 'Inter, sans-serif',
     fontSecondary: 'Raleway, sans-serif',
 
     bg: '#222b45',

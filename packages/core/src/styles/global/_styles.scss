@@ -1,8 +1,17 @@
-.visually-hidden {
-  /* https://snook.ca/archives/html_and_css/hiding-content-for-accessibility */
-  position: absolute !important;
-  height: 1px;
-  width: 1px;
-  overflow: hidden;
-  clip: rect(1px, 1px, 1px, 1px);
+// Global helper classes, written once by nb-theme-base().
+@mixin nb-global-styles() {
+  // Hidden from sight, still read by assistive technologies. Pinned to its containing block's start, not left where its
+  // text would be: in a wide table that scrolls, that could be past the page's edge, which would widen the page.
+  .visually-hidden {
+    position: absolute !important;
+    inset-inline-start: 0;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    border: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
 }

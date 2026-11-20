@@ -1,0 +1,25 @@
+// Lyra components' looks for other elements, such as a third-party component's buttons, fields and dialogs, so they
+// match the app's Lyra components and follow its theme.
+@use '../components/option/option-list-look';
+@use '../components/popover/popover-look';
+@use 'core/look';
+@forward '../components/button/button-look' show nb-button;
+@forward '../components/input/input-look' show nb-input;
+
+$_panels: ('option-list', 'popover');
+
+/// The look of a Lyra panel on any element, such as a third-party component's dialog: `option-list`, the list a select
+/// or an autocomplete opens, or `popover`. Its background, border, corners, shadow and text; for an option list also
+/// its scrollbars. The padding and layout stay the element's own.
+@mixin nb-panel($kind: option-list) {
+  @include look.check(nb-panel, kind, $kind, $_panels);
+
+  @if $kind == 'option-list' {
+    @include option-list-look.surface();
+    @include option-list-look.text();
+    @include option-list-look.scrollbars();
+  } @else {
+    @include popover-look.surface();
+    @include popover-look.text();
+  }
+}

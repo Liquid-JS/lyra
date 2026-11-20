@@ -1,15 +1,50 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
+@use 'sass:list';
 @use 'sass:map';
-@use '../../theming-variables';
+@use 'sass:math';
+@use 'sass:meta';
 @use '../functions';
-@use 'register';
+@use 'scale';
 
 @function nb-deep-find-value($theme, $key, $value) {
+  // Another value times a factor: that value, resolved, multiplied.
+  @if (scale.nb-is-scaled($value)) {
+    $base-key: map.get($value, nb-scale);
+    $base: nb-deep-find-value($theme, $base-key, map.get($theme, $base-key));
+    $factor: map.get($value, factor);
+    @if (meta.type-of($base) == 'number') {
+      @return $base * $factor;
+    }
+    @return calc(#{$base} * #{$factor});
+  }
+
+  // Other values added up: each resolved, the lengths of one unit added, the rest left to a calc().
+  @if (scale.nb-is-sum($value)) {
+    $totals: ();
+    @each $term in map.get($value, nb-sum) {
+      $resolved: $term;
+      @if (scale.nb-is-scaled($term)) {
+        $resolved: nb-deep-find-value($theme, null, $term);
+      } @else if (meta.type-of($term) == 'string' and map.has-key($theme, $term)) {
+        $resolved: nb-deep-find-value($theme, $term, map.get($theme, $term));
+      }
+      $totals: _add($totals, $resolved);
+    }
+    @if (list.length($totals) == 1) {
+      @return list.nth($totals, 1);
+    }
+    $css: '';
+    @each $total in $totals {
+      @if ($css == '') {
+        $css: '#{$total}';
+      } @else if (meta.type-of($total) == 'number' and $total < 0) {
+        $css: '#{$css} - #{-$total}';
+      } @else {
+        $css: '#{$css} + #{$total}';
+      }
+    }
+    @return calc(#{$css});
+  }
+
   $parent-value: map.get($theme, $value);
 
   @if ($parent-value != null) {
@@ -17,6 +52,20 @@
   }
 
   @return $value;
+}
+
+// A term added to the totals: to a length it's compatible with, or as one of its own.
+@function _add($totals, $term) {
+  @if (meta.type-of($term) == 'number') {
+    $index: 0;
+    @each $total in $totals {
+      $index: $index + 1;
+      @if (meta.type-of($total) == 'number' and math.compatible($total, $term)) {
+        @return list.set-nth($totals, $index, $total + $term);
+      }
+    }
+  }
+  @return list.append($totals, $term);
 }
 
 @function nb-process-theme($theme) {
@@ -27,40 +76,8 @@
   @return $processed-theme;
 }
 
-@function get-current-theme-name() {
-  @if (theming-variables.$nb-theme-name != null) {
-    @return theming-variables.$nb-theme-name;
-  }
-
-  @return register.get-last-enabled-theme();
-}
-
+/// A theme variable, as the CSS custom property every installed theme sets: `nb-theme(border-radius)` is
+/// `var(--border-radius)`, so it follows the theme an element is in, and changes to the variable at run time.
 @function nb-theme($key) {
-  $value: ();
-
-  // in case of css custom properties - just returns var(--var-name) - the rest is a browser job
-  @if (theming-variables.$nb-enable-css-custom-properties == true) {
-    // there is no way to check if variable exists as current execution context is outside of particular theme
-    // because we process css in this mode only once! (and not for each theme)
-    $value: var(--#{$key});
-  } @else {
-    // in a preprocess mode (nb-install-global call) get ready value from $nb-processed-theme variable
-    @if (theming-variables.$nb-theme-process-mode == 'pre-process') {
-      $value: map.get(theming-variables.$nb-processed-theme, $key);
-    }
-
-    // otherwise lazily search for variable value
-    @if (theming-variables.$nb-theme-process-mode == 'lazy-process') {
-      theming-variables.$nb-theme-name: get-current-theme-name();
-
-      $theme: register.nb-get-registered-theme(theming-variables.$nb-theme-name);
-      $value: nb-deep-find-value($theme, $key, map.get($theme, $key));
-    }
-  }
-
-  @if ($value == null) {
-    @warn 'Nebular Theme: `nb-theme()` cannot find value for key `' + $key + '` for theme `' + theming-variables.$nb-theme-name + '`';
-  }
-
-  @return $value;
+  @return var(--#{$key});
 }

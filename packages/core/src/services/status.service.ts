@@ -1,14 +1,8 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { Injectable } from '@angular/core';
+import { Service } from '@angular/core';
 
 import { NbComponentOrCustomStatus, NbComponentStatus } from '../components/component-status';
 
-@Injectable()
+@Service()
 export class NbStatusService {
   readonly coreStatuses: NbComponentStatus[] = ['basic', 'primary', 'info', 'warning', 'danger', 'control'];
 
@@ -24,7 +18,7 @@ export class NbStatusService {
     return false;
   }
 
-  getStatusClass(status: NbComponentOrCustomStatus): string | undefined {
+  getStatusClass(status?: NbComponentOrCustomStatus): string | undefined {
     if (this.isValidStatusString(status)) {
       return `status-${status}`;
     }
@@ -32,7 +26,7 @@ export class NbStatusService {
     return undefined;
   }
 
-  protected isValidStatusString(status: NbComponentOrCustomStatus): boolean {
+  protected isValidStatusString(status?: NbComponentOrCustomStatus): boolean {
     return typeof status === 'string' && status.length > 0;
   }
 }

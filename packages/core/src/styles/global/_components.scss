@@ -1,9 +1,3 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 @forward '../../components/layout/layout.component.theme';
 @forward '../../components/sidebar/sidebar.component.theme';
 @forward '../../components/calendar-kit/calendar-kit.theme';
@@ -22,6 +16,11 @@
 @forward '../../components/toggle/toggle.component.theme';
 @forward '../../components/progress-bar/progress-bar.component.theme';
 @forward '../../components/badge/badge.component.theme';
+@forward '../../components/divider/divider.component.theme';
+@forward '../../components/slider/slider.component.theme';
+@forward '../../components/skeleton/skeleton.directive.theme';
+@forward '../../components/page-indicator/page-indicator.component.theme';
+@forward '../../components/table/table.component.theme';
 @forward '../../components/alert/alert.component.theme';
 @forward '../../components/chat/chat.component.theme';
 @forward '../../components/spinner/spinner.component.theme';
@@ -36,15 +35,21 @@
 @forward '../../components/popover/popover.component.theme';
 @forward '../../components/context-menu/context-menu.component.theme';
 @forward '../../components/select/select.component.theme';
-@forward '../../components/select-with-autocomplete/select-with-autocomplete.component.theme';
 @forward '../../components/option/option-list.component.theme';
 @forward '../../components/toastr/toast.component.theme';
 @forward '../../components/tooltip/tooltip.component.theme';
+@forward '../../components/window/window.component.theme';
 @forward '../../components/datepicker/datepicker-container.component.theme';
 @forward '../../components/radio/radio.component.theme';
 @forward '../../components/tree-grid/tree-grid.component.theme';
 @forward '../../components/icon/icon.component.theme';
 @forward '../../components/form-field/form-field.component.theme';
+@forward '../../components/validation/validation-errors.component.theme';
+@forward '../../components/file-drop/file-drop.component.theme';
+@forward '../../components/input-group/input-group.component.theme';
+@forward '../../components/pagination/pagination.component.theme';
+@forward '../../components/breadcrumbs/breadcrumbs.component.theme';
+@forward '../../components/toc/toc.component.theme';
 @forward '../../components/timepicker/timepicker.component.theme';
 @use '../../components/layout/layout.component.theme' as layout-theme;
 @use '../../components/sidebar/sidebar.component.theme' as sidebar-theme;
@@ -64,6 +69,11 @@
 @use '../../components/toggle/toggle.component.theme' as toggle-theme;
 @use '../../components/progress-bar/progress-bar.component.theme' as progress-bar-theme;
 @use '../../components/badge/badge.component.theme' as badge-theme;
+@use '../../components/divider/divider.component.theme' as divider-theme;
+@use '../../components/slider/slider.component.theme' as slider-theme;
+@use '../../components/skeleton/skeleton.directive.theme' as skeleton-theme;
+@use '../../components/page-indicator/page-indicator.component.theme' as page-indicator-theme;
+@use '../../components/table/table.component.theme' as table-theme;
 @use '../../components/alert/alert.component.theme' as alert-theme;
 @use '../../components/chat/chat.component.theme' as chat-theme;
 @use '../../components/spinner/spinner.component.theme' as spinner-theme;
@@ -78,16 +88,21 @@
 @use '../../components/popover/popover.component.theme' as popover-theme;
 @use '../../components/context-menu/context-menu.component.theme' as context-menu-theme;
 @use '../../components/select/select.component.theme' as select-theme;
-@use '../../components/select-with-autocomplete/select-with-autocomplete.component.theme' as
-  select-with-autocomplete-theme;
 @use '../../components/option/option-list.component.theme' as option-list-theme;
 @use '../../components/toastr/toast.component.theme' as toast-theme;
 @use '../../components/tooltip/tooltip.component.theme' as tooltip-theme;
+@use '../../components/window/window.component.theme' as window-theme;
 @use '../../components/datepicker/datepicker-container.component.theme' as datepicker-container-theme;
 @use '../../components/radio/radio.component.theme' as radio-theme;
 @use '../../components/tree-grid/tree-grid.component.theme' as tree-grid-theme;
 @use '../../components/icon/icon.component.theme' as icon-theme;
 @use '../../components/form-field/form-field.component.theme' as form-field-theme;
+@use '../../components/validation/validation-errors.component.theme' as validation-errors-theme;
+@use '../../components/file-drop/file-drop.component.theme' as file-drop-theme;
+@use '../../components/input-group/input-group.component.theme' as input-group-theme;
+@use '../../components/pagination/pagination.component.theme' as pagination-theme;
+@use '../../components/breadcrumbs/breadcrumbs.component.theme' as breadcrumbs-theme;
+@use '../../components/toc/toc.component.theme' as toc-theme;
 @use '../../components/timepicker/timepicker.component.theme' as timepicker-theme;
 
 @mixin nb-theme-components() {
@@ -110,6 +125,11 @@
   @include toggle-theme.nb-toggle-theme();
   @include progress-bar-theme.nb-progress-bar-theme();
   @include badge-theme.nb-badge-theme();
+  @include divider-theme.nb-divider-theme();
+  @include slider-theme.nb-slider-theme();
+  @include skeleton-theme.nb-skeleton-theme();
+  @include page-indicator-theme.nb-page-indicator-theme();
+  @include table-theme.nb-table-theme();
   @include stepper-theme.nb-stepper-theme();
   @include alert-theme.nb-alert-theme();
   @include chat-theme.nb-chat-theme();
@@ -123,14 +143,21 @@
   @include popover-theme.nb-popover-theme();
   @include context-menu-theme.nb-context-menu-theme();
   @include select-theme.nb-select-theme();
-  @include select-with-autocomplete-theme.nb-select-with-autocomplete-theme();
   @include option-list-theme.nb-option-list-theme();
   @include toast-theme.nb-toast-theme();
   @include tooltip-theme.nb-tooltip-theme();
+  @include window-theme.nb-window-theme();
   @include datepicker-container-theme.nb-datepicker-theme();
   @include radio-theme.nb-radio-theme();
   @include tree-grid-theme.nb-tree-grid-theme();
   @include icon-theme.nb-icon-theme();
   @include form-field-theme.nb-form-field-theme();
+  @include validation-errors-theme.nb-validation-errors-theme();
+  @include file-drop-theme.nb-file-drop-theme();
+  @include pagination-theme.nb-pagination-theme();
+  @include breadcrumbs-theme.nb-breadcrumbs-theme();
+  @include toc-theme.nb-toc-theme();
   @include tag-theme.nb-tags-theme();
+  // After the controls it joins, whose corners it overrides.
+  @include input-group-theme.nb-input-group-theme();
 }

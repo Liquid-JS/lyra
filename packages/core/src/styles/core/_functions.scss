@@ -1,12 +1,5 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 @use 'sass:color';
 @use 'sass:map';
-@use '../theming-variables';
 
 /// Slightly lighten a color
 /// @access public
@@ -34,9 +27,5 @@
 }
 
 @function nb-theme-var-negative($value) {
-  @if (theming-variables.$nb-enable-css-custom-properties) {
-    @return calc(#{$value} * -1);
-  } @else {
-    @return -$value;
-  }
+  @return calc(#{$value} * -1);
 }

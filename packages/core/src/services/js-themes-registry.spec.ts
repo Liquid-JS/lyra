@@ -1,10 +1,5 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { TestBed, inject, waitForAsync } from '@angular/core/testing';
+import { assert } from 'vitest';
+import { TestBed, inject } from '@angular/core/testing';
 
 import {
   NbJSThemeOptions,
@@ -12,10 +7,16 @@ import {
   NbJSThemesRegistry,
   NB_BUILT_IN_JS_THEMES,
   NB_JS_THEMES,
-} from '@nebular/theme';
+} from '@liquid-js/lyr-core';
 
 describe('js-themes-registry-service', () => {
   let jsThemesRegistry: NbJSThemesRegistry;
+
+  const variables = (themeName: string) => {
+    const themeVariables = jsThemesRegistry.get(themeName).variables;
+    assert(themeVariables, `${themeName} theme has no variables`);
+    return themeVariables;
+  };
   const customThemes: NbJSThemeOptions[] = [
     {
       name: 'default',
@@ -59,11 +60,9 @@ describe('js-themes-registry-service', () => {
 
   // Single async inject to save references; which are used in all tests below
   beforeEach(
-    waitForAsync(
-      inject([NbJSThemesRegistry], (_jsThemesRegistry) => {
-        jsThemesRegistry = _jsThemesRegistry;
-      }),
-    ),
+    inject([NbJSThemesRegistry], (_jsThemesRegistry: NbJSThemesRegistry) => {
+      jsThemesRegistry = _jsThemesRegistry;
+    }),
   );
 
   it('has built in themes', () => {
@@ -77,24 +76,24 @@ describe('js-themes-registry-service', () => {
   });
 
   it('has built in themes with inherited font', () => {
-    expect(jsThemesRegistry.get('default').variables.fontMain).toEqual('Open Sans, sans-serif');
-    expect(jsThemesRegistry.get('cosmic').variables.fontMain).toEqual('Open Sans, sans-serif');
-    expect(jsThemesRegistry.get('corporate').variables.fontMain).toEqual('Open Sans, sans-serif');
+    expect(variables('default')['fontMain']).toEqual('Inter, sans-serif');
+    expect(variables('cosmic')['fontMain']).toEqual('Inter, sans-serif');
+    expect(variables('corporate')['fontMain']).toEqual('Inter, sans-serif');
   });
 
   it('has also new themes', () => {
     expect(jsThemesRegistry.get('super-new-theme')).not.toBeUndefined();
     expect(jsThemesRegistry.has('super-new-theme')).toBeTruthy();
-    expect(jsThemesRegistry.get('super-new-theme').variables.someNewValueForCosmic).toEqual('blue');
+    expect(variables('super-new-theme')['someNewValueForCosmic']).toEqual('blue');
   });
 
   it('has changes from custom settings', () => {
-    expect(jsThemesRegistry.get('default').variables.colorBg).toEqual('yellow');
+    expect(variables('default')['colorBg']).toEqual('yellow');
   });
 
   it('has new values from custom settings', () => {
-    expect(jsThemesRegistry.get('cosmic').variables.someNewValueForCosmic).toEqual('red');
-    expect(jsThemesRegistry.get('default').variables.someNewValue).toEqual('black');
-    expect(jsThemesRegistry.get('corporate').variables.someNewValueForCorporate).toEqual('green');
+    expect(variables('cosmic')['someNewValueForCosmic']).toEqual('red');
+    expect(variables('default')['someNewValue']).toEqual('black');
+    expect(variables('corporate')['someNewValueForCorporate']).toEqual('green');
   });
 });

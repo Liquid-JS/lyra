@@ -1,0 +1,7 @@
+@use '../all' as *;
+
+$nb-enabled-themes: (material-light);
+
+@include nb-install() {
+  @include nb-theme-global();
+}

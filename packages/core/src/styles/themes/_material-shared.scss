@@ -1,0 +1,68 @@
+@use 'sass:map';
+@use 'sass:string';
+@use '../core/theming/scale' as *;
+
+// What both Material 3 themes share: Roboto, M3's shapes and type, and outlined fields.
+$theme: (
+  font-family-primary: string.unquote('Roboto, "Helvetica Neue", Arial, sans-serif'),
+  font-family-secondary: font-family-primary,
+  // Headlines and titles are regular or medium, not bold.
+  text-heading-1-font-weight: 400,
+  text-heading-2-font-weight: 400,
+  text-heading-3-font-weight: 400,
+  text-heading-4-font-weight: 400,
+  text-heading-5-font-weight: 400,
+  text-heading-6-font-weight: 500,
+  text-subtitle-font-weight: 500,
+  text-subtitle-2-font-weight: 500,
+  text-label-font-weight: 500,
+  text-caption-2-font-weight: 500,
+  text-button-font-weight: 500,
+  // Corners: extra small for fields, medium for cards, small for chips, as multiples of the border radius so they
+  // follow it. M3's full-round buttons are the round shape: provideNbComponentDefaults({ button: { shape: 'round' } }).
+  border-radius: 0.25rem,
+  card-border-radius: nb-scale(border-radius, 3),
+  card-border-color: border-basic-color-3,
+  tag-border-radius: nb-scale(border-radius, 2),
+  checkbox-border-radius: nb-scale(border-radius, 0.5),
+  // Labels in sentence case.
+  button-filled-text-transform: none,
+  button-outline-text-transform: none,
+  button-ghost-text-transform: none,
+  button-hero-text-transform: none,
+  tabset-tab-text-transform: none,
+  route-tabset-tab-text-transform: none,
+  tag-text-transform: none,
+  // Outlined fields: no fill, the outline darkening under the pointer and turning primary with focus.
+  input-basic-background-color: transparent,
+  input-basic-focus-background-color: transparent,
+  input-basic-hover-background-color: transparent,
+  input-basic-focus-and-hover-background-color: transparent,
+  input-basic-disabled-background-color: transparent,
+  input-basic-border-color: border-basic-color-4,
+  input-basic-hover-border-color: text-basic-color,
+  input-basic-focus-border-color: color-primary-default,
+  input-basic-focus-and-hover-border-color: color-primary-default,
+  select-outline-basic-background-color: transparent,
+  select-outline-basic-focus-background-color: transparent,
+  select-outline-basic-hover-background-color: transparent,
+  select-outline-basic-focus-and-hover-background-color: transparent,
+  select-outline-basic-disabled-background-color: transparent,
+  select-outline-basic-border-color: border-basic-color-4,
+  select-outline-basic-hover-border-color: text-basic-color,
+  select-outline-basic-focus-border-color: color-primary-default,
+  select-outline-basic-focus-and-hover-border-color: color-primary-default,
+  // The top app bar is a surface, as cards are, rather than a shadow over them.
+  header-shadow: none,
+  card-shadow: none,
+  outline-color: color-primary-transparent-300,
+);
+
+// Fields of every status are outlined, without a fill, too.
+@each $status in (primary, success, info, warning, danger, control) {
+  @each $field in (input, select-outline) {
+    @each $state in ('', focus-, hover-, focus-and-hover-, disabled-) {
+      $theme: map.set($theme, #{$field}-#{$status}-#{$state}background-color, transparent);
+    }
+  }
+}

@@ -2,7 +2,12 @@
 @use '../../theming' as *;
 
 @mixin nb-typography {
-  #{if(&, '&', 'body')} {
+  $root: 'body';
+  @if & {
+    $root: '&';
+  }
+
+  #{$root} {
     color: nb-theme(text-basic-color);
     font-family: nb-theme(text-paragraph-font-family);
     font-size: nb-theme(text-paragraph-font-size);
@@ -54,9 +59,11 @@
     line-height: nb-theme(text-subtitle-2-line-height);
   }
 
+  // Paragraphs take their container's text colour, the basic one unless a container has its own, e.g. a dark card,
+  // a sidebar or an alert, where the basic one wouldn't read.
   p,
   .paragraph {
-    color: nb-theme(text-basic-color);
+    color: inherit;
     font-family: nb-theme(text-paragraph-font-family);
     font-size: nb-theme(text-paragraph-font-size);
     font-weight: nb-theme(text-paragraph-font-weight);
@@ -64,7 +71,7 @@
   }
 
   .paragraph-2 {
-    color: nb-theme(text-basic-color);
+    color: inherit;
     font-family: nb-theme(text-paragraph-2-font-family);
     font-size: nb-theme(text-paragraph-2-font-size);
     font-weight: nb-theme(text-paragraph-2-font-weight);
@@ -131,8 +138,9 @@
     }
   }
 
+  // As paragraphs: in their container's colour. A list's own items, nb-list-item, take list-item-text-color.
   li {
-    color: nb-theme(list-item-text-color);
+    color: inherit;
     font-family: nb-theme(list-item-font-family);
     font-size: nb-theme(list-item-font-size);
     font-weight: nb-theme(list-item-font-weight);

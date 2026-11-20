@@ -12,7 +12,7 @@ export const CORPORATE_THEME: NbJSThemeOptions = {
   name: 'corporate',
   base: 'default',
   variables: {
-    fontMain: 'Open Sans, sans-serif',
+    fontMain: 'Inter, sans-serif',
     fontSecondary: 'Raleway, sans-serif',
 
     bg: '#ffffff',

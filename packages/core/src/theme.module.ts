@@ -1,93 +1,66 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
+import { EnvironmentProviders, makeEnvironmentProviders, NgModule, ModuleWithProviders } from '@angular/core';
+import { DatePipe, isPlatformBrowser } from '@angular/common';
 
-import { DOCUMENT, NgModule, ModuleWithProviders, PLATFORM_ID } from '@angular/core';
-import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { NB_MEDIA_BREAKPOINTS, NbThemeOptions, NB_THEME_OPTIONS, NB_JS_THEMES } from '@liquid-js/lyr-core/base';
+import { NbJSThemeOptions } from '@liquid-js/lyr-core/base';
+import { DEFAULT_MEDIA_BREAKPOINTS, NbMediaBreakpoint } from '@liquid-js/lyr-core/base';
+import { NbLayoutDirection, NB_LAYOUT_DIRECTION } from '@liquid-js/lyr-core/base';
+import { NbCdkAdapterModule } from '@liquid-js/lyr-core/cdk';
+import { NbDateService } from '@liquid-js/lyr-core/calendar-kit';
+import { NbNativeDateService } from '@liquid-js/lyr-core/calendar-kit';
 
-import {
-  NB_BUILT_IN_JS_THEMES,
-  NB_MEDIA_BREAKPOINTS,
-  NbThemeOptions,
-  NB_THEME_OPTIONS,
-  NB_JS_THEMES,
-  NB_DOCUMENT,
-  NB_WINDOW,
-} from './theme.options';
-import { NbThemeService } from './services/theme.service';
-import { NbSpinnerService } from './services/spinner.service';
-import { NbJSThemeOptions } from './services/js-themes/theme.options';
-import { BUILT_IN_THEMES, NbJSThemesRegistry } from './services/js-themes-registry.service';
-import {
-  DEFAULT_MEDIA_BREAKPOINTS,
-  NbMediaBreakpoint,
-  NbMediaBreakpointsService,
-} from './services/breakpoints.service';
-import { NbLayoutDirectionService, NbLayoutDirection, NB_LAYOUT_DIRECTION } from './services/direction.service';
-import { NbLayoutScrollService } from './services/scroll.service';
-import { NbLayoutRulerService } from './services/ruler.service';
-import { NbOverlayModule } from './components/cdk/overlay/overlay.module';
-import { NbStatusService } from './services/status.service';
-
-export function windowFactory(platformId: Object): Window | undefined {
+export function windowFactory(platformId: Parameters<typeof isPlatformBrowser>[0]): Window | undefined {
   if (isPlatformBrowser(platformId)) {
     return window;
   }
 
-  // Provide undefined to get the error when trying to access the window as it
-  // shouldn't be used outside the browser. Those who need to provide something
-  // instead of window (e.g. domino window when running in node) could override
-  // NB_WINDOW token.
+  // Outside the browser there's no window, so code that uses it checks for it; an app that has one on the server
+  // can provide its own through `NB_WINDOW`.
   return undefined;
 }
 
-@NgModule({
-  imports: [
-    CommonModule,
-  ],
-  exports: [
-  ],
-})
+/**
+ * Provides the theme and the services every Lyra component relies on, in place of `NbThemeModule.forRoot()`.
+ *
+ * @param nbThemeOptions the theme to start with, `default` if not set
+ * @param nbJSThemes JS themes to add to the built-in ones; one with a built-in theme's name is merged over it
+ * @param nbMediaBreakpoints media breakpoints, `DEFAULT_MEDIA_BREAKPOINTS` if not set
+ * @param layoutDirection the layout direction, LTR if not set
+ */
+export function provideNbTheme(
+  nbThemeOptions: NbThemeOptions = { name: 'default' },
+  nbJSThemes?: NbJSThemeOptions[],
+  nbMediaBreakpoints?: NbMediaBreakpoint[],
+  layoutDirection?: NbLayoutDirection,
+): EnvironmentProviders {
+  return makeEnvironmentProviders([
+    // The theme services provide themselves; these set the values that differ from the token defaults.
+    { provide: NB_THEME_OPTIONS, useValue: nbThemeOptions || {} },
+    { provide: NB_JS_THEMES, useValue: nbJSThemes || [] },
+    { provide: NB_MEDIA_BREAKPOINTS, useValue: nbMediaBreakpoints || DEFAULT_MEDIA_BREAKPOINTS },
+    { provide: NB_LAYOUT_DIRECTION, useValue: layoutDirection || NbLayoutDirection.LTR },
+    // The CDK's overlay services, adapted to the layout's own scroll. Lyra's overlay services provide themselves, so an
+    // app without overlays doesn't bundle them.
+    ...NbCdkAdapterModule.forRoot().providers,
+    // Defaults for the calendars and pickers; a date service module provided after this one replaces them.
+    { provide: NbDateService, useClass: NbNativeDateService },
+    DatePipe,
+  ]);
+}
+
+@NgModule({})
 export class NbThemeModule {
 
-  // TODO: check the options (throw exception?)
   /**
-   * Main Theme Module
-   *
-   * @param nbThemeOptions {NbThemeOptions} Main theme options
-   * @param nbJSThemes {NbJSThemeOptions[]} List of JS Themes, will be merged with default themes
-   * @param nbMediaBreakpoints {NbMediaBreakpoint} Available media breakpoints
-   * @param layoutDirection {NbLayoutDirection} Layout direction
-   *
-   * @returns {ModuleWithProviders}
+   * Provides the theme for an app bootstrapped with an NgModule; `provideNbTheme` takes the same arguments.
    */
   static forRoot(nbThemeOptions: NbThemeOptions = { name: 'default' },
-                 nbJSThemes?: NbJSThemeOptions[],
-                 nbMediaBreakpoints?: NbMediaBreakpoint[],
-                 layoutDirection?: NbLayoutDirection): ModuleWithProviders<NbThemeModule> {
-
+    nbJSThemes?: NbJSThemeOptions[],
+    nbMediaBreakpoints?: NbMediaBreakpoint[],
+    layoutDirection?: NbLayoutDirection): ModuleWithProviders<NbThemeModule> {
     return {
       ngModule: NbThemeModule,
-      providers: [
-        { provide: NB_THEME_OPTIONS, useValue: nbThemeOptions || {} },
-        { provide: NB_BUILT_IN_JS_THEMES, useValue: BUILT_IN_THEMES },
-        { provide: NB_JS_THEMES, useValue: nbJSThemes || [] },
-        { provide: NB_MEDIA_BREAKPOINTS, useValue: nbMediaBreakpoints || DEFAULT_MEDIA_BREAKPOINTS },
-        { provide: NB_DOCUMENT, useExisting: DOCUMENT },
-        { provide: NB_WINDOW, useFactory: windowFactory, deps: [ PLATFORM_ID ] },
-        NbJSThemesRegistry,
-        NbThemeService,
-        NbMediaBreakpointsService,
-        NbSpinnerService,
-        { provide: NB_LAYOUT_DIRECTION, useValue: layoutDirection || NbLayoutDirection.LTR },
-        NbLayoutDirectionService,
-        NbLayoutScrollService,
-        NbLayoutRulerService,
-        ...NbOverlayModule.forRoot().providers,
-        NbStatusService,
-      ],
+      providers: [provideNbTheme(nbThemeOptions, nbJSThemes, nbMediaBreakpoints, layoutDirection)],
     };
   }
 }

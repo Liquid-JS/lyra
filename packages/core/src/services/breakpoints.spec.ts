@@ -1,12 +1,6 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
+import { TestBed, inject } from '@angular/core/testing';
 
-import { TestBed, inject, waitForAsync } from '@angular/core/testing';
-
-import { DEFAULT_MEDIA_BREAKPOINTS, NbMediaBreakpointsService, NB_MEDIA_BREAKPOINTS } from '@nebular/theme';
+import { DEFAULT_MEDIA_BREAKPOINTS, NbMediaBreakpointsService, NB_MEDIA_BREAKPOINTS } from '@liquid-js/lyr-core';
 
 describe('breakpoint-service', () => {
   let breakpointService: NbMediaBreakpointsService;
@@ -20,11 +14,9 @@ describe('breakpoint-service', () => {
 
   // Single async inject to save references; which are used in all tests below
   beforeEach(
-    waitForAsync(
-      inject([NbMediaBreakpointsService], (_breakpointService) => {
-        breakpointService = _breakpointService;
-      }),
-    ),
+    inject([NbMediaBreakpointsService], (_breakpointService: NbMediaBreakpointsService) => {
+      breakpointService = _breakpointService;
+    }),
   );
 
   const total = 8;

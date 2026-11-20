@@ -1,0 +1,10 @@
+// The Material themes' buttons, which specs don't load otherwise.
+@use '@liquid-js/lyr-core/styles/all' as *;
+@use '../../components/button/button.component.theme' as button;
+
+$nb-enabled-themes: (material-light, material-dark);
+
+@include nb-install() {
+  @include nb-theme-base();
+  @include button.nb-buttons-theme();
+}
