@@ -1,0 +1,19 @@
+<div class="scrollable-container"
+  #scrollableContainer
+  (scroll)="onScroll($event)">
+  <div class="layout"
+    #layoutContainer>
+    <ng-content select="nb-layout-header:not([subheader])" />
+    <div class="layout-container">
+      <ng-content select="nb-sidebar" />
+      <div class="content"
+        [class.center]="center()">
+        <ng-content select="nb-layout-header[subheader]" />
+        <div class="columns">
+          <ng-content select="nb-layout-column" />
+        </div>
+        <ng-content select="nb-layout-footer" />
+      </div>
+    </div>
+  </div>
+</div>

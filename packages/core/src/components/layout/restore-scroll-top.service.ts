@@ -1,31 +1,30 @@
-import { Injectable } from '@angular/core';
+import { inject, Service } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
 import { Observable } from 'rxjs';
 
 import { filter, pairwise, startWith, map } from 'rxjs/operators';
-import { getPathPartOfUrl } from '../menu/url-matching-helpers';
+import { ɵgetPathPartOfUrl as getPathPartOfUrl } from '@liquid-js/lyr-core/menu';
 
 /**
- * This service determines whether we should scroll the layout back to top.
- * This occurs when the page is changed, so when current url PATH is not equal to the previous one.
+ * Tells the layout when to scroll back to the top: when a navigation ends on another path than the previous one, so
+ * not on a change of the query or the fragment alone.
  *
- *  TODO: this is most likely a temporary solutions as recently Angular introduces ViewportScroll
- *  and scroll restoration process
+ * Angular's ViewportScroller scrolls the window on every URL change; the layout scrolls its own container in
+ * `withScroll` and window mode.
  */
-@Injectable()
+@Service()
 export class NbRestoreScrollTopHelper {
+  private readonly router = inject(Router);
 
-  constructor(private router: Router) {
-  }
-
+  /** Emits when a navigation ends on another path than the previous one, the first navigation included. */
   shouldRestore(): Observable<boolean> {
     return this.router.events
       .pipe(
         startWith(null),
-        filter(event => event === null || event instanceof NavigationEnd),
+        filter((event) => event === null || event instanceof NavigationEnd),
         pairwise(),
         map(([prev, current]) => this.pageChanged(prev as NavigationEnd, current as NavigationEnd)),
-        filter(res => !!res),
+        filter((res) => !!res),
       );
   }
 

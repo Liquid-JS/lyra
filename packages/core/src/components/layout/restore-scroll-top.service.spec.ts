@@ -1,22 +1,21 @@
-import { ComponentFixture, fakeAsync, inject, TestBed, tick, waitForAsync } from '@angular/core/testing';
-import { RouterTestingModule } from '@angular/router/testing';
+import { ComponentFixture, inject, TestBed } from '@angular/core/testing';
 import { Component } from '@angular/core';
-import { Router } from '@angular/router';
-import { NbRestoreScrollTopHelper } from '@nebular/theme';
+import { Router, RouterModule } from '@angular/router';
+import { NbRestoreScrollTopHelper } from '@liquid-js/lyr-core';
 
 let restoreHelper: NbRestoreScrollTopHelper;
 let router: Router;
 let fixture: ComponentFixture<TestBootstrapComponent>;
 
 @Component({
-    template: '<router-outlet></router-outlet>',
-    standalone: false
+  template: '<router-outlet />',
+  imports: [RouterModule],
 })
 class TestBootstrapComponent {}
 
 @Component({
-    template: '',
-    standalone: false
+  template: '',
+  imports: [RouterModule],
 })
 class TestComponent {}
 
@@ -26,99 +25,68 @@ describe('NbRestoreScrollTopHelper', () => {
 
     fixture = TestBed.configureTestingModule({
       imports: [
-        RouterTestingModule.withRoutes([
-          {
-            path: '',
-            children: [
-              {
-                path: '',
-                component: TestComponent,
-              },
-              {
-                path: 'about',
-                component: TestComponent,
-              },
-            ],
-          },
-          {
-            path: '**',
-            redirectTo: '',
-            pathMatch: 'full',
-          },
+        RouterModule.forRoot([
+          { path: '', component: TestComponent },
+          { path: 'about', component: TestComponent },
         ]),
+        TestComponent, TestBootstrapComponent,
       ],
       providers: [NbRestoreScrollTopHelper],
-      declarations: [TestComponent, TestBootstrapComponent],
     }).createComponent(TestBootstrapComponent);
 
     fixture.detectChanges();
   });
 
-  beforeEach(
-    waitForAsync(
-      inject([NbRestoreScrollTopHelper, Router], (_restoreHelper, _router) => {
-        restoreHelper = _restoreHelper;
-        router = _router;
-      }),
-    ),
-  );
-
-  afterEach(fakeAsync(() => {
-    fixture.destroy();
-    tick();
-    fixture.nativeElement.remove();
+  beforeEach(inject([NbRestoreScrollTopHelper, Router], (_restoreHelper: NbRestoreScrollTopHelper, _router: Router) => {
+    restoreHelper = _restoreHelper;
+    router = _router;
   }));
 
-  it('should trigger when url is changed', (done) => {
-    const spy = jasmine.createSpy('scrolltop subscriber');
-    restoreHelper.shouldRestore().subscribe(spy);
-
-    router.navigate(['/']);
-    setTimeout((_) => router.navigate(['about']));
-    setTimeout((_) => router.navigate(['/']));
-
-    setTimeout(() => {
-      expect(spy).toHaveBeenCalledTimes(3);
-      done();
-    }, 1);
+  afterEach(async () => {
+    fixture.destroy();
+    await fixture.whenStable();
+    fixture.nativeElement.remove();
   });
 
-  it('should not trigger when url query param is changed', (done) => {
-    const spy = jasmine.createSpy('scrolltop subscriber');
+  // Each navigation is awaited, so none is still running when the test module resets.
+  it('should trigger when url is changed', async () => {
+    const spy = vi.fn();
     restoreHelper.shouldRestore().subscribe(spy);
 
-    router.navigate(['/']);
-    setTimeout((_) => router.navigate(['/'], { queryParams: { test: 1 } }));
+    await router.navigate(['/']);
+    await router.navigate(['about']);
+    await router.navigate(['/']);
 
-    setTimeout(() => {
-      expect(spy).toHaveBeenCalledTimes(1);
-      done();
-    }, 1);
+    expect(spy).toHaveBeenCalledTimes(3);
   });
 
-  it('should not trigger when url fragment is changed', (done) => {
-    const spy = jasmine.createSpy('scrolltop subscriber');
+  it('should not trigger when url query param is changed', async () => {
+    const spy = vi.fn();
     restoreHelper.shouldRestore().subscribe(spy);
 
-    router.navigate(['/']);
-    setTimeout((_) => router.navigate(['/'], { fragment: 'some' }));
+    await router.navigate(['/']);
+    await router.navigate(['/'], { queryParams: { test: 1 } });
 
-    setTimeout(() => {
-      expect(spy).toHaveBeenCalledTimes(1);
-      done();
-    }, 1);
+    expect(spy).toHaveBeenCalledTimes(1);
   });
 
-  it('should not trigger when url query param & fragment are changed', (done) => {
-    const spy = jasmine.createSpy('scrolltop subscriber');
+  it('should not trigger when url fragment is changed', async () => {
+    const spy = vi.fn();
     restoreHelper.shouldRestore().subscribe(spy);
 
-    router.navigate(['/']);
-    setTimeout((_) => router.navigate(['/'], { fragment: 'some', queryParams: { test: 1 } }));
+    await router.navigate(['/']);
+    await router.navigate(['/'], { fragment: 'some' });
 
-    setTimeout(() => {
-      expect(spy).toHaveBeenCalledTimes(1);
-      done();
-    }, 1);
+    expect(spy).toHaveBeenCalledTimes(1);
+  });
+
+  it('should not trigger when url query param & fragment are changed', async () => {
+    const spy = vi.fn();
+    restoreHelper.shouldRestore().subscribe(spy);
+
+    await router.navigate(['/']);
+    await router.navigate(['/'], { fragment: 'some', queryParams: { test: 1 } });
+
+    expect(spy).toHaveBeenCalledTimes(1);
   });
 });

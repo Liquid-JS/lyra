@@ -1,14 +1,9 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 @use '../../styles/theming' as *;
 
 :host {
-  @include nb-ltr(text-align, left);
-  @include nb-rtl(text-align, right);
+  // Each element aligns to its own direction's start, so text with a direction of its own, such as `dir="auto"`, lines
+  // up with it; a physical side inherited from here wouldn't follow.
+  text-align: start;
 
   -webkit-font-smoothing: antialiased;
 
@@ -17,10 +12,11 @@
     flex-direction: column;
   }
 
+  // The header's own bar, not any `nav` in what it holds.
   ::ng-deep nb-layout-header {
     display: block;
 
-    nav {
+    > nav {
       align-items: center;
       justify-content: flex-start;
       display: flex;
@@ -98,17 +94,17 @@
         display: block;
         margin-top: auto;
 
-        nav {
+        > nav {
           justify-content: center;
           display: flex;
         }
 
+        // Sticky rather than fixed: the footer stays at the bottom of the view port while it is in the content
+        // column, so it neither covers the sidebar nor hides the end of the content.
         &.fixed {
-          position: fixed;
+          position: sticky;
           bottom: 0;
-          left: 0;
-          right: 0;
-          z-index: 1040;
+          z-index: 1;
         }
       }
     }

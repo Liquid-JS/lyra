@@ -1,11 +1,4 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
 import { NgModule } from '@angular/core';
-
-import { NbSharedModule } from '../shared/shared.module';
 
 import {
   NbLayoutComponent,
@@ -13,8 +6,6 @@ import {
   NbLayoutFooterComponent,
   NbLayoutHeaderComponent,
 } from './layout.component';
-
-import { NbRestoreScrollTopHelper } from './restore-scroll-top.service';
 
 import { NbLtrDirective, NbRtlDirective } from './layout-direction.directive';
 
@@ -28,9 +19,7 @@ const NB_LAYOUT_COMPONENTS = [
 const NB_LAYOUT_DIRECTIVES = [NbLtrDirective, NbRtlDirective];
 
 @NgModule({
-  imports: [NbSharedModule],
-  declarations: [...NB_LAYOUT_COMPONENTS, ...NB_LAYOUT_DIRECTIVES],
-  providers: [NbRestoreScrollTopHelper],
+  imports: [...NB_LAYOUT_COMPONENTS, ...NB_LAYOUT_DIRECTIVES],
   exports: [...NB_LAYOUT_COMPONENTS, ...NB_LAYOUT_DIRECTIVES],
 })
 export class NbLayoutModule {}

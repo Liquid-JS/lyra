@@ -1,46 +1,38 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 import {
   AfterViewInit,
   Component,
+  computed,
+  DestroyRef,
+  effect,
   ElementRef,
-  HostBinding,
-  HostListener,
-  Input,
+  inject,
+  input,
   OnDestroy,
-  Renderer2,
-  ViewChild,
-  ViewContainerRef,
-  Inject,
   PLATFORM_ID,
+  Renderer2,
+  signal,
+  viewChild,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { isPlatformBrowser } from '@angular/common';
-import { BehaviorSubject, Subject } from 'rxjs';
-import { filter, takeUntil } from 'rxjs/operators';
+import { filter } from 'rxjs/operators';
 
-import { convertToBoolProperty, NbBooleanInput } from '../helpers';
-import { NbThemeService } from '../../services/theme.service';
-import { NbSpinnerService } from '../../services/spinner.service';
-import { NbLayoutDirectionService } from '../../services/direction.service';
+import { ɵconvertToBoolProperty as convertToBoolProperty, NbBooleanInput } from '@liquid-js/lyr-core/base';
+import { NbThemeService } from '@liquid-js/lyr-core/base';
+import { NbSpinnerService } from '@liquid-js/lyr-core/base';
+import { NbLayoutDirectionService } from '@liquid-js/lyr-core/base';
 import { NbRestoreScrollTopHelper } from './restore-scroll-top.service';
-import { NbScrollPosition, NbLayoutScrollService } from '../../services/scroll.service';
-import { NbLayoutDimensions, NbLayoutRulerService } from '../../services/ruler.service';
-import { NB_WINDOW, NB_DOCUMENT } from '../../theme.options';
-import { NbOverlayContainerAdapter } from '../cdk/adapter/overlay-container-adapter';
+import { NbScrollPosition, NbLayoutScrollService } from '@liquid-js/lyr-core/base';
+import { NbLayoutDimensions, NbLayoutRulerService } from '@liquid-js/lyr-core/base';
+import { NB_WINDOW, NB_DOCUMENT } from '@liquid-js/lyr-core/base';
+import { NB_LAYOUT_SCROLL_BLOCK_CLASS } from '@liquid-js/lyr-core/cdk';
+import { NbOverlayContainerAdapter } from '@liquid-js/lyr-core/cdk';
 
 /**
- * Layout container component.
- * When using with Nebular Theme System it is required that all child components should be placed inside.
- *
- * Basic example of two column layout with header:
+ * The page's frame: a header, sidebars, columns and a footer. The components go inside it; it also applies the theme
+ * and holds the overlays.
  *
  * @stacked-example(Showcase, layout/layout-showcase.component)
- *
- * Can contain the following components inside:
  *
  * ```html
  * <nb-layout>
@@ -51,6 +43,17 @@ import { NbOverlayContainerAdapter } from '../cdk/adapter/overlay-container-adap
  * </nb-layout>
  * ```
  * ### Installation
+ *
+ * Import `NbLayoutComponent`, `NbLayoutHeaderComponent`, `NbLayoutColumnComponent` and `NbLayoutFooterComponent` into
+ * your standalone component:
+ * ```ts
+ * @Component({
+ *   imports: [NbLayoutComponent, NbLayoutHeaderComponent, NbLayoutColumnComponent, NbLayoutFooterComponent],
+ * })
+ * export class PageComponent { }
+ * ```
+ *
+ * With NgModules:
  *
  * Import `NbLayoutModule` to your app module.
  * ```ts
@@ -63,32 +66,17 @@ import { NbOverlayContainerAdapter } from '../cdk/adapter/overlay-container-adap
  * export class AppModule { }
  * ```
  * ### Usage
- * By default the layout fills up the whole view-port.
- * The window scrollbars are disabled on the body and moved inside of the nb-layout, so that the scrollbars
- * won't mess with the fixed nb-header.
+ * The layout is at least as tall as the view port (`layout-min-height`). The page scrolls as a whole by default;
+ * with `withScroll`, the layout's own container scrolls instead, so the body has no scrollbar. `windowMode` turns
+ * the layout into a floating window, centred under a margin on wide screens, and scrolls inside it.
  *
- * The child components are projected into a flexible layout structure allowing to adjust the layout behavior
- * based on the settings provided.
- *
- * The layout content (columns) becomes centered when the window width is more than
- * the value specified in the theme variable `layout-content-width`.
- *
- * The layout also contains the area on the very top (the first child of the nb-layout), which could be used
- * to dynamically append some components like modals or spinners/loaders
- * so that they are located on top of the elements hierarchy.
- * More details are under the `ThemeService` section.
- *
- * The layout component is also responsible for changing application themes.
- * It listens to the `themeChange` event and change a theme CSS class appended to body.
- * Based on the class appended, specific CSS-theme is applied to the application.
- * More details of the Theme System could be found here [Enabling Theme System](#/docs/concepts/theme-system)
- *
- * A simple layout with footer:
+ * Overlays, e.g. dialogs, popovers and toasts, are attached to the layout, so they lie over everything in it. The
+ * layout also applies the theme: on a theme change it puts the theme's `nb-theme-<name>` class on the body, which
+ * the theme's styles are scoped to. See [Enable Customizable Theme](theme/customization/enable-customizable-theme).
  *
  * @stacked-example(Layout With Footer, layout/layout-w-footer.component)
  *
- * It is possible to ask the layout to center the columns (notice: we added a `center` attribute
- * to the layout:
+ * With `center`, the columns take the theme's `layout-content-width` and sit in the middle of wider screens:
  *
  * ```html
  * <nb-layout center>
@@ -124,158 +112,104 @@ import { NbOverlayContainerAdapter } from '../cdk/adapter/overlay-container-adap
  * layout-scrollbar-width:
  */
 @Component({
-    selector: 'nb-layout',
-    styleUrls: ['./layout.component.scss'],
-    template: `
-    <div class="scrollable-container" #scrollableContainer (scroll)="onScroll($event)">
-      <div class="layout" #layoutContainer>
-        <ng-content select="nb-layout-header:not([subheader])"></ng-content>
-        <div class="layout-container">
-          <ng-content select="nb-sidebar"></ng-content>
-          <div class="content" [class.center]="centerValue">
-            <ng-content select="nb-layout-header[subheader]"></ng-content>
-            <div class="columns">
-              <ng-content select="nb-layout-column"></ng-content>
-            </div>
-            <ng-content select="nb-layout-footer"></ng-content>
-          </div>
-        </div>
-      </div>
-    </div>
-  `,
-    standalone: false
+  selector: 'nb-layout',
+  styleUrls: ['./layout.component.scss'],
+  templateUrl: './layout.component.html',
+  host: {
+    '[class.window-mode]': 'windowMode()',
+    '[class.with-scroll]': 'withScrollValue()',
+    '[class.with-subheader]': 'withSubheader()',
+    '(window:scroll)': 'onScroll($event)',
+    '(window:resize)': 'onResize($event)',
+  },
 })
 export class NbLayoutComponent implements AfterViewInit, OnDestroy {
-  protected scrollBlockClass = 'nb-global-scrollblock';
+  protected readonly destroyRef = inject(DestroyRef);
+  protected readonly themeService = inject(NbThemeService);
+  protected readonly spinnerService = inject(NbSpinnerService);
+  protected readonly elementRef = inject(ElementRef);
+  protected readonly renderer = inject(Renderer2);
+  protected readonly window = inject(NB_WINDOW);
+  protected readonly document = inject(NB_DOCUMENT);
+  protected readonly platformId = inject(PLATFORM_ID);
+  protected readonly layoutDirectionService = inject(NbLayoutDirectionService);
+  protected readonly scrollService = inject(NbLayoutScrollService);
+  protected readonly rulerService = inject(NbLayoutRulerService);
+  protected readonly scrollTop = inject(NbRestoreScrollTopHelper);
+  protected readonly overlayContainer = inject(NbOverlayContainerAdapter);
+
+  protected scrollBlockClass = NB_LAYOUT_SCROLL_BLOCK_CLASS;
   protected isScrollBlocked = false;
-  protected scrollableContainerOverflowOldValue: string;
-  protected layoutPaddingOldValue: { left: string; right: string };
+  protected scrollableContainerOverflowOldValue = '';
+  protected layoutPaddingOldValue?: { left: string; right: string };
 
-  centerValue: boolean = false;
-  restoreScrollTopValue: boolean = true;
-
-  @HostBinding('class.window-mode') windowModeValue: boolean = false;
-  @HostBinding('class.with-scroll') withScrollValue: boolean = false;
-  @HostBinding('class.with-subheader') withSubheader: boolean = false;
+  /** The columns take the theme's `layout-content-width` and sit in the middle of wider screens. */
+  readonly center = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
 
   /**
-   * Defines whether the layout columns will be centered after some width
-   * @param {boolean} val
+   * The layout, with its sidebars and fixed header, floats like a window: centred, with a margin above it, on
+   * screens wider than the theme's `$layout-window-mode-max-width`. The layout scrolls inside, as with `withScroll`.
    */
-  @Input()
-  set center(val: boolean) {
-    this.centerValue = convertToBoolProperty(val);
-  }
-  static ngAcceptInputType_center: NbBooleanInput;
+  readonly windowMode = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
+
+  /** The layout's own container scrolls, rather than the page; `windowMode` implies it. */
+  readonly withScroll = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
+
+  /** Scrolls to the top when the router navigates to another path; on by default. */
+  readonly restoreScrollTop = input<boolean, NbBooleanInput>(true, { transform: convertToBoolProperty });
 
   /**
-   * Defines whether the layout enters a 'window' mode, when the layout content (including sidebars and fixed header)
-   * becomes centered by width with a margin from the top of the screen, like a floating window.
-   * Automatically enables `withScroll` mode, as in the window mode scroll must be inside the layout and cannot be on
-   * window. (TODO: check this)
-   * @param {boolean} val
+   * Whether the scrollbars are on the layout: with `withScroll`, or in window mode.
    */
-  @Input()
-  set windowMode(val: boolean) {
-    this.windowModeValue = convertToBoolProperty(val);
-    this.withScroll = this.windowModeValue;
-  }
-  static ngAcceptInputType_windowMode: NbBooleanInput;
+  readonly withScrollValue = computed(() => this.withScroll() || this.windowMode());
 
   /**
-   * Defines whether to move the scrollbars to layout or leave it at the body level.
-   * Automatically set to true when `windowMode` is enabled.
-   * @param {boolean} val
+   * Whether the layout has a subheader, which `nb-layout-header` sets.
    */
-  @Input()
-  set withScroll(val: boolean) {
-    this.withScrollValue = convertToBoolProperty(val);
+  readonly withSubheader = signal(false);
 
-    // TODO: is this the best way of doing it? as we don't have access to body from theme styles
-    // TODO: add e2e test
-    const body = this.document.getElementsByTagName('body')[0];
-    if (this.withScrollValue) {
-      this.renderer.setStyle(body, 'overflow', 'hidden');
-    } else {
-      this.renderer.setStyle(body, 'overflow', 'initial');
-    }
-  }
-  static ngAcceptInputType_withScroll: NbBooleanInput;
+  readonly scrollableContainerRef = viewChild.required('scrollableContainer', { read: ElementRef<HTMLElement> });
 
-  /**
-   * Restores scroll to the top of the page after navigation
-   * @param {boolean} val
-   */
-  @Input()
-  set restoreScrollTop(val: boolean) {
-    this.restoreScrollTopValue = convertToBoolProperty(val);
-  }
-  static ngAcceptInputType_restoreScrollTop: NbBooleanInput;
+  readonly layoutContainerRef = viewChild.required('layoutContainer', { read: ElementRef<HTMLElement> });
 
-  // TODO remove as of 5.0.0
-  @ViewChild('layoutTopDynamicArea', { read: ViewContainerRef }) veryTopRef: ViewContainerRef;
-
-  @ViewChild('scrollableContainer', { read: ElementRef, static: true })
-  scrollableContainerRef: ElementRef<HTMLElement>;
-
-  @ViewChild('layoutContainer', { read: ElementRef })
-  layoutContainerRef: ElementRef<HTMLElement>;
-
-  protected afterViewInit$ = new BehaviorSubject(null);
-
-  private destroy$ = new Subject<void>();
-
-  constructor(
-    protected themeService: NbThemeService,
-    protected spinnerService: NbSpinnerService,
-    protected elementRef: ElementRef,
-    protected renderer: Renderer2,
-    @Inject(NB_WINDOW) protected window,
-    @Inject(NB_DOCUMENT) protected document,
-    @Inject(PLATFORM_ID) protected platformId: Object,
-    protected layoutDirectionService: NbLayoutDirectionService,
-    protected scrollService: NbLayoutScrollService,
-    protected rulerService: NbLayoutRulerService,
-    protected scrollTop: NbRestoreScrollTopHelper,
-    protected overlayContainer: NbOverlayContainerAdapter,
-  ) {
+  constructor() {
     this.registerAsOverlayContainer();
 
     this.themeService
       .onThemeChange()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((theme: any) => {
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((theme) => {
         const body = this.document.getElementsByTagName('body')[0];
-        if (theme.previous) {
-          this.renderer.removeClass(body, `nb-theme-${theme.previous}`);
-        }
-        this.renderer.addClass(body, `nb-theme-${theme.name}`);
+        // Every other theme's class, not just the previous one's: a theme changed while no layout was on the page,
+        // e.g. between one route's layout and the next, left its class behind.
+        const current = `nb-theme-${theme.name}`;
+        Array.from(body.classList)
+          .filter((name) => name.startsWith('nb-theme-') && name !== current)
+          .forEach((name) => this.renderer.removeClass(body, name));
+        this.renderer.addClass(body, current);
       });
 
     this.themeService
       .onAppendLayoutClass()
-      .pipe(takeUntil(this.destroy$))
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((className: string) => {
         this.renderer.addClass(this.elementRef.nativeElement, className);
       });
 
     this.themeService
       .onRemoveLayoutClass()
-      .pipe(takeUntil(this.destroy$))
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((className: string) => {
         this.renderer.removeClass(this.elementRef.nativeElement, className);
       });
 
-    this.spinnerService.registerLoader(
-      new Promise<void>((resolve) => {
-        this.afterViewInit$.pipe(takeUntil(this.destroy$)).subscribe((_) => resolve());
-      }),
-    );
-    this.spinnerService.load();
+    // Hides the global spinner once the loaders the app registered are done, or one fails, which is reported here as
+    // nothing else waits for them.
+    this.spinnerService.load().catch((error: unknown) => console.error(error));
 
     this.rulerService
       .onGetDimensions()
-      .pipe(takeUntil(this.destroy$))
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(({ listener }) => {
         listener.next(this.getDimensions());
         listener.complete();
@@ -283,7 +217,7 @@ export class NbLayoutComponent implements AfterViewInit, OnDestroy {
 
     this.scrollService
       .onGetPosition()
-      .pipe(takeUntil(this.destroy$))
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(({ listener }) => {
         listener.next(this.getScrollPosition());
         listener.complete();
@@ -292,8 +226,8 @@ export class NbLayoutComponent implements AfterViewInit, OnDestroy {
     this.scrollTop
       .shouldRestore()
       .pipe(
-        filter(() => this.restoreScrollTopValue),
-        takeUntil(this.destroy$),
+        filter(() => this.restoreScrollTop()),
+        takeUntilDestroyed(this.destroyRef),
       )
       .subscribe(() => {
         this.scroll(0, 0);
@@ -301,13 +235,13 @@ export class NbLayoutComponent implements AfterViewInit, OnDestroy {
 
     this.scrollService
       .onScrollableChange()
-      .pipe(filter(() => this.withScrollValue), takeUntil(this.destroy$))
+      .pipe(
+        filter(() => this.withScrollValue()),
+        takeUntilDestroyed(this.destroyRef),
+      )
       .subscribe((scrollable: boolean) => {
-        /**
-         * In case when Nebular Layout custom scroll `withScroll` mode is enabled
-         * we need to disable default CDK scroll blocker (@link NbBlockScrollStrategyAdapter) on HTML element
-         * so that it won't add additional positioning.
-         */
+        // The layout's container scrolls, so the layout blocks it in place of the CDK's block scroll strategy
+        // (NbBlockScrollStrategyAdapter), which would position the html element.
         if (scrollable) {
           this.enableScroll();
         } else {
@@ -315,8 +249,8 @@ export class NbLayoutComponent implements AfterViewInit, OnDestroy {
         }
       });
 
-    if (isPlatformBrowser(this.platformId)) {
-      // trigger first time so that after the change we have the initial value
+    if (this.window) {
+      // The initial width, which the breakpoint changes build on.
       this.themeService.changeWindowWidth(this.window.innerWidth);
     }
   }
@@ -324,47 +258,35 @@ export class NbLayoutComponent implements AfterViewInit, OnDestroy {
   ngAfterViewInit() {
     this.layoutDirectionService
       .onDirectionChange()
-      .pipe(takeUntil(this.destroy$))
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((direction) => (this.document.dir = direction));
 
     this.scrollService
       .onManualScroll()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(({ x, y }: NbScrollPosition) => this.scroll(x, y));
-
-    this.afterViewInit$.next(true);
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(({ x, y }) => this.scroll(x, y));
   }
 
   ngOnDestroy() {
-    this.destroy$.next();
-    this.destroy$.complete();
     this.unregisterAsOverlayContainer();
   }
 
-  @HostListener('window:scroll', ['$event'])
-  onScroll($event) {
+  onScroll($event: Event) {
     this.scrollService.fireScrollChange($event);
   }
 
-  @HostListener('window:resize', ['$event'])
-  onResize(event) {
-    this.themeService.changeWindowWidth(event.target.innerWidth);
+  onResize(event: Event) {
+    this.themeService.changeWindowWidth((event.target as Window).innerWidth);
   }
 
-  /**
-   * Returns scroll and client height/width
-   *
-   * Depending on the current scroll mode (`withScroll=true`) returns sizes from the body element
-   * or from the `.scrollable-container`
-   * @returns {NbLayoutDimensions}
-   */
+  /** The client and scroll size of what scrolls: the layout's container with `withScroll`, the document otherwise. */
   getDimensions(): NbLayoutDimensions {
     let clientWidth,
       clientHeight,
       scrollWidth,
       scrollHeight = 0;
-    if (this.withScrollValue) {
-      const container = this.scrollableContainerRef.nativeElement;
+    if (this.withScrollValue()) {
+      const container = this.scrollableContainerRef().nativeElement;
       clientWidth = container.clientWidth;
       clientHeight = container.clientHeight;
       scrollWidth = container.scrollWidth;
@@ -385,21 +307,14 @@ export class NbLayoutComponent implements AfterViewInit, OnDestroy {
     };
   }
 
-  /**
-   * Returns scroll position of current scroll container.
-   *
-   * If `withScroll` = true, returns scroll position of the `.scrollable-container` element,
-   * otherwise - of the scrollable element of the window (which may be different depending of a browser)
-   *
-   * @returns {NbScrollPosition}
-   */
+  /** The scroll position of what scrolls: the layout's container with `withScroll`, the window otherwise. */
   getScrollPosition(): NbScrollPosition {
     if (!isPlatformBrowser(this.platformId)) {
       return { x: 0, y: 0 };
     }
 
-    if (this.withScrollValue) {
-      const container = this.scrollableContainerRef.nativeElement;
+    if (this.withScrollValue()) {
+      const container = this.scrollableContainerRef().nativeElement;
       return { x: container.scrollLeft, y: container.scrollTop };
     }
 
@@ -408,14 +323,14 @@ export class NbLayoutComponent implements AfterViewInit, OnDestroy {
     const x =
       -documentRect.left ||
       this.document.body.scrollLeft ||
-      this.window.scrollX ||
+      this.window?.scrollX ||
       this.document.documentElement.scrollLeft ||
       0;
 
     const y =
       -documentRect.top ||
       this.document.body.scrollTop ||
-      this.window.scrollY ||
+      this.window?.scrollY ||
       this.document.documentElement.scrollTop ||
       0;
 
@@ -430,11 +345,11 @@ export class NbLayoutComponent implements AfterViewInit, OnDestroy {
 
   protected unregisterAsOverlayContainer() {
     if (this.overlayContainer.clearContainer) {
-      this.overlayContainer.clearContainer();
+      this.overlayContainer.clearContainer(this.elementRef.nativeElement);
     }
   }
 
-  private scroll(x: number = null, y: number = null) {
+  private scroll(x?: number, y?: number) {
     const { x: currentX, y: currentY } = this.getScrollPosition();
     x = x == null ? currentX : x;
     y = y == null ? currentY : y;
@@ -442,8 +357,8 @@ export class NbLayoutComponent implements AfterViewInit, OnDestroy {
     if (!isPlatformBrowser(this.platformId)) {
       return;
     }
-    if (this.withScrollValue) {
-      const scrollable = this.scrollableContainerRef.nativeElement;
+    if (this.withScrollValue()) {
+      const scrollable = this.scrollableContainerRef().nativeElement;
       if (scrollable.scrollTo) {
         scrollable.scrollTo(x, y);
       } else {
@@ -451,11 +366,12 @@ export class NbLayoutComponent implements AfterViewInit, OnDestroy {
         scrollable.scrollTop = y;
       }
     } else {
-      this.window.scrollTo(x, y);
+      this.window?.scrollTo(x, y);
     }
   }
 
-  // TODO: Extract into block scroll strategy
+  // The layout blocks its own scrollable container when the block scroll strategy asks, through NbLayoutScrollService;
+  // only the layout knows that container.
   protected blockScroll() {
     if (this.isScrollBlocked) {
       return;
@@ -465,8 +381,8 @@ export class NbLayoutComponent implements AfterViewInit, OnDestroy {
 
     this.renderer.addClass(this.document.documentElement, this.scrollBlockClass);
 
-    const scrollableContainerElement = this.scrollableContainerRef.nativeElement;
-    const layoutElement = this.layoutContainerRef.nativeElement;
+    const scrollableContainerElement = this.scrollableContainerRef().nativeElement;
+    const layoutElement = this.layoutContainerRef().nativeElement;
 
     const layoutWithScrollWidth = layoutElement.clientWidth;
     this.scrollableContainerOverflowOldValue = scrollableContainerElement.style.overflow;
@@ -495,77 +411,55 @@ export class NbLayoutComponent implements AfterViewInit, OnDestroy {
       this.isScrollBlocked = false;
 
       this.renderer.removeClass(this.document.documentElement, this.scrollBlockClass);
-      this.scrollableContainerRef.nativeElement.style.overflow = this.scrollableContainerOverflowOldValue;
+      this.scrollableContainerRef().nativeElement.style.overflow = this.scrollableContainerOverflowOldValue;
 
       if (this.layoutPaddingOldValue) {
-        const layoutElement = this.layoutContainerRef.nativeElement;
+        const layoutElement = this.layoutContainerRef().nativeElement;
         layoutElement.style.paddingLeft = this.layoutPaddingOldValue.left;
         layoutElement.style.paddingRight = this.layoutPaddingOldValue.right;
-        this.layoutPaddingOldValue = null;
+        this.layoutPaddingOldValue = undefined;
       }
     }
   }
 }
 
 /**
- * A container component which determines a content position inside of the layout.
- * The layout could contain unlimited columns (not including the sidebars).
- *
- * By default the columns are ordered from the left to the right,
- * but it's also possible to overwrite this behavior by setting a `left` attribute to the column,
- * moving it to the very first position:
+ * A column of the layout's content, between the sidebars; a layout can have any number. The columns share the width
+ * in the order they're written, in the page's direction; `start` moves one to the start edge, `left` to the left
+ * edge whatever the direction:
  *
  * @stacked-example(Column Left, layout/layout-column-left.component)
  */
 @Component({
-    selector: 'nb-layout-column',
-    template: `<ng-content></ng-content>`,
-    standalone: false
+  selector: 'nb-layout-column',
+  template: `<ng-content />`,
+  host: {
+    '[class.left]': 'left() && !start()',
+    '[class.start]': 'start()',
+  },
 })
 export class NbLayoutColumnComponent {
-  @HostBinding('class.left') leftValue: boolean;
-  @HostBinding('class.start') startValue: boolean;
+  /** Moves the column to the left edge, whatever the direction of the page; `start` takes precedence. */
+  readonly left = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
 
-  /**
-   * Move the column to the very left position in the layout.
-   * @param {boolean} val
-   */
-  @Input()
-  set left(val: boolean) {
-    this.leftValue = convertToBoolProperty(val);
-    this.startValue = false;
-  }
-  static ngAcceptInputType_left: NbBooleanInput;
-
-  /**
-   * Make column first in the layout.
-   * @param {boolean} val
-   */
-  @Input()
-  set start(val: boolean) {
-    this.startValue = convertToBoolProperty(val);
-    this.leftValue = false;
-  }
-  static ngAcceptInputType_start: NbBooleanInput;
+  /** Moves the column to the start edge: the left in a left to right page, the right in a right to left one. */
+  readonly start = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
 }
 
 /**
- * Page header component.
- * Located on top of the page above the layout columns and sidebars.
- * Could be made `fixed` by setting the corresponding property. In the fixed mode the header becomes
- * sticky to the top of the nb-layout (to of the page). Here's an example:
+ * The page's header, above the columns and sidebars. A `fixed` header stays at the top of the view port while the
+ * page scrolls, and the sidebars start below it:
  *
  * @stacked-example(Fixed Header, layout/layout-fixed-header.component)
  *
- * In a pair with sidebar it is possible to setup a configuration when header is placed on a side of the sidebar
- * and not on top of it. To achieve this simply put a `subheader` property to the header like this:
+ * A `subheader` header sits beside the sidebar, above the columns, rather than above the sidebar:
  * ```html
  * <nb-layout-header subheader></nb-layout-header>
  * ```
  * @stacked-example(Subheader, layout/layout-sidebar-subheader.component)
- * Note that in such configuration sidebar shadow is removed and header cannot be make `fixed`.
+ * The sidebar then has no shadow, and the header can't be `fixed`.
  *
- * Same way you can put both `fixed` and `clipped` headers adding creating a sub-header for your app:
+ * A layout can have both, a fixed header and a subheader:
  *
  * @stacked-example(Subheader, layout/layout-subheader.component)
  *
@@ -582,48 +476,33 @@ export class NbLayoutColumnComponent {
  * header-shadow:
  */
 @Component({
-    selector: 'nb-layout-header',
-    template: `
-    <nav [class.fixed]="fixedValue">
-      <ng-content></ng-content>
-    </nav>
-  `,
-    standalone: false
+  selector: 'nb-layout-header',
+  templateUrl: './layout-header.component.html',
+  host: {
+    '[class.fixed]': 'fixedValue()',
+    '[class.subheader]': 'subheader()',
+  },
 })
 export class NbLayoutHeaderComponent {
-  @HostBinding('class.fixed') fixedValue: boolean;
-  @HostBinding('class.subheader') subheaderValue: boolean;
+  private readonly layout = inject(NbLayoutComponent);
 
-  constructor(private layout: NbLayoutComponent) {}
+  /** The header stays at the top of the view port while the page scrolls. */
+  readonly fixed = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
 
-  /**
-   * Makes the header sticky to the top of the nb-layout.
-   * @param {boolean} val
-   */
-  @Input()
-  set fixed(val: boolean) {
-    this.fixedValue = convertToBoolProperty(val);
+  /** The header sits beside the sidebar, above the columns; it can't be `fixed`, and the sidebar loses its shadow. */
+  readonly subheader = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
+
+  /** A subheader can't be fixed; the `fixed` input is kept, so it applies again when `subheader` is turned off. */
+  readonly fixedValue = computed(() => this.fixed() && !this.subheader());
+
+  constructor() {
+    effect(() => this.layout.withSubheader.set(this.subheader()));
   }
-  static ngAcceptInputType_fixed: NbBooleanInput;
-
-  /**
-   * Places header on a side of the sidebar, and not above.
-   * Disables fixed mode for this header and remove a shadow from the sidebar.
-   * @param {boolean} val
-   */
-  @Input()
-  set subheader(val: boolean) {
-    this.subheaderValue = convertToBoolProperty(val);
-    this.fixedValue = false;
-    this.layout.withSubheader = this.subheaderValue;
-  }
-  static ngAcceptInputType_subheader: NbBooleanInput;
 }
 
 /**
- * Page footer.
- * Located under the nb-layout content (specifically, under the columns).
- * Could be made `fixed`, becoming sticky to the bottom of the view port (window).
+ * The page's footer, under the columns, beside the sidebars. A `fixed` footer stays at the bottom of the view port
+ * while the columns scroll past it.
  *
  * @styles
  *
@@ -634,7 +513,6 @@ export class NbLayoutHeaderComponent {
  * footer-text-font-weight:
  * footer-text-line-height:
  * footer-text-highlight-color:
- * footer-height:
  * footer-padding:
  * footer-divider-color:
  * footer-divider-style:
@@ -642,24 +520,13 @@ export class NbLayoutHeaderComponent {
  * footer-shadow:
  */
 @Component({
-    selector: 'nb-layout-footer',
-    template: `
-    <nav [class.fixed]="fixedValue">
-      <ng-content></ng-content>
-    </nav>
-  `,
-    standalone: false
+  selector: 'nb-layout-footer',
+  templateUrl: './layout-footer.component.html',
+  host: {
+    '[class.fixed]': 'fixed()',
+  },
 })
 export class NbLayoutFooterComponent {
-  @HostBinding('class.fixed') fixedValue: boolean;
-
-  /**
-   * Makes the footer sticky to the bottom of the window.
-   * @param {boolean} val
-   */
-  @Input()
-  set fixed(val: boolean) {
-    this.fixedValue = convertToBoolProperty(val);
-  }
-  static ngAcceptInputType_fixed: NbBooleanInput;
+  /** The footer stays at the bottom of the view port while the columns scroll past it. */
+  readonly fixed = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
 }

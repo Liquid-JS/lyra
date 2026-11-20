@@ -1,46 +1,23 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { ChangeDetectorRef, Directive, OnDestroy, OnInit, TemplateRef, ViewContainerRef } from '@angular/core';
-import { distinctUntilChanged, map, takeUntil } from 'rxjs/operators';
-import { Subject } from 'rxjs';
-import { NbLayoutDirection, NbLayoutDirectionService } from '../../services/direction.service';
+import { Directive, effect, inject, TemplateRef, untracked, ViewContainerRef } from '@angular/core';
+import { NbLayoutDirection, NbLayoutDirectionService } from '@liquid-js/lyr-core/base';
 
 @Directive()
-abstract class NbBaseLayoutDirectionDirective implements OnInit, OnDestroy {
-  protected destroy$ = new Subject<void>();
+abstract class NbBaseLayoutDirectionDirective {
+  protected readonly templateRef = inject<TemplateRef<unknown>>(TemplateRef);
+  protected readonly viewContainer = inject(ViewContainerRef);
+  protected readonly directionService = inject(NbLayoutDirectionService);
+  protected abstract directionToShow: NbLayoutDirection;
 
-  constructor(
-    protected templateRef: TemplateRef<any>,
-    protected viewContainer: ViewContainerRef,
-    protected cd: ChangeDetectorRef,
-    protected directionService: NbLayoutDirectionService,
-    protected directionToShow: NbLayoutDirection,
-  ) {}
-
-  ngOnInit(): void {
-    this.directionService
-      .onDirectionChange()
-      .pipe(
-        map((layoutDirection: NbLayoutDirection) => layoutDirection === this.directionToShow),
-        distinctUntilChanged(),
-        takeUntil(this.destroy$),
-      )
-      .subscribe((shouldShow: boolean) => this.updateView<boolean>(shouldShow));
+  constructor() {
+    effect(() => {
+      const shouldShow = this.directionService.direction() === this.directionToShow;
+      untracked(() => this.updateView(shouldShow));
+    });
   }
 
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
-  }
-
-  protected updateView<T>(shouldShow: T): void {
+  protected updateView(shouldShow: boolean) {
     if (shouldShow && !this.viewContainer.length) {
       this.viewContainer.createEmbeddedView(this.templateRef);
-      this.cd.markForCheck();
     } else if (!shouldShow && this.viewContainer.length) {
       this.viewContainer.clear();
     }
@@ -48,45 +25,25 @@ abstract class NbBaseLayoutDirectionDirective implements OnInit, OnDestroy {
 }
 
 /**
- * Apply `nbLtr` directive to the element you need to show only when layout direction is `LTR`.
+ * Shows its content only while the layout's direction is left to right; see `NbLayoutDirectionService`.
  *
  * ```html
- * <div *nbLtr>This text is visible only when layout direction is LTR</div>
+ * <div *nbLtr>Shown in a left to right page</div>
  * ```
  */
-@Directive({
-    selector: '[nbLtr]',
-    standalone: false
-})
+@Directive({ selector: '[nbLtr]' })
 export class NbLtrDirective extends NbBaseLayoutDirectionDirective {
-  constructor(
-    protected templateRef: TemplateRef<any>,
-    protected viewContainer: ViewContainerRef,
-    protected cd: ChangeDetectorRef,
-    protected directionService: NbLayoutDirectionService,
-  ) {
-    super(templateRef, viewContainer, cd, directionService, NbLayoutDirection.LTR);
-  }
+  protected directionToShow = NbLayoutDirection.LTR;
 }
 
 /**
- * Apply `nbRtl` directive to the element you need to show only when layout direction is `RTL`.
+ * Shows its content only while the layout's direction is right to left; see `NbLayoutDirectionService`.
  *
  * ```html
- * <div *nbRtl>This text is visible only when layout direction is RTL</div>
+ * <div *nbRtl>Shown in a right to left page</div>
  * ```
  */
-@Directive({
-    selector: '[nbRtl]',
-    standalone: false
-})
+@Directive({ selector: '[nbRtl]' })
 export class NbRtlDirective extends NbBaseLayoutDirectionDirective {
-  constructor(
-    protected templateRef: TemplateRef<any>,
-    protected viewContainer: ViewContainerRef,
-    protected cd: ChangeDetectorRef,
-    protected directionService: NbLayoutDirectionService,
-  ) {
-    super(templateRef, viewContainer, cd, directionService, NbLayoutDirection.RTL);
-  }
+  protected directionToShow = NbLayoutDirection.RTL;
 }

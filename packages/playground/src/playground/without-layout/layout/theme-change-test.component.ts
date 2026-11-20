@@ -1,46 +1,34 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { Component } from '@angular/core';
-import { NbThemeService } from '@nebular/theme';
+import { Component, inject } from '@angular/core';
+import {
+  NbThemeService,
+  NbLayoutComponent,
+  NbLayoutHeaderComponent,
+  NbLayoutColumnComponent,
+  NbLayoutFooterComponent,
+  NbSidebarComponent,
+  NbCardComponent,
+  NbCardHeaderComponent,
+  NbCardBodyComponent,
+} from '@liquid-js/lyr-core';
 
 @Component({
-    selector: 'nb-change-theme-test',
-    template: `
-    <nb-layout>
-      <nb-layout-header fixed>
-        <a href="#" class="navbar-brand">Akveo</a>
-        <button id="change-theme" (click)="changeTheme()">Change Theme</button>
-      </nb-layout-header>
-
-      <nb-sidebar right>
-          Sidebar content
-      </nb-sidebar>
-
-      <nb-layout-column>
-        <nb-card>
-          <nb-card-header>Hello</nb-card-header>
-          <nb-card-body>
-            Some Test content
-          </nb-card-body>
-        </nb-card>
-      </nb-layout-column>
-
-
-      <nb-layout-footer fixed>
-        &copy; Akveo 2017
-      </nb-layout-footer>
-    </nb-layout>
-`,
-    standalone: false
+  selector: 'nb-change-theme-test',
+  templateUrl: './theme-change-test.component.html',
+  imports: [
+    NbLayoutComponent,
+    NbLayoutHeaderComponent,
+    NbSidebarComponent,
+    NbLayoutColumnComponent,
+    NbCardComponent,
+    NbCardHeaderComponent,
+    NbCardBodyComponent,
+    NbLayoutFooterComponent,
+  ],
 })
 export class ThemeChangeTestComponent {
-  currentTheme = 'default';
+  private readonly themeService = inject(NbThemeService);
 
-  constructor(private themeService: NbThemeService) {}
+  currentTheme = 'default';
 
   changeTheme() {
     this.currentTheme = this.currentTheme === 'default' ? 'cosmic' : 'default';
