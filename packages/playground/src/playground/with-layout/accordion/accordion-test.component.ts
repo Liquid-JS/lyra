@@ -1,56 +1,20 @@
-import { Component, ChangeDetectionStrategy } from '@angular/core';
+import { Component } from '@angular/core';
+import {
+  NbAccordionComponent,
+  NbAccordionItemComponent,
+  NbAccordionItemHeaderComponent,
+  NbAccordionItemBodyComponent,
+} from '@liquid-js/lyr-core';
 
 @Component({
-    selector: 'nb-accordion-test',
-    template: `
-    <nb-accordion>
-      <nb-accordion-item>
-        <nb-accordion-item-header>
-          Accordion #1
-        </nb-accordion-item-header>
-        <nb-accordion-item-body>
-          A nebula is an interstellar cloud of dust, hydrogen, helium and other ionized gases.
-          Originally, nebula was a name for any diffuse astronomical object,
-          including galaxies beyond the Milky Way.
-        </nb-accordion-item-body>
-      </nb-accordion-item>
-
-      <nb-accordion-item>
-        <nb-accordion-item-header>
-          Accordion #2
-        </nb-accordion-item-header>
-        <nb-accordion-item-body>
-          A nebula is an interstellar cloud of dust, hydrogen, helium and other ionized gases.
-          Originally, nebula was a name for any diffuse astronomical object,
-          including galaxies beyond the Milky Way.
-        </nb-accordion-item-body>
-      </nb-accordion-item>
-
-      <nb-accordion-item expanded>
-        <nb-accordion-item-header>
-          Accordion #3
-        </nb-accordion-item-header>
-        <nb-accordion-item-body>
-          A nebula is an interstellar cloud of dust, hydrogen, helium and other ionized gases.
-          Originally, nebula was a name for any diffuse astronomical object,
-          including galaxies beyond the Milky Way.
-        </nb-accordion-item-body>
-      </nb-accordion-item>
-
-      <nb-accordion-item disabled>
-        <nb-accordion-item-header>
-          Accordion #4
-        </nb-accordion-item-header>
-        <nb-accordion-item-body>
-          A nebula is an interstellar cloud of dust, hydrogen, helium and other ionized gases.
-          Originally, nebula was a name for any diffuse astronomical object,
-          including galaxies beyond the Milky Way.
-        </nb-accordion-item-body>
-      </nb-accordion-item>
-    </nb-accordion>
-  `,
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  selector: 'nb-accordion-test',
+  templateUrl: './accordion-test.component.html',
+  imports: [
+    NbAccordionComponent,
+    NbAccordionItemComponent,
+    NbAccordionItemHeaderComponent,
+    NbAccordionItemBodyComponent,
+  ],
 })
 export class AccordionTestComponent {
 }

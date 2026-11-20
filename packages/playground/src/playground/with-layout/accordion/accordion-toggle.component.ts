@@ -1,17 +1,33 @@
-import { Component, ChangeDetectionStrategy, ViewChild } from '@angular/core';
+import { Component, viewChild } from '@angular/core';
+import {
+  NbCardComponent,
+  NbCardBodyComponent,
+  NbButtonComponent,
+  NbAccordionComponent,
+  NbAccordionItemComponent,
+  NbAccordionItemHeaderComponent,
+  NbAccordionItemBodyComponent,
+} from '@liquid-js/lyr-core';
 
 @Component({
-    selector: 'nb-accordion-toggle',
-    templateUrl: './accordion-toggle.component.html',
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    host: { class: 'example-height-60' },
-    standalone: false
+  selector: 'nb-accordion-toggle',
+  templateUrl: './accordion-toggle.component.html',
+  host: { class: 'example-height-60' },
+  imports: [
+    NbCardComponent,
+    NbCardBodyComponent,
+    NbButtonComponent,
+    NbAccordionComponent,
+    NbAccordionItemComponent,
+    NbAccordionItemHeaderComponent,
+    NbAccordionItemBodyComponent,
+  ],
 })
 export class AccordionToggleComponent {
 
-  @ViewChild('item') accordion;
+  readonly accordion = viewChild.required<NbAccordionItemComponent>('item');
 
   toggle() {
-    this.accordion.toggle();
+    this.accordion().toggle();
   }
 }

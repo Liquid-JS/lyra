@@ -1,153 +1,84 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
+import { Component, computed, DestroyRef, inject, input, linkedSignal, output } from '@angular/core';
 
-import {
-  Component,
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Input,
-  Output,
-  EventEmitter,
-  SimpleChanges,
-  HostBinding,
-  Host,
-  OnInit,
-  OnChanges,
-  OnDestroy,
-} from '@angular/core';
-import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
-
-import { NbAccordionComponent } from './accordion.component';
-import { convertToBoolProperty, NbBooleanInput } from '../helpers';
+import { NbAccordionComponent, NbAccordionItem } from './accordion.component';
+import { ɵconvertToBoolProperty as convertToBoolProperty, NbBooleanInput } from '@liquid-js/lyr-core/base';
 
 /**
- * Component intended to be used within `<nb-accordion>` component
+ * A section of an `nb-accordion`, with an `nb-accordion-item-header` and an `nb-accordion-item-body`.
  */
 @Component({
-    selector: 'nb-accordion-item',
-    styleUrls: ['./accordion-item.component.scss'],
-    template: `
-    <ng-content select="nb-accordion-item-header"></ng-content>
-    <ng-content select="nb-accordion-item-body"></ng-content>
-  `,
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  selector: 'nb-accordion-item',
+  styleUrls: ['./accordion-item.component.scss'],
+  templateUrl: './accordion-item.component.html',
+  host: {
+    '[class.collapsed]': 'isCollapsed()',
+    '[class.expanded]': 'isExpanded()',
+    '[class.disabled]': 'disabled()',
+  },
 })
-export class NbAccordionItemComponent implements OnInit, OnChanges, OnDestroy {
+export class NbAccordionItemComponent implements NbAccordionItem {
+  private readonly accordion = inject(NbAccordionComponent, { host: true });
 
   /**
-   * Item is collapse (`true` by default)
-   * @type {boolean}
+   * Whether the item is collapsed (`true` by default); `expanded` wins over it.
    */
-  @Input('collapsed')
-  @HostBinding('class.collapsed')
-  get collapsed(): boolean {
-    return this.collapsedValue;
-  }
-  set collapsed(val: boolean) {
-    this.collapsedValue = convertToBoolProperty(val);
-    this.collapsedChange.emit(this.collapsedValue);
-    this.invalidate();
-  }
-  static ngAcceptInputType_collapsed: NbBooleanInput;
+  readonly collapsed = input<boolean, NbBooleanInput>(true, { transform: convertToBoolProperty });
 
   /**
-   * Item is expanded (`false` by default)
-   * @type {boolean}
+   * Expands the item, whatever `collapsed` says.
    */
-  @Input('expanded')
-  @HostBinding('class.expanded')
-  get expanded(): boolean {
-    return !this.collapsed;
-  }
-  set expanded(val: boolean) {
-    this.collapsedValue = !convertToBoolProperty(val);
-  }
-  static ngAcceptInputType_expanded: NbBooleanInput;
+  readonly expanded = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
 
   /**
    * Item is disabled and cannot be opened.
-   * @type {boolean}
    */
-  @Input('disabled')
-  @HostBinding('class.disabled')
-  get disabled(): boolean {
-    return this.disabledValue;
-  }
-  set disabled(val: boolean) {
-    this.disabledValue = convertToBoolProperty(val);
-    this.invalidate();
-  }
-  static ngAcceptInputType_disabled: NbBooleanInput;
+  readonly disabled = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
 
   /**
-   * Emits whenever the expanded state of the accordion changes.
-   * Primarily used to facilitate two-way binding.
+   * Emits when a user or the accordion opens or closes the item.
    */
-  @Output() collapsedChange = new EventEmitter<boolean>();
+  readonly collapsedChange = output<boolean>();
 
-  accordionItemInvalidate = new Subject<boolean>();
+  /**
+   * Whether the item is collapsed: the `collapsed` and `expanded` inputs, until the item is toggled.
+   */
+  readonly isCollapsed = linkedSignal(() => this.collapsed() && !this.expanded());
 
-  private collapsedValue = true;
-  private disabledValue = false;
-  private destroy$ = new Subject<void>();
+  readonly isExpanded = computed(() => !this.isCollapsed());
 
-  constructor(@Host() private accordion: NbAccordionComponent, private cd: ChangeDetectorRef) {
+  constructor() {
+    inject(DestroyRef).onDestroy(this.accordion.register(this));
   }
 
   /**
-   * Open/close the item
+   * Toggles an enabled item; outside `multi` mode it closes the other items first.
    */
   toggle() {
-    if (!this.disabled) {
-      // we need this temporary variable as `openCloseItems.next` will change current value we need to save
-      const willSet = !this.collapsed;
+    if (!this.disabled()) {
+      const collapsed = !this.isCollapsed();
 
-      if (!this.accordion.multi) {
-        this.accordion.openCloseItems.next(true);
+      if (!this.accordion.multi()) {
+        this.accordion.closeAll();
       }
-      this.collapsed = willSet;
+      this.setCollapsed(collapsed);
     }
   }
 
-  /**
-   * Open the item.
-   */
   open() {
-    !this.disabled && (this.collapsed = false);
+    this.setCollapsed(false);
+  }
+
+  close() {
+    this.setCollapsed(true);
   }
 
   /**
-   * Collapse the item.
+   * Opens or closes an enabled item and emits `collapsedChange` when that changes its state.
    */
-  close() {
-    !this.disabled && (this.collapsed = true);
-  }
-
-  ngOnInit() {
-    this.accordion.openCloseItems
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(collapsed => {
-        !this.disabled && (this.collapsed = collapsed);
-    });
-  }
-
-  ngOnChanges(changes: SimpleChanges) {
-    this.accordionItemInvalidate.next(true);
-  }
-
-  ngOnDestroy() {
-    this.destroy$.next();
-    this.destroy$.complete();
-    this.accordionItemInvalidate.complete();
-  }
-
-  private invalidate() {
-    this.accordionItemInvalidate.next(true);
-    this.cd.markForCheck();
+  setCollapsed(collapsed: boolean) {
+    if (!this.disabled() && this.isCollapsed() !== collapsed) {
+      this.isCollapsed.set(collapsed);
+      this.collapsedChange.emit(collapsed);
+    }
   }
 }

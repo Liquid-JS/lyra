@@ -1,76 +1,45 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 import {
+  afterRenderEffect,
   Component,
-  ChangeDetectionStrategy,
-  Host,
-  ChangeDetectorRef,
-  OnInit,
-  OnDestroy,
+  computed,
+  ElementRef,
+  inject,
+  viewChild,
 } from '@angular/core';
-import { trigger, state, style, animate, transition } from '@angular/animations';
-import { takeUntil } from 'rxjs/operators';
-import { Subject } from 'rxjs';
 
 import { NbAccordionItemComponent } from './accordion-item.component';
-
-const accordionItemBodyTrigger = trigger('accordionItemBody', [
-  state(
-    'collapsed',
-    style({
-      overflow: 'hidden',
-      visibility: 'hidden',
-      height: 0,
-    }),
-  ),
-  state(
-    'expanded',
-    style({
-      overflow: 'hidden',
-      visibility: 'visible',
-    }),
-  ),
-  transition('collapsed => expanded', animate('100ms ease-in')),
-  transition('expanded => collapsed', animate('100ms ease-out')),
-]);
+import { ɵanimateExpand as animateExpand } from '@liquid-js/lyr-core/base';
 
 /**
- * Component intended to be used within `<nb-accordion-item>` component
+ * The content of an `nb-accordion-item`, which slides open and closed.
  */
 @Component({
-    selector: 'nb-accordion-item-body',
-    template: `
-    <div [@accordionItemBody]="{ value: state }">
-      <div class="item-body">
-        <ng-content></ng-content>
-      </div>
-    </div>
-  `,
-    animations: [accordionItemBodyTrigger],
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  selector: 'nb-accordion-item-body',
+  templateUrl: './accordion-item-body.component.html',
+  styleUrls: ['./accordion-item-body.component.scss'],
 })
-export class NbAccordionItemBodyComponent implements OnInit, OnDestroy {
-  private destroy$ = new Subject<void>();
+export class NbAccordionItemBodyComponent {
+  private readonly accordionItem = inject(NbAccordionItemComponent, { host: true });
+  private readonly container = viewChild.required<ElementRef<HTMLElement>>('container');
 
-  constructor(@Host() private accordionItem: NbAccordionItemComponent, private cd: ChangeDetectorRef) {}
+  readonly state = computed(() => (this.accordionItem.isCollapsed() ? 'collapsed' : 'expanded'));
 
-  get state(): string {
-    return this.accordionItem.collapsed ? 'collapsed' : 'expanded';
-  }
-
-  ngOnInit() {
-    this.accordionItem.accordionItemInvalidate
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(() => this.cd.markForCheck());
-  }
-
-  ngOnDestroy() {
-    this.destroy$.next();
-    this.destroy$.complete();
+  constructor() {
+    // The body opens and closes from the height it shows; it renders in its first state without animating. Opening and
+    // closing follow the same curve, so as one item opens while another of the same height closes, they even out and
+    // the items below stay put.
+    let previous: string | undefined;
+    afterRenderEffect(() => {
+      const state = this.state();
+      if (previous !== undefined && state !== previous) {
+        animateExpand(
+          this.container().nativeElement,
+          state === 'expanded',
+          { easing: 'ease-in-out' },
+          { visibility: 'visible' },
+        );
+      }
+      previous = state;
+    });
   }
 }

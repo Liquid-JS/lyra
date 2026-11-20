@@ -1,12 +1,13 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
+import { Component, input, linkedSignal } from '@angular/core';
+import { injectNbDefaults, NbContainerAppearance } from '@liquid-js/lyr-core/base';
+import { ɵconvertToBoolProperty as convertToBoolProperty, NbBooleanInput } from '@liquid-js/lyr-core/base';
 
-import { Component, ChangeDetectionStrategy, Input } from '@angular/core';
-import { Subject } from 'rxjs';
-import { convertToBoolProperty, NbBooleanInput } from '../helpers';
+/**
+ * What the accordion needs from its items, which register themselves.
+ */
+export interface NbAccordionItem {
+  setCollapsed(collapsed: boolean): void;
+}
 
 /**
  * An accordion allows to toggle the display of sections of content
@@ -25,6 +26,16 @@ import { convertToBoolProperty, NbBooleanInput } from '../helpers';
  * </nb-accordion>
  * ```
  * ### Installation
+ *
+ * Import `NbAccordionComponent`, `NbAccordionItemComponent`, `NbAccordionItemHeaderComponent`, `NbAccordionItemBodyComponent` into your standalone component:
+ * ```ts
+ * @Component({
+ *   imports: [NbAccordionComponent, NbAccordionItemComponent, NbAccordionItemHeaderComponent, NbAccordionItemBodyComponent],
+ * })
+ * export class PageComponent { }
+ * ```
+ *
+ * With NgModules:
  *
  * Import `NbAccordionModule` to your feature module.
  * ```ts
@@ -46,9 +57,13 @@ import { convertToBoolProperty, NbBooleanInput } from '../helpers';
  *
  * @styles
  *
+ * accordion-border-width:
+ * accordion-border-style:
+ * accordion-border-color:
  * accordion-border-radius:
  * accordion-padding:
  * accordion-shadow:
+ * accordion-floating-shadow:
  * accordion-header-text-color:
  * accordion-header-text-font-family:
  * accordion-header-text-font-size:
@@ -58,6 +73,9 @@ import { convertToBoolProperty, NbBooleanInput } from '../helpers';
  * accordion-header-border-color:
  * accordion-header-border-style:
  * accordion-header-border-width:
+ * accordion-header-hover-background-color:
+ * accordion-header-outline-width:
+ * accordion-header-outline-color:
  * accordion-item-background-color:
  * accordion-item-text-color:
  * accordion-item-text-font-family:
@@ -66,45 +84,54 @@ import { convertToBoolProperty, NbBooleanInput } from '../helpers';
  * accordion-item-text-line-height:
  */
 @Component({
-    selector: 'nb-accordion',
-    template: `
-    <ng-content select="nb-accordion-item"></ng-content>
+  selector: 'nb-accordion',
+  template: `
+    <ng-content select="nb-accordion-item" />
   `,
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  host: {
+    '[class]': '`appearance-${appearance()}`',
+  },
 })
 export class NbAccordionComponent {
-
-  openCloseItems = new Subject<boolean>();
+  protected readonly items = new Set<NbAccordionItem>();
+  // The app's defaults for accordions, which the appearance starts from.
+  protected readonly nbDefaults = injectNbDefaults('accordion');
 
   /**
-   *  Allow multiple items to be expanded at the same time.
-   * @type {boolean}
+   * Accordion appearance: `outline`, a card's border, or `floating`, a shadow instead, over the page.
    */
-  @Input('multi')
-  get multi(): boolean {
-    return this.multiValue;
-  }
-  set multi(val: boolean) {
-    this.multiValue = convertToBoolProperty(val);
-  }
-  static ngAcceptInputType_multi: NbBooleanInput;
-
-  private multiValue = false;
+  readonly appearanceInput = input<NbContainerAppearance | undefined>(undefined, { alias: 'appearance' });
+  /** The appearance in use: the input's, the app's default, or 'outline'. */
+  readonly appearance = linkedSignal<NbContainerAppearance>(
+    () => this.appearanceInput() ?? this.nbDefaults().appearance ?? 'outline',
+  );
 
   /**
-   * Opens all enabled accordion items.
+   * Allows several items to be expanded at once; otherwise opening an item closes the others.
+   */
+  readonly multi = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
+
+  /**
+   * Opens all enabled items; does nothing outside `multi` mode.
    */
   openAll() {
-    if (this.multi) {
-      this.openCloseItems.next(false);
+    if (this.multi()) {
+      this.items.forEach((item) => item.setCollapsed(false));
     }
   }
 
   /**
-   * Closes all enabled accordion items.
+   * Closes all enabled items.
    */
   closeAll() {
-    this.openCloseItems.next(true);
+    this.items.forEach((item) => item.setCollapsed(true));
+  }
+
+  /**
+   * @docs-private
+   */
+  register(item: NbAccordionItem): () => void {
+    this.items.add(item);
+    return () => this.items.delete(item);
   }
 }
