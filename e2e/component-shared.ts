@@ -17,8 +17,8 @@ export const alertSizes = [
 ];
 
 export const colors = [
-  { colorKey: 'primary', color: hexToRgbA('#3366ff') },
-  { colorKey: 'success', color: hexToRgbA('#00d68f') },
+  { colorKey: 'primary', color: hexToRgbA('#3469d1') },
+  { colorKey: 'success', color: hexToRgbA('#03ce86') },
   { colorKey: 'info', color: hexToRgbA('#0095ff') },
   { colorKey: 'warning', color: hexToRgbA('#ffaa00') },
   { colorKey: 'danger', color: hexToRgbA('#ff3d71') },
