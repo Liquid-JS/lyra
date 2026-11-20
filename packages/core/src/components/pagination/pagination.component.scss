@@ -1,0 +1,41 @@
+@use '../../styles/theming' as *;
+
+:host {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+:host(.loading) .navigation {
+  pointer-events: none;
+}
+
+.page-size,
+.navigation,
+.page {
+  display: flex;
+  align-items: center;
+}
+
+.page {
+  margin: 0;
+  white-space: nowrap;
+}
+
+.page input {
+  text-align: center;
+  // The value shows itself; spin buttons only crowd the narrow field.
+  appearance: textfield;
+
+  &::-webkit-inner-spin-button,
+  &::-webkit-outer-spin-button {
+    appearance: none;
+    margin: 0;
+  }
+}
+
+// The arrows point the way the pages go.
+:host nb-icon {
+  @include nb-rtl(transform, scaleX(-1));
+}

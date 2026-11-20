@@ -1,0 +1,84 @@
+@if (pageSizeOptions().length) {
+<div class="page-size">
+  <span [id]="labelId + '-size'">{{ texts().pageSize }}</span>
+  <nb-select [size]="size()"
+    appearance="outline"
+    [selected]="perPage()"
+    [aria-labelledby]="labelId + '-size'"
+    (selectedChange)="onPageSize($event)">
+    @for (option of sizes(); track option) {
+    <nb-option [value]="option">{{ format(option) }}</nb-option>
+    }
+  </nb-select>
+</div>
+}
+
+<span class="range"
+  dir="auto"
+  aria-live="polite">{{ range() }}</span>
+
+<div class="navigation">
+  @if (showFirstLast()) {
+  <button nbButton
+    ghost
+    type="button"
+    [size]="size()"
+    [disabled]="!hasPrevious()"
+    [attr.aria-label]="texts().first"
+    (click)="first()">
+    <nb-icon icon="arrowhead-left-outline"
+      pack="essentials" />
+  </button>
+  }
+  <button nbButton
+    ghost
+    type="button"
+    [size]="size()"
+    [disabled]="!hasPrevious()"
+    [attr.aria-label]="texts().previous"
+    (click)="previous()">
+    <nb-icon icon="chevron-left-outline"
+      pack="essentials" />
+  </button>
+
+  <label class="page">
+    <span class="visually-hidden">{{ texts().page }}</span>
+    <input nbInput
+      type="number"
+      inputmode="numeric"
+      min="1"
+      [max]="pageCount()"
+      [fieldSize]="size()"
+      [value]="currentPage() + 1"
+      [readonly]="busy()"
+      (change)="onPageInput(pageInput)"
+      #pageInput />
+    <span>{{ pageCountText() }}</span>
+  </label>
+
+  <!-- With `edge`, the last button's icon ends where the pagination does, as text would. -->
+  <button nbButton
+    ghost
+    type="button"
+    [size]="size()"
+    [edge]="edge() && !showFirstLast() ? 'end' : undefined"
+    [disabled]="!hasNext()"
+    [attr.aria-label]="texts().next"
+    (click)="next()">
+    <nb-icon icon="chevron-right-outline"
+      pack="essentials" />
+  </button>
+  @if (showFirstLast()) {
+  <button nbButton
+    ghost
+    type="button"
+    [edge]="edge() ? 'end' : undefined"
+    [size]="size()"
+    [disabled]="!hasNext()"
+    [attr.aria-label]="texts().last"
+    (click)="last()">
+    <nb-icon icon="arrowhead-right-outline"
+      pack="essentials" />
+  </button>
+  }
+</div>

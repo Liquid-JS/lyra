@@ -1,0 +1,13 @@
+<nb-card>
+  <nb-list>
+    @for (order of orders(); track $index) {
+    <nb-list-item>{{ order }}</nb-list-item>
+    }
+  </nb-list>
+  <nb-card-footer>
+    <nb-pagination [length]="length"
+      [(page)]="page"
+      [(pageSize)]="pageSize"
+      [pageSizeOptions]="[5, 10, 25]" />
+  </nb-card-footer>
+</nb-card>
