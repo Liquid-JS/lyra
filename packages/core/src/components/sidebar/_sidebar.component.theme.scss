@@ -1,9 +1,3 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 @use '../../styles/theming' as *;
 @use '../../styles/global/breakpoints' as *;
 
@@ -21,6 +15,20 @@
     .main-container {
       height: nb-theme(sidebar-height);
       width: nb-theme(sidebar-width);
+      // Clips its content, which keeps its width while the sidebar's changes, so nothing wraps or moves.
+      overflow: hidden;
+    }
+
+    // At the sidebar's full width, collapsed or expanded, and while it changes between them; a compacted sidebar's
+    // content is as narrow as it is.
+    &:not(.compacted) {
+      .scrollable,
+      nb-sidebar-header,
+      nb-sidebar-footer {
+        flex-shrink: 0;
+        width: nb-theme(sidebar-width);
+        box-sizing: border-box;
+      }
     }
 
     .scrollable {
@@ -38,7 +46,26 @@
       );
     }
 
-    // TODO: width used to use transition on width
+    // Collapsing, compacting and expanding change the width smoothly, once the sidebar has rendered; the content beside
+    // a fixed sidebar moves with it.
+    &.nb-transition {
+      &,
+      .main-container,
+      ~ .content {
+        transition-duration: nb-theme(sidebar-transition-duration);
+        transition-property: width, padding, margin;
+        transition-timing-function: ease-in-out;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        &,
+        .main-container,
+        ~ .content {
+          transition: none;
+        }
+      }
+    }
+
     &.collapsed {
       width: 0;
       padding: 0;
@@ -47,15 +74,6 @@
         padding: 0;
       }
       .scrollable {
-        width: 0;
-        padding: 0;
-        overflow: hidden;
-      }
-
-      nb-sidebar-header,
-      nb-sidebar-footer {
-        width: 0;
-        padding: 0;
         overflow: hidden;
       }
     }
@@ -68,21 +86,6 @@
 
       nb-menu {
         width: nb-theme(sidebar-width-compact);
-
-        .menu-item a.active {
-          position: relative;
-
-          &::before {
-            position: absolute;
-            content: '';
-            @include nb-ltr(left, 0);
-            @include nb-rtl(right, 0);
-            top: 0;
-            height: 100%;
-            width: 4px;
-            background: nb-theme(sidebar-menu-item-highlight-color);
-          }
-        }
 
         > .menu-items > .menu-item > a {
           span,
@@ -186,5 +189,31 @@
     nb-menu {
       margin: 0 calc(#{nb-theme(sidebar-padding)} * -1) calc(#{nb-theme(sidebar-padding)} * -1);
     }
+  }
+
+  // The sidebar's menu in the sidebar's own colours, which are the menu's unless a theme sets them, as a dark sidebar
+  // does; menus elsewhere, such as context menus, keep the menu's. The colours the mapping derives from these follow
+  // them here too.
+  nb-sidebar nb-menu {
+    --menu-text-color: #{nb-theme(sidebar-menu-text-color)};
+    --menu-group-text-color: #{nb-theme(sidebar-menu-group-text-color)};
+    --menu-item-icon-color: #{nb-theme(sidebar-menu-item-icon-color)};
+    --menu-item-hover-background-color: #{nb-theme(sidebar-menu-item-hover-background-color)};
+    --menu-item-hover-text-color: #{nb-theme(sidebar-menu-item-hover-text-color)};
+    --menu-item-icon-hover-color: #{nb-theme(sidebar-menu-item-hover-text-color)};
+    --menu-item-focus-background-color: #{nb-theme(sidebar-menu-item-focus-background-color)};
+    --menu-submenu-item-focus-background-color: #{nb-theme(sidebar-menu-item-focus-background-color)};
+    --menu-item-active-background-color: #{nb-theme(sidebar-menu-item-active-background-color)};
+    --menu-item-active-text-color: #{nb-theme(sidebar-menu-item-active-text-color)};
+    --menu-item-active-indicator-color: #{nb-theme(sidebar-menu-item-highlight-color)};
+    --menu-item-icon-active-color: #{nb-theme(sidebar-menu-item-active-text-color)};
+    --menu-item-divider-color: #{nb-theme(sidebar-menu-item-divider-color)};
+    --menu-submenu-text-color: #{nb-theme(sidebar-menu-submenu-text-color)};
+    --menu-submenu-item-hover-text-color: #{nb-theme(sidebar-menu-item-hover-text-color)};
+    --menu-submenu-item-icon-hover-color: #{nb-theme(sidebar-menu-item-hover-text-color)};
+    --menu-submenu-item-active-text-color: #{nb-theme(sidebar-menu-item-active-text-color)};
+    --menu-submenu-item-icon-active-color: #{nb-theme(sidebar-menu-item-active-text-color)};
+    --menu-submenu-item-active-hover-text-color: #{nb-theme(sidebar-menu-item-hover-text-color)};
+    --menu-submenu-item-icon-active-hover-color: #{nb-theme(sidebar-menu-item-hover-text-color)};
   }
 }

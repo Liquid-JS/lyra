@@ -1,16 +1,26 @@
-import { Component } from '@angular/core';
-import { NbSidebarService } from '@nebular/theme';
+import { Component, inject } from '@angular/core';
+import {
+  NbSidebarService,
+  NbLayoutComponent,
+  NbLayoutHeaderComponent,
+  NbLayoutColumnComponent,
+  NbButtonComponent,
+  NbSidebarComponent,
+} from '@liquid-js/lyr-core';
 
 @Component({
-    selector: 'nb-sidebar-fixed',
-    templateUrl: './sidebar-fixed.component.html',
-    standalone: false
+  selector: 'nb-sidebar-fixed',
+  templateUrl: './sidebar-fixed.component.html',
+  imports: [
+    NbLayoutComponent,
+    NbLayoutHeaderComponent,
+    NbButtonComponent,
+    NbSidebarComponent,
+    NbLayoutColumnComponent,
+  ],
 })
-
 export class SidebarFixedComponent {
-
-  constructor(private sidebarService: NbSidebarService) {
-  }
+  private readonly sidebarService = inject(NbSidebarService);
 
   toggle() {
     this.sidebarService.toggle();

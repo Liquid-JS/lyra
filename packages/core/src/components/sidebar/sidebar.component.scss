@@ -1,9 +1,3 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 @use '../../styles/theming' as *;
 
 :host {
@@ -20,7 +14,8 @@
   }
 
   .main-container {
-    // TODO: this looks like a dirty fix to stop sidebar jumping while page is scrolled
+    // Its own compositing layer, so the fixed container doesn't jitter while the page scrolls. It also makes it the
+    // containing block of fixed descendants.
     transform: translate3d(0, 0, 0);
     display: flex;
     flex-direction: column;
@@ -49,7 +44,8 @@
     }
   }
 
-  // TODO: in this case this will won't work when header is not fixed and sidebar is
+  // With a header that isn't fixed, a fixed sidebar stays below where the header was and leaves a gap once the header
+  // scrolls away.
   &.fixed {
     position: fixed;
     height: 100%;
@@ -57,20 +53,26 @@
     top: 0;
     bottom: 0;
 
+    // One edge each, so a sidebar's place doesn't hang on its auto margin.
     left: 0;
 
     &.right {
+      left: auto;
       right: 0;
     }
   }
 
   &.fixed.start {
-    @include nb-ltr(left, 0);
-    @include nb-rtl(right, 0);
+    @include nb-rtl() {
+      left: auto;
+      right: 0;
+    }
   }
   &.fixed.end {
-    @include nb-ltr(right, 0);
-    @include nb-rtl(left, 0);
+    @include nb-ltr() {
+      left: auto;
+      right: 0;
+    }
   }
 
   ::ng-deep nb-sidebar-footer {

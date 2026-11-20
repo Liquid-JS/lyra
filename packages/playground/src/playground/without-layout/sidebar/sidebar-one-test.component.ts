@@ -1,32 +1,16 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 import { Component } from '@angular/core';
+import { NbLayoutComponent, NbSidebarComponent } from '@liquid-js/lyr-core';
 
 @Component({
-    selector: 'nb-sidebar-one-test',
-    styles: [
-        `
-    :host ::ng-deep nb-layout-column {
-      background-color: #76ecff;
-    }
+  selector: 'nb-sidebar-one-test',
+  styles: [
+    `
+      :host ::ng-deep nb-layout-column {
+        background-color: #76ecff;
+      }
     `,
-    ],
-    template: `
-    <nb-layout>
-      <nb-sidebar>
-        Left
-      </nb-sidebar>
-
-      <nb-sidebar right>
-        Right
-      </nb-sidebar>
-    </nb-layout>
-`,
-    standalone: false
+  ],
+  templateUrl: './sidebar-one-test.component.html',
+  imports: [NbLayoutComponent, NbSidebarComponent],
 })
-export class SidebarOneTestComponent {
-}
+export class SidebarOneTestComponent {}

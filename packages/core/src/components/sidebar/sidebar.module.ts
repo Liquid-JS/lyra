@@ -1,12 +1,4 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { NgModule, ModuleWithProviders } from '@angular/core';
-
-import { NbSharedModule } from '../shared/shared.module';
+import { NgModule, ModuleWithProviders, EnvironmentProviders, makeEnvironmentProviders } from '@angular/core';
 
 import {
   NbSidebarComponent,
@@ -22,28 +14,19 @@ const NB_SIDEBAR_COMPONENTS = [
   NbSidebarHeaderComponent,
 ];
 
-const NB_SIDEBAR_PROVIDERS = [
-  NbSidebarService,
-];
+/**
+ * Provides the sidebar service, in place of `NbSidebarModule.forRoot()`.
+ */
+export function provideNbSidebar(): EnvironmentProviders {
+  return makeEnvironmentProviders([NbSidebarService]);
+}
 
 @NgModule({
-  imports: [
-    NbSharedModule,
-  ],
-  declarations: [
-    ...NB_SIDEBAR_COMPONENTS,
-  ],
-  exports: [
-    ...NB_SIDEBAR_COMPONENTS,
-  ],
+  imports: [...NB_SIDEBAR_COMPONENTS],
+  exports: [...NB_SIDEBAR_COMPONENTS],
 })
 export class NbSidebarModule {
   static forRoot(): ModuleWithProviders<NbSidebarModule> {
-    return {
-      ngModule: NbSidebarModule,
-      providers: [
-        ...NB_SIDEBAR_PROVIDERS,
-      ],
-    };
+    return { ngModule: NbSidebarModule, providers: [provideNbSidebar()] };
   }
 }

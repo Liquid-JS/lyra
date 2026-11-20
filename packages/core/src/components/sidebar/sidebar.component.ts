@@ -1,64 +1,75 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
+import { DOCUMENT } from '@angular/common';
 import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
   Component,
+  computed,
+  effect,
   ElementRef,
-  EventEmitter,
-  HostBinding,
-  Input,
-  OnDestroy,
-  OnInit,
-  Output,
+  forwardRef,
+  inject,
+  input,
+  linkedSignal,
+  model,
+  output,
+  signal,
+  untracked,
 } from '@angular/core';
-import { combineLatest, Observable, Subject } from 'rxjs';
-import { takeUntil, filter, map, startWith } from 'rxjs/operators';
+import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
+import { NavigationEnd, Router } from '@angular/router';
+import { combineLatest, fromEvent, Observable } from 'rxjs';
+import { filter, map } from 'rxjs/operators';
 
-import { convertToBoolProperty, NbBooleanInput } from '../helpers';
-import { NbThemeService } from '../../services/theme.service';
-import { NbMediaBreakpoint } from '../../services/breakpoints.service';
+import { ɵconvertToBoolProperty as convertToBoolProperty, NbBooleanInput } from '@liquid-js/lyr-core/base';
+import { NbThemeService } from '@liquid-js/lyr-core/base';
+import { NbMediaBreakpoint } from '@liquid-js/lyr-core/base';
 import { NbSidebarService, getSidebarState$, getSidebarResponsiveState$ } from './sidebar.service';
+import { ɵNB_MENU_PARENT as NB_MENU_PARENT } from '@liquid-js/lyr-core/menu';
+import type { NbMenuItem } from '@liquid-js/lyr-core/menu';
+import { ɵenableTransitionsAfterRender as enableTransitionsAfterRender } from '@liquid-js/lyr-core/base';
 
 export type NbSidebarState = 'expanded' | 'collapsed' | 'compacted';
 export type NbSidebarResponsiveState = 'mobile' | 'tablet' | 'pc';
 
 /**
- * Sidebar header container.
- *
- * Placeholder which contains a sidebar header content,
- * placed at the very top of the sidebar outside of the scroll area.
+ * The top of a sidebar, outside its scrolling content.
  */
 @Component({
-    selector: 'nb-sidebar-header',
-    template: ` <ng-content></ng-content> `,
-    standalone: false
+  selector: 'nb-sidebar-header',
+  template: ` <ng-content /> `,
 })
 export class NbSidebarHeaderComponent {}
 
 /**
- * Sidebar footer container.
- *
- * Placeholder which contains a sidebar footer content,
- * placed at the very bottom of the sidebar outside of the scroll area.
+ * The bottom of a sidebar, outside its scrolling content.
  */
 @Component({
-    selector: 'nb-sidebar-footer',
-    template: ` <ng-content></ng-content> `,
-    standalone: false
+  selector: 'nb-sidebar-footer',
+  template: ` <ng-content /> `,
 })
 export class NbSidebarFooterComponent {}
 
 /**
- * Layout sidebar component.
+ * A sidebar of the layout, e.g. for a menu, that expands, compacts or collapses.
  *
  * @stacked-example(Showcase, sidebar/sidebar-showcase.component)
  *
  * ### Installation
+ *
+ * Import `NbSidebarComponent` into your standalone component:
+ * ```ts
+ * @Component({
+ *   imports: [NbSidebarComponent],
+ * })
+ * export class PageComponent { }
+ * ```
+ *
+ * and add `provideNbSidebar()` to the application providers:
+ * ```ts
+ * bootstrapApplication(AppComponent, {
+ *   providers: [provideNbSidebar()],
+ * });
+ * ```
+ *
+ * With NgModules:
  *
  * Import `NbSidebarModule.forRoot()` to your app module.
  * ```ts
@@ -82,25 +93,30 @@ export class NbSidebarFooterComponent {}
  * ```
  * ### Usage
  *
- * Sidebar can be placed on the left or the right side of the layout,
- * or on start/end position of layout (depends on document direction, left to right or right to left)
- * It can be fixed (shown above the content) or can push the layout when opened.
+ * The sidebar is placed on the start edge of the layout by default: on the left in a left to right document and on
+ * the right in a right to left one. `end` places it on the other edge, and `left` or `right` on that side whatever
+ * the direction. A `fixed` sidebar lies over the content; otherwise it pushes the content aside.
  *
- * There are three states - `expanded`, `collapsed`, `compacted`.
- * By default sidebar content is fixed and saves its position while the page is being scrolled.
+ * It has three states, `expanded`, `collapsed` and `compacted` (icons only), set with `state` or through
+ * `NbSidebarService`. Its content stays in place while the page scrolls (`containerFixed`).
  *
- * Compacted sidebar example:
  * @stacked-example(Compacted Sidebar, sidebar/sidebar-compacted.component)
  *
- * Sidebar also supports a `responsive` behavior, listening to window size change and changing its size respectably.
+ * A `responsive` sidebar follows the screen size: it compacts on the `compactedBreakpoints`, collapses on the
+ * `collapsedBreakpoints`, and expands again on the larger ones.
  *
- * In a pair with header it is possible to setup a configuration when header is placed on a side of the sidebar
- * and not on top of it. To achieve this simply put a `subheader` property to the header like this:
+ * With a `subheader` header, the header sits beside the sidebar rather than above it:
  * ```html
  * <nb-layout-header subheader></nb-layout-header>
  * ```
  * @stacked-example(Subheader, layout/layout-sidebar-subheader.component)
- * Note that in such configuration sidebar shadow is removed and header cannot be make `fixed`.
+ * The sidebar then has no shadow, and the header can't be `fixed`.
+ *
+ * A sidebar that overlays the content, as a `fixed` or a responsive one does on smaller screens, can close itself
+ * when it's expanded: `closeOnNavigation` closes it when the router navigates or a link in it is picked, and
+ * `closeOnOutsideClick` when the user clicks outside it. It then compacts on tablets and collapses otherwise. A
+ * click that expands the sidebar, e.g. on a toggle button in the header, doesn't close it.
+ * @stacked-example(Closing an overlaying sidebar, sidebar/sidebar-close.component)
  *
  * @additional-example(Right Sidebar, sidebar/sidebar-right.component)
  * @additional-example(Fixed Sidebar, sidebar/sidebar-fixed.component)
@@ -116,381 +132,310 @@ export class NbSidebarFooterComponent {}
  * sidebar-height:
  * sidebar-width:
  * sidebar-width-compact:
+ * sidebar-transition-duration:
  * sidebar-padding:
  * sidebar-header-height:
  * sidebar-footer-height:
  * sidebar-shadow:
  * sidebar-menu-item-highlight-color:
+ * sidebar-menu-text-color:
+ * sidebar-menu-group-text-color:
+ * sidebar-menu-item-icon-color:
+ * sidebar-menu-item-hover-background-color:
+ * sidebar-menu-item-hover-text-color:
+ * sidebar-menu-item-focus-background-color:
+ * sidebar-menu-item-active-background-color:
+ * sidebar-menu-item-active-text-color:
+ * sidebar-menu-item-divider-color:
+ * sidebar-menu-submenu-text-color:
  * sidebar-scrollbar-background-color:
  * sidebar-scrollbar-color:
  * sidebar-scrollbar-width:
  */
 @Component({
-    selector: 'nb-sidebar',
-    styleUrls: ['./sidebar.component.scss'],
-    template: `
-    <div class="main-container" [class.main-container-fixed]="containerFixedValue">
-      <ng-content select="nb-sidebar-header"></ng-content>
-      <div class="scrollable" (click)="onClick($event)">
-        <ng-content></ng-content>
-      </div>
-      <ng-content select="nb-sidebar-footer"></ng-content>
-    </div>
-  `,
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  selector: 'nb-sidebar',
+  styleUrls: ['./sidebar.component.scss'],
+  templateUrl: './sidebar.component.html',
+  // Its menus ask it before a submenu opens or closes.
+  providers: [{ provide: NB_MENU_PARENT, useExisting: forwardRef(() => NbSidebarComponent) }],
+  host: {
+    '[class.fixed]': 'isFixed()',
+    '[class.right]': "side() === 'right'",
+    '[class.left]': "side() === 'left'",
+    '[class.start]': "side() === 'start'",
+    '[class.end]': "side() === 'end'",
+    '[class.expanded]': 'expanded()',
+    '[class.collapsed]': 'collapsed()',
+    '[class.compacted]': 'compacted()',
+  },
 })
-export class NbSidebarComponent implements OnInit, OnDestroy {
-  protected readonly responsiveValueChange$: Subject<boolean> = new Subject<boolean>();
-  protected responsiveState: NbSidebarResponsiveState = 'pc';
+export class NbSidebarComponent {
+  private readonly sidebarService = inject(NbSidebarService);
+  private readonly themeService = inject(NbThemeService);
+  private readonly element = inject(ElementRef);
+  private readonly document = inject(DOCUMENT);
+  private readonly router = inject(Router, { optional: true });
 
-  protected destroy$ = new Subject<void>();
+  protected readonly responsiveState = signal<NbSidebarResponsiveState>('pc');
 
-  containerFixedValue: boolean = true;
+  /** Places the sidebar on the right, whatever the direction of the page. */
+  readonly right = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
 
-  @HostBinding('class.fixed') fixedValue: boolean = false;
-  @HostBinding('class.right') rightValue: boolean = false;
-  @HostBinding('class.left') leftValue: boolean = true;
-  @HostBinding('class.start') startValue: boolean = false;
-  @HostBinding('class.end') endValue: boolean = false;
+  /** Places the sidebar on the left, whatever the direction of the page. */
+  readonly left = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
 
-  @HostBinding('class.expanded')
-  get expanded() {
-    return this.state === 'expanded';
-  }
-  @HostBinding('class.collapsed')
-  get collapsed() {
-    return this.state === 'collapsed';
-  }
-  @HostBinding('class.compacted')
-  get compacted() {
-    return this.state === 'compacted';
-  }
+  /** Places the sidebar on the start edge of the layout, as it is by default; takes precedence over the others. */
+  readonly start = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
+
+  /** Places the sidebar on the end edge of the layout. */
+  readonly end = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
+
+  /** The sidebar lies over the layout's content instead of pushing it aside. */
+  readonly fixed = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
 
   /**
-   * Places sidebar on the right side
-   * @type {boolean}
+   * The sidebar's content stays in place while the page scrolls. A responsive sidebar is also `fixed` on its
+   * compacted breakpoints while this is on.
    */
-  @Input()
-  set right(val: boolean) {
-    this.rightValue = convertToBoolProperty(val);
-    this.leftValue = !this.rightValue;
-    this.startValue = false;
-    this.endValue = false;
-  }
-  static ngAcceptInputType_right: NbBooleanInput;
+  readonly containerFixed = input<boolean, NbBooleanInput>(true, { transform: convertToBoolProperty });
+
+  /** The state; `expanded` by default. The sidebar changes it too, on toggles, breakpoints and closing. */
+  readonly state = model<NbSidebarState>('expanded');
 
   /**
-   * Places sidebar on the left side
-   * @type {boolean}
+   * The sidebar follows the screen size: it compacts on the `compactedBreakpoints`, collapses on the
+   * `collapsedBreakpoints` and expands on the larger ones, lying over the content on the smaller ones. Turning it
+   * off expands the sidebar.
    */
-  @Input()
-  set left(val: boolean) {
-    this.leftValue = convertToBoolProperty(val);
-    this.rightValue = !this.leftValue;
-    this.startValue = false;
-    this.endValue = false;
-  }
-  static ngAcceptInputType_left: NbBooleanInput;
+  readonly responsive = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
 
   /**
-   * Places sidebar on the start edge of layout
-   * @type {boolean}
+   * Tells the sidebars apart in `NbSidebarService` when a page has several: a call with a tag reaches the sidebar
+   * with that tag, and the sidebars without one.
    */
-  @Input()
-  set start(val: boolean) {
-    this.startValue = convertToBoolProperty(val);
-    this.endValue = !this.startValue;
-    this.leftValue = false;
-    this.rightValue = false;
-  }
-  static ngAcceptInputType_start: NbBooleanInput;
+  readonly tag = input<string>();
+
+  /** The breakpoints a `responsive` sidebar compacts on, by name. */
+  readonly compactedBreakpoints = input<string[]>(['xs', 'is', 'sm', 'md', 'lg']);
+
+  /** The breakpoints a `responsive` sidebar collapses on, by name. */
+  readonly collapsedBreakpoints = input<string[]>(['xs', 'is']);
 
   /**
-   * Places sidebar on the end edge of layout
-   * @type {boolean}
+   * Closes the sidebar when the router navigates or a link in it is picked, while it's expanded over the content.
    */
-  @Input()
-  set end(val: boolean) {
-    this.endValue = convertToBoolProperty(val);
-    this.startValue = !this.endValue;
-    this.leftValue = false;
-    this.rightValue = false;
-  }
-  static ngAcceptInputType_end: NbBooleanInput;
+  readonly closeOnNavigation = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
 
   /**
-   * Makes sidebar fixed (shown above the layout content)
-   * @type {boolean}
+   * Closes the sidebar when the user clicks outside it, while it's expanded over the content.
    */
-  @Input()
-  set fixed(val: boolean) {
-    this.fixedValue = convertToBoolProperty(val);
-  }
-  static ngAcceptInputType_fixed: NbBooleanInput;
+  readonly closeOnOutsideClick = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
 
   /**
-   * Makes sidebar container fixed
-   * @type {boolean}
+   * Emits when a `responsive` sidebar moves to another kind of screen: `mobile` on the collapsed breakpoints,
+   * `tablet` on the compacted ones, `pc` on the rest.
    */
-  @Input()
-  set containerFixed(val: boolean) {
-    this.containerFixedValue = convertToBoolProperty(val);
-  }
-  static ngAcceptInputType_containerFixed: NbBooleanInput;
+  readonly responsiveStateChange = output<NbSidebarResponsiveState>();
 
   /**
-   * Initial sidebar state, `expanded`|`collapsed`|`compacted`
-   * @type {string}
+   * The side the sidebar is placed on: `start` unless an input says otherwise.
    */
-  @Input()
-  get state(): NbSidebarState {
-    return this._state;
-  }
-  set state(value: NbSidebarState) {
-    this._state = value;
-  }
-  protected _state: NbSidebarState = 'expanded';
-
-  /**
-   * Makes sidebar listen to media query events and change its behaviour
-   * @type {boolean}
-   */
-  @Input()
-  get responsive(): boolean {
-    return this._responsive;
-  }
-  set responsive(value: boolean) {
-    if (this.responsive !== convertToBoolProperty(value)) {
-      this._responsive = !this.responsive;
-      this.responsiveValueChange$.next(this.responsive);
+  readonly side = computed<'left' | 'right' | 'start' | 'end'>(() => {
+    if (this.start()) {
+      return 'start';
     }
-  }
-  protected _responsive: boolean = false;
-  static ngAcceptInputType_responsive: NbBooleanInput;
+    if (this.end()) {
+      return 'end';
+    }
+    if (this.right()) {
+      return 'right';
+    }
+    return this.left() ? 'left' : 'start';
+  });
 
   /**
-   * Tags a sidebar with some ID, can be later used in the sidebar service
-   * to determine which sidebar triggered the action, if multiple sidebars exist on the page.
-   *
-   * @type {string}
+   * Whether the sidebar is fixed: the `fixed` input, until a responsive sidebar changes it on a breakpoint.
    */
-  @Input() tag: string;
+  readonly isFixed = linkedSignal(() => this.fixed());
 
-  // TODO: get width by the key and define only max width for the tablets and mobiles
-  /**
-   * Controls on which screen sizes sidebar should be switched to compacted state.
-   * Works only when responsive mode is on.
-   * Default values are `['xs', 'is', 'sm', 'md', 'lg']`.
-   *
-   * @type string[]
-   */
-  @Input() compactedBreakpoints: string[] = ['xs', 'is', 'sm', 'md', 'lg'];
+  readonly expanded = computed(() => this.state() === 'expanded');
+  readonly collapsed = computed(() => this.state() === 'collapsed');
+  readonly compacted = computed(() => this.state() === 'compacted');
 
-  /**
-   * Controls on which screen sizes sidebar should be switched to collapsed state.
-   * Works only when responsive mode is on.
-   * Default values are `['xs', 'is']`.
-   *
-   * @type string[]
-   */
-  @Input() collapsedBreakpoints: string[] = ['xs', 'is'];
+  constructor() {
+    // The width animates between states, but not into the state the sidebar first renders with.
+    enableTransitionsAfterRender(this.element.nativeElement);
 
-  /**
-   * Emits whenever sidebar state change.
-   */
-  @Output() readonly stateChange = new EventEmitter<NbSidebarState>();
+    const forThisSidebar = <T extends { tag?: string }>({ tag }: T) => !this.tag() || this.tag() === tag;
 
-  /**
-   * Emits whenever sidebar responsive state change.
-   */
-  @Output() readonly responsiveStateChange = new EventEmitter<NbSidebarResponsiveState>();
-
-  constructor(
-    private sidebarService: NbSidebarService,
-    private themeService: NbThemeService,
-    private element: ElementRef,
-    private cd: ChangeDetectorRef,
-  ) {}
-
-  ngOnInit() {
     this.sidebarService
       .onToggle()
-      .pipe(
-        filter(({ tag }) => !this.tag || this.tag === tag),
-        takeUntil(this.destroy$),
-      )
+      .pipe(filter(forThisSidebar), takeUntilDestroyed())
       .subscribe(({ compact }) => this.toggle(compact));
 
     this.sidebarService
       .onExpand()
-      .pipe(
-        filter(({ tag }) => !this.tag || this.tag === tag),
-        takeUntil(this.destroy$),
-      )
+      .pipe(filter(forThisSidebar), takeUntilDestroyed())
       .subscribe(() => this.expand());
 
     this.sidebarService
       .onCollapse()
-      .pipe(
-        filter(({ tag }) => !this.tag || this.tag === tag),
-        takeUntil(this.destroy$),
-      )
+      .pipe(filter(forThisSidebar), takeUntilDestroyed())
       .subscribe(() => this.collapse());
 
     this.sidebarService
       .onCompact()
-      .pipe(
-        filter(({ tag }) => !this.tag || this.tag === tag),
-        takeUntil(this.destroy$),
-      )
+      .pipe(filter(forThisSidebar), takeUntilDestroyed())
       .subscribe(() => this.compact());
 
     getSidebarState$
-      .pipe(
-        filter(({ tag }) => !this.tag || this.tag === tag),
-        takeUntil(this.destroy$),
-      )
-      .subscribe(({ observer }) => observer.next(this.state));
+      .pipe(filter(forThisSidebar), takeUntilDestroyed())
+      .subscribe(({ observer }) => observer.next(this.state()));
 
     getSidebarResponsiveState$
-      .pipe(
-        filter(({ tag }) => !this.tag || this.tag === tag),
-        takeUntil(this.destroy$),
-      )
-      .subscribe(({ observer }) => observer.next(this.responsiveState));
+      .pipe(filter(forThisSidebar), takeUntilDestroyed())
+      .subscribe(({ observer }) => observer.next(this.responsiveState()));
 
-    this.responsiveValueChange$
-      .pipe(
-        filter((responsive: boolean) => !responsive),
-        takeUntil(this.destroy$),
-      )
-      .subscribe(() => this.expand());
+    // Turning `responsive` off expands the sidebar.
+    let wasResponsive = false;
+    effect(() => {
+      const responsive = this.responsive();
+      if (wasResponsive && !responsive) {
+        untracked(() => this.expand());
+      }
+      wasResponsive = responsive;
+    });
 
     this.subscribeToMediaQueryChange();
-  }
 
-  ngOnDestroy() {
-    this.destroy$.next();
-    this.destroy$.complete();
-  }
+    this.router?.events
+      .pipe(
+        filter((event) => event instanceof NavigationEnd && this.closeOnNavigation()),
+        takeUntilDestroyed(),
+      )
+      .subscribe(() => this.closeOverlay());
 
-  // TODO: this is more of a workaround, should be a better way to make components communicate to each other
-  onClick(event): void {
-    const menu = this.element.nativeElement.querySelector('nb-menu');
+    // Picking the page that's already open doesn't navigate, so a picked link closes the sidebar too; a menu item
+    // that opens a submenu isn't a pick.
+    fromEvent<MouseEvent>(this.element.nativeElement, 'click')
+      .pipe(
+        filter((event) => {
+          const link = (event.target as HTMLElement).closest('a[href]');
+          return this.closeOnNavigation() && !!link && !link.hasAttribute('aria-expanded');
+        }),
+        takeUntilDestroyed(),
+      )
+      .subscribe(() => this.closeOverlay());
 
-    if (menu && menu.contains(event.target)) {
-      const link = this.getMenuLink(event.target);
-
-      if (link && link.nextElementSibling && link.nextElementSibling.classList.contains('menu-items')) {
-        this.sidebarService.expand(this.tag);
-      }
-    }
+    // Whether the sidebar was expanded before the click, so a click that expands it doesn't close it again.
+    let expandedBeforeClick = false;
+    fromEvent<MouseEvent>(this.document, 'click', { capture: true })
+      .pipe(takeUntilDestroyed())
+      .subscribe(() => (expandedBeforeClick = this.expanded()));
+    fromEvent<MouseEvent>(this.document, 'click')
+      .pipe(
+        filter(
+          (event) =>
+            this.closeOnOutsideClick() &&
+            expandedBeforeClick &&
+            !this.element.nativeElement.contains(event.target as Node),
+        ),
+        takeUntilDestroyed(),
+      )
+      .subscribe(() => this.closeOverlay());
   }
 
   /**
-   * Collapses the sidebar
+   * A menu in the sidebar asks before a submenu opens or closes. The sidebar expands to show it, and a compacted one
+   * keeps an open submenu open, as it shows none of them.
    */
+  submenuToggle(item: NbMenuItem): boolean {
+    const keepOpen = this.compacted() && !!item.expanded;
+    this.sidebarService.expand(this.tag());
+    return !keepOpen;
+  }
+
   collapse() {
     this.updateState('collapsed');
   }
 
-  /**
-   * Expands the sidebar
-   */
   expand() {
     this.updateState('expanded');
   }
 
-  /**
-   * Compacts the sidebar (minimizes)
-   */
   compact() {
     this.updateState('compacted');
   }
 
   /**
-   * Toggles sidebar state (expanded|collapsed|compacted)
-   * @param {boolean} compact If true, then sidebar state will be changed between expanded & compacted,
-   * otherwise - between expanded & collapsed. False by default.
-   *
-   * Toggle sidebar state
-   *
-   * ```ts
-   * this.sidebar.toggle(true);
-   * ```
+   * Expands a collapsed or compacted sidebar; otherwise collapses it, or with `compact` compacts it. A responsive
+   * sidebar on a mobile screen always collapses.
    */
   toggle(compact: boolean = false) {
-    if (this.responsive) {
-      if (this.responsiveState === 'mobile') {
-        compact = false;
-      }
+    if (this.responsive() && this.responsiveState() === 'mobile') {
+      compact = false;
     }
 
-    if (this.state === 'compacted' || this.state === 'collapsed') {
+    if (this.state() === 'compacted' || this.state() === 'collapsed') {
       this.updateState('expanded');
     } else {
       this.updateState(compact ? 'compacted' : 'collapsed');
     }
   }
 
+  /** Closes an expanded sidebar that overlays the content: compacts it on tablets and collapses it otherwise. */
+  protected closeOverlay() {
+    if (!this.isFixed() || !this.expanded()) {
+      return;
+    }
+    if (this.responsive() && this.responsiveState() === 'tablet') {
+      this.compact();
+    } else {
+      this.collapse();
+    }
+  }
+
   protected subscribeToMediaQueryChange() {
     combineLatest([
-      this.responsiveValueChange$.pipe(startWith(this.responsive)),
+      toObservable(this.responsive),
       this.themeService.onMediaQueryChange() as Observable<[NbMediaBreakpoint, NbMediaBreakpoint]>,
     ])
       .pipe(
         filter(([responsive]) => responsive),
         map(([, breakpoints]) => breakpoints),
-        takeUntil(this.destroy$),
+        takeUntilDestroyed(),
       )
       .subscribe(([prev, current]: [NbMediaBreakpoint, NbMediaBreakpoint]) => {
-        const isCollapsed = this.collapsedBreakpoints.includes(current.name);
-        const isCompacted = this.compactedBreakpoints.includes(current.name);
+        const isCollapsed = this.collapsedBreakpoints().includes(current.name);
+        const isCompacted = this.compactedBreakpoints().includes(current.name);
 
-        let newResponsiveState;
+        let newResponsiveState: NbSidebarResponsiveState | undefined;
 
         if (isCompacted) {
-          this.fixed = this.containerFixedValue;
+          this.isFixed.set(this.containerFixed());
           this.compact();
           newResponsiveState = 'tablet';
         }
         if (isCollapsed) {
-          this.fixed = true;
+          this.isFixed.set(true);
           this.collapse();
           newResponsiveState = 'mobile';
         }
         if (!isCollapsed && !isCompacted && (!prev.width || prev.width < current.width)) {
           this.expand();
-          this.fixed = false;
+          this.isFixed.set(false);
           newResponsiveState = 'pc';
         }
 
-        if (newResponsiveState && newResponsiveState !== this.responsiveState) {
-          this.responsiveState = newResponsiveState;
-          this.responsiveStateChange.emit(this.responsiveState);
-          this.cd.markForCheck();
+        if (newResponsiveState && newResponsiveState !== this.responsiveState()) {
+          this.responsiveState.set(newResponsiveState);
+          this.responsiveStateChange.emit(newResponsiveState);
         }
       });
   }
 
-  protected getMenuLink(element: HTMLElement): HTMLElement | undefined {
-    if (!element || element.tagName.toLowerCase() === 'nb-menu') {
-      return undefined;
-    }
-
-    if (element.tagName.toLowerCase() === 'a') {
-      return element;
-    }
-
-    return this.getMenuLink(element.parentElement);
-  }
-
-  protected updateState(state: NbSidebarState): void {
-    if (this.state !== state) {
-      this.state = state;
-      this.stateChange.emit(this.state);
-      this.cd.markForCheck();
-    }
+  protected updateState(state: NbSidebarState) {
+    // The model emits `stateChange`.
+    this.state.set(state);
   }
 }
