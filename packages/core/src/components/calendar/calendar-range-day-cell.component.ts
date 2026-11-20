@@ -1,146 +1,155 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
+import { Component, computed, DestroyRef, inject, input, output } from '@angular/core';
 
-import {
-  Component,
-  ChangeDetectionStrategy,
-  Input,
-  Output,
-  EventEmitter,
-  HostBinding,
-  HostListener,
-} from '@angular/core';
-
-import { NbCalendarCell, NbCalendarSize, NbCalendarSizeValues } from '../calendar-kit/model';
+import { NbCalendarCell, NbCalendarSize, NbCalendarSizeValues } from '@liquid-js/lyr-core/calendar-kit';
 import { NbCalendarRange } from './calendar-range.component';
-import { NbDateService } from '../calendar-kit/services/date.service';
+import { NbDateService } from '@liquid-js/lyr-core/calendar-kit';
 import { NbBaseCalendarRangeCell } from './base-calendar-range-cell';
 
 @Component({
-    selector: 'nb-calendar-range-day-cell',
-    template: `
+  selector: 'nb-calendar-range-day-cell',
+  template: `
     <div class="cell-content">{{ day }}</div>
   `,
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  host: {
+    class: 'range-cell day-cell',
+    '[class.in-range]': 'inRange()',
+    '[class.start]': 'start()',
+    '[class.end]': 'end()',
+    '[class.today]': 'today()',
+    '[class.bounding-month]': 'boundingMonth()',
+    '[class.selected]': 'selected()',
+    '[class.empty]': 'empty()',
+    '[class.disabled]': 'disabled()',
+    '[class.size-large]': 'isLarge()',
+    '(click)': 'onClick()',
+  },
 })
 export class NbCalendarRangeDayCellComponent<D> extends NbBaseCalendarRangeCell<D>
   implements NbCalendarCell<D, NbCalendarRange<D>> {
-  @Input() date: D;
+  protected readonly destroyRef = inject(DestroyRef);
+  protected readonly dateService = inject<NbDateService<D>>(NbDateService);
 
-  @Input() selectedValue: NbCalendarRange<D>;
+  readonly date = input<D>();
 
-  @Input() visibleDate: D;
+  readonly selectedValue = input<NbCalendarRange<D>>();
 
-  @Input() min: D;
+  readonly visibleDate = input<D>();
 
-  @Input() max: D;
+  readonly min = input<D>();
 
-  @Input() filter: (D) => boolean;
+  readonly max = input<D>();
 
-  @Input() size: NbCalendarSize = NbCalendarSize.MEDIUM;
-  static ngAcceptInputType_size: NbCalendarSizeValues;
+  readonly filter = input<(date: D) => boolean>();
 
-  @Output() select: EventEmitter<D> = new EventEmitter(true);
+  readonly size = input<NbCalendarSize, NbCalendarSizeValues>(NbCalendarSize.MEDIUM, {
+    transform: (size) => size as NbCalendarSize,
+  });
 
-  constructor(protected dateService: NbDateService<D>) {
-    super();
-  }
+  readonly select = output<D>();
 
-  @HostBinding('class.in-range')
-  get inRange(): boolean {
-    if (this.date && this.hasRange) {
-      return this.isInRange(this.date, this.selectedValue);
+  readonly inRange = computed((): boolean => {
+    const date = this.date();
+    const range = this.completeRange();
+    if (date && range) {
+      return this.isInRange(date, range);
     }
 
     return false;
-  }
+  });
 
-  @HostBinding('class.start')
-  get start(): boolean {
-    return this.date && this.hasRange && this.dateService.isSameDay(this.date, this.selectedValue.start);
-  }
+  readonly start = computed((): boolean => {
+    const date = this.date();
+    const range = this.completeRange();
+    return !!date && !!range && this.dateService.isSameDay(date, range.start);
+  });
 
-  @HostBinding('class.end')
-  get end(): boolean {
-    return this.date && this.hasRange && this.dateService.isSameDay(this.date, this.selectedValue.end);
-  }
+  readonly end = computed((): boolean => {
+    const date = this.date();
+    const range = this.completeRange();
+    return !!date && !!range && this.dateService.isSameDay(date, range.end);
+  });
 
-  @HostBinding('class.range-cell')
-  rangeCellClass = true;
+  readonly today = computed((): boolean => {
+    const date = this.date();
+    return !!date && this.dateService.isSameDay(date, this.dateService.today());
+  });
 
-  @HostBinding('class.day-cell')
-  dayCellClass = true;
+  readonly boundingMonth = computed((): boolean => {
+    return !this.dateService.isSameMonthSafe(this.date(), this.visibleDate());
+  });
 
-  @HostBinding('class.today')
-  get today(): boolean {
-    return this.date && this.dateService.isSameDay(this.date, this.dateService.today());
-  }
-
-  @HostBinding('class.bounding-month')
-  get boundingMonth(): boolean {
-    return !this.dateService.isSameMonthSafe(this.date, this.visibleDate);
-  }
-
-  @HostBinding('class.selected')
-  get selected(): boolean {
-    if (this.inRange) {
+  readonly selected = computed((): boolean => {
+    if (this.inRange()) {
       return true;
     }
 
-    if (this.selectedValue) {
-      return this.dateService.isSameDaySafe(this.date, this.selectedValue.start);
+    const selectedValue = this.selectedValue();
+    if (selectedValue) {
+      return this.dateService.isSameDaySafe(this.date(), selectedValue.start);
     }
 
     return false;
-  }
+  });
 
-  @HostBinding('class.empty')
-  get empty(): boolean {
-    return !this.date;
-  }
+  readonly empty = computed((): boolean => {
+    return !this.date();
+  });
 
-  @HostBinding('class.disabled')
-  get disabled(): boolean {
+  readonly disabled = computed((): boolean => {
     return this.smallerThanMin() || this.greaterThanMax() || this.dontFitFilter();
+  });
+
+  readonly isLarge = computed((): boolean => {
+    return this.size() === NbCalendarSize.LARGE;
+  });
+
+  get day(): number | undefined {
+    const date = this.date();
+    return date ? this.dateService.getDate(date) : undefined;
   }
 
-  @HostBinding('class.size-large')
-  get isLarge(): boolean {
-    return this.size === NbCalendarSize.LARGE;
-  }
-
-  get day(): number {
-    return this.date && this.dateService.getDate(this.date);
-  }
-
-  @HostListener('click')
   onClick() {
-    if (this.disabled || this.empty) {
+    const date = this.date();
+    if (this.disabled() || !date) {
       return;
     }
 
-    this.select.emit(this.date);
+    // Emitted once the click is handled, as the calendar's cells always did.
+    queueMicrotask(() => !this.destroyRef.destroyed && this.select.emit(date));
   }
 
   protected smallerThanMin(): boolean {
-    return this.date && this.min && this.dateService.compareDates(this.date, this.min) < 0;
+    // Cells are midnight; a min with a time of day still allows its own day.
+    const date = this.date();
+    const min = this.min();
+    return (
+      !!date &&
+      !!min &&
+      !this.dateService.isSameDaySafe(date, min) &&
+      this.dateService.compareDates(date, min) < 0
+    );
   }
 
   protected greaterThanMax(): boolean {
-    return this.date && this.max && this.dateService.compareDates(this.date, this.max) > 0;
+    const date = this.date();
+    const max = this.max();
+    return (
+      !!date &&
+      !!max &&
+      !this.dateService.isSameDaySafe(date, max) &&
+      this.dateService.compareDates(date, max) > 0
+    );
   }
 
   protected dontFitFilter(): boolean {
-    return this.date && this.filter && !this.filter(this.date);
+    const date = this.date();
+    const filter = this.filter();
+    return !!date && !!filter && !filter(date);
   }
 
-  protected isInRange(date: D, { start, end }: NbCalendarRange<D>): boolean {
-    const isGreaterThanStart = this.dateService.compareDates(this.date, start) >= 0;
-    const isLessThanEnd = this.dateService.compareDates(this.date, end) <= 0;
+  protected isInRange(date: D, { start, end }: Required<NbCalendarRange<D>>): boolean {
+    const isGreaterThanStart = this.dateService.compareDates(date, start) >= 0;
+    const isLessThanEnd = this.dateService.compareDates(date, end) <= 0;
 
     return isGreaterThanStart && isLessThanEnd;
   }

@@ -1,15 +1,16 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
+import { computed, Signal } from '@angular/core';
 import { NbCalendarRange } from './calendar-range.component';
 
 export abstract class NbBaseCalendarRangeCell<D> {
-  abstract selectedValue: NbCalendarRange<D>;
+  abstract readonly selectedValue: Signal<NbCalendarRange<D> | undefined>;
 
-  get hasRange(): boolean {
-    return !!(this.selectedValue && this.selectedValue.start && this.selectedValue.end);
-  }
+  /**
+   * The selected range when both of its ends are set.
+   */
+  protected readonly completeRange = computed((): Required<NbCalendarRange<D>> | undefined => {
+    const range = this.selectedValue();
+    return range && range.start && range.end ? { start: range.start, end: range.end } : undefined;
+  });
+
+  readonly hasRange = computed(() => !!this.completeRange());
 }

@@ -1,21 +1,12 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 import { NgModule } from '@angular/core';
 
-import { NbSharedModule } from '../shared/shared.module';
-import { NbCalendarKitModule } from '../calendar-kit/calendar-kit.module';
-import { NbCardModule } from '../card/card.module';
+import { NbCalendarKitModule } from '@liquid-js/lyr-core/calendar-kit';
+import { NbCardModule } from '@liquid-js/lyr-core/card';
 import { NbBaseCalendarComponent } from './base-calendar.component';
 
-
 @NgModule({
-  imports: [NbCalendarKitModule, NbSharedModule, NbCardModule],
+  imports: [NbCalendarKitModule, NbCardModule, NbBaseCalendarComponent],
   exports: [NbBaseCalendarComponent],
-  declarations: [NbBaseCalendarComponent],
 })
 export class NbBaseCalendarModule {
 }

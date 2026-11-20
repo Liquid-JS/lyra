@@ -1,23 +1,11 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
+import { Component, input, model, output, Type } from '@angular/core';
 
-import { Component, EventEmitter, Input, Output, Type } from '@angular/core';
-
-import {
-  NbCalendarCell,
-  NbCalendarSize,
-  NbCalendarViewMode,
-  NbCalendarSizeValues,
-  NbCalendarViewModeValues,
-} from '../calendar-kit/model';
-import { convertToBoolProperty, NbBooleanInput } from '../helpers';
-
+import { NbCalendarCell, NbCalendarSize, NbCalendarViewMode, NbCalendarSizeValues, NbCalendarViewModeValues, NbCalendarPickerMode } from '@liquid-js/lyr-core/calendar-kit';
+import { ɵconvertToBoolProperty as convertToBoolProperty, NbBooleanInput } from '@liquid-js/lyr-core/base';
+import { NbBaseCalendarComponent } from './base-calendar.component';
 
 /**
- * Calendar component provides a capability to choose a date.
+ * Picks a date from a grid of days, months or years.
  *
  * ```html
  * <nb-calendar [(date)]="date"></nb-calendar>
@@ -27,7 +15,21 @@ import { convertToBoolProperty, NbBooleanInput } from '../helpers';
  * Basic usage example
  * @stacked-example(Showcase, calendar/calendar-showcase.component)
  *
+ * The grid works by keyboard: the arrow keys move between cells, Home and End to the ends of the row, Page Up and
+ * Page Down by a month (with Shift, a year) among days or by a page among months and years, and Enter or Space picks
+ * the cell. The cells are named with their full dates for assistive technologies.
+ *
  * ### Installation
+ *
+ * Import `NbCalendarComponent` into your standalone component:
+ * ```ts
+ * @Component({
+ *   imports: [NbCalendarComponent],
+ * })
+ * export class PageComponent { }
+ * ```
+ *
+ * With NgModules:
  *
  * Import `NbCalendarModule` to your feature module.
  * ```ts
@@ -41,47 +43,42 @@ import { convertToBoolProperty, NbBooleanInput } from '../helpers';
  * ```
  * ### Usage
  *
- * If you want to select ranges you can use `NbCalendarRangeComponent`.
+ * `NbCalendarRangeComponent`, from `NbCalendarRangeModule` or on its own, picks a range of dates:
  *
  * ```html
  * <nb-calendar-range [(range)]="range"></nb-calendar-range>
  * <nb-calendar-range [range]="range" (rangeChange)="handleRangeChange($event)"></nb-calendar-range>
  * ```
  *
- * In order to use it, you have to import `NbCalendarRangeModule`.
  * @stacked-example(Range, calendar/calendar-range-showcase.component)
  *
- * The calendar component is supplied with a calendar navigation that contains navigate buttons.
- * If you do not want to use it you can hide calendar navigation using `showNavigation` property.
+ * The header, with the view mode button and the previous and next buttons, goes with `showNavigation="false"`:
  * @stacked-example(Without navigation, calendar/calendar-without-navigation.component)
  *
- * As you can see in the basic usage example calendar contains previous and next month days
- * which can be disabled using `boundingMonth` property.
+ * The days of the months around the one shown fill its first and last weeks; `boundingMonth="false"` leaves those
+ * cells empty:
  * @stacked-example(Bounding months, calendar/calendar-bounding-month.component)
  *
- * You can define starting view of the calendar by setting `startView` property.
- * Available values: year, month and date.
+ * `startView` opens the calendar on its years, its months or its days (`date`, the default):
  * @stacked-example(Start view, calendar/calendar-start-view.component)
  *
- * You can use a larger version of the calendar by defining size property.
- * Available values: medium(which is default) and large.
+ * `pickerMode="month"` or `"year"` makes the calendar pick a month or a year: it starts on the months or the years, and
+ * picks the first day of the one chosen. A month picker's title still changes to the years.
+ *
+ * `size="large"` is a larger calendar:
  * @stacked-example(Size, calendar/calendar-size.component)
  *
- * Calendar supports min and max dates which disables values out of min-max range.
+ * Days before `min` and after `max` are disabled, as are the months and years with no day in between:
  * @stacked-example(Borders, calendar/calendar-min-max.component)
  *
- * Also, you can define custom filter property that should be predicate which receives
- * date and returns false if this date has to be disabled. In this example, we provide the filter
- * which disables weekdays.
+ * `filter` disables the days for which it returns `false`, here the weekends:
  * @stacked-example(Filter, calendar/calendar-filter.component)
  *
- * Week numbers column could be enabled via `showWeekNumber` binding:
+ * `showWeekNumber` adds a column with the week numbers:
  * @stacked-example(Week number, calendar/calendar-week-number.component)
  *
- * If you need create custom cells you can easily provide custom components for
- * calendar. For examples if you want to show any average price under each date you can
- * just provide custom `dayCellComponent`. Custom cells for month and year can be provided
- * the same way, check API reference.
+ * Custom cell components render the days, months or years, e.g. a day cell with a price under its date. They
+ * implement `NbCalendarCell`:
  * @stacked-example(Custom day cell, calendar/calendar-custom-day-cell-showcase.component)
  *
  * @styles
@@ -139,6 +136,7 @@ import { convertToBoolProperty, NbBooleanInput } from '../helpers';
  * calendar-cell-today-selected-hover-border-color:
  * calendar-cell-today-selected-active-background-color:
  * calendar-cell-today-selected-active-border-color:
+ * calendar-cell-range-joined-border-radius:
  * calendar-cell-today-in-range-background-color:
  * calendar-cell-today-in-range-border-color:
  * calendar-cell-today-in-range-text-color:
@@ -194,119 +192,102 @@ import { convertToBoolProperty, NbBooleanInput } from '../helpers';
  * calendar-year-cell-large-height:
  * */
 @Component({
-    selector: 'nb-calendar',
-    template: `
-    <nb-base-calendar
-      [boundingMonth]="boundingMonth"
-      [startView]="startView"
-      [date]="date"
-      [min]="min"
-      [max]="max"
-      [filter]="filter"
-      [dayCellComponent]="dayCellComponent"
-      [monthCellComponent]="monthCellComponent"
-      [yearCellComponent]="yearCellComponent"
-      [size]="size"
-      [visibleDate]="visibleDate"
-      [showNavigation]="showNavigation"
-      [showWeekNumber]="showWeekNumber"
-      [weekNumberSymbol]="weekNumberSymbol"
-      [firstDayOfWeek]="firstDayOfWeek"
-      (dateChange)="dateChange.emit($event)"
-    ></nb-base-calendar>
-  `,
-    standalone: false
+  selector: 'nb-calendar',
+  templateUrl: './calendar.component.html',
+  imports: [NbBaseCalendarComponent],
 })
 export class NbCalendarComponent<D> {
+  /**
+   * Fills the first and last weeks with the days of the months around the one shown; without it those cells are
+   * empty.
+   */
+  readonly boundingMonth = input<boolean, NbBooleanInput>(true, { transform: convertToBoolProperty });
 
   /**
-   * Defines if we should render previous and next months
-   * in the current month view.
-   * */
-  @Input() boundingMonth: boolean = true;
+   * The view the calendar opens on: `date` (default), `month` or `year`. A month or year `pickerMode` opens on its
+   * own view instead.
+   */
+  readonly startView = input<NbCalendarViewMode, NbCalendarViewModeValues>(NbCalendarViewMode.DATE, {
+    transform: (viewMode) => viewMode as NbCalendarViewMode,
+  });
 
   /**
-   * Defines starting view for calendar.
-   * */
-  @Input() startView: NbCalendarViewMode = NbCalendarViewMode.DATE;
-  static ngAcceptInputType_startView: NbCalendarViewModeValues;
+   * What the calendar picks: a day (`date`, default), a month or a year, as the first day of the month or year.
+   */
+  readonly pickerMode = input<NbCalendarPickerMode>('date');
 
   /**
-   * Minimum available date for selection.
-   * */
-  @Input() min: D;
+   * The earliest date that can be picked: earlier days are disabled, its own day whatever its time, and so are the
+   * months and years that end before it.
+   */
+  readonly min = input<D>();
 
   /**
-   * Maximum available date for selection.
-   * */
-  @Input() max: D;
+   * The latest date that can be picked: later days are disabled, its own day whatever its time, and so are the
+   * months and years that start after it.
+   */
+  readonly max = input<D>();
 
   /**
-   * Predicate that decides which cells will be disabled.
-   * */
-  @Input() filter: (D) => boolean;
+   * Disables the days for which it returns `false`. Months and years aren't filtered.
+   */
+  readonly filter = input<(date: D) => boolean>();
 
   /**
-   * Custom day cell component. Have to implement `NbCalendarCell` interface.
-   * */
-  @Input() dayCellComponent: Type<NbCalendarCell<D, D>>;
+   * A component to render the days with, implementing `NbCalendarCell`.
+   */
+  readonly dayCellComponent = input<Type<NbCalendarCell<D, D>>>();
 
   /**
-   * Custom month cell component. Have to implement `NbCalendarCell` interface.
-   * */
-  @Input() monthCellComponent: Type<NbCalendarCell<D, D>>;
+   * A component to render the months with, implementing `NbCalendarCell`.
+   */
+  readonly monthCellComponent = input<Type<NbCalendarCell<D, D>>>();
 
   /**
-   * Custom year cell component. Have to implement `NbCalendarCell` interface.
-   * */
-  @Input() yearCellComponent: Type<NbCalendarCell<D, D>>;
+   * A component to render the years with, implementing `NbCalendarCell`.
+   */
+  readonly yearCellComponent = input<Type<NbCalendarCell<D, D>>>();
 
   /**
-   * Size of the calendar and entire components.
-   * Can be 'medium' which is default or 'large'.
-   * */
-  @Input() size: NbCalendarSize = NbCalendarSize.MEDIUM;
-  static ngAcceptInputType_size: NbCalendarSizeValues;
-
-  @Input() visibleDate: D;
+   * Size of the calendar and its cells: `medium` (default) or `large`.
+   */
+  readonly size = input<NbCalendarSize, NbCalendarSizeValues>(NbCalendarSize.MEDIUM, {
+    transform: (size) => size as NbCalendarSize,
+  });
 
   /**
-   * Determines should we show calendars navigation or not.
-   * */
-  @Input() showNavigation: boolean = true;
+   * The date whose month the calendar shows; the selected date, or today, by default. It supports two-way binding,
+   * which follows the user's navigation.
+   */
+  readonly visibleDate = model<D>();
 
   /**
-   * Date which will be rendered as selected.
-   * */
-  @Input() date: D;
+   * Shows the header with the view mode button and the previous and next buttons (default).
+   */
+  readonly showNavigation = input<boolean, NbBooleanInput>(true, { transform: convertToBoolProperty });
 
   /**
-   * Determines should we show week numbers column.
-   * False by default.
-   * */
-  @Input()
-  get showWeekNumber(): boolean {
-    return this._showWeekNumber;
-  }
-  set showWeekNumber(value: boolean) {
-    this._showWeekNumber = convertToBoolProperty(value);
-  }
-  protected _showWeekNumber: boolean = false;
-  static ngAcceptInputType_showWeekNumber: NbBooleanInput;
+   * The selected date.
+   */
+  readonly date = input<D>();
 
   /**
-   * Sets symbol used as a header for week numbers column
-   * */
-  @Input() weekNumberSymbol: string = '#';
+   * Shows a column with the week numbers before the days; off by default.
+   */
+  readonly showWeekNumber = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
 
   /**
-   * Sets first day of the week, it can be 1 if week starts from monday and 0 if from sunday and so on.
-   * `undefined` means that default locale setting will be used.
-   * */
-  @Input() firstDayOfWeek: number | undefined;
+   * The header of the week numbers column; `#` by default.
+   */
+  readonly weekNumberSymbol = input<string>();
 
   /**
-   * Emits date when selected.
-   * */
-  @Output() dateChange: EventEmitter<D> = new EventEmitter();
+   * The first day of the week: 0 for Sunday, 1 for Monday and so on; the locale's by default.
+   */
+  readonly firstDayOfWeek = input<number>();
+
+  /**
+   * Emits the picked day, or the first day of the picked month or year in those picker modes.
+   */
+  readonly dateChange = output<D>();
 }

@@ -1,31 +1,30 @@
-import { Component } from '@angular/core';
-import { NbDateService, NbCalendarRange } from '@nebular/theme';
+import { Component, inject } from '@angular/core';
+import {
+  NbDateService,
+  NbCalendarRange,
+  NbCardComponent,
+  NbCardBodyComponent,
+  NbButtonComponent,
+  NbCalendarComponent,
+  NbCalendarRangeComponent,
+} from '@liquid-js/lyr-core';
 
 @Component({
-    template: `
-    <nb-card>
-      <nb-card-body>
-        <div class="example-items-rows">
-          <button (click)="toggleSize()" nbButton>
-            Change to {{ this.size === 'medium' ? 'large' : 'medium' }}
-          </button>
-          <button (click)="toggleWeekNumber()" nbButton>
-            {{ this.showWeekNumber ? 'Hide' : 'Show' }} week number column
-          </button>
-        </div>
-
-        <div class="example-items-rows">
-          <nb-calendar [(date)]="date" [showWeekNumber]="showWeekNumber" [size]="size"></nb-calendar>
-          <nb-calendar-range [(range)]="dateRange"
-                             [showWeekNumber]="showWeekNumber"
-                             [size]="size">
-          </nb-calendar-range>
-        </div>
-      </nb-card-body>
-    </nb-card>
-  `,
-    styles: [` button { margin-bottom: 1rem; } `],
-    standalone: false
+  templateUrl: './calendar-week-number.component.html',
+  styles: [
+    `
+      button {
+        margin-bottom: 1rem;
+      }
+    `,
+  ],
+  imports: [
+    NbCardComponent,
+    NbCardBodyComponent,
+    NbButtonComponent,
+    NbCalendarComponent,
+    NbCalendarRangeComponent,
+  ],
 })
 export class CalendarWeekNumberComponent {
   showWeekNumber = false;
@@ -33,7 +32,9 @@ export class CalendarWeekNumberComponent {
   date: Date;
   dateRange: NbCalendarRange<Date>;
 
-  constructor(dateService: NbDateService<Date>) {
+  constructor() {
+    const dateService = inject<NbDateService<Date>>(NbDateService);
+
     this.date = dateService.today();
     const yesterday = dateService.addDay(this.date, -1);
     const tomorrow = dateService.addDay(this.date, 1);

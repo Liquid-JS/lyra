@@ -1,32 +1,32 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { Component } from '@angular/core';
-import { NbDateService } from '@nebular/theme';
+import { Component, inject } from '@angular/core';
+import {
+  NbDateService,
+  NbCardComponent,
+  NbCardHeaderComponent,
+  NbCardBodyComponent,
+  NbCalendarComponent,
+} from '@liquid-js/lyr-core';
+import { DatePipe } from '@angular/common';
 
 @Component({
-    selector: 'nb-calendar-min-max',
-    template: `
-    <nb-card>
-      <nb-card-header>
-        <h1 class="h5">Selected date: {{ date | date }}</h1>
-      </nb-card-header>
-      <nb-card-body>
-        <nb-calendar [(date)]="date" [min]="min" [max]="max"></nb-calendar>
-      </nb-card-body>
-    </nb-card>
-  `,
-    standalone: false
+  selector: 'nb-calendar-min-max',
+  templateUrl: './calendar-min-max.component.html',
+  imports: [
+    NbCardComponent,
+    NbCardHeaderComponent,
+    NbCardBodyComponent,
+    NbCalendarComponent,
+    DatePipe,
+  ],
 })
 export class CalendarMinMaxComponent {
   date: Date;
   min: Date;
   max: Date;
 
-  constructor(dateService: NbDateService<Date>) {
+  constructor() {
+    const dateService = inject<NbDateService<Date>>(NbDateService);
+
     this.date = dateService.today();
     this.date.setDate(15);
     this.min = dateService.addDay(this.date, -7);

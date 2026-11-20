@@ -1,20 +1,15 @@
 import { Component } from '@angular/core';
-import { NbCalendarDayCellComponent } from '@nebular/theme';
+import { NbCalendarDayCellComponent } from '@liquid-js/lyr-core';
 
 @Component({
-    selector: 'nb-calendar-custom-day-cell',
-    styles: [`
-    .cell-content {
-      flex-direction: column;
-    }
-  `],
-    template: `
-    <div class="cell-content">
-      <div>{{ day }}</div>
-      <span class="caption" [class.text-control]="selected">{{ (day + 100) * day }}$</span>
-    </div>
-  `,
-    standalone: false
+  selector: 'nb-calendar-custom-day-cell',
+  styles: [
+    `
+      .cell-content {
+        flex-direction: column;
+      }
+    `,
+  ],
+  templateUrl: './calendar-custom-day-cell.component.html',
 })
-export class CalendarCustomDayCellComponent extends NbCalendarDayCellComponent<Date> {
-}
+export class CalendarCustomDayCellComponent extends NbCalendarDayCellComponent<Date> {}

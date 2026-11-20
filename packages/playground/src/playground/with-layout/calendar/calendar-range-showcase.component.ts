@@ -1,32 +1,32 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
+import { Component, inject } from '@angular/core';
 
-import { Component } from '@angular/core';
-
-import { NbCalendarRange, NbDateService } from '@nebular/theme';
-
+import {
+  NbCalendarRange,
+  NbDateService,
+  NbCardComponent,
+  NbCardHeaderComponent,
+  NbCardBodyComponent,
+  NbCalendarRangeComponent,
+} from '@liquid-js/lyr-core';
+import { DatePipe } from '@angular/common';
 
 @Component({
-    selector: 'nb-calendar-range-showcase',
-    template: `
-    <nb-card>
-      <nb-card-header>
-        <h1 class="h5">Selected range: {{ range.start | date }} - {{ range.end | date }}</h1>
-      </nb-card-header>
-      <nb-card-body>
-        <nb-calendar-range [(range)]="range"></nb-calendar-range>
-      </nb-card-body>
-    </nb-card>
-  `,
-    standalone: false
+  selector: 'nb-calendar-range-showcase',
+  templateUrl: './calendar-range-showcase.component.html',
+  imports: [
+    NbCardComponent,
+    NbCardHeaderComponent,
+    NbCardBodyComponent,
+    NbCalendarRangeComponent,
+    DatePipe,
+  ],
 })
 export class CalendarRangeShowcaseComponent {
+  protected readonly dateService = inject<NbDateService<Date>>(NbDateService);
+
   range: NbCalendarRange<Date>;
 
-  constructor(protected dateService: NbDateService<Date>) {
+  constructor() {
     this.range = {
       start: this.dateService.addDay(this.monthStart, 3),
       end: this.dateService.addDay(this.monthEnd, -3),
