@@ -1,0 +1,55 @@
+<nb-card>
+  <nb-card-body>
+    <form [formGroup]="form"
+      (ngSubmit)="form.markAllAsTouched()">
+      <div class="field">
+        <label nbLabel
+          [for]="email">Email</label>
+        <input nbInput
+          fullWidth
+          type="email"
+          formControlName="email"
+          nbValidation
+          #email="nbValidation" />
+        <nb-validation-errors [for]="email">We'll send the receipt to this address.</nb-validation-errors>
+      </div>
+
+      <div class="field">
+        <label nbLabel
+          [for]="password">Password</label>
+        <input nbInput
+          fullWidth
+          type="password"
+          formControlName="password"
+          nbValidation
+          #password="nbValidation" />
+        <nb-validation-errors [for]="password">At least 8 characters.</nb-validation-errors>
+      </div>
+
+      <div class="field">
+        <label nbLabel
+          [for]="plan">Plan</label>
+        <nb-select fullWidth
+          placeholder="Choose a plan"
+          formControlName="plan"
+          nbValidation
+          #plan="nbValidation">
+          <nb-option value="free">Free</nb-option>
+          <nb-option value="team">Team</nb-option>
+        </nb-select>
+        <nb-validation-errors [for]="plan" />
+      </div>
+
+      <div class="field">
+        <nb-checkbox formControlName="terms"
+          nbValidation
+          #terms="nbValidation">I accept the terms</nb-checkbox>
+        <nb-validation-errors [for]="terms" />
+      </div>
+
+      <button nbButton
+        status="primary"
+        type="submit">Sign up</button>
+    </form>
+  </nb-card-body>
+</nb-card>

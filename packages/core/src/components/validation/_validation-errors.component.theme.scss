@@ -1,0 +1,32 @@
+@use '../../styles/theming' as *;
+
+@mixin nb-validation-errors-theme() {
+  // The marker of a required control's `nbLabel`.
+  label[nbLabel] .label-required {
+    color: nb-theme(label-required-text-color);
+    margin-inline-start: 0.125rem;
+  }
+
+  nb-validation-errors {
+    font-family: nb-theme(validation-errors-text-font-family);
+    font-size: nb-theme(validation-errors-text-font-size);
+    font-weight: nb-theme(validation-errors-text-font-weight);
+    line-height: nb-theme(validation-errors-text-line-height);
+
+    .validation-errors {
+      color: nb-theme(validation-errors-text-color);
+    }
+
+    .validation-error .validation-text {
+      margin: nb-theme(validation-errors-margin);
+    }
+
+    .validation-helper {
+      color: nb-theme(validation-helper-text-color);
+    }
+
+    .validation-helper .validation-text {
+      margin: nb-theme(validation-helper-margin);
+    }
+  }
+}
