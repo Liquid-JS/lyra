@@ -1,43 +1,35 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
+import {
+  NbCardComponent,
+  NbCardBodyComponent,
+  NbTabsetComponent,
+  NbTabComponent,
+  NbSpinnerDirective,
+} from '@liquid-js/lyr-core';
 
 @Component({
-    selector: 'nb-app-spinner-tabs',
-    template: `
-    <nb-card size="small">
-      <nb-card-body>
-
-        <nb-tabset fullWidth (changeTab)="toggleLoadingAnimation()">
-          <nb-tab tabTitle="Tab 1" [nbSpinner]="loading" nbSpinnerStatus="success" nbSpinnerSize="giant">
-            <p>
-              A nebula is an interstellar cloud of dust, hydrogen, helium and other ionized gases.
-              Originally, nebula was a name for any diffuse astronomical object.
-            </p>
-          </nb-tab>
-
-          <nb-tab tabTitle="Tab 2" [nbSpinner]="loading" nbSpinnerStatus="info" nbSpinnerSize="giant">
-            <p>
-              Nebular's primary goal is to assemble together and connect the most awesome features and libraries
-              creating an efficient ecosystem to speed up and simplify the development.
-            </p>
-          </nb-tab>
-
-        </nb-tabset>
-      </nb-card-body>
-    </nb-card>
-  `,
-    styles: [`
-    :host nb-tab {
-      padding: 1.25rem;
-    }
-  `],
-    standalone: false
+  selector: 'nb-app-spinner-tabs',
+  templateUrl: './spinner-tabs.component.html',
+  styles: [
+    `
+      :host nb-tab {
+        padding: 1.25rem;
+      }
+    `,
+  ],
+  imports: [
+    NbCardComponent,
+    NbCardBodyComponent,
+    NbTabsetComponent,
+    NbTabComponent,
+    NbSpinnerDirective,
+  ],
 })
 export class SpinnerTabsComponent {
-
-  loading = false;
+  readonly loading = signal(false);
 
   toggleLoadingAnimation() {
-    this.loading = true;
-    setTimeout(() => this.loading = false, 20000)
+    this.loading.set(true);
+    setTimeout(() => this.loading.set(false), 20000);
   }
 }

@@ -1,17 +1,15 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
+import { Component, input, computed } from '@angular/core';
 
-import { Component, HostBinding, Input } from '@angular/core';
+import { NbComponentSize } from '@liquid-js/lyr-core/base';
+import { NbComponentOrCustomStatus } from '@liquid-js/lyr-core/base';
+import { injectNbTexts, NbLocalize } from '@liquid-js/lyr-core/base';
 
-import { NbStatusService } from '../../services/status.service';
-import { NbComponentSize } from '../component-size';
-import { NbComponentOrCustomStatus } from '../component-status';
+/** @internal */
+declare const $localize: NbLocalize;
 
 /**
- * Styled spinner component
+ * A spinner with a message, "Loading..." by default; a `status` region, so assistive technologies announce it.
+ * `nbSpinner` places one over an element while it loads.
  *
  * @styles
  *
@@ -48,105 +46,37 @@ import { NbComponentOrCustomStatus } from '../component-status';
  * spinner-height-giant:
  */
 @Component({
-    selector: 'nb-spinner',
-    template: `
-    <span class="spin-circle"></span>
-    <span class="message" *ngIf="message">{{ message }}</span>
-  `,
-    styleUrls: ['./spinner.component.scss'],
-    standalone: false
+  selector: 'nb-spinner',
+  templateUrl: './spinner.component.html',
+  styleUrls: ['./spinner.component.scss'],
+  host: {
+    '[class]': 'hostClasses()',
+    // Announces its message, or "Loading..." without one.
+    role: 'status',
+    '[attr.aria-label]': 'shownMessage() ? null : texts().message',
+  },
 })
 export class NbSpinnerComponent {
+  protected readonly texts = injectNbTexts('spinner', () => ({
+    message: $localize`:@@nb.spinner.message:Loading...`,
+  }));
 
-  /**
-   * Loading text that is shown near the icon
-   * @type string
-   */
-  @Input()
-  message: string = 'Loading...';
+  /** The message shown, "Loading..." by default; an empty one shows none. */
+  protected readonly shownMessage = computed(() => this.message() ?? this.texts().message);
 
-  /**
-   * Spinner size, available sizes:
-   * tiny, small, medium, large, giant
-   * @param {string} value
-   */
-  @Input()
-  size: NbComponentSize = 'medium';
+  /** The message beside the spinner: "Loading..." when unset, none when empty. */
+  readonly message = input<string>();
 
-  /**
-   * Spinner status (adds specific styles):
-   * `basic`, `primary`, `info`, `success`, `warning`, `danger`, `control`.
-   */
-  @Input() status: NbComponentOrCustomStatus = 'basic';
+  /** `tiny`, `small`, `medium` (default), `large` or `giant`. */
+  readonly size = input<NbComponentSize>('medium');
 
-  @HostBinding('class.size-tiny')
-  get tiny() {
-    return this.size === 'tiny';
-  }
+  /** `basic` (default), `primary`, `info`, `success`, `warning`, `danger` or `control`. */
+  readonly status = input<NbComponentOrCustomStatus>('basic');
 
-  @HostBinding('class.size-small')
-  get small() {
-    return this.size === 'small';
-  }
-
-  @HostBinding('class.size-medium')
-  get medium() {
-    return this.size === 'medium';
-  }
-
-  @HostBinding('class.size-large')
-  get large() {
-    return this.size === 'large';
-  }
-
-  @HostBinding('class.size-giant')
-  get giant() {
-    return this.size === 'giant';
-  }
-
-  @HostBinding('class.status-primary')
-  get primary() {
-    return this.status === 'primary';
-  }
-
-  @HostBinding('class.status-info')
-  get info() {
-    return this.status === 'info';
-  }
-
-  @HostBinding('class.status-success')
-  get success() {
-    return this.status === 'success';
-  }
-
-  @HostBinding('class.status-warning')
-  get warning() {
-    return this.status === 'warning';
-  }
-
-  @HostBinding('class.status-danger')
-  get danger() {
-    return this.status === 'danger';
-  }
-
-  @HostBinding('class.status-basic')
-  get basic() {
-    return this.status === 'basic';
-  }
-
-  @HostBinding('class.status-control')
-  get control() {
-    return this.status === 'control';
-  }
-
-  @HostBinding('class')
-  get additionalClasses(): string[] {
-    if (this.statusService.isCustomStatus(this.status)) {
-      return [this.statusService.getStatusClass(this.status)];
-    }
-    return [];
-  }
-
-  constructor(protected statusService: NbStatusService) {
-  }
+  protected readonly hostClasses = computed(() =>
+    [
+      this.size() && `size-${this.size()}`,
+      this.status() && `status-${this.status()}`,
+    ].filter(Boolean),
+  );
 }

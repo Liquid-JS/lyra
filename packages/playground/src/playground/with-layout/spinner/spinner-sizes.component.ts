@@ -1,16 +1,10 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { Component } from '@angular/core';
+import { NbCardComponent, NbCardBodyComponent, NbSpinnerDirective } from '@liquid-js/lyr-core';
 
 @Component({
-    selector: 'nb-spinner-sizes',
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    templateUrl: './spinner-sizes.component.html',
-    standalone: false
+  selector: 'nb-spinner-sizes',
+  templateUrl: './spinner-sizes.component.html',
+  imports: [NbCardComponent, NbSpinnerDirective, NbCardBodyComponent],
 })
 export class SpinnerSizesComponent {
 }

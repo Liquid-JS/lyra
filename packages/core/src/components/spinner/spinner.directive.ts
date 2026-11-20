@@ -1,36 +1,32 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
+import { ComponentRef, Directive, ElementRef, Renderer2, ViewContainerRef, effect, inject, input, untracked } from '@angular/core';
 
-import {
-  ComponentRef,
-  Directive,
-  ElementRef,
-  Input,
-  Renderer2,
-  ViewContainerRef,
-  HostBinding,
-} from '@angular/core';
-
-import { NbComponentSize } from '../component-size';
-import { NbComponentOrCustomStatus } from '../component-status';
+import { NbComponentSize } from '@liquid-js/lyr-core/base';
+import { NbComponentOrCustomStatus } from '@liquid-js/lyr-core/base';
 import { NbSpinnerComponent } from './spinner.component';
+import { setComponentContext } from '@liquid-js/lyr-core/cdk';
 
 /**
- * Styled spinner directive
+ * Covers its host with a spinner while something loads; the host is `aria-busy` meanwhile.
  *
  * @stacked-example(Spinner Showcase, spinner/spinner-card.component)
  *
- *
- * ```ts
+ * ```html
  * <nb-card [nbSpinner]="loading" nbSpinnerStatus="danger">
  *   <nb-card-body>Card Content</nb-card-body>
  * </nb-card>
  * ```
  *
  * ### Installation
+ *
+ * Import `NbSpinnerDirective` into your standalone component:
+ * ```ts
+ * @Component({
+ *   imports: [NbSpinnerDirective],
+ * })
+ * export class PageComponent { }
+ * ```
+ *
+ * With NgModules:
  *
  * Import `NbSpinnerModule` to your feature module.
  * ```ts
@@ -44,85 +40,73 @@ import { NbSpinnerComponent } from './spinner.component';
  * ```
  * ### Usage
  *
- * Could be colored using `status` property
+ * `nbSpinnerStatus` colours it:
  *
  * @stacked-example(Spinner Colors, spinner/spinner-colors.component)
  *
- * Available in different sizes with `size` property:
+ * `nbSpinnerSize` sizes it:
  *
  * @stacked-example(Spinner Sizes, spinner/spinner-sizes.component)
  *
- * It is also possible to place it into the button:
+ * On a button:
  * @stacked-example(Buttons with spinner, spinner/spinner-button.component)
  *
- * Or tabs:
+ * Or in tabs:
  * @stacked-example(Spinner in tabs, spinner/spinner-tabs.component)
  */
 @Directive({
-    selector: '[nbSpinner]',
-    standalone: false
+  selector: '[nbSpinner]',
+  host: {
+    '[class.nb-spinner-container]': 'nbSpinner()',
+    // What the spinner covers is loading.
+    '[attr.aria-busy]': 'nbSpinner() || null',
+  },
 })
 export class NbSpinnerDirective {
+  private readonly directiveView = inject(ViewContainerRef);
+  private readonly renderer = inject(Renderer2);
+  private readonly directiveElement = inject(ElementRef);
 
-  spinner: ComponentRef<NbSpinnerComponent>;
+  private spinner?: ComponentRef<NbSpinnerComponent>;
 
-  /**
-   * Spinner message shown next to the icon
-   * @type {string}
-   */
-  @Input('nbSpinnerMessage') spinnerMessage: string;
+  /** A message beside the spinner; none by default, unlike `nb-spinner` on its own. */
+  readonly spinnerMessage = input<string>(undefined, { alias: 'nbSpinnerMessage' });
 
-  /**
-   * Spinner status color
-   * `basic`, `primary`, `info`, `success`, `warning`, `danger`, `control`.
-   */
-  @Input('nbSpinnerStatus') spinnerStatus: NbComponentOrCustomStatus = 'basic';
+  /** `basic` (default), `primary`, `info`, `success`, `warning`, `danger` or `control`. */
+  readonly spinnerStatus = input<NbComponentOrCustomStatus>('basic', { alias: 'nbSpinnerStatus' });
 
-  /**
-   * Spinner size. Possible values: `tiny`, `small`, `medium` (default), `large`, `giant`
-   */
-  @Input('nbSpinnerSize') spinnerSize: NbComponentSize = 'medium';
+  /** `tiny`, `small`, `medium` (default), `large` or `giant`. */
+  readonly spinnerSize = input<NbComponentSize>('medium', { alias: 'nbSpinnerSize' });
 
-  /**
-   * Directive value - show or hide spinner
-   * @param {boolean} val
-   */
-  @Input('nbSpinner')
-  set nbSpinner(val: boolean) {
-    if (val) {
-      this.show();
-    } else {
-      this.hide();
-    }
+  /** Whether the spinner shows. */
+  readonly nbSpinner = input<boolean, unknown>(false, { transform: Boolean });
+
+  constructor() {
+    effect(() => {
+      // Without a message, the directive's spinner shows none.
+      const context = { message: this.spinnerMessage() ?? '', status: this.spinnerStatus(), size: this.spinnerSize() };
+      if (!this.nbSpinner()) {
+        untracked(() => this.hide());
+        return;
+      }
+      untracked(() => {
+        setComponentContext(this.show(), context);
+      });
+    });
   }
 
-  @HostBinding('class.nb-spinner-container') isSpinnerExist = false;
-
-  constructor(private directiveView: ViewContainerRef,
-              private renderer: Renderer2,
-              private directiveElement: ElementRef) {
-  }
-
-  hide() {
-    if (this.isSpinnerExist) {
-      this.directiveView.remove();
-      this.isSpinnerExist = false;
-    }
-  }
-
-  show() {
-    if (!this.isSpinnerExist) {
+  private show(): ComponentRef<NbSpinnerComponent> {
+    if (!this.spinner) {
       this.spinner = this.directiveView.createComponent(NbSpinnerComponent);
-      this.setInstanceInputs(this.spinner.instance);
-      this.spinner.changeDetectorRef.detectChanges();
       this.renderer.appendChild(this.directiveElement.nativeElement, this.spinner.location.nativeElement);
-      this.isSpinnerExist = true;
     }
+    return this.spinner;
   }
 
-  setInstanceInputs(instance: NbSpinnerComponent) {
-    instance.message = this.spinnerMessage
-    typeof this.spinnerStatus !== 'undefined' && (instance.status = this.spinnerStatus);
-    typeof this.spinnerSize !== 'undefined' && (instance.size = this.spinnerSize);
+  private hide() {
+    if (this.spinner) {
+      this.directiveView.clear();
+      this.spinner = undefined;
+    }
   }
 }
