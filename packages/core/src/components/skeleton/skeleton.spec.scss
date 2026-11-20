@@ -1,0 +1,18 @@
+// The default theme's skeleton styles, which specs don't load otherwise.
+@use '@liquid-js/lyr-core/styles/all' as *;
+@use 'skeleton.directive.theme' as skeleton;
+
+$nb-enabled-themes: (default);
+
+@include nb-install() {
+  @include nb-theme-base();
+  @include skeleton.nb-skeleton-theme();
+}
+
+// As specific as a component's own rule, and after the theme's, as a component's styles are.
+.nb-theme-default .avatar {
+  width: 3rem;
+  height: 3rem;
+  // The shorthand, as an avatar's styles often have, which sets the background's size and repeat too.
+  background: rgb(51, 102, 255);
+}
