@@ -1,0 +1,26 @@
+// The content styles of the editor's preview, so the markdown looks the same in both; compiled into this component,
+// which doesn't need the editor.
+// The package exports its Sass sources by file name, with the extension.
+@use '@liquid-js/underflow/scss/viewer';
+@use '../../styles/markdown-contents' as contents;
+
+@include contents.nb-markdown-contents();
+
+nb-markdown-viewer {
+  display: block;
+
+  // nodes whose content is rendered in another element, e.g. a task's text next to its state
+  remark-node {
+    display: contents;
+  }
+
+  .nb-markdown-footnotes {
+    font-size: var(--text-caption-font-size);
+  }
+
+  // After the footnote's text, a word's space from it, as a mark rather than an underlined word.
+  .uf-contents a.nb-markdown-footnote-back {
+    margin-inline-start: 0.25em;
+    text-decoration: none;
+  }
+}

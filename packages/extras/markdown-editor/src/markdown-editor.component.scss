@@ -1,0 +1,356 @@
+// The editor's styles, global as the editor builds its DOM outside Angular's templates.
+// The package exports its Sass sources by file name, with the extension.
+@use '@liquid-js/underflow/scss/editor';
+// The language picker of highlighted code blocks.
+@use '@liquid-js/underflow/scss/plugins/code-syntax-highlight';
+@use '../../styles/markdown-contents' as contents;
+
+@include contents.nb-markdown-contents();
+
+nb-markdown-editor {
+  display: block;
+  // Code in the text, which has the field's background.
+  --nb-markdown-code-background: var(--background-basic-color-3);
+
+  // The interface in the theme's colours; the field's colours, which follow the status, are set on the element.
+  --nb-markdown-background: var(--nb-markdown-rest-background);
+  --uf-bg-color: var(--nb-markdown-background);
+  --uf-text-color: var(--text-basic-color);
+  --uf-label-color: var(--text-hint-color);
+  --uf-icon-color: var(--text-basic-color);
+  --uf-icon-active-color: var(--text-primary-color);
+  --uf-tab-text-color: var(--text-basic-color);
+  --uf-active-tab-text-color: var(--text-basic-color);
+  --uf-muted-text-color: var(--text-hint-color);
+  --uf-disabled-text-color: var(--text-disabled-color);
+  --uf-border-color: var(--border-basic-color-4);
+  // The lines between the bars and the text, and between the toolbar's groups.
+  --uf-divider-color: var(--border-basic-color-4);
+  --uf-toolbar-divider-color: var(--border-basic-color-5);
+  --uf-input-border-color: var(--input-basic-border-color);
+  // The toolbar and the mode switch are a shade off the text, which has the field's background.
+  --uf-toolbar-bg-color: var(--background-basic-color-3);
+  --uf-toolbar-button-hover-bg-color: var(--color-basic-transparent-hover);
+  --uf-toolbar-button-hover-border-color: var(--color-basic-transparent-hover);
+  --uf-toolbar-button-active-border-color: var(--border-basic-color-5);
+  --uf-hover-bg-color: var(--option-hover-background-color);
+  --uf-tab-bg-color: transparent;
+  --uf-tab-border-color: var(--border-basic-color-4);
+  --uf-button-border-color: var(--border-basic-color-4);
+  --uf-button-hover-border-color: var(--border-basic-color-5);
+  --uf-primary-color: var(--color-primary-default);
+  --uf-primary-hover-color: var(--color-primary-hover);
+  --uf-primary-text-color: var(--text-control-color);
+  --uf-selection-bg-color: var(--color-primary-transparent-default);
+  --uf-tooltip-bg-color: var(--tooltip-background-color);
+  --uf-scroll-sync-color: var(--text-hint-color);
+  --uf-switch-bg-color: var(--toggle-basic-background-color);
+  --uf-switch-checked-bg-color: var(--color-primary-default);
+  --uf-switch-knob-color: var(--background-basic-color-1);
+  --uf-md-widget-bg-color: var(--color-primary-transparent-default);
+  --uf-cursor-line-bg-color: var(--color-basic-transparent-default);
+
+  .uf-default-ui {
+    font-family: var(--font-family-primary);
+    border-color: var(--nb-markdown-border-color);
+    border-radius: var(--nb-markdown-border-radius);
+    background-color: var(--uf-bg-color);
+  }
+
+  // A field's colours under the pointer, with focus, and with both, as an input's.
+  &:not([aria-disabled='true']):hover {
+    --nb-markdown-background: var(--nb-markdown-hover-background);
+
+    .uf-default-ui {
+      border-color: var(--nb-markdown-hover-border-color);
+    }
+  }
+
+  &:focus-within {
+    --nb-markdown-background: var(--nb-markdown-focus-background);
+
+    .uf-default-ui {
+      border-color: var(--nb-markdown-focus-border-color);
+    }
+  }
+
+  &:not([aria-disabled='true']):focus-within:hover {
+    --nb-markdown-background: var(--nb-markdown-focus-and-hover-background);
+
+    .uf-default-ui {
+      border-color: var(--nb-markdown-focus-and-hover-border-color);
+    }
+  }
+
+  // The editor greys out its text and tabs, in `--uf-disabled-text-color`; the frame has a disabled field's colours.
+  &[aria-disabled='true'] {
+    --nb-markdown-background: var(--nb-markdown-disabled-background);
+
+    .uf-default-ui {
+      border-color: var(--nb-markdown-disabled-border-color);
+    }
+
+    .uf-contents-placeholder::before {
+      color: var(--text-disabled-color);
+    }
+  }
+
+  .uf-main-container {
+    color: var(--text-basic-color);
+  }
+
+  // Only the selected tab has a frame, which joins the text.
+  .uf-md-tab-container .tab-item,
+  .uf-mode-switch .tab-item {
+    border-color: transparent;
+
+    &.active {
+      border-color: var(--uf-tab-border-color);
+      font-weight: 600;
+    }
+  }
+
+  // The bars have the field's corners; the mode switch is a shade off the text, as the toolbar.
+  .uf-toolbar {
+    border-radius: var(--nb-markdown-border-radius) var(--nb-markdown-border-radius) 0 0;
+  }
+
+  .uf-mode-switch {
+    background-color: var(--uf-toolbar-bg-color);
+    border-top-color: var(--uf-divider-color);
+    border-radius: 0 0 var(--nb-markdown-border-radius) var(--nb-markdown-border-radius);
+  }
+
+  // The scroll sync switch, as Lyra's small toggle with its label before it.
+  .uf-toolbar .scroll-sync {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6875rem;
+    width: auto;
+    height: auto;
+    line-height: var(--toggle-small-text-line-height);
+    color: var(--toggle-basic-text-color);
+    cursor: var(--toggle-cursor);
+
+    &::before {
+      position: static;
+      font-family: var(--toggle-text-font-family);
+      font-size: var(--toggle-small-text-font-size);
+      font-weight: var(--toggle-small-text-font-weight);
+    }
+
+    &.active::before {
+      color: inherit;
+    }
+
+    // Out of sight, still there for the keyboard and screen readers.
+    input {
+      position: absolute;
+    }
+  }
+
+  .uf-toolbar .switch {
+    // How far the switcher moves, towards the end in either direction.
+    --nb-markdown-switch-travel: calc(var(--toggle-small-width) - var(--toggle-small-switcher-size) - 2px);
+
+    position: relative;
+    inset: auto;
+    flex: none;
+    box-sizing: content-box;
+    width: var(--toggle-small-width);
+    height: var(--toggle-small-height);
+    border: var(--toggle-border-width) solid var(--toggle-basic-border-color);
+    border-radius: var(--toggle-border-radius);
+    background-color: var(--toggle-basic-background-color);
+    transition:
+      background-color 0.15s,
+      border-color 0.15s;
+
+    &:dir(rtl) {
+      --nb-markdown-switch-travel: calc((var(--toggle-small-width) - var(--toggle-small-switcher-size) - 2px) * -1);
+    }
+
+    &::before {
+      inset: 0 auto auto;
+      inset-inline-start: 0;
+      width: var(--toggle-small-switcher-size);
+      height: var(--toggle-small-switcher-size);
+      margin: 1px;
+      background-color: var(--toggle-basic-switcher-background-color);
+      transition: transform 0.15s linear;
+    }
+
+    &:hover {
+      border-color: var(--toggle-basic-hover-border-color);
+      background-color: var(--toggle-basic-hover-background-color);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      &,
+      &::before,
+      .nb-markdown-switch-checkmark {
+        transition: none;
+      }
+    }
+  }
+
+  // The checkmark sits on the switcher, and shows when it's on.
+  .nb-markdown-switch-checkmark {
+    position: absolute;
+    top: calc((var(--toggle-small-switcher-size) - var(--toggle-small-switcher-icon-size)) / 2 + 1px);
+    inset-inline-start: calc((var(--toggle-small-switcher-size) - var(--toggle-small-switcher-icon-size)) / 2 + 1px);
+    display: flex;
+    width: var(--toggle-small-switcher-icon-size);
+    height: var(--toggle-small-switcher-icon-size);
+    color: var(--toggle-basic-checked-switcher-checkmark-color);
+    opacity: 0;
+    transition: transform 0.15s linear;
+
+    svg {
+      width: 100%;
+      height: 100%;
+    }
+  }
+
+  .uf-toolbar input:checked + .switch {
+    border-color: var(--toggle-basic-checked-border-color);
+    background-color: var(--toggle-basic-checked-background-color);
+
+    &::before {
+      background-color: var(--toggle-basic-checked-switcher-background-color);
+      transform: translateX(var(--nb-markdown-switch-travel));
+    }
+
+    &:hover {
+      border-color: var(--toggle-basic-hover-checked-border-color);
+      background-color: var(--toggle-basic-hover-checked-background-color);
+    }
+
+    .nb-markdown-switch-checkmark {
+      opacity: 1;
+      transform: translateX(var(--nb-markdown-switch-travel));
+    }
+  }
+
+  .uf-toolbar input:focus-visible + .switch {
+    border-color: var(--toggle-basic-focus-border-color);
+    background-color: var(--toggle-basic-focus-background-color);
+    box-shadow: 0 0 0 var(--toggle-outline-width) var(--toggle-outline-color);
+  }
+
+  .uf-toolbar input:checked:focus-visible + .switch {
+    border-color: var(--toggle-basic-focus-checked-border-color);
+    background-color: var(--toggle-basic-focus-checked-background-color);
+  }
+
+  .uf-tooltip {
+    font-family: var(--font-family-primary);
+    color: var(--tooltip-text-color);
+  }
+
+  .uf-popup,
+  .uf-context-menu,
+  .uf-dropdown-toolbar {
+    box-shadow: var(--shadow);
+  }
+
+  .uf-popup-body input[type='text'] {
+    color: var(--text-basic-color);
+    background-color: var(--input-basic-background-color);
+  }
+
+  .uf-popup-body input.wrong,
+  .uf-popup-body span.wrong {
+    border-color: var(--color-danger-default);
+  }
+
+  .uf-table-remove-button:hover {
+    border-color: var(--color-danger-default);
+    background-color: var(--color-danger-default);
+    color: var(--text-control-color);
+  }
+
+  // The markdown's syntax, in the order of the editor's rules, which decides the colour of tokens they share.
+  .uf-md-delimiter,
+  .uf-md-thematic-break,
+  .uf-md-link,
+  .uf-md-table,
+  .uf-md-block-quote,
+  .uf-md-code.uf-md-delimiter {
+    color: var(--text-disabled-color);
+  }
+
+  .uf-md-meta,
+  .uf-md-html,
+  .uf-md-link.uf-md-link-url.uf-md-marked-text,
+  .uf-md-block-quote .uf-md-marked-text,
+  .uf-md-list-item .uf-md-meta {
+    color: var(--text-hint-color);
+  }
+
+  .uf-md-table .uf-md-table-cell {
+    color: var(--text-basic-color);
+  }
+
+  .uf-md-link.uf-md-link-desc.uf-md-marked-text,
+  .uf-md-list-item-style.uf-md-list-item-odd {
+    color: var(--text-primary-color);
+  }
+
+  .uf-md-list-item-style.uf-md-list-item-even,
+  .uf-md-code.uf-md-marked-text {
+    color: var(--text-danger-color);
+  }
+
+  .uf-md-code,
+  .uf-md-code-block-line-background,
+  .uf-md-custom-block-line-background {
+    background-color: var(--nb-markdown-code-background);
+  }
+
+  .uf-md-custom-block {
+    color: var(--text-basic-color);
+
+    .uf-md-delimiter {
+      color: var(--text-disabled-color);
+    }
+
+    .uf-md-meta {
+      color: var(--text-primary-color);
+    }
+  }
+
+  // The language picker of a highlighted code block, as a field and a list of options.
+  .uf-code-block-language-input {
+    border-color: var(--input-basic-border-color);
+    border-radius: var(--nb-markdown-field-border-radius);
+    background-color: var(--input-basic-background-color);
+
+    input {
+      color: var(--text-basic-color);
+      background-color: transparent;
+
+      &::placeholder {
+        color: var(--input-basic-placeholder-text-color);
+      }
+    }
+  }
+
+  .uf-code-block-language-list {
+    border-color: var(--border-basic-color-4);
+    box-shadow: var(--shadow);
+
+    button {
+      color: var(--text-basic-color);
+      background-color: var(--background-basic-color-1);
+
+      &.active {
+        color: var(--text-primary-color);
+      }
+
+      &:hover {
+        background-color: var(--option-hover-background-color);
+      }
+    }
+  }
+}
