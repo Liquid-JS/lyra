@@ -1,43 +1,44 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 import {
+  Injector,
+  afterNextRender,
   AfterViewInit,
-  ComponentRef,
+  computed,
+  DestroyRef,
   Directive,
   ElementRef,
-  HostBinding,
-  Input,
+  inject,
+  input,
   OnChanges,
   OnDestroy,
   OnInit,
+  signal,
 } from '@angular/core';
-import { filter, takeUntil } from 'rxjs/operators';
-import { Subject } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { filter } from 'rxjs/operators';
 
-import { NbDynamicOverlay, NbDynamicOverlayController } from '../cdk/overlay/dynamic/dynamic-overlay';
-import { NbDynamicOverlayHandler } from '../cdk/overlay/dynamic/dynamic-overlay-handler';
-import { NbOverlayConfig, NbOverlayRef } from '../cdk/overlay/mapping';
-import { NbAdjustableConnectedPositionStrategy, NbAdjustment, NbPosition } from '../cdk/overlay/overlay-position';
-import { NbTrigger, NbTriggerValues } from '../cdk/overlay/overlay-trigger';
+import { NbDynamicOverlay, NbDynamicOverlayController } from '@liquid-js/lyr-core/cdk';
+import { NbDynamicOverlayHandler, nbCreateDynamicOverlayHandler } from '@liquid-js/lyr-core/cdk';
+import { NbOverlayConfig } from '@liquid-js/lyr-core/cdk';
+import { NbAdjustment, NbAdjustmentValues, NbPosition, NbPositionValues } from '@liquid-js/lyr-core/cdk';
+import { NbTrigger, NbTriggerValues } from '@liquid-js/lyr-core/cdk';
 import { NbContextMenuComponent } from './context-menu.component';
-import { NbMenuItem, NbMenuService } from '../menu/menu.service';
+import { ɵconvertToBoolProperty as convertToBoolProperty, NbBooleanInput } from '@liquid-js/lyr-core/base';
+import { NbMenuItem, NbMenuService } from '@liquid-js/lyr-core/menu';
 
 export interface NbContextMenuContext {
   items: NbMenuItem[];
-  tag: string;
+  tag?: string;
   position: NbPosition;
 }
 
+let lastContextMenuId = 0;
+
 /**
- * Full featured context menu directive.
+ * Opens a menu of items from an element, e.g. a profile button, in an overlay beside it.
  *
  * @stacked-example(Showcase, context-menu/context-menu-showcase.component)
  *
- * Just pass menu items array:
+ * Pass the menu items:
  *
  * ```html
  * <button [nbContextMenu]="items"></button>
@@ -45,6 +46,23 @@ export interface NbContextMenuContext {
  * items = [{ title: 'Profile' }, { title: 'Log out' }];
  * ```
  * ### Installation
+ *
+ * Import `NbContextMenuDirective` into your standalone component:
+ * ```ts
+ * @Component({
+ *   imports: [NbContextMenuDirective],
+ * })
+ * export class PageComponent { }
+ * ```
+ *
+ * and add `provideNbMenu()` to the application providers:
+ * ```ts
+ * bootstrapApplication(AppComponent, {
+ *   providers: [provideNbMenu()],
+ * });
+ * ```
+ *
+ * With NgModules:
  *
  * Import `NbContextMenuModule` to your feature module.
  * ```ts
@@ -69,15 +87,13 @@ export interface NbContextMenuContext {
  *
  * ### Usage
  *
- * If you want to handle context menu clicks you have to pass `nbContextMenuTag`
- * param and register to events using NbMenuService.
- * `NbContextMenu` renders plain `NbMenu` inside, so
- * you have to work with it just like with `NbMenu` component:
+ * The menu inside is an `nb-menu`, so item clicks come through `NbMenuService`: give the menu an `nbContextMenuTag`
+ * and listen for clicks with that tag. The menu closes after a click on an item.
  *
  * @stacked-example(Menu item click, context-menu/context-menu-click.component)
  *
- * Context menu has different placements, such as: top, bottom, left and right
- * which can be used as following:
+ * `nbContextMenuPlacement` puts the menu at the host's `bottom` (default), `top`, `start`, `end`, `left` or `right`,
+ * or at a corner such as `bottom-start`:
  *
  * ```html
  * <button [nbContextMenu]="items" nbContextMenuPlacement="right"></button>
@@ -87,9 +103,8 @@ export interface NbContextMenuContext {
  * items = [{ title: 'Profile' }, { title: 'Log out' }];
  * ```
  *
- * By default context menu will try to adjust itself to maximally fit viewport
- * and provide the best user experience. It will try to change position of the context menu.
- * If you wanna disable this behaviour just set it falsy value.
+ * When the menu doesn't fit the viewport it moves to another side, `clockwise` by default; `nbContextMenuAdjustment`
+ * changes that to `counterclockwise`, `vertical`, `horizontal`, or `noop` to keep it where it is:
  *
  * ```html
  * <button [nbContextMenu]="items" nbContextMenuAdjustment="counterclockwise"></button>
@@ -98,122 +113,106 @@ export interface NbContextMenuContext {
  * ```ts
  * items = [{ title: 'Profile' }, { title: 'Log out' }];
  * ```
- * Context menu has a number of triggers which provides an ability to show and hide the component in different ways:
+ * `nbContextMenuTrigger` sets what opens and closes the menu:
  *
- * - Click mode shows the component when a user clicks on the host element and hides when the user clicks
- * somewhere on the document outside the component.
- * - Hint provides capability to show the component when the user hovers over the host element
- * and hide when the user hovers out of the host.
- * - Hover works like hint mode with one exception - when the user moves mouse from host element to
- * the container element the component remains open, so that it is possible to interact with it content.
- * - Focus mode is applied when user focuses the element.
- * - Noop mode - the component won't react to the user interaction.
+ * - `click` (default) opens it with a click on the host and closes it with a click elsewhere on the page. The host
+ * is a disclosure then, with `aria-expanded` and `aria-controls`; a menu opened by keyboard takes the focus to its
+ * first item, and Escape brings it back.
+ * - `hint` opens it while the pointer is over the host.
+ * - `hover` is `hint`, but the menu stays open while the pointer moves from the host onto it, so its items can be
+ * clicked.
+ * - `focus` opens it while the host has focus.
+ * - `noop` leaves it to `show()`, `hide()` and `toggle()`.
  *
  * @stacked-example(Available Triggers, context-menu/context-menu-modes.component.html)
  *
- * Noop mode is especially useful when you need to control Popover programmatically, for example show/hide
- * as a result of some third-party action, like HTTP request or validation check:
+ * `noop` is for a menu opened from code, e.g. after a request or a check, or on a right click:
  *
  * @stacked-example(Manual Control, context-menu/context-menu-noop.component)
  *
  * @stacked-example(Manual Control, context-menu/context-menu-right-click.component)
- * */
+ */
 @Directive({
-    selector: '[nbContextMenu]',
-    providers: [NbDynamicOverlayHandler, NbDynamicOverlay],
-    standalone: false
+  selector: '[nbContextMenu]',
+  host: {
+    class: 'context-menu-host',
+    // A host the menu opens from on click says whether it's open, and what it opens, as a disclosure does.
+    '[attr.aria-expanded]': 'discloses() ? expanded() : null',
+    '[attr.aria-controls]': 'discloses() && expanded() ? containerId : null',
+    '(click)': 'noteKeyboardOpen($event)',
+  },
 })
 export class NbContextMenuDirective implements NbDynamicOverlayController, OnChanges, AfterViewInit, OnDestroy, OnInit {
-
-  @HostBinding('class.context-menu-host')
-  contextMenuHost = true;
-
-  /**
-   * Position will be calculated relatively host element based on the position.
-   * Can be top, right, bottom and left.
-   * */
-  @Input('nbContextMenuPlacement')
-  get position(): NbPosition {
-    return this._position;
-  }
-  set position(value: NbPosition) {
-    if (value !== this.position) {
-      this._position = value;
-      this.updateOverlayContext();
-    }
-  }
-  _position: NbPosition = NbPosition.BOTTOM;
+  private readonly hostRef = inject(ElementRef);
+  private readonly menuService = inject(NbMenuService);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly injector = inject(Injector);
 
   /**
-   * Container position will be changes automatically based on this strategy if container can't fit view port.
-   * Set this property to any falsy value if you want to disable automatically adjustment.
-   * Available values: clockwise, counterclockwise.
-   * */
-  @Input('nbContextMenuAdjustment')
-  adjustment: NbAdjustment = NbAdjustment.CLOCKWISE;
+   * Where the menu opens, relative to the host: `bottom` (default), `top`, `start`, `end`, `left`, `right`, or a
+   * corner such as `bottom-start`.
+   */
+  readonly position = input<NbPosition, NbPositionValues>(NbPosition.BOTTOM, {
+    alias: 'nbContextMenuPlacement',
+    transform: (value) => value as NbPosition,
+  });
 
   /**
-   * Set NbMenu tag, which helps identify menu when working with NbMenuService.
-   * */
-  @Input('nbContextMenuTag')
-  get tag(): string {
-    return this._tag;
-  }
-  set tag(value: string) {
-    if (value !== this.tag) {
-      this._tag = value;
-      this.updateOverlayContext();
-    }
-  }
-  _tag: string;
+   * Where the menu moves when it doesn't fit the viewport: to the next side `clockwise` (default) or
+   * `counterclockwise`, to the opposite side `vertical`ly or `horizontal`ly, or nowhere with `noop`.
+   */
+  readonly adjustment = input<NbAdjustment, NbAdjustmentValues>(NbAdjustment.CLOCKWISE, {
+    alias: 'nbContextMenuAdjustment',
+    transform: (value) => value as NbAdjustment,
+  });
 
   /**
-   * Basic menu items, will be passed to the internal NbMenuComponent.
-   * */
-  @Input('nbContextMenu')
-  get items(): NbMenuItem[] {
-    return this._items;
-  }
-  set items(items: NbMenuItem[]) {
-    this.validateItems(items);
-    this._items = items;
-    this.updateOverlayContext();
-  };
+   * The tag of the `nb-menu` inside, which tells its events apart in `NbMenuService`.
+   */
+  readonly tag = input<string>(undefined, { alias: 'nbContextMenuTag' });
 
   /**
-   * Describes when the container will be shown.
-   * Available options: `click`, `hover`, `hint`, `focus` and `noop`
-   * */
-  @Input('nbContextMenuTrigger')
-  trigger: NbTrigger = NbTrigger.CLICK;
-  static ngAcceptInputType_trigger: NbTriggerValues;
+   * The menu items. Without any, the menu doesn't open.
+   */
+  readonly items = input<NbMenuItem[], NbMenuItem[] | null | undefined>([], {
+    alias: 'nbContextMenu',
+    // An empty or missing list keeps the menu closed (see configureDynamicOverlay) instead of throwing.
+    transform: (items) => items ?? [],
+  });
 
-  @Input('nbContextMenuClass')
-  get contextMenuClass(): string {
-    return this._contextMenuClass;
-  }
-  set contextMenuClass(value: string) {
-    if (value !== this.contextMenuClass) {
-      this._contextMenuClass = value;
-      this.overlayConfig = { panelClass: this.contextMenuClass };
-    }
-  }
-  _contextMenuClass: string = '';
+  /**
+   * What opens and closes the menu: `click` (default), `hover`, `hint`, `focus` or `noop`.
+   */
+  readonly trigger = input<NbTrigger, NbTriggerValues>(NbTrigger.CLICK, {
+    alias: 'nbContextMenuTrigger',
+    transform: (value) => value as NbTrigger,
+  });
 
-  protected ref: NbOverlayRef;
-  protected container: ComponentRef<any>;
-  protected positionStrategy: NbAdjustableConnectedPositionStrategy;
-  protected overlayConfig: NbOverlayConfig = { panelClass: this.contextMenuClass } ;
-  protected overlayContext: NbContextMenuContext = { items: this.items, tag: this.tag, position: this.position };
-  protected destroy$ = new Subject<void>();
-  private _items: NbMenuItem[] = [];
+  /**
+   * Class added to the overlay pane, for styling the menu.
+   */
+  readonly contextMenuClass = input('', { alias: 'nbContextMenuClass' });
 
-  private dynamicOverlay: NbDynamicOverlay;
+  /** The menu's distance from its host, as a popover's `nbPopoverOffset`. */
+  readonly offset = input(15, { alias: 'nbContextMenuOffset' });
 
-  constructor(private hostRef: ElementRef,
-              private menuService: NbMenuService,
-              private dynamicOverlayHandler: NbDynamicOverlayHandler) {
-  }
+  /** Keeps the menu from opening, as a popover's `nbPopoverDisabled`. */
+  readonly disabled = input<boolean, NbBooleanInput>(false, {
+    alias: 'nbContextMenuDisabled',
+    transform: convertToBoolProperty,
+  });
+
+  protected readonly overlayConfig = computed<NbOverlayConfig>(() => ({ panelClass: this.contextMenuClass() }));
+  protected readonly overlayContext = computed<NbContextMenuContext>(() => ({
+    items: this.items(),
+    tag: this.tag(),
+    position: this.position(),
+  }));
+
+  private dynamicOverlay?: NbDynamicOverlay;
+
+  private readonly dynamicOverlayHandler =
+    inject(NbDynamicOverlayHandler, { optional: true, self: true }) ?? nbCreateDynamicOverlayHandler();
 
   ngOnInit() {
     this.dynamicOverlayHandler
@@ -225,10 +224,38 @@ export class NbContextMenuDirective implements NbDynamicOverlayController, OnCha
     this.rebuild();
   }
 
+  protected readonly expanded = signal(false);
+  protected readonly containerId = `nb-context-menu-${lastContextMenuId++}`;
+  protected readonly discloses = computed(() => this.trigger() === NbTrigger.CLICK);
+
   ngAfterViewInit() {
-    this.dynamicOverlay = this.configureDynamicOverlay()
-      .build();
+    const overlay = this.configureDynamicOverlay().build();
+    this.dynamicOverlay = overlay;
+    overlay.isShown.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((shown) => {
+      this.expanded.set(shown);
+      overlay.containerElement?.setAttribute('id', this.containerId);
+    });
     this.subscribeOnItemClick();
+    // A menu the keyboard opens takes the focus to its first item, as a menu button's does, so the keyboard can go on
+    // to choose one; Escape brings it back.
+    overlay.isShown
+      .pipe(
+        filter((shown) => shown && this.openedByKeyboard),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe(() =>
+        afterNextRender(
+          () => overlay.containerElement?.querySelector<HTMLElement>('a[href], button, [tabindex="0"]')?.focus(),
+          { injector: this.injector },
+        ),
+      );
+  }
+
+  // Whether the host was last activated by the keyboard: its click then has no mouse button presses.
+  private openedByKeyboard = false;
+
+  protected noteKeyboardOpen(event: MouseEvent) {
+    this.openedByKeyboard = event.detail === 0;
   }
 
   rebuild() {
@@ -237,52 +264,45 @@ export class NbContextMenuDirective implements NbDynamicOverlayController, OnCha
   }
 
   show() {
-    this.dynamicOverlay.show();
+    this.builtOverlay().show();
   }
 
   hide() {
-    this.dynamicOverlay.hide();
+    this.builtOverlay().hide();
   }
 
   toggle() {
-    this.dynamicOverlay.toggle();
+    this.builtOverlay().toggle();
   }
 
   ngOnDestroy() {
     this.dynamicOverlayHandler.destroy();
-    this.destroy$.next();
-    this.destroy$.complete();
+  }
+
+  private builtOverlay(): NbDynamicOverlay {
+    if (!this.dynamicOverlay) {
+      throw new Error('NbContextMenuDirective: the context menu is built once the view initialises.');
+    }
+    return this.dynamicOverlay;
   }
 
   protected configureDynamicOverlay() {
     return this.dynamicOverlayHandler
-      .position(this.position)
-      .trigger(this.trigger)
-      .adjustment(this.adjustment)
-      .context(this.overlayContext)
-      .overlayConfig(this.overlayConfig);
-  }
-
-  /*
-   * NbMenuComponent will crash if don't pass menu items to it.
-   * So, we just validating them and throw custom obvious error.
-   * */
-  private validateItems(items: NbMenuItem[]) {
-    if (!items || !items.length) {
-      throw Error(`List of menu items expected, but given: ${items}`)
-    }
+      .position(this.position())
+      .trigger(this.trigger())
+      .disabled(this.disabled() || !this.items().length)
+      .offset(this.offset())
+      .adjustment(this.adjustment())
+      .context(this.overlayContext())
+      .overlayConfig(this.overlayConfig());
   }
 
   private subscribeOnItemClick() {
     this.menuService.onItemClick()
       .pipe(
-        filter(({ tag }) => tag === this.tag && this.trigger !== NbTrigger.NOOP),
-        takeUntil(this.destroy$),
+        filter(({ tag }) => tag === this.tag() && this.trigger() !== NbTrigger.NOOP),
+        takeUntilDestroyed(this.destroyRef),
       )
       .subscribe(() => this.hide());
-  }
-
-  protected updateOverlayContext() {
-    this.overlayContext = { items: this.items, position: this.position, tag: this.tag };
   }
 }

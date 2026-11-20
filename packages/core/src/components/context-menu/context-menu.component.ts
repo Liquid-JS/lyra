@@ -1,16 +1,11 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
+import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 
-import { Component, Input } from '@angular/core';
-
-import { NbMenuItem } from '../../components/menu/menu.service';
-import { NbPositionedContainerComponent, NbRenderableContainer } from '../cdk/overlay/overlay-container';
+import { NbMenuItem } from '@liquid-js/lyr-core/menu';
+import { NbPositionedContainerComponent, NbRenderableContainer } from '@liquid-js/lyr-core/cdk';
+import { NbMenuComponent } from '@liquid-js/lyr-core/menu';
 
 /**
- * Context menu component used as content within NbContextMenuDirective.
+ * The overlay `NbContextMenuDirective` opens: an `nb-menu` of its items.
  *
  * @styles
  *
@@ -25,24 +20,24 @@ import { NbPositionedContainerComponent, NbRenderableContainer } from '../cdk/ov
  * context-menu-shadow:
  * */
 @Component({
-    selector: 'nb-context-menu',
-    template: `
-    <nb-menu class="context-menu" [items]="context.items" [tag]="context.tag"></nb-menu>
-  `,
-    standalone: false
+  selector: 'nb-context-menu',
+  template: `<nb-menu class="context-menu" [items]="context().items" [tag]="context().tag" />`,
+  // The menu inside reads items that apps change in place.
+  changeDetection: ChangeDetectionStrategy.Eager,
+  imports: [NbMenuComponent],
+  host: {
+    'animate.enter': 'nb-overlay-enter',
+    'animate.leave': 'nb-overlay-leave',
+  },
 })
 export class NbContextMenuComponent extends NbPositionedContainerComponent implements NbRenderableContainer {
+  readonly items = input<NbMenuItem[]>([]);
+  readonly tag = input<string>();
 
-  @Input() items: NbMenuItem[] = [];
-  @Input() tag: string;
-
-  @Input()
-  context: { items: NbMenuItem[], tag?: string } = { items: [] };
-
+  readonly context = input<{ items: NbMenuItem[]; tag?: string }>({ items: [] });
 
   /**
-   * The method is empty since we don't need to do anything additionally
-   * render is handled by change detection
+   * Nothing to do: change detection renders the menu from `context`.
    */
   renderContent() {}
 }

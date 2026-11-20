@@ -1,44 +1,41 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { Component, ViewChild } from '@angular/core';
-import { NbContextMenuDirective } from '@nebular/theme';
-
+import { Component, viewChild } from '@angular/core';
+import {
+  NbContextMenuDirective,
+  NbLayoutComponent,
+  NbLayoutColumnComponent,
+  NbButtonComponent,
+  NbContextMenuDirective as NbContextMenuDirective_1,
+} from '@liquid-js/lyr-core';
 
 @Component({
-    selector: 'nb-context-menu-noop',
-    templateUrl: './context-menu-noop.component.html',
-    styles: [`
-    :host nb-layout-column {
-      height: 50vw;
-    }
-    .menu-target {
-      margin-bottom: 7rem;
-    }
-    button {
-      margin-right: 1rem;
-      margin-top: 1rem;
-    }
-  `],
-    standalone: false
+  selector: 'nb-context-menu-noop',
+  templateUrl: './context-menu-noop.component.html',
+  styles: [
+    `
+      :host nb-layout-column {
+        height: 50vw;
+      }
+      .menu-target {
+        margin-bottom: 7rem;
+      }
+      button {
+        margin-inline-end: 1rem;
+        margin-top: 1rem;
+      }
+    `,
+  ],
+  imports: [NbLayoutComponent, NbLayoutColumnComponent, NbButtonComponent, NbContextMenuDirective_1],
 })
 export class ContextMenuNoopComponent {
-  @ViewChild(NbContextMenuDirective) contextMenu: NbContextMenuDirective;
+  readonly contextMenu = viewChild.required(NbContextMenuDirective);
 
-  items = [
-    { title: 'Profile' },
-    { title: 'Logout' },
-  ];
+  items = [{ title: 'Profile' }, { title: 'Logout' }];
 
   open() {
-    this.contextMenu.show();
+    this.contextMenu().show();
   }
 
   close() {
-    this.contextMenu.hide();
+    this.contextMenu().hide();
   }
-
 }

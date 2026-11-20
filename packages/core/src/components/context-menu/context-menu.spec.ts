@@ -1,7 +1,5 @@
-import { Component, ElementRef, Input, NgModule, Type, ViewChild } from '@angular/core';
-import { ComponentFixture, fakeAsync, TestBed, tick, waitForAsync } from '@angular/core/testing';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { RouterTestingModule } from '@angular/router/testing';
+import { Component, ElementRef, NgModule, Type, viewChild, signal } from '@angular/core';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import {
   NbThemeModule,
   NbLayoutModule,
@@ -16,73 +14,86 @@ import {
   NbContextMenuComponent,
   NbContextMenuModule,
   NbOverlayConfig,
-} from '@nebular/theme';
+} from '@liquid-js/lyr-core';
+import { RouterModule } from '@angular/router';
+import { of } from 'rxjs';
+import { NbLayoutComponent, NbLayoutColumnComponent } from '../layout/layout.component';
+import { NbContextMenuDirective as NbContextMenuDirective_1 } from './context-menu.directive';
 
 @Component({
-    selector: 'nb-context-menu-default-test',
-    template: `
+  selector: 'nb-context-menu-default-test',
+  template: `
     <nb-layout>
       <nb-layout-column>
-        <button #button [nbContextMenu]="items" [nbContextMenuClass]="contextMenuClass">show context menu</button>
+        <button #button [nbContextMenu]="items()" [nbContextMenuClass]="contextMenuClass()">show context menu</button>
       </nb-layout-column>
     </nb-layout>
   `,
-    standalone: false
+  imports: [NbLayoutComponent, NbLayoutColumnComponent, NbContextMenuDirective_1, RouterModule, NbMenuModule],
 })
 export class NbContextMenuDefaultTestComponent {
-  @ViewChild('button') button: ElementRef;
-  @ViewChild(NbContextMenuDirective) contextMenu: NbContextMenuDirective;
+  readonly button = viewChild<ElementRef>('button');
+  readonly contextMenu = viewChild.required(NbContextMenuDirective);
 
-  items = [{ title: 'User' }, { title: 'Log Out' }];
-  contextMenuClass = '';
+  readonly items = signal([{ title: 'User' }, { title: 'Log Out' }]);
+  readonly contextMenuClass = signal('');
 }
 
 @Component({
-    selector: 'nb-context-menu-bindings-test',
-    template: `
+  selector: 'nb-context-menu-bindings-test',
+  template: `
     <nb-layout>
       <nb-layout-column>
         <button
           #button
-          [nbContextMenu]="items"
-          [nbContextMenuTrigger]="trigger"
-          [nbContextMenuPlacement]="position"
-          [nbContextMenuAdjustment]="adjustment"
-          [nbContextMenuTag]="tag"
+          [nbContextMenu]="items()"
+          [nbContextMenuTrigger]="trigger()"
+          [nbContextMenuPlacement]="position()"
+          [nbContextMenuAdjustment]="adjustment()"
+          [nbContextMenuTag]="tag()"
         ></button>
       </nb-layout-column>
     </nb-layout>
   `,
-    standalone: false
+  imports: [NbLayoutComponent, NbLayoutColumnComponent, NbContextMenuDirective_1, RouterModule, NbMenuModule],
 })
 export class NbContextMenuBindingsTestComponent {
-  @ViewChild(NbContextMenuDirective) contextMenu: NbContextMenuDirective;
-  @ViewChild('button') button: ElementRef;
-  @Input() trigger = NbTrigger.CLICK;
-  @Input() position = NbPosition.TOP;
-  @Input() adjustment = NbAdjustment.CLOCKWISE;
-  @Input() tag = '';
-  @Input() items = [{ title: 'User' }, { title: 'Log Out' }];
+  readonly contextMenu = viewChild.required(NbContextMenuDirective);
+  readonly button = viewChild<ElementRef>('button');
+  readonly trigger = signal(NbTrigger.CLICK);
+  readonly position = signal(NbPosition.TOP);
+  readonly adjustment = signal(NbAdjustment.CLOCKWISE);
+  readonly tag = signal('');
+  readonly items = signal([{ title: 'User' }, { title: 'Log Out' }]);
 }
 
 @Component({
-    selector: 'nb-context-menu-instance-test',
-    template: `
+  selector: 'nb-context-menu-instance-test',
+  template: `
     <nb-layout>
       <nb-layout-column>
-        <button #button [nbContextMenu]="items">show context menu</button>
+        <button #button
+          [nbContextMenu]="items()"
+          [nbContextMenuTag]="tag()"
+          [nbContextMenuPlacement]="position()"
+          [nbContextMenuAdjustment]="adjustment()"
+          [nbContextMenuTrigger]="trigger()">show context menu</button>
       </nb-layout-column>
     </nb-layout>
 
     <ng-template>Some Template</ng-template>
   `,
-    standalone: false
+  imports: [NbLayoutComponent, NbLayoutColumnComponent, NbContextMenuDirective_1, RouterModule, NbMenuModule],
 })
 export class NbContextMenuInstanceTestComponent {
-  @ViewChild(NbContextMenuDirective) contextMenu: NbContextMenuDirective;
-  @ViewChild('button') button: ElementRef;
+  readonly contextMenu = viewChild.required(NbContextMenuDirective);
+  readonly button = viewChild<ElementRef>('button');
 
-  items = [{ title: 'User' }, { title: 'Log Out' }];
+  readonly items = signal([{ title: 'User' }, { title: 'Log Out' }]);
+  readonly tag = signal<string | undefined>(undefined);
+  readonly position = signal(NbPosition.BOTTOM);
+  readonly adjustment = signal(NbAdjustment.CLOCKWISE);
+  readonly trigger = signal(NbTrigger.CLICK);
 }
 
 const dynamicOverlay = {
@@ -90,18 +101,20 @@ const dynamicOverlay = {
   hide() {},
   toggle() {},
   destroy() {},
+  isShown: of(false),
 };
 
 export class NbDynamicOverlayHandlerMock {
-  _componentType: Type<NbRenderableContainer>;
-  _host: ElementRef;
-  _context: Object = {};
-  _content: NbOverlayContent;
+  _componentType?: Type<NbRenderableContainer>;
+  _host?: ElementRef;
+  _context: object = {};
+  _content?: NbOverlayContent;
   _trigger: NbTrigger = NbTrigger.NOOP;
   _position: NbPosition = NbPosition.TOP;
   _adjustment: NbAdjustment = NbAdjustment.NOOP;
-  _offset: number;
+  _offset?: number;
   _overlayConfig: NbOverlayConfig = {};
+  _disabled = false;
 
   constructor() {}
 
@@ -135,13 +148,18 @@ export class NbDynamicOverlayHandlerMock {
     return this;
   }
 
-  context(context: {}) {
+  context(context: object) {
     this._context = context;
     return this;
   }
 
   offset(offset: number) {
     this._offset = offset;
+    return this;
+  }
+
+  disabled(disabled: boolean) {
+    this._disabled = disabled;
     return this;
   }
 
@@ -172,29 +190,25 @@ const TEST_COMPONENTS = [
 ];
 
 @NgModule({
-  imports: [NbLayoutModule, NbContextMenuModule],
+  imports: [NbLayoutModule, NbContextMenuModule, ...TEST_COMPONENTS],
   exports: [...TEST_COMPONENTS],
-  declarations: [...TEST_COMPONENTS],
 })
 class ContextMenuTestModule {}
 
 describe('Directive: NbContextMenuDirective', () => {
   const overlayHandler = new NbDynamicOverlayHandlerMock();
 
-  beforeEach(
-    waitForAsync(() => {
-      TestBed.resetTestingModule();
-      TestBed.configureTestingModule({
-        imports: [
-          NoopAnimationsModule,
-          RouterTestingModule.withRoutes([]),
-          NbThemeModule.forRoot(),
-          NbMenuModule.forRoot(),
-          ContextMenuTestModule,
-        ],
-      });
-    }),
-  );
+  beforeEach(() => {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      imports: [
+        RouterModule.forRoot([]),
+        NbThemeModule.forRoot(),
+        NbMenuModule.forRoot(),
+        ContextMenuTestModule,
+      ],
+    });
+  });
 
   describe('smoke ', () => {
     let fixture: ComponentFixture<any>;
@@ -206,37 +220,87 @@ describe('Directive: NbContextMenuDirective', () => {
     it('should render string', () => {
       fixture = TestBed.createComponent(NbContextMenuDefaultTestComponent);
       fixture.detectChanges();
-      fixture.componentInstance.contextMenu.show();
+      fixture.componentInstance.contextMenu().show();
       fixture.detectChanges();
 
       const textContainer = fixture.nativeElement.querySelector('nb-menu');
       expect(textContainer.textContent).toContain('Log Out');
     });
 
-    it('should hide', fakeAsync(() => {
+    it('should hide', async () => {
       fixture = TestBed.createComponent(NbContextMenuDefaultTestComponent);
       fixture.detectChanges();
-      fixture.componentInstance.contextMenu.show();
+      fixture.componentInstance.contextMenu().show();
       fixture.detectChanges();
 
       const textContainer = fixture.nativeElement.querySelector('nb-menu');
       expect(textContainer.textContent).toContain('UserLog Out');
-      fixture.componentInstance.contextMenu.hide();
+      fixture.componentInstance.contextMenu().hide();
       fixture.detectChanges();
 
-      tick(); // we need this tick for animations
+      await fixture.whenStable(); // we need this tick for animations
       const contextMenu = fixture.nativeElement.querySelector('nb-menu');
       expect(contextMenu).toBeNull();
-    }));
+    });
+
+    it('should take the focus to the first item when the keyboard opens it, and back on Escape', async () => {
+      fixture = TestBed.createComponent(NbContextMenuDefaultTestComponent);
+      fixture.detectChanges();
+      const button: HTMLButtonElement = fixture.componentInstance.button()?.nativeElement;
+      button.focus();
+      // Enter or Space on a button clicks it with no mouse button presses.
+      button.dispatchEvent(new MouseEvent('click', { bubbles: true, detail: 0 }));
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      const menu: HTMLElement = fixture.nativeElement.querySelector('nb-menu');
+      expect(menu.contains(document.activeElement)).toBe(true);
+      expect(document.activeElement?.textContent).toContain('User');
+
+      document.activeElement?.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: 'Escape' }));
+      fixture.detectChanges();
+      await fixture.whenStable();
+      expect(fixture.nativeElement.querySelector('nb-menu')).toBeNull();
+      expect(document.activeElement).toBe(button);
+    });
+
+    it('should leave the focus where it is when a mouse opens it', async () => {
+      fixture = TestBed.createComponent(NbContextMenuDefaultTestComponent);
+      fixture.detectChanges();
+      const button: HTMLButtonElement = fixture.componentInstance.button()?.nativeElement;
+      button.focus();
+      button.dispatchEvent(new MouseEvent('click', { bubbles: true, detail: 1 }));
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(fixture.nativeElement.querySelector('nb-menu')).not.toBeNull();
+      expect(document.activeElement).toBe(button);
+    });
+
+    it('should stay closed without items and open once items are set', () => {
+      fixture = TestBed.createComponent(NbContextMenuDefaultTestComponent);
+      fixture.componentInstance.items.set([]);
+      expect(() => fixture.detectChanges()).not.toThrow();
+
+      fixture.componentInstance.contextMenu().show();
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('nb-menu')).toBeNull();
+
+      fixture.componentInstance.items.set([{ title: 'Hello' }]);
+      fixture.detectChanges();
+      fixture.componentInstance.contextMenu().show();
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('nb-menu').textContent).toContain('Hello');
+    });
 
     it('should render different items', () => {
       fixture = TestBed.createComponent(NbContextMenuDefaultTestComponent);
       fixture.detectChanges();
 
-      fixture.componentInstance.contextMenu.show();
+      fixture.componentInstance.contextMenu().show();
       fixture.detectChanges();
 
-      fixture.componentInstance.items = [{ title: 'Hello' }];
+      fixture.componentInstance.items.set([{ title: 'Hello' }]);
       fixture.detectChanges();
       const textContainer = fixture.nativeElement.querySelector('nb-menu');
       expect(textContainer.textContent).toContain('Hello');
@@ -244,23 +308,21 @@ describe('Directive: NbContextMenuDirective', () => {
   });
 
   describe('mocked services', () => {
-    beforeEach(
-      waitForAsync(() => {
-        TestBed.resetTestingModule();
-        TestBed.configureTestingModule({
-          imports: [
-            RouterTestingModule.withRoutes([]),
-            NbThemeModule.forRoot(),
-            NbMenuModule.forRoot(),
-            ContextMenuTestModule,
-          ],
-        }).overrideDirective(NbContextMenuDirective, {
-          set: {
-            providers: [{ provide: NbDynamicOverlayHandler, useValue: overlayHandler }],
-          },
-        });
-      }),
-    );
+    beforeEach(() => {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        imports: [
+          RouterModule.forRoot([]),
+          NbThemeModule.forRoot(),
+          NbMenuModule.forRoot(),
+          ContextMenuTestModule,
+        ],
+      }).overrideDirective(NbContextMenuDirective, {
+        set: {
+          providers: [{ provide: NbDynamicOverlayHandler, useValue: overlayHandler }],
+        },
+      });
+    });
     describe('default context-menu', () => {
       let fixture: ComponentFixture<NbContextMenuDefaultTestComponent>;
 
@@ -269,25 +331,26 @@ describe('Directive: NbContextMenuDirective', () => {
       });
 
       it('should build', () => {
-        const componentSpy = spyOn(overlayHandler, 'componentType').and.callThrough();
-        const hostSpy = spyOn(overlayHandler, 'host').and.callThrough();
-        const positionSpy = spyOn(overlayHandler, 'position').and.callThrough();
-        const triggerSpy = spyOn(overlayHandler, 'trigger').and.callThrough();
-        const adjustmentSpy = spyOn(overlayHandler, 'adjustment').and.callThrough();
-        const contentSpy = spyOn(overlayHandler, 'content').and.callThrough();
-        const contextSpy = spyOn(overlayHandler, 'context').and.callThrough();
-        const offsetSpy = spyOn(overlayHandler, 'offset').and.callThrough();
-        const buildSpy = spyOn(overlayHandler, 'build').and.callThrough();
-        const rebuildSpy = spyOn(overlayHandler, 'rebuild').and.callThrough();
+        const componentSpy = vi.spyOn(overlayHandler, 'componentType');
+        const hostSpy = vi.spyOn(overlayHandler, 'host');
+        const positionSpy = vi.spyOn(overlayHandler, 'position');
+        const triggerSpy = vi.spyOn(overlayHandler, 'trigger');
+        const adjustmentSpy = vi.spyOn(overlayHandler, 'adjustment');
+        const contentSpy = vi.spyOn(overlayHandler, 'content');
+        const contextSpy = vi.spyOn(overlayHandler, 'context');
+        const offsetSpy = vi.spyOn(overlayHandler, 'offset');
+        const buildSpy = vi.spyOn(overlayHandler, 'build');
+        const rebuildSpy = vi.spyOn(overlayHandler, 'rebuild');
 
         fixture = TestBed.createComponent(NbContextMenuDefaultTestComponent);
         fixture.detectChanges();
 
         expect(componentSpy).toHaveBeenCalledTimes(1);
         expect(componentSpy).toHaveBeenCalledWith(NbContextMenuComponent);
-        expect(hostSpy).toHaveBeenCalledWith(fixture.componentInstance.button);
+        expect(hostSpy).toHaveBeenCalledWith(fixture.componentInstance.button());
         expect(hostSpy).toHaveBeenCalledTimes(1);
-        expect(offsetSpy).toHaveBeenCalledTimes(0);
+        expect(offsetSpy).toHaveBeenCalledTimes(2);
+        expect(offsetSpy).toHaveBeenCalledWith(15);
         expect(positionSpy).toHaveBeenCalledTimes(2);
         expect(positionSpy).toHaveBeenCalledWith(NbPosition.BOTTOM);
         expect(triggerSpy).toHaveBeenCalledTimes(2);
@@ -308,25 +371,25 @@ describe('Directive: NbContextMenuDirective', () => {
       it('should show/hide/toggle', () => {
         fixture = TestBed.createComponent(NbContextMenuDefaultTestComponent);
         fixture.detectChanges();
-        const showSpy = spyOn(dynamicOverlay, 'show').and.callThrough();
-        const hideSpy = spyOn(dynamicOverlay, 'hide').and.callThrough();
-        const toggleSpy = spyOn(dynamicOverlay, 'toggle').and.callThrough();
+        const showSpy = vi.spyOn(dynamicOverlay, 'show');
+        const hideSpy = vi.spyOn(dynamicOverlay, 'hide');
+        const toggleSpy = vi.spyOn(dynamicOverlay, 'toggle');
 
-        fixture.componentInstance.contextMenu.show();
+        fixture.componentInstance.contextMenu().show();
         fixture.detectChanges();
 
         expect(showSpy).toHaveBeenCalledTimes(1);
         expect(hideSpy).toHaveBeenCalledTimes(0);
         expect(toggleSpy).toHaveBeenCalledTimes(0);
 
-        fixture.componentInstance.contextMenu.hide();
+        fixture.componentInstance.contextMenu().hide();
         fixture.detectChanges();
 
         expect(showSpy).toHaveBeenCalledTimes(1);
         expect(hideSpy).toHaveBeenCalledTimes(1);
         expect(toggleSpy).toHaveBeenCalledTimes(0);
 
-        fixture.componentInstance.contextMenu.toggle();
+        fixture.componentInstance.contextMenu().toggle();
         fixture.detectChanges();
 
         expect(showSpy).toHaveBeenCalledTimes(1);
@@ -336,13 +399,13 @@ describe('Directive: NbContextMenuDirective', () => {
 
       it('should set overlay config', () => {
         const contextMenuClass = 'custom-context-menu-class';
-        const overlayConfigSpy = spyOn(overlayHandler, 'overlayConfig').and.callThrough();
+        const overlayConfigSpy = vi.spyOn(overlayHandler, 'overlayConfig');
 
         fixture = TestBed.createComponent(NbContextMenuDefaultTestComponent);
-        fixture.componentInstance.contextMenuClass = contextMenuClass;
+        fixture.componentInstance.contextMenuClass.set(contextMenuClass);
         fixture.detectChanges();
 
-        expect(overlayConfigSpy).toHaveBeenCalledWith(jasmine.objectContaining({ panelClass: contextMenuClass }));
+        expect(overlayConfigSpy).toHaveBeenCalledWith(expect.objectContaining({ panelClass: contextMenuClass }));
       });
     });
 
@@ -354,33 +417,34 @@ describe('Directive: NbContextMenuDirective', () => {
       });
 
       it('should rebuild', () => {
-        const componentSpy = spyOn(overlayHandler, 'componentType').and.callThrough();
-        const hostSpy = spyOn(overlayHandler, 'host').and.callThrough();
-        const positionSpy = spyOn(overlayHandler, 'position').and.callThrough();
-        const triggerSpy = spyOn(overlayHandler, 'trigger').and.callThrough();
-        const adjustmentSpy = spyOn(overlayHandler, 'adjustment').and.callThrough();
-        const contentSpy = spyOn(overlayHandler, 'content').and.callThrough();
-        const contextSpy = spyOn(overlayHandler, 'context').and.callThrough();
-        const offsetSpy = spyOn(overlayHandler, 'offset').and.callThrough();
-        const buildSpy = spyOn(overlayHandler, 'build').and.callThrough();
-        const rebuildSpy = spyOn(overlayHandler, 'rebuild').and.callThrough();
+        const componentSpy = vi.spyOn(overlayHandler, 'componentType');
+        const hostSpy = vi.spyOn(overlayHandler, 'host');
+        const positionSpy = vi.spyOn(overlayHandler, 'position');
+        const triggerSpy = vi.spyOn(overlayHandler, 'trigger');
+        const adjustmentSpy = vi.spyOn(overlayHandler, 'adjustment');
+        const contentSpy = vi.spyOn(overlayHandler, 'content');
+        const contextSpy = vi.spyOn(overlayHandler, 'context');
+        const offsetSpy = vi.spyOn(overlayHandler, 'offset');
+        const buildSpy = vi.spyOn(overlayHandler, 'build');
+        const rebuildSpy = vi.spyOn(overlayHandler, 'rebuild');
 
         fixture = TestBed.createComponent(NbContextMenuBindingsTestComponent);
         fixture.detectChanges();
 
-        fixture.componentInstance.adjustment = NbAdjustment.HORIZONTAL;
-        fixture.componentInstance.trigger = NbTrigger.HOVER;
-        fixture.componentInstance.items = [{ title: 'New' }];
-        fixture.componentInstance.tag = 'new';
-        fixture.componentInstance.position = NbPosition.LEFT;
+        fixture.componentInstance.adjustment.set(NbAdjustment.HORIZONTAL);
+        fixture.componentInstance.trigger.set(NbTrigger.HOVER);
+        fixture.componentInstance.items.set([{ title: 'New' }]);
+        fixture.componentInstance.tag.set('new');
+        fixture.componentInstance.position.set(NbPosition.LEFT);
 
         fixture.detectChanges();
 
         expect(componentSpy).toHaveBeenCalledTimes(1);
         expect(componentSpy).toHaveBeenCalledWith(NbContextMenuComponent);
-        expect(hostSpy).toHaveBeenCalledWith(fixture.componentInstance.button);
+        expect(hostSpy).toHaveBeenCalledWith(fixture.componentInstance.button());
         expect(hostSpy).toHaveBeenCalledTimes(1);
-        expect(offsetSpy).toHaveBeenCalledTimes(0);
+        expect(offsetSpy).toHaveBeenCalledTimes(3);
+        expect(offsetSpy).toHaveBeenCalledWith(15);
         expect(positionSpy).toHaveBeenCalledTimes(3);
         expect(positionSpy).toHaveBeenCalledWith(NbPosition.LEFT);
         expect(triggerSpy).toHaveBeenCalledTimes(3);
@@ -407,37 +471,38 @@ describe('Directive: NbContextMenuDirective', () => {
       });
 
       it('should rebuild', () => {
-        const componentSpy = spyOn(overlayHandler, 'componentType').and.callThrough();
-        const hostSpy = spyOn(overlayHandler, 'host').and.callThrough();
-        const positionSpy = spyOn(overlayHandler, 'position').and.callThrough();
-        const triggerSpy = spyOn(overlayHandler, 'trigger').and.callThrough();
-        const adjustmentSpy = spyOn(overlayHandler, 'adjustment').and.callThrough();
-        const contentSpy = spyOn(overlayHandler, 'content').and.callThrough();
-        const contextSpy = spyOn(overlayHandler, 'context').and.callThrough();
-        const offsetSpy = spyOn(overlayHandler, 'offset').and.callThrough();
-        const buildSpy = spyOn(overlayHandler, 'build').and.callThrough();
-        const rebuildSpy = spyOn(overlayHandler, 'rebuild').and.callThrough();
+        const componentSpy = vi.spyOn(overlayHandler, 'componentType');
+        const hostSpy = vi.spyOn(overlayHandler, 'host');
+        const positionSpy = vi.spyOn(overlayHandler, 'position');
+        const triggerSpy = vi.spyOn(overlayHandler, 'trigger');
+        const adjustmentSpy = vi.spyOn(overlayHandler, 'adjustment');
+        const contentSpy = vi.spyOn(overlayHandler, 'content');
+        const contextSpy = vi.spyOn(overlayHandler, 'context');
+        const offsetSpy = vi.spyOn(overlayHandler, 'offset');
+        const buildSpy = vi.spyOn(overlayHandler, 'build');
+        const rebuildSpy = vi.spyOn(overlayHandler, 'rebuild');
 
         fixture = TestBed.createComponent(NbContextMenuInstanceTestComponent);
         fixture.detectChanges();
 
-        fixture.componentInstance.contextMenu.adjustment = NbAdjustment.HORIZONTAL;
-        fixture.componentInstance.contextMenu.trigger = NbTrigger.HOVER;
-        fixture.componentInstance.contextMenu.items = [{ title: 'New' }];
-        fixture.componentInstance.contextMenu.tag = 'new';
-        fixture.componentInstance.contextMenu.position = NbPosition.LEFT;
+        fixture.componentInstance.adjustment.set(NbAdjustment.HORIZONTAL);
+        fixture.componentInstance.trigger.set(NbTrigger.HOVER);
+        fixture.componentInstance.items.set([{ title: 'New' }]);
+        fixture.componentInstance.tag.set('new');
+        fixture.componentInstance.position.set(NbPosition.LEFT);
 
-        fixture.componentInstance.contextMenu.rebuild();
+        fixture.detectChanges();
 
         expect(componentSpy).toHaveBeenCalledTimes(1);
         expect(componentSpy).toHaveBeenCalledWith(NbContextMenuComponent);
-        expect(hostSpy).toHaveBeenCalledWith(fixture.componentInstance.button);
+        expect(hostSpy).toHaveBeenCalledWith(fixture.componentInstance.button());
         expect(hostSpy).toHaveBeenCalledTimes(1);
         expect(positionSpy).toHaveBeenCalledTimes(3);
         expect(positionSpy).toHaveBeenCalledWith(NbPosition.LEFT);
         expect(triggerSpy).toHaveBeenCalledTimes(3);
         expect(triggerSpy).toHaveBeenCalledWith(NbTrigger.HOVER);
-        expect(offsetSpy).toHaveBeenCalledTimes(0);
+        expect(offsetSpy).toHaveBeenCalledTimes(3);
+        expect(offsetSpy).toHaveBeenCalledWith(15);
         expect(adjustmentSpy).toHaveBeenCalledTimes(3);
         expect(adjustmentSpy).toHaveBeenCalledWith(NbAdjustment.HORIZONTAL);
         expect(contentSpy).toHaveBeenCalledTimes(0);

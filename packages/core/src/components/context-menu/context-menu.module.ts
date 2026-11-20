@@ -1,22 +1,13 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
 
-import { NbOverlayModule } from '../cdk/overlay/overlay.module';
+import { NbOverlayModule } from '@liquid-js/lyr-core/cdk';
 import { NbContextMenuDirective } from './context-menu.directive';
 import { NbContextMenuComponent } from './context-menu.component';
-import { NbMenuModule } from '../menu/menu.module';
-
+import { NbMenuModule } from '@liquid-js/lyr-core/menu';
 
 @NgModule({
-  imports: [CommonModule, NbOverlayModule, NbMenuModule],
+  imports: [NbOverlayModule, NbMenuModule, NbContextMenuDirective, NbContextMenuComponent],
   exports: [NbContextMenuDirective],
-  declarations: [NbContextMenuDirective, NbContextMenuComponent],
 })
 export class NbContextMenuModule {
 }
