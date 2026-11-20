@@ -1,38 +1,37 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { Inject, Injectable, Injector, Optional, signal, TemplateRef, Type } from '@angular/core';
+import { Injector, TemplateRef, Type, inject, Service } from '@angular/core';
 import { NavigationStart, Router } from '@angular/router';
-import { fromEvent as observableFromEvent } from 'rxjs';
 import { filter, takeUntil } from 'rxjs/operators';
 
-import {
-  NbComponentPortal,
-  NbOverlayRef,
-  NbScrollStrategy,
-  NbTemplatePortal,
-} from '../cdk/overlay/mapping';
-import { NbGlobalPositionStrategy, NbPositionBuilderService } from '../cdk/overlay/overlay-position';
-import { NbOverlayService } from '../cdk/overlay/overlay-service';
-import { NB_DOCUMENT } from '../../theme.options';
+import { NbComponentPortal, NbOverlayRef, NbScrollStrategy, NbTemplatePortal } from '@liquid-js/lyr-core/cdk';
+import { NbGlobalPositionStrategy, NbPositionBuilderService } from '@liquid-js/lyr-core/cdk';
+import { NbEscapeStack, NbOverlayService, setComponentContext } from '@liquid-js/lyr-core/cdk';
+import { NbGlobalPosition, NbPositionHelper } from '@liquid-js/lyr-core/cdk';
+import { NB_DOCUMENT } from '@liquid-js/lyr-core/base';
 import { NB_DIALOG_CONFIG, NbDialogConfig } from './dialog-config';
 import { NbDialogRef } from './dialog-ref';
 import { NbDialogContainerComponent } from './dialog-container';
-import { SIGNAL } from '@angular/core/primitives/signals';
-
+import { NbConfirmDialogComponent, NbConfirmDialogOptions } from './confirm-dialog.component';
+import { animateDialog } from './dialog-animation';
 
 /**
- * The `NbDialogService` helps to open dialogs.
+ * Opens dialogs: a component or a template over the page, centred by default, with a backdrop that makes it modal.
  *
  * @stacked-example(Showcase, dialog/dialog-showcase.component)
  *
- * A new dialog is opened by calling the `open` method with a component to be loaded and an optional configuration.
- * `open` method will return `NbDialogRef` that can be used for the further manipulations.
+ * `open` takes the component or template and an optional configuration, and returns an `NbDialogRef` to close the
+ * dialog with and to get its result from.
  *
  * ### Installation
+ *
+ * Add `provideNbDialog()` to the application providers:
+ * ```ts
+ * bootstrapApplication(AppComponent, {
+ *   providers: [provideNbDialog(config)],
+ * });
+ * ```
+ * In a lazy loaded route, add `provideNbDialog()` to the route's `providers` instead, so the route gets its own instance.
+ *
+ * With NgModules:
  *
  * Import `NbDialogModule.forRoot()` to your app module.
  * ```ts
@@ -62,10 +61,8 @@ import { SIGNAL } from '@angular/core/primitives/signals';
  * const dialogRef = this.dialogService.open(MyDialogComponent, { ... });
  * ```
  *
- * `NbDialogRef` gives capability access reference to the rendered dialog component,
- * destroy dialog and some other options described below.
- *
- * Also, you can inject `NbDialogRef` in dialog component.
+ * `NbDialogRef` holds the rendered component, closes the dialog and emits its result. The dialog's component can
+ * inject it:
  *
  * ```ts
  * this.dialogService.open(MyDialogComponent, { ... });
@@ -79,25 +76,19 @@ import { SIGNAL } from '@angular/core/primitives/signals';
  * }
  * ```
  *
- * Instead of component you can create dialog from TemplateRef:
+ * A dialog can be a template instead of a component:
  *
  * @stacked-example(Template ref, dialog/dialog-template.component)
  *
- * The dialog may return result through `NbDialogRef`. Calling component can receive this result with `onClose`
- * stream of `NbDialogRef`.
+ * The dialog closes with a result, `dialogRef.close(result)`, which the opener gets from `onClose`:
  *
  * @stacked-example(Result, dialog/dialog-result.component)
  *
  * ### Configuration
  *
- * As we mentioned above, `open` method of the `NbDialogService` may receive optional configuration options.
- * Also, you can provide global dialogs configuration through `NbDialogModule.forRoot({ ... })`.
+ * `open` takes options, and `provideNbDialog` or `NbDialogModule.forRoot({ ... })` sets their defaults:
  *
- * This config may contain the following:
- *
- * `context` - both, template and component may receive data through `config.context` property.
- * For components, this data will be assigned through inputs.
- * For templates, you can access it inside template as $implicit.
+ * `context` - data for the content: a component gets it as its inputs, a template as `$implicit`.
  *
  * ```ts
  * this.dialogService.open(template, { context: 'pass data in template' });
@@ -109,66 +100,113 @@ import { SIGNAL } from '@angular/core/primitives/signals';
  * <ng-template/>
  * ```
  *
- * `hasBackdrop` - determines is service have to render backdrop under the dialog.
- * Default is true.
+ * `hasBackdrop` - shows a backdrop under the dialog, which makes it modal. Default is true.
  * @stacked-example(Backdrop, dialog/dialog-has-backdrop.component)
  *
- * `closeOnBackdropClick` - close dialog on backdrop click if true.
- * Default is true.
+ * `closeOnBackdropClick` - closes the dialog with a click on the backdrop. Default is true.
  * @stacked-example(Backdrop click, dialog/dialog-backdrop-click.component)
  *
- * `closeOnEsc` - close dialog on escape button on the keyboard.
- * Default is true.
+ * `closeOnEsc` - closes the dialog with Escape. Default is true.
  * @stacked-example(Escape hit, dialog/dialog-esc.component)
  *
- * `closeOnNavigation` - close dialog on router navigation, e.g. when the browser back button is pressed.
+ * `closeOnNavigation` - closes the dialog on router navigation, e.g. when the browser's back button is pressed.
  * Default is true.
  *
- * `hasScroll` - Disables scroll on content under dialog if true and does nothing otherwise.
- * Default is false.
- * Please, open dialogs in the separate window and try to scroll.
+ * `hasScroll` - lets the page scroll under the dialog. Default is false: the page can't scroll while a dialog is
+ * open. Open the dialogs in a separate window and try to scroll.
  * @stacked-example(Scroll, dialog/dialog-scroll.component)
  *
- * `autoFocus` - Focuses dialog automatically after open if true. It's useful to prevent misclicks on
- * trigger elements and opening multiple dialogs.
- * Default is true.
- *
- * As you can see, if you open dialog with auto focus dialog will focus first focusable element
- * or just blur previously focused automatically.
- * Otherwise, without auto focus, the focus will stay on the previously focused element.
- * Please, open dialogs in the separate window and try to click on the button without focus
- * and then hit space any times. Multiple same dialogs will be opened.
+ * `autoFocus` - focuses the dialog's first focusable element once it opens, or at least takes the focus off the
+ * element that opened it, and returns the focus when it closes. Default is true. Without it the focus stays on the
+ * opener, so Space opens the same dialog again: open the dialogs in a separate window, click the button without
+ * focus and press Space a few times.
  * @stacked-example(Auto focus, dialog/dialog-auto-focus.component)
- * */
-@Injectable()
+ *
+ * `position` - where the dialog appears: `center` (default), `top`, `bottom`, or a corner such as `bottom-start` or
+ * `top-right`, with `positionOffset` as the space to the viewport edges. A dialog without a backdrop in a corner
+ * suits notices such as a cookie consent.
+ * @stacked-example(Position, dialog/dialog-position.component)
+ *
+ * ### Confirm dialog
+ *
+ * `confirm` asks the user to confirm an action and resolves to whether they did. Pass `action` to run it from the
+ * dialog: it stays open while the action runs, so a failed request can be retried, and closes once it succeeds.
+ * @stacked-example(Confirm, dialog/dialog-confirm.component)
+ *
+ * Set the default button texts and status, e.g. to translate them, with `provideNbConfirmDialog`.
+ *
+ * @styles
+ *
+ * overlay-backdrop-background-color:
+ */
+@Service({ autoProvided: false })
 export class NbDialogService {
-  constructor(@Inject(NB_DOCUMENT) protected document,
-              @Inject(NB_DIALOG_CONFIG) protected globalConfig,
-              protected positionBuilder: NbPositionBuilderService,
-              protected overlay: NbOverlayService,
-              protected injector: Injector,
-              @Optional() protected router: Router,
-  ) {
-  }
+  protected readonly document = inject(NB_DOCUMENT);
+  protected readonly globalConfig = inject(NB_DIALOG_CONFIG);
+  protected readonly positionBuilder = inject(NbPositionBuilderService);
+  protected readonly overlay = inject(NbOverlayService);
+  protected readonly injector = inject(Injector);
+  protected readonly router = inject(Router, { optional: true });
+  protected readonly positionHelper = inject(NbPositionHelper);
+  protected readonly escapeStack = inject(NbEscapeStack);
 
   /**
-   * Opens new instance of the dialog, may receive optional config.
-   * */
-  open<T>(content: Type<T> | TemplateRef<T>,
-          userConfig: Partial<NbDialogConfig<Partial<T> | string>> = {}): NbDialogRef<T> {
-    const config = new NbDialogConfig({ ...this.globalConfig, ...userConfig });
+   * Opens a dialog with the component or template. `R` is the type of the result the dialog closes with, which
+   * `onClose` emits, e.g. `open<EditComponent, Customer>(EditComponent)`.
+   */
+  open<T, R = unknown>(content: Type<T> | TemplateRef<T>,
+          userConfig: Partial<NbDialogConfig<Partial<T> | string>> = {}): NbDialogRef<T, R> {
+    const config = new NbDialogConfig<Partial<T> | string>({ ...this.globalConfig, ...userConfig });
     const overlayRef = this.createOverlay(config);
-    const dialogRef = new NbDialogRef<T>(overlayRef);
+    const dialogRef = new NbDialogRef<T, R>(overlayRef);
+    // The dialog takes Escape while it's on top, before its content adds what it opens, e.g. a popover, above it. One
+    // that doesn't close on Escape still keeps it from what's under it.
+    const escape = this.escapeStack.add(() => {
+      if (config.closeOnEsc) {
+        dialogRef.close();
+      }
+    });
+    dialogRef.onClose.subscribe(() => escape.remove());
     const container = this.createContainer(config, overlayRef);
     this.createContent(config, content, container, dialogRef);
+    void animateDialog(overlayRef.overlayElement, true);
 
     this.registerCloseListeners(config, overlayRef, dialogRef);
 
     return dialogRef;
   }
 
+  /**
+   * Asks the user to confirm an action; resolves to `true` once they confirm and `action`, if given, completes,
+   * or to `false` when they cancel or the dialog closes otherwise.
+   *
+   * ```ts
+   * const deleted = await this.dialogService.confirm({
+   *   title: 'Delete the invoice?',
+   *   message: "It can't be restored.",
+   *   confirmText: 'Delete',
+   *   status: 'danger',
+   *   action: () => this.invoices.delete(id),
+   * });
+   * ```
+   */
+  confirm(options: NbConfirmDialogOptions, userConfig: Partial<NbDialogConfig> = {}): Promise<boolean> {
+    const ids = NbConfirmDialogComponent.nextIds();
+    const dialogRef = this.open(NbConfirmDialogComponent, {
+      // The dialog handles Escape itself, so it can ignore it while the action runs.
+      closeOnEsc: false,
+      closeOnBackdropClick: false,
+      role: 'alertdialog',
+      ariaLabelledBy: ids.titleId,
+      ariaDescribedBy: options.message ? ids.messageId : undefined,
+      ...userConfig,
+      context: { options, ...ids },
+    });
+    return new Promise((resolve) => dialogRef.onClose.subscribe((confirmed) => resolve(confirmed === true)));
+  }
+
   protected createOverlay(config: NbDialogConfig): NbOverlayRef {
-    const positionStrategy = this.createPositionStrategy();
+    const positionStrategy = this.createPositionStrategy(config);
     const scrollStrategy = this.createScrollStrategy(config.hasScroll);
 
     return this.overlay.create({
@@ -180,11 +218,22 @@ export class NbDialogService {
     });
   }
 
-  protected createPositionStrategy(): NbGlobalPositionStrategy {
-    return this.positionBuilder
-      .global()
-      .centerVertically()
-      .centerHorizontally();
+  protected createPositionStrategy(config?: NbDialogConfig): NbGlobalPositionStrategy {
+    const strategy = this.positionBuilder.global();
+    const position = config?.position ?? 'center';
+    const offset = config?.positionOffset ?? '';
+    switch (position) {
+      case 'center':
+        return strategy.centerVertically().centerHorizontally();
+      case 'top':
+        return strategy.top(offset).centerHorizontally();
+      case 'bottom':
+        return strategy.bottom(offset).centerHorizontally();
+    }
+    // A physical corner, with start and end resolved for the layout direction.
+    const [vertical, horizontal] = this.positionHelper.toPhysicalPosition(position as NbGlobalPosition).split('-');
+    const placed = vertical === 'top' ? strategy.top(offset) : strategy.bottom(offset);
+    return horizontal === 'left' ? placed.left(offset) : placed.right(offset);
   }
 
   protected createScrollStrategy(hasScroll: boolean): NbScrollStrategy {
@@ -205,44 +254,37 @@ export class NbDialogService {
     return containerRef.instance;
   }
 
-  protected createContent<T>(config: NbDialogConfig,
-                             content: Type<T> | TemplateRef<T>,
-                             container: NbDialogContainerComponent,
-                             dialogRef: NbDialogRef<T>) {
+  protected createContent<T, R>(config: NbDialogConfig,
+    content: Type<T> | TemplateRef<T>,
+    container: NbDialogContainerComponent,
+    dialogRef: NbDialogRef<T, R>) {
     if (content instanceof TemplateRef) {
       const portal = this.createTemplatePortal(config, content, dialogRef);
       container.attachTemplatePortal(portal);
     } else {
       const portal = this.createComponentPortal(config, content, dialogRef);
-      dialogRef.componentRef = container.attachComponentPortal(portal);
+      const componentRef = container.attachComponentPortal(portal);
+      dialogRef.componentRef = componentRef;
 
       if (config.context) {
-        for (const [key, value] of Object.entries({...config.context})) {
-          const instance = dialogRef.componentRef.instance; 
-          const member = instance[key];
-          if (typeof member === 'function' && member[SIGNAL] !== undefined) {
-            instance[key] = signal(value).asReadonly();
-          } else {
-            instance[key] = value;
-          }
-        }
+        setComponentContext(componentRef, config.context);
       }
     }
   }
 
-  protected createTemplatePortal<T>(config: NbDialogConfig,
-                                    content: TemplateRef<T>,
-                                    dialogRef: NbDialogRef<T>): NbTemplatePortal {
-    return new NbTemplatePortal(content, null, <any>{ $implicit: config.context, dialogRef });
+  protected createTemplatePortal<T, R>(config: NbDialogConfig,
+    content: TemplateRef<unknown>,
+    dialogRef: NbDialogRef<T, R>): NbTemplatePortal {
+    return new NbTemplatePortal(content, undefined, { $implicit: config.context, dialogRef });
   }
 
   /**
-   * We're creating portal with custom injector provided through config or using global injector.
-   * This approach provides us capability inject `NbDialogRef` in dialog component.
-   * */
-  protected createComponentPortal<T>(config: NbDialogConfig,
-                                     content: Type<T>,
-                                     dialogRef: NbDialogRef<T>): NbComponentPortal {
+   * The portal's injector, under the `viewContainerRef`'s or the service's, provides the `NbDialogRef` the dialog's
+   * component injects.
+   */
+  protected createComponentPortal<T, R>(config: NbDialogConfig,
+    content: Type<T>,
+    dialogRef: NbDialogRef<T, R>): NbComponentPortal<T> {
     const injector = this.createInjector(config);
     const portalInjector = Injector.create({
       parent: injector,
@@ -255,7 +297,9 @@ export class NbDialogService {
     return config.viewContainerRef && config.viewContainerRef.injector || this.injector;
   }
 
-  protected registerCloseListeners<T>(config: NbDialogConfig, overlayRef: NbOverlayRef, dialogRef: NbDialogRef<T>) {
+  protected registerCloseListeners<T, R>(config: NbDialogConfig,
+    overlayRef: NbOverlayRef,
+    dialogRef: NbDialogRef<T, R>) {
     if (config.closeOnBackdropClick) {
       overlayRef.backdropClick().subscribe(() => dialogRef.close());
     }
@@ -264,15 +308,6 @@ export class NbDialogService {
       this.router.events
         .pipe(
           filter((event) => event instanceof NavigationStart),
-          takeUntil(dialogRef.onClose),
-        )
-        .subscribe(() => dialogRef.close());
-    }
-
-    if (config.closeOnEsc) {
-      observableFromEvent<KeyboardEvent>(this.document, 'keyup')
-        .pipe(
-          filter((event: KeyboardEvent) => event.keyCode === 27),
           takeUntil(dialogRef.onClose),
         )
         .subscribe(() => dialogRef.close());

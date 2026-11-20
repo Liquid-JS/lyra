@@ -1,19 +1,15 @@
-import { Component } from '@angular/core';
-import { NbDialogService } from '@nebular/theme';
+import { Component, inject } from '@angular/core';
+import { NbDialogService, NbButtonComponent } from '@liquid-js/lyr-core';
 import { AutoFocusDialogComponent } from './components/auto-focus-dialog.component';
 
 @Component({
-    selector: 'nb-dialog-auto-focus',
-    template: `
-    <button nbButton (click)="openWithAutoFocus()">With auto focus</button>
-    <button nbButton (click)="openWithoutAutoFocus()">Without auto focus</button>
-  `,
-    styleUrls: ['./dialog-common.scss'],
-    standalone: false
+  selector: 'nb-dialog-auto-focus',
+  templateUrl: './dialog-auto-focus.component.html',
+  styleUrls: ['./dialog-common.scss'],
+  imports: [NbButtonComponent],
 })
 export class DialogAutoFocusComponent {
-  constructor(private dialogService: NbDialogService) {
-  }
+  private readonly dialogService = inject(NbDialogService);
 
   openWithAutoFocus() {
     this.open(true);

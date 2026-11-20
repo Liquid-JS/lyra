@@ -1,19 +1,15 @@
-import { Component } from '@angular/core';
-import { NbDialogService } from '@nebular/theme';
+import { Component, inject } from '@angular/core';
+import { NbDialogService, NbButtonComponent } from '@liquid-js/lyr-core';
 import { BackdropClickDialogComponent } from './components/backdrop-click-dialog.component';
 
 @Component({
-    selector: 'nb-dialog-backdrop-click',
-    template: `
-    <button nbButton (click)="openWithBackdropClick()">With backdrop click close</button>
-    <button nbButton (click)="openWithoutBackdropClick()">Without backdrop click close</button>
-  `,
-    styleUrls: ['./dialog-common.scss'],
-    standalone: false
+  selector: 'nb-dialog-backdrop-click',
+  templateUrl: './dialog-backdrop-click.component.html',
+  styleUrls: ['./dialog-common.scss'],
+  imports: [NbButtonComponent],
 })
 export class DialogBackdropClickComponent {
-  constructor(private dialogService: NbDialogService) {
-  }
+  private readonly dialogService = inject(NbDialogService);
 
   openWithBackdropClick() {
     this.open(true);

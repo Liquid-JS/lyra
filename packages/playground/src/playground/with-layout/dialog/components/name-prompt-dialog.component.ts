@@ -1,31 +1,34 @@
-import { Component } from '@angular/core';
-import { NbDialogRef } from '@nebular/theme';
+import { Component, inject } from '@angular/core';
+import {
+  NbDialogRef,
+  NbCardComponent,
+  NbCardHeaderComponent,
+  NbCardBodyComponent,
+  NbCardFooterComponent,
+  NbInputDirective,
+  NbButtonComponent,
+} from '@liquid-js/lyr-core';
 
 @Component({
-    selector: 'nb-name-prompt',
-    template: `
-    <nb-card>
-      <nb-card-header>Enter your name</nb-card-header>
-      <nb-card-body>
-        <input #name nbInput placeholder="Name">
-      </nb-card-body>
-      <nb-card-footer>
-        <button nbButton status="danger" (click)="cancel()">Cancel</button>
-        <button nbButton status="success" (click)="submit(name.value)">Submit</button>
-      </nb-card-footer>
-    </nb-card>
-  `,
-    standalone: false
+  selector: 'nb-name-prompt',
+  templateUrl: './name-prompt-dialog.component.html',
+  imports: [
+    NbCardComponent,
+    NbCardHeaderComponent,
+    NbCardBodyComponent,
+    NbInputDirective,
+    NbCardFooterComponent,
+    NbButtonComponent,
+  ],
 })
 export class DialogNamePromptComponent {
-  constructor(protected dialogRef: NbDialogRef<DialogNamePromptComponent>) {
-  }
+  protected readonly dialogRef = inject<NbDialogRef<DialogNamePromptComponent>>(NbDialogRef);
 
   cancel() {
     this.dialogRef.close();
   }
 
-  submit(name) {
+  submit(name: string) {
     this.dialogRef.close(name);
   }
 }

@@ -1,43 +1,53 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 import { ComponentRef } from '@angular/core';
 import { Observable, Subject } from 'rxjs';
 
-import { NbOverlayRef } from '../cdk/overlay/mapping';
-
+import { disposeAfterBackdrop, NbOverlayRef } from '@liquid-js/lyr-core/cdk';
+import { animateDialog } from './dialog-animation';
 
 /**
- * The `NbDialogRef` helps to manipulate dialog after it was created.
- * The dialog can be dismissed by using `close` method of the dialogRef.
- * You can access rendered component as `content` property of the dialogRef.
- * `onBackdropClick` streams click events on the backdrop of the dialog.
- * */
-export class NbDialogRef<T> {
-
-  componentRef: ComponentRef<T>;
+ * A dialog `NbDialogService.open` opened: `close` closes it with a result, which `onClose` emits, `componentRef` is
+ * the rendered component, as with `NbWindowRef`, and `onBackdropClick` the clicks on its backdrop. The dialog's
+ * component can inject it.
+ */
+export class NbDialogRef<T, R = unknown> {
 
   /**
-   * Stream of backdrop click events.
-   * */
+   * The rendered component, for a dialog opened with a component (not a template).
+   */
+  componentRef?: ComponentRef<T>;
+
+  /**
+   * Emits the clicks on the backdrop, whether or not they close the dialog.
+   */
   readonly onBackdropClick: Observable<MouseEvent>;
-  protected onClose$: Subject<any> = new Subject();
-  readonly onClose: Observable<any> = this.onClose$.asObservable();
+  protected onClose$ = new Subject<R | undefined>();
+  /**
+   * Emits the result the dialog closes with: `undefined` when it's closed without one, e.g. by its backdrop.
+   */
+  readonly onClose: Observable<R | undefined> = this.onClose$.asObservable();
 
   constructor(protected overlayRef: NbOverlayRef) {
     this.onBackdropClick = this.overlayRef.backdropClick();
   }
 
+  protected closing = false;
+
   /**
-   * Hides dialog.
-   * */
-  close(res?: any) {
-    this.overlayRef.detach();
-    this.overlayRef.dispose();
-    this.onClose$.next(res);
-    this.onClose$.complete();
+   * Closes the dialog: it fades out, then it's removed and `onClose` emits `res`. Closing it again meanwhile does
+   * nothing.
+   */
+  close(res?: R) {
+    if (this.closing) {
+      return;
+    }
+    this.closing = true;
+    // The backdrop fades out along with the pane, and the overlay goes once both have.
+    this.overlayRef.detachBackdrop();
+    void animateDialog(this.overlayRef.overlayElement, false).then(() => {
+      this.overlayRef.detach();
+      disposeAfterBackdrop(this.overlayRef);
+      this.onClose$.next(res);
+      this.onClose$.complete();
+    });
   }
 }

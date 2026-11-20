@@ -1,19 +1,15 @@
-import { Component } from '@angular/core';
-import { NbDialogService } from '@nebular/theme';
+import { Component, inject } from '@angular/core';
+import { NbDialogService, NbButtonComponent } from '@liquid-js/lyr-core';
 import { ScrollDialogComponent } from './components/scroll-dialog.component';
 
 @Component({
-    selector: 'nb-dialog-scroll',
-    template: `
-    <button nbButton (click)="openWithScroll()">With scroll</button>
-    <button nbButton (click)="openWithoutScroll()">Without scroll</button>
-  `,
-    styleUrls: ['./dialog-common.scss'],
-    standalone: false
+  selector: 'nb-dialog-scroll',
+  templateUrl: './dialog-scroll.component.html',
+  styleUrls: ['./dialog-common.scss'],
+  imports: [NbButtonComponent],
 })
 export class DialogScrollComponent {
-  constructor(private dialogService: NbDialogService) {
-  }
+  private readonly dialogService = inject(NbDialogService);
 
   openWithScroll() {
     this.open(true);

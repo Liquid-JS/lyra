@@ -1,27 +1,27 @@
-import { Component, TemplateRef } from '@angular/core';
-import { NbDialogService } from '@nebular/theme';
-
+import { Component, TemplateRef, inject } from '@angular/core';
+import {
+  NbDialogService,
+  NbCardComponent,
+  NbCardHeaderComponent,
+  NbCardBodyComponent,
+  NbCardFooterComponent,
+  NbButtonComponent,
+} from '@liquid-js/lyr-core';
 
 @Component({
-    selector: 'nb-dialog-template',
-    template: `
-    <ng-template #dialog let-data let-ref="dialogRef">
-      <nb-card>
-        <nb-card-header>Template Dialog</nb-card-header>
-        <nb-card-body>{{ data }}</nb-card-body>
-        <nb-card-footer>
-          <button nbButton (click)="ref.close()">Close Dialog</button>
-        </nb-card-footer>
-      </nb-card>
-    </ng-template>
-    <button nbButton (click)="open(dialog)">Open Dialog</button>
-  `,
-    styleUrls: ['./dialog-common.scss'],
-    standalone: false
+  selector: 'nb-dialog-template',
+  templateUrl: './dialog-template.component.html',
+  styleUrls: ['./dialog-common.scss'],
+  imports: [
+    NbCardComponent,
+    NbCardHeaderComponent,
+    NbCardBodyComponent,
+    NbCardFooterComponent,
+    NbButtonComponent,
+  ],
 })
 export class DialogTemplateComponent {
-  constructor(private dialogService: NbDialogService) {
-  }
+  private readonly dialogService = inject(NbDialogService);
 
   open(dialog: TemplateRef<any>) {
     this.dialogService.open(dialog, { context: 'this is some additional data passed to dialog' });

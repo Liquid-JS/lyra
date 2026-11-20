@@ -1,28 +1,23 @@
-import { Component } from '@angular/core';
-import { NbDialogService } from '@nebular/theme';
+import { Component, inject, signal } from '@angular/core';
+import { NbDialogService, NbButtonComponent } from '@liquid-js/lyr-core';
 import { DialogNamePromptComponent } from './components/name-prompt-dialog.component';
 
 @Component({
-    selector: 'nb-dialog-result',
-    template: `
-    <button nbButton status="primary" (click)="open()">Enter Name</button>
-    <br>
-    <h3 class="h5">Names:</h3>
-    <ul>
-      <li *ngFor="let name of names">{{ name }}</li>
-    </ul>
-  `,
-    styleUrls: ['./dialog-common.scss'],
-    standalone: false
+  selector: 'nb-dialog-result',
+  templateUrl: './dialog-result.component.html',
+  styleUrls: ['./dialog-common.scss'],
+  imports: [NbButtonComponent],
 })
 export class DialogResultComponent {
-  names: string[] = [];
+  private readonly dialogService = inject(NbDialogService);
 
-  constructor(private dialogService: NbDialogService) {
-  }
+  readonly names = signal<string[]>([]);
 
   open() {
-    this.dialogService.open(DialogNamePromptComponent)
-      .onClose.subscribe(name => name && this.names.push(name));
+    this.dialogService.open(DialogNamePromptComponent).onClose.subscribe((name) => {
+      if (typeof name === 'string' && name) {
+        this.names.update((names) => [...names, name]);
+      }
+    });
   }
 }

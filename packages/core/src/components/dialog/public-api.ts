@@ -1,0 +1,6 @@
+export * from './dialog-config';
+export * from './dialog-ref';
+export * from './dialog.service';
+export * from './confirm-dialog.component';
+export * from './dialog.module';
+export * from './dialog-container';

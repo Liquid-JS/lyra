@@ -1,19 +1,15 @@
-import { Component } from '@angular/core';
-import { NbDialogService } from '@nebular/theme';
+import { Component, inject } from '@angular/core';
+import { NbDialogService, NbButtonComponent } from '@liquid-js/lyr-core';
 import { EscDialogComponent } from './components/esc-dialog.component';
 
 @Component({
-    selector: 'nb-dialog-esc',
-    template: `
-    <button nbButton (click)="openWithEscClose()">Open with escape close</button>
-    <button nbButton (click)="openWithoutEscClose()">Open without escape close</button>
-  `,
-    styleUrls: ['./dialog-common.scss'],
-    standalone: false
+  selector: 'nb-dialog-esc',
+  templateUrl: './dialog-esc.component.html',
+  styleUrls: ['./dialog-common.scss'],
+  imports: [NbButtonComponent],
 })
 export class DialogEscComponent {
-  constructor(private dialogService: NbDialogService) {
-  }
+  private readonly dialogService = inject(NbDialogService);
 
   openWithEscClose() {
     this.open(true);

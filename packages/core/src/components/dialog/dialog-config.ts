@@ -1,60 +1,55 @@
+import { InjectionToken, ViewContainerRef } from '@angular/core';
+
+import { NbComponentContext } from '@liquid-js/lyr-core/cdk';
+import { NbGlobalPosition } from '@liquid-js/lyr-core/cdk';
+
 /**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
+ * Where a dialog appears: `center`, `top` or `bottom` (centered horizontally), or a corner, named as for toasts,
+ * e.g. `bottom-start` or `top-right`.
  */
-
-import { InjectionToken, InputSignal, Signal, ViewContainerRef } from '@angular/core';
-
+export type NbDialogPosition = 'center' | 'top' | 'bottom' | `${NbGlobalPosition}`;
 
 export const NB_DIALOG_CONFIG = new InjectionToken<NbDialogConfig>('Default dialog options');
 
-type DialogData<T> = {
-  [K in keyof T]: ExtractInputSignalType<T[K]>;
-};
-
-type ExtractInputSignalType<Type> = Type extends InputSignal<infer X> ? X : ExcludeSignal<Type>;
-
-type ExcludeSignal<Type> = Type extends Signal<unknown> ? never : Type;
-
 /**
- * Describes all available options that may be passed to the NbDialogService.
- * */
-export class NbDialogConfig<D = any> {
+ * The options of `NbDialogService.open`, and the defaults given to `provideNbDialog`.
+ */
+export class NbDialogConfig<D = unknown> {
   /**
-   * If true than overlay will render backdrop under a dialog.
-   * */
-  hasBackdrop: boolean = true;
+   * Shows a backdrop under the dialog, which makes it modal; `true` by default.
+   */
+  hasBackdrop = true;
 
   /**
-   * Class that'll be assigned to the backdrop element.
-   * */
-  backdropClass: string = 'overlay-backdrop';
+   * Class of the backdrop element.
+   */
+  backdropClass = 'overlay-backdrop';
 
   /**
-   * Class that'll be assigned to the dialog overlay.
-   * */
-  dialogClass: string = '';
+   * Class of the overlay pane around the dialog.
+   */
+  dialogClass = '';
 
   /**
-   * If true then mouse clicks by backdrop will close a dialog.
-   * */
-  closeOnBackdropClick: boolean = true;
+   * Closes the dialog with a click on the backdrop; `true` by default.
+   */
+  closeOnBackdropClick = true;
 
   /**
-   * If true then escape press will close a dialog.
-   * */
-  closeOnEsc: boolean = true;
+   * Closes the dialog with Escape; `true` by default. Either way the dialog takes Escape from what's under it.
+   */
+  closeOnEsc = true;
 
   /**
-   * Disables scroll on content under dialog if true and does nothing otherwise.
-   * */
-  hasScroll: boolean = false;
+   * Lets the page scroll under the dialog; by default it can't.
+   */
+  hasScroll = false;
 
   /**
-   * Focuses dialog automatically after open if true.
-   * */
-  autoFocus: boolean = true;
+   * Focuses the dialog's first focusable element once it opens, and returns the focus when it closes; `true` by
+   * default. Otherwise the focus stays where it was.
+   */
+  autoFocus = true;
 
   /**
    * Where the attached component should live in Angular's *logical* component tree.
@@ -62,16 +57,45 @@ export class NbDialogConfig<D = any> {
    * component instantiated inside of the dialog. This does not affect where the dialog
    * content will be rendered.
    */
-  viewContainerRef: ViewContainerRef;
+  viewContainerRef?: ViewContainerRef;
 
   /**
-   * Closes the dialog automatically on router navigation, e.g. when the browser back button is pressed.
-   * */
-  closeOnNavigation: boolean = true;
+   * Closes the dialog on router navigation, e.g. when the browser's back button is pressed; `true` by default.
+   */
+  closeOnNavigation = true;
 
-  context: DialogData<D>;
+  /**
+   * Where the dialog appears: `center` (default), `top`, `bottom`, or a corner such as `bottom-start`;
+   * `start` and `end` follow the layout direction.
+   */
+  position: NbDialogPosition = 'center';
 
-  constructor(config: Partial<NbDialogConfig>) {
+  /**
+   * Space between the dialog and the viewport edges it's placed against, e.g. `1rem`.
+   */
+  positionOffset = '';
+
+  /**
+   * The dialog's ARIA role: `dialog`, or `alertdialog` for one that asks the user to confirm or acknowledge something.
+   */
+  role: 'dialog' | 'alertdialog' = 'dialog';
+
+  /**
+   * Id of the element that names the dialog, usually its title.
+   */
+  ariaLabelledBy?: string;
+
+  /**
+   * Id of the element that describes the dialog, e.g. its message.
+   */
+  ariaDescribedBy?: string;
+
+  /**
+   * Data for the content: a component's inputs, or what a template gets as `$implicit`.
+   */
+  context?: NbComponentContext<D>;
+
+  constructor(config: Partial<NbDialogConfig<D>>) {
     Object.assign(this, config);
   }
 }

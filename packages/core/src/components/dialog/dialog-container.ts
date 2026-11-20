@@ -1,43 +1,59 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
+import {
+  afterNextRender,
+  ChangeDetectionStrategy,
+  Component,
+  ComponentRef,
+  ElementRef,
+  EmbeddedViewRef,
+  inject,
+  Injector,
+  OnDestroy,
+  OnInit,
+  viewChild,
+} from '@angular/core';
 
-import { Component, ComponentRef, ElementRef, EmbeddedViewRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
-
-import { NbComponentPortal, NbPortalOutletDirective, NbTemplatePortal } from '../cdk/overlay/mapping';
-import { NbFocusTrap, NbFocusTrapFactoryService } from '../cdk/a11y/focus-trap';
+import { NbComponentPortal, NbPortalOutletDirective, NbTemplatePortal } from '@liquid-js/lyr-core/cdk';
+import { NbFocusTrap, NbFocusTrapFactoryService } from '@liquid-js/lyr-core/cdk';
 import { NbDialogConfig } from './dialog-config';
 
-
 /**
- * Container component for each dialog.
- * All the dialogs will be attached to it.
- * // TODO add animations
- * */
+ * The element a dialog's content renders in: it carries the dialog's role and ARIA attributes, and traps and
+ * restores the focus with `autoFocus`.
+ */
 @Component({
-    selector: 'nb-dialog-container',
-    template: '<ng-template nbPortalOutlet></ng-template>',
-    standalone: false
+  selector: 'nb-dialog-container',
+  template: '<ng-template nbPortalOutlet />',
+  // The overlay pane is capped to the viewport; dialogs taller or wider than it scroll instead of overflowing it.
+  styles: ':host { display: block; max-width: 100%; max-height: 100%; overflow: auto; overscroll-behavior: contain; }',
+  host: {
+    // Without a backdrop the page stays usable, so the dialog isn't modal.
+    '[attr.aria-modal]': 'config.hasBackdrop',
+    '[attr.role]': 'config.role',
+    '[attr.aria-labelledby]': 'config.ariaLabelledBy',
+    '[attr.aria-describedby]': 'config.ariaDescribedBy',
+  },
+  // Hosted content may not use signals, so it's checked on every change detection.
+  changeDetection: ChangeDetectionStrategy.Eager,
+  imports: [NbPortalOutletDirective],
 })
 export class NbDialogContainerComponent implements OnInit, OnDestroy {
+  protected readonly config = inject(NbDialogConfig);
+  protected readonly elementRef = inject(ElementRef);
+  protected readonly focusTrapFactory = inject(NbFocusTrapFactoryService);
+  protected readonly injector = inject(Injector);
 
-  // TODO static must be false as of Angular 9.0.0, issues/1514
-  @ViewChild(NbPortalOutletDirective, { static: true }) portalOutlet: NbPortalOutletDirective;
+  readonly portalOutlet = viewChild.required(NbPortalOutletDirective);
 
-  protected focusTrap: NbFocusTrap;
-
-  constructor(protected config: NbDialogConfig,
-              protected elementRef: ElementRef,
-              protected focusTrapFactory: NbFocusTrapFactoryService) {
-  }
+  protected focusTrap?: NbFocusTrap;
 
   ngOnInit() {
     if (this.config.autoFocus) {
-      this.focusTrap = this.focusTrapFactory.create(this.elementRef.nativeElement);
-      this.focusTrap.blurPreviouslyFocusedElement();
-      this.focusTrap.focusInitialElement();
+      const focusTrap = this.focusTrapFactory.create(this.elementRef.nativeElement);
+      this.focusTrap = focusTrap;
+      focusTrap.blurPreviouslyFocusedElement();
+      // The dialog's content is attached after the container starts, and renders with the next change detection, so
+      // its first focusable element is there to take focus only once that has run.
+      afterNextRender(() => focusTrap.focusInitialElement(), { injector: this.injector });
     }
   }
 
@@ -48,10 +64,10 @@ export class NbDialogContainerComponent implements OnInit, OnDestroy {
   }
 
   attachComponentPortal<T>(portal: NbComponentPortal<T>): ComponentRef<T> {
-    return this.portalOutlet.attachComponentPortal(portal);
+    return this.portalOutlet().attachComponentPortal(portal);
   }
 
   attachTemplatePortal<C>(portal: NbTemplatePortal<C>): EmbeddedViewRef<C> {
-    return this.portalOutlet.attachTemplatePortal(portal);
+    return this.portalOutlet().attachTemplatePortal(portal);
   }
 }
