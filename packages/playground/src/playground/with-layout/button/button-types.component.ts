@@ -1,16 +1,10 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { Component } from '@angular/core';
+import { NbCardComponent, NbCardHeaderComponent, NbCardBodyComponent, NbButtonComponent } from '@liquid-js/lyr-core';
 
 @Component({
-    selector: 'nb-button-types',
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    templateUrl: './button-types.component.html',
-    standalone: false
+  selector: 'nb-button-types',
+  templateUrl: './button-types.component.html',
+  imports: [NbCardComponent, NbCardHeaderComponent, NbCardBodyComponent, NbButtonComponent],
 })
 export class ButtonTypesComponent {
   onClick() {

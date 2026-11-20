@@ -1,24 +1,6 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
+import { Component, DestroyRef, inject, input, Renderer2 } from '@angular/core';
 
-import {
-  AfterViewInit,
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  ElementRef,
-  HostBinding,
-  HostListener,
-  Input,
-  Renderer2,
-  NgZone,
-} from '@angular/core';
-
-import { NbStatusService } from '../../services/status.service';
-import { convertToBoolProperty, NbBooleanInput } from '../helpers';
+import { ɵconvertToBoolProperty as convertToBoolProperty, NbBooleanInput } from '@liquid-js/lyr-core/base';
 import { NbButton } from './base-button';
 
 /**
@@ -32,6 +14,16 @@ import { NbButton } from './base-button';
  * ```
  * ### Installation
  *
+ * Import `NbButtonComponent` into your standalone component:
+ * ```ts
+ * @Component({
+ *   imports: [NbButtonComponent],
+ * })
+ * export class PageComponent { }
+ * ```
+ *
+ * With NgModules:
+ *
  * Import `NbButtonModule` to your feature module.
  * ```ts
  * @NgModule({
@@ -44,33 +36,49 @@ import { NbButton } from './base-button';
  * ```
  * ### Usage
  *
- * Buttons are available in multiple colors using `status` property:
+ * Buttons are coloured by their `status`:
  * @stacked-example(Button Colors, button/button-colors.component.html)
  *
- * There are three button sizes:
+ * They come in five sizes, from `tiny` to `giant`:
  *
  * @stacked-example(Button Sizes, button/button-sizes.component.html)
  *
- * And two additional style types - `outline`:
+ * Besides the default `filled` appearance there are `outline` and `ghost`:
  *
  * @stacked-example(Outline Buttons, button/button-outline.component.html)
  *
- * and `hero`:
+ * and `hero`, with a gradient and a glow:
  *
  * @stacked-example(Button Hero, button/button-hero.component.html)
  *
- * Buttons available in different shapes, which could be combined with the other properties:
+ * The shapes combine with the other properties:
  * @stacked-example(Button Shapes, button/button-shapes.component)
  *
- * `nbButton` could be applied to the following selectors - `button`, `input[type="button"]`, `input[type="submit"]`
- * and `a`:
+ * `nbButton` applies to `button`, `input[type="button"]`, `input[type="submit"]` and `a`:
  * @stacked-example(Button Elements, button/button-types.component.html)
  *
- * Button can be made `fullWidth`:
+ * A `fullWidth` button fills its container:
  * @stacked-example(Full Width Button, button/button-full-width.component.html)
  *
- * Icon can be placed inside of a button as a child element:
+ * An icon at the start or the end of the content gets its spacing from the text, and a button with an icon alone is
+ * padded for it:
  * @stacked-example(Icon Button, button/button-icon.component.html)
+ *
+ * A ghost button shows its box only when hovered or pressed, so at the edge of a card, a header or a list item its
+ * label or icon should line up with the text around it, as text would. `edge="start"` or `edge="end"` does that: the
+ * button reaches past that side by as much as its content is inset, for its size and in either direction of the page.
+ * `inline` does the same above and below: the button takes no more room in its row than its label, so a header or a
+ * footer is as tall as with text alone.
+ * ```html
+ * <nb-card-footer>
+ *   <button nbButton ghost inline edge="start">Back</button>
+ *   <button nbButton ghost inline edge="end">Next</button>
+ * </nb-card-footer>
+ * ```
+ *
+ * Set `loading` while the action the button started runs. The button shows a spinner in place of its content,
+ * keeps its size and focus, ignores clicks, and tells assistive technology it is busy:
+ * @stacked-example(Loading Button, button/button-loading.component)
  *
  * @additional-example(Interactive example, button/button-interactive.component)
  *
@@ -82,6 +90,8 @@ import { NbButton } from './base-button';
  * button-text-font-family:
  * button-text-font-weight:
  * button-disabled-cursor:
+ * button-loading-cursor:
+ * button-spinner-border-width:
  * button-tiny-text-font-size:
  * button-tiny-text-line-height:
  * button-tiny-icon-size:
@@ -114,10 +124,15 @@ import { NbButton } from './base-button';
  * button-filled-border-width:
  * button-filled-text-transform:
  * button-filled-tiny-padding:
+ * icon-button-filled-tiny-padding:
  * button-filled-small-padding:
+ * icon-button-filled-small-padding:
  * button-filled-medium-padding:
+ * icon-button-filled-medium-padding:
  * button-filled-large-padding:
+ * icon-button-filled-large-padding:
  * button-filled-giant-padding:
+ * icon-button-filled-giant-padding:
  * button-filled-basic-background-color:
  * button-filled-basic-border-color:
  * button-filled-basic-text-color:
@@ -207,10 +222,15 @@ import { NbButton } from './base-button';
  * button-outline-text-transform:
  * button-outline-focus-inset-shadow-length:
  * button-outline-tiny-padding:
+ * icon-button-outline-tiny-padding:
  * button-outline-small-padding:
+ * icon-button-outline-small-padding:
  * button-outline-medium-padding:
+ * icon-button-outline-medium-padding:
  * button-outline-large-padding:
+ * icon-button-outline-large-padding:
  * button-outline-giant-padding:
+ * icon-button-outline-giant-padding:
  * button-outline-basic-background-color:
  * button-outline-basic-border-color:
  * button-outline-basic-text-color:
@@ -323,10 +343,15 @@ import { NbButton } from './base-button';
  * button-ghost-text-transform:
  * button-ghost-focus-inset-shadow-length:
  * button-ghost-tiny-padding:
+ * icon-button-ghost-tiny-padding:
  * button-ghost-small-padding:
+ * icon-button-ghost-small-padding:
  * button-ghost-medium-padding:
+ * icon-button-ghost-medium-padding:
  * button-ghost-large-padding:
+ * icon-button-ghost-large-padding:
  * button-ghost-giant-padding:
+ * icon-button-ghost-giant-padding:
  * button-ghost-basic-text-color:
  * button-ghost-basic-focus-background-color:
  * button-ghost-basic-focus-border-color:
@@ -423,10 +448,15 @@ import { NbButton } from './base-button';
  * button-hero-border-width:
  * button-hero-text-transform:
  * button-hero-tiny-padding:
+ * icon-button-hero-tiny-padding:
  * button-hero-small-padding:
+ * icon-button-hero-small-padding:
  * button-hero-medium-padding:
+ * icon-button-hero-medium-padding:
  * button-hero-large-padding:
+ * icon-button-hero-large-padding:
  * button-hero-giant-padding:
+ * icon-button-hero-giant-padding:
  * button-hero-shadow:
  * button-hero-text-shadow:
  * button-hero-bevel-size:
@@ -526,92 +556,55 @@ import { NbButton } from './base-button';
  * button-hero-control-disabled-text-color:
  */
 @Component({
-    selector: 'button[nbButton],a[nbButton],input[type="button"][nbButton],input[type="submit"][nbButton]',
-    template: `
-    <ng-content></ng-content>
-  `,
-    providers: [
-        { provide: NbButton, useExisting: NbButtonComponent },
-    ],
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
-})
-export class NbButtonComponent extends NbButton implements AfterViewInit {
-  /**
-   * Sets `hero` appearance
-   */
-  @Input()
-  @HostBinding('class.appearance-hero')
-  get hero(): boolean {
-    return this.appearance === 'hero';
-  }
-  set hero(value: boolean) {
-    if (convertToBoolProperty(value)) {
-      this.appearance = 'hero';
+  selector: 'button[nbButton],a[nbButton],input[type="button"][nbButton],input[type="submit"][nbButton]',
+  template: `
+    @if (loading()) {
+      <span class="nb-button-spinner" aria-hidden="true"></span>
     }
-  }
-  static ngAcceptInputType_hero: NbBooleanInput;
-
-  @HostBinding('class.status-primary')
-  get primary() {
-    return this.status === 'primary';
-  }
-
-  @HostBinding('class.status-info')
-  get info() {
-    return this.status === 'info';
-  }
-
-  @HostBinding('class.status-success')
-  get success() {
-    return this.status === 'success';
-  }
-
-  @HostBinding('class.status-warning')
-  get warning() {
-    return this.status === 'warning';
-  }
-
-  @HostBinding('class.status-danger')
-  get danger() {
-    return this.status === 'danger';
-  }
-
-  @HostBinding('class.status-basic')
-  get basic() {
-    return this.status === 'basic';
-  }
-
-  @HostBinding('class.status-control')
-  get control() {
-    return this.status === 'control';
-  }
+    <ng-content />
+  `,
+  providers: [
+    { provide: NbButton, useExisting: NbButtonComponent },
+  ],
+})
+export class NbButtonComponent extends NbButton {
+  /**
+   * Sets the `hero` appearance, over `appearance` and the other boolean appearances.
+   */
+  readonly hero = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
 
   /**
-   * @private
-   * Keep this handler to partially support anchor disabling.
-   * Unlike button, anchor doesn't have 'disabled' DOM property,
-   * so handler will be called anyway. We preventing navigation and bubbling.
-   * Disabling is partial due to click handlers precedence. Consider example:
-   * <a nbButton [disabled]="true" (click)="clickHandler()">...</a>
-   * 'clickHandler' will be called before our host listener below. We can't prevent
-   * such handlers call.
+   * Shows a spinner in place of the content and ignores clicks, e.g. while a form submits.
+   * Unlike `disabled`, the button keeps its focus and looks enabled.
    */
-  @HostListener('click', ['$event'])
-  onClick(event) {
-    if (this.disabled) {
+  readonly loading = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
+
+  constructor() {
+    super();
+    // A capture listener on the button runs before every click listener on it, including the ones its user
+    // binds with (click), which a host listener can't guarantee.
+    const listen = (event: Event) => this.onClick(event);
+    const unlisten = inject(Renderer2).listen(this.hostElement.nativeElement, 'click', listen, { capture: true });
+    inject(DestroyRef).onDestroy(unlisten);
+  }
+
+  protected override appearanceFlag() {
+    return this.hero() ? 'hero' : super.appearanceFlag();
+  }
+
+  protected override isBusy() {
+    return this.loading();
+  }
+
+  // The spinner is not content, so it doesn't count as a leading icon.
+  protected override get nodes(): Node[] {
+    return super.nodes.filter((node) => !(node instanceof Element && node.classList.contains('nb-button-spinner')));
+  }
+
+  onClick(event: Event) {
+    if (this.properties().disabled || this.loading()) {
       event.preventDefault();
       event.stopImmediatePropagation();
     }
-  }
-
-  constructor(
-    protected renderer: Renderer2,
-    protected hostElement: ElementRef<HTMLElement>,
-    protected cd: ChangeDetectorRef,
-    protected zone: NgZone,
-    protected statusService: NbStatusService,
-  ) {
-    super(renderer, hostElement, cd, zone, statusService);
   }
 }

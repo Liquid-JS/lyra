@@ -1,41 +1,62 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 @use '../../styles/theming' as *;
-@use 'button-core';
-@use 'button-filled';
-@use 'button-outline';
-@use 'button-ghost';
-@use 'button-hero';
+@use 'button-look' as look;
 
 @mixin nb-buttons-theme() {
   [nbButton] {
-    @include button-core.nb-button-core();
+    @include look.core();
 
-    cursor: nb-theme(button-cursor);
-    font-family: nb-theme(button-text-font-family);
-    font-weight: nb-theme(button-text-font-weight);
-
-    &:focus {
-      // Sibling buttons are covering outline shadow.
-      // position: relative; declaration makes shadow appear on top of sibling buttons.
-      position: relative;
-      outline: none;
-      @include nb-outline(nb-theme(button-outline-width), nb-theme(button-outline-color));
+    &.full-width {
+      width: 100%;
     }
 
-    &[disabled],
-    &.btn-disabled {
-      cursor: nb-theme(button-disabled-cursor);
+    nb-icon {
+      // A label too long for the button doesn't squeeze its icon away.
+      flex-shrink: 0;
+      vertical-align: top;
+    }
+
+    &.nb-transition {
+      @include nb-component-animation(background-color, border-color, box-shadow, color);
+    }
+
+    @include look.base('[disabled], .btn-disabled');
+
+    // The content keeps its space, so the button doesn't change size; currentColor still gives the spinner its color.
+    &.btn-loading {
+      position: relative;
+      cursor: nb-theme(button-loading-cursor);
+      -webkit-text-fill-color: transparent;
+      text-shadow: none;
+
+      nb-icon {
+        visibility: hidden;
+      }
+    }
+
+    .nb-button-spinner {
+      position: absolute;
+      inset: 0;
+      margin: auto;
+      border: nb-theme(button-spinner-border-width) solid currentColor;
+      border-right-color: transparent;
+      border-radius: 50%;
+      animation: nb-button-spin 0.75s linear infinite;
+    }
+
+    @keyframes nb-button-spin {
+      to {
+        transform: rotate(360deg);
+      }
     }
 
     @each $size in nb-get-sizes() {
       &.size-#{$size} {
-        font-size: nb-theme(button-#{$size}-text-font-size);
-        line-height: nb-theme(button-#{$size}-text-line-height);
+        @include look.size($size);
+
+        .nb-button-spinner {
+          height: nb-theme(button-#{$size}-icon-size);
+          width: nb-theme(button-#{$size}-icon-size);
+        }
 
         nb-icon {
           font-size: nb-theme(button-#{$size}-text-font-size);
@@ -58,14 +79,40 @@
         @each $appearance in ('filled', 'outline', 'ghost', 'hero') {
           &.icon-start.icon-end.appearance-#{$appearance} {
             padding: nb-theme(icon-button-#{$appearance}-#{$size}-padding);
+            padding-block: 0;
           }
+        }
+
+        // With an edge, the button reaches past it by as much as its content is inset, so its label, or the icon of an
+        // icon button (square, the icon in the middle), lines up with the content around it.
+        $label-edge: calc(-1 * #{nb-theme(control-#{$size}-inset)});
+        $icon-edge: calc((#{nb-theme(button-#{$size}-icon-size)} - #{nb-theme(control-#{$size}-height)}) / 2);
+        &.edge-start {
+          margin-inline-start: $label-edge;
+        }
+        &.edge-end {
+          margin-inline-end: $label-edge;
+        }
+        &.icon-start.icon-end.edge-start {
+          margin-inline-start: $icon-edge;
+        }
+        &.icon-start.icon-end.edge-end {
+          margin-inline-end: $icon-edge;
+        }
+
+        // Inline, the button takes its label's line in the layout, or an icon button its icon's height.
+        &.btn-inline {
+          margin-block: calc((#{nb-theme(button-#{$size}-text-line-height)} - #{nb-theme(control-#{$size}-height)}) / 2);
+        }
+        &.icon-start.icon-end.btn-inline {
+          margin-block: $icon-edge;
         }
       }
     }
 
     @each $shape in nb-get-shapes() {
       &.shape-#{$shape} {
-        border-radius: nb-theme(button-#{$shape}-border-radius);
+        @include look.shape($shape);
       }
     }
   }
@@ -74,8 +121,39 @@
     text-decoration: none;
   }
 
-  @include button-filled.button-filled;
-  @include button-outline.button-outline;
-  @include button-ghost.button-ghost;
-  @include button-hero.button-hero;
+  @each $appearance in look.$appearances {
+    [nbButton].appearance-#{$appearance} {
+      @include look.appearance($appearance);
+
+      @each $size in nb-get-sizes() {
+        &.size-#{$size} {
+          @include look.padding($appearance, $size);
+        }
+      }
+
+      @each $status in nb-get-statuses() {
+        &.status-#{$status} {
+          @include look.status($appearance, $status, '[disabled], .btn-disabled');
+
+          @if $appearance == 'hero' {
+            &.button-pulse {
+              animation: button-hero-#{$status}-pulse 0.75s infinite alternate;
+            }
+
+            @include keyframes(button-hero-#{$status}-pulse) {
+              0% {
+                box-shadow: none;
+                opacity: 0.3;
+              }
+
+              100% {
+                box-shadow: 0 0 1rem 0 nb-theme(button-hero-#{$status}-left-background-color);
+                opacity: 0.8;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 }

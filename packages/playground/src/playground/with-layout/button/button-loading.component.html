@@ -1,0 +1,26 @@
+<nb-card>
+  <nb-card-header>Loading Buttons</nb-card-header>
+  <nb-card-body class="example-items-rows">
+    <button nbButton
+      status="primary"
+      [loading]="saving()"
+      (click)="run(saving)">Save changes</button>
+    <button nbButton
+      outline
+      status="success"
+      [loading]="sending()"
+      (click)="run(sending)">
+      <nb-icon icon="paper-plane-outline" />
+      Send
+    </button>
+    <button nbButton
+      ghost
+      size="small"
+      loading>Loading</button>
+    <button nbButton
+      hero
+      status="info"
+      size="large"
+      loading>Loading</button>
+  </nb-card-body>
+</nb-card>

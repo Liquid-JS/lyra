@@ -1,244 +1,223 @@
 import {
   AfterContentChecked,
-  AfterViewInit,
   ChangeDetectorRef,
-  ContentChildren,
+  computed,
+  contentChildren,
   Directive,
   ElementRef,
   EmbeddedViewRef,
-  HostBinding,
-  Input,
-  NgZone,
-  QueryList,
-  Renderer2,
+  inject,
+  input,
+  linkedSignal,
+  Signal,
+  signal,
+  numberAttribute,
 } from '@angular/core';
 
-import { NbStatusService } from '../../services/status.service';
-import { convertToBoolProperty, NbBooleanInput } from '../helpers';
-import { NbComponentSize } from '../component-size';
-import { NbComponentOrCustomStatus } from '../component-status';
-import { NbComponentShape } from '../component-shape';
-import { NbIconComponent } from '../icon/icon.component';
+import { injectNbDefaults } from '@liquid-js/lyr-core/base';
+import { NbStatusService } from '@liquid-js/lyr-core/base';
+import { ɵconvertToBoolProperty as convertToBoolProperty, NbBooleanInput } from '@liquid-js/lyr-core/base';
+import { NbComponentSize } from '@liquid-js/lyr-core/base';
+import { NbComponentOrCustomStatus } from '@liquid-js/lyr-core/base';
+import { NbComponentShape } from '@liquid-js/lyr-core/base';
+import { ɵNbIconRef as NbIconRef } from '@liquid-js/lyr-core/icon';
+import { NB_BUTTON_GROUP } from '../button-group/button-group-injection-tokens';
+import { ɵenableTransitionsAfterRender as enableTransitionsAfterRender } from '@liquid-js/lyr-core/base';
+import type { NbButtonAppearance } from '@liquid-js/lyr-core/base';
 
-export type NbButtonAppearance = 'filled' | 'outline' | 'ghost' | 'hero';
+/** The side of a button that lines up with the content around it, as `edge` sets it. */
+export type NbButtonEdge = 'start' | 'end';
 
-export type NbButtonProperties = Pick<NbButton, 'appearance' | 'size' | 'shape' | 'status' | 'disabled'> & Object;
+export interface NbButtonProperties {
+  appearance: NbButtonAppearance;
+  size: NbComponentSize;
+  shape: NbComponentShape;
+  status: NbComponentOrCustomStatus;
+  disabled: boolean;
+}
 
-@Directive()
-// eslint-disable-next-line @angular-eslint/directive-class-suffix
-export abstract class NbButton implements AfterContentChecked, AfterViewInit {
+/**
+ * Properties shared by buttons and button toggles. Inside `nb-button-group`, the group's `appearance`, `size`,
+ * `shape` and `status` replace the button's own, and the button is disabled when either of them is.
+ */
+@Directive({
+  host: {
+    '[class]': 'hostClasses()',
+    '[class.full-width]': 'fullWidth()',
+    '[class.icon-start]': 'iconStart()',
+    '[class.icon-end]': 'iconEnd()',
+    '[class.edge-start]': "edge() === 'start'",
+    '[class.edge-end]': "edge() === 'end'",
+    '[class.btn-inline]': 'inline()',
+    '[class.btn-disabled]': 'properties().disabled',
+    '[class.btn-loading]': 'isBusy()',
+    '[attr.aria-busy]': 'isBusy() || null',
+    '[attr.aria-disabled]': 'properties().disabled || isBusy()',
+    '[attr.disabled]': 'properties().disabled || null',
+    // A disabled button is skipped by Tab.
+    '[attr.tabindex]': 'tabbable()',
+  },
+})
+export abstract class NbButton<A extends NbButtonAppearance = NbButtonAppearance>
+implements AfterContentChecked {
+  // The app's defaults for this type, which the inputs below start from.
+  protected readonly nbDefaults = injectNbDefaults('button');
+
+  protected readonly hostElement = inject<ElementRef<HTMLElement>>(ElementRef);
+  protected readonly cd = inject(ChangeDetectorRef);
+  protected readonly statusService = inject(NbStatusService);
+  protected readonly group = inject(NB_BUTTON_GROUP, { optional: true });
+
   /**
-   * Button size, available sizes:
-   * `tiny`, `small`, `medium`, `large`, `giant`
+   * Button size: `tiny`, `small`, `medium`, `large` or `giant`. Unset, it follows the app's default, or `medium`.
    */
-  @Input() size: NbComponentSize = 'medium';
+  readonly sizeInput = input<NbComponentSize | undefined>(undefined, { alias: 'size' });
+  /** The size in use: the input's, the app's default, or 'medium'. */
+  readonly size = linkedSignal<NbComponentSize>(() => this.sizeInput() ?? this.nbDefaults().size ?? 'medium');
 
   /**
-   * Button status (adds specific styles):
-   * `primary`, `info`, `success`, `warning`, `danger`
+   * Button status: `basic` (default), `primary`, `info`, `success`, `warning`, `danger`, `control` or a custom one.
    */
-  @Input() status: NbComponentOrCustomStatus = 'basic';
+  readonly status = input<NbComponentOrCustomStatus>('basic');
 
   /**
-   * Button shapes: `rectangle`, `round`, `semi-round`
+   * Button shape: `rectangle`, `semi-round` or `round`. Unset, it follows the app's default, or `rectangle`.
    */
-  @Input() shape: NbComponentShape = 'rectangle';
+  readonly shapeInput = input<NbComponentShape | undefined>(undefined, { alias: 'shape' });
+  /** The shape in use: the input's, the app's default, or 'rectangle'. */
+  readonly shape = linkedSignal<NbComponentShape>(() => this.shapeInput() ?? this.nbDefaults().shape ?? 'rectangle');
 
   /**
-   * Button appearance: `filled`, `outline`, `ghost`, `hero`
+   * Button appearance: `filled`, `outline`, `ghost` or, for `nbButton` only, `hero`. Unset, it follows the app's
+   * default, or `filled`.
    */
-  @Input() appearance: NbButtonAppearance = 'filled';
+  readonly appearanceInput = input<A | undefined>(undefined, { alias: 'appearance' });
+  /** The appearance in use: the input's, or the app's default for buttons, or `filled`. */
+  readonly appearance = linkedSignal<A>(
+    () => this.appearanceInput() ?? this.defaultAppearance(this.nbDefaults().appearance),
+  );
 
   /**
-   * Sets `filled` appearance
+   * Sets the `filled` appearance, over `appearance`.
    */
-  @Input()
-  @HostBinding('class.appearance-filled')
-  get filled(): boolean {
-    return this.appearance === 'filled';
-  }
-  set filled(value: boolean) {
-    if (convertToBoolProperty(value)) {
-      this.appearance = 'filled';
+  readonly filled = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
+
+  /**
+   * Sets the `outline` appearance, over `appearance` and `filled`.
+   */
+  readonly outline = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
+
+  /**
+   * Sets the `ghost` appearance, over `appearance`, `filled` and `outline`.
+   */
+  readonly ghost = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
+
+  /**
+   * Fills the width of the container.
+   */
+  readonly fullWidth = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
+
+  /**
+   * Lines up the button's label or icon, instead of its box, with the content around it, at its `start` or `end`: the
+   * button reaches past that side by as much as its content is inset, e.g. a ghost button at the end of a card header,
+   * whose icon then ends where the header's text does. It follows the page's direction, and the button's size.
+   */
+  readonly edge = input<NbButtonEdge>();
+
+  /**
+   * Takes no more room in a row than its label does, as text would: its box reaches above and below into the space
+   * around it, e.g. in a card header, which then is as tall as with its title alone. For a ghost button, whose box shows
+   * only when hovered or pressed; with `edge`, it lines up as text would on every side.
+   */
+  readonly inline = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
+
+  /**
+   * Disables the button, an `a` too: it ignores clicks, is skipped by Tab and is `aria-disabled`.
+   */
+  readonly disabled = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
+
+  /**
+   * Tabindex of the button, e.g. `tabIndex="-1"`, as a select's.
+   */
+  readonly tabIndex = input<number | undefined, unknown>(undefined, {
+    transform: (value: unknown) => (value == null || value === '' ? undefined : numberAttribute(value)),
+  });
+
+  /**
+   * The properties the button renders with: its own, or its group's.
+   */
+  readonly properties: Signal<NbButtonProperties> = computed(() => {
+    const groupProperties = this.group?.buttonProperties();
+    if (groupProperties) {
+      return { ...groupProperties, disabled: groupProperties.disabled || this.disabled() };
     }
-  }
-  static ngAcceptInputType_filled: NbBooleanInput;
+    return {
+      appearance: this.appearanceFlag() ?? this.appearance(),
+      size: this.size(),
+      shape: this.shape(),
+      status: this.status(),
+      disabled: this.disabled(),
+    };
+  });
 
-  /**
-   * Sets `outline` appearance
-   */
-  @Input()
-  @HostBinding('class.appearance-outline')
-  get outline(): boolean {
-    return this.appearance === 'outline';
+  /** The appearance the button starts with: the app's default for buttons, or `filled`. */
+  protected defaultAppearance(appearance?: NbButtonAppearance): A {
+    return (appearance ?? 'filled') as A;
   }
-  set outline(value: boolean) {
-    if (convertToBoolProperty(value)) {
-      this.appearance = 'outline';
-    }
-  }
-  static ngAcceptInputType_outline: NbBooleanInput;
 
-  /**
-   * Sets `ghost` appearance
-   */
-  @Input()
-  @HostBinding('class.appearance-ghost')
-  get ghost(): boolean {
-    return this.appearance === 'ghost';
-  }
-  set ghost(value: boolean) {
-    if (convertToBoolProperty(value)) {
-      this.appearance = 'ghost';
-    }
-  }
-  static ngAcceptInputType_ghost: NbBooleanInput;
+  protected readonly icons = contentChildren(NbIconRef, { read: ElementRef });
+  protected readonly iconStart = signal(false);
+  protected readonly iconEnd = signal(false);
 
-  /**
-   * If set element will fill its container
-   */
-  @Input()
-  @HostBinding('class.full-width')
-  get fullWidth(): boolean {
-    return this._fullWidth;
-  }
-  set fullWidth(value: boolean) {
-    this._fullWidth = convertToBoolProperty(value);
-  }
-  private _fullWidth = false;
-  static ngAcceptInputType_fullWidth: NbBooleanInput;
-
-  /**
-   * Disables the button
-   */
-  @Input()
-  @HostBinding('attr.aria-disabled')
-  @HostBinding('class.btn-disabled')
-  get disabled(): boolean {
-    return this._disabled;
-  }
-  set disabled(value: boolean) {
-    if (this.disabled !== convertToBoolProperty(value)) {
-      this._disabled = !this.disabled;
-      this.renderer.setProperty(this.hostElement.nativeElement, 'disabled', this.disabled);
-    }
-  }
-  private _disabled: boolean = false;
-  static ngAcceptInputType_disabled: NbBooleanInput;
-
-  /**
-   * Tabindex of the button.
-   */
-  @Input() tabIndex: number;
-
-  // issue #794
-  @HostBinding('attr.tabindex')
-  get tabbable(): string {
-    if (this.disabled) {
+  protected readonly tabbable = computed(() => {
+    if (this.properties().disabled) {
       return '-1';
     }
+    return String(this.tabIndex() ?? 0);
+  });
 
-    if (this.tabIndex == null) {
-      return '0';
+  protected readonly hostClasses = computed(() => {
+    const { appearance, size, shape } = this.properties();
+    const classes = [`appearance-${appearance}`, `size-${size}`, `shape-${shape}`, ...this.statusClasses()];
+    return classes.filter(Boolean);
+  });
+
+  /**
+   * The appearance set with a boolean input such as `outline`, if any.
+   */
+  protected appearanceFlag(): NbButtonAppearance | undefined {
+    if (this.ghost()) {
+      return 'ghost';
     }
-
-    return this.tabIndex.toString();
-  }
-
-  @HostBinding('class.size-tiny')
-  get tiny() {
-    return this.size === 'tiny';
-  }
-
-  @HostBinding('class.size-small')
-  get small() {
-    return this.size === 'small';
-  }
-
-  @HostBinding('class.size-medium')
-  get medium() {
-    return this.size === 'medium';
-  }
-
-  @HostBinding('class.size-large')
-  get large() {
-    return this.size === 'large';
-  }
-
-  @HostBinding('class.size-giant')
-  get giant() {
-    return this.size === 'giant';
-  }
-
-  @HostBinding('class.shape-rectangle')
-  get rectangle() {
-    return this.shape === 'rectangle';
-  }
-
-  @HostBinding('class.shape-round')
-  get round() {
-    return this.shape === 'round';
-  }
-
-  @HostBinding('class.shape-semi-round')
-  get semiRound() {
-    return this.shape === 'semi-round';
-  }
-
-  @HostBinding('class.icon-start') iconLeft = false;
-
-  @HostBinding('class.icon-end') iconRight = false;
-
-  @HostBinding('class')
-  get additionalClasses(): string[] {
-    if (this.statusService.isCustomStatus(this.status)) {
-      return [this.statusService.getStatusClass(this.status)];
+    if (this.outline()) {
+      return 'outline';
     }
-    return [];
+    if (this.filled()) {
+      return 'filled';
+    }
+    return undefined;
   }
 
-  @ContentChildren(NbIconComponent, { read: ElementRef }) icons: QueryList<ElementRef>;
+  /**
+   * Whether the button is busy with an action: it shows a spinner and ignores clicks, but stays focusable.
+   */
+  protected isBusy() {
+    return false;
+  }
 
-  protected constructor(
-    protected renderer: Renderer2,
-    protected hostElement: ElementRef<HTMLElement>,
-    protected cd: ChangeDetectorRef,
-    protected zone: NgZone,
-    protected statusService: NbStatusService,
-  ) {
+  protected statusClasses(): (string | undefined)[] {
+    return [this.statusService.getStatusClass(this.properties().status)];
+  }
+
+  constructor() {
+    enableTransitionsAfterRender(this.hostElement.nativeElement);
   }
 
   ngAfterContentChecked() {
-    const firstNode = this.nodes[0];
-    const lastNode = this.nodes[this.nodes.length - 1];
-
-    this.iconLeft = this.isIconExist(firstNode);
-    this.iconRight = this.isIconExist(lastNode);
-  }
-
-  ngAfterViewInit() {
-    // TODO: #2254
-    this.zone.runOutsideAngular(() => setTimeout(() => {
-      this.renderer.addClass(this.hostElement.nativeElement, 'nb-transition');
-    }));
-  }
-
-  /**
-   * @docs-private
-   **/
-  updateProperties(config: Partial<NbButtonProperties>) {
-    let isPropertyChanged = false;
-
-    for (const key in config) {
-      if (config.hasOwnProperty(key) && this[key] !== config[key]) {
-        this[key] = config[key];
-        isPropertyChanged = true;
-      }
-    }
-
-    if (isPropertyChanged) {
-      this.cd.markForCheck();
-    }
+    // Runs before the host bindings are checked, so they see the icons the content renders this time.
+    const nodes = this.nodes;
+    this.iconStart.set(this.isIconExist(nodes[0]));
+    this.iconEnd.set(this.isIconExist(nodes[nodes.length - 1]));
   }
 
   get iconElement() {
@@ -247,10 +226,12 @@ export abstract class NbButton implements AfterContentChecked, AfterViewInit {
   }
 
   protected get nodes(): Node[] {
-    return (this.cd as EmbeddedViewRef<any>).rootNodes.filter((child: Node) => child.nodeType !== Node.COMMENT_NODE);
+    // The change detector of a component is its host view.
+    const view = this.cd as EmbeddedViewRef<unknown>;
+    return view.rootNodes.filter((child: Node) => child.nodeType !== Node.COMMENT_NODE);
   }
 
   protected isIconExist(node: Node): boolean {
-    return this.icons.some((item) => item.nativeElement === node);
+    return this.icons().some((item) => item.nativeElement === node);
   }
 }
