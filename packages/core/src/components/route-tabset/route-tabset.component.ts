@@ -1,52 +1,62 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
+import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 
-import { Component, Input, Output, EventEmitter, HostBinding } from '@angular/core';
-import { RouterLink, RouterLinkActive } from '@angular/router';
-
-import { convertToBoolProperty, NbBooleanInput } from '../helpers';
-import { NbIconConfig } from '../icon/icon.component';
+import { ɵconvertToBoolProperty as convertToBoolProperty, NbBooleanInput } from '@liquid-js/lyr-core/base';
+import { NbIconConfig, NbIconComponent } from '@liquid-js/lyr-core/icon';
+import { NbMergeConfigsPipe } from './merge-configs.pipe';
 
 export interface NbRouteTab {
-  route?: RouterLink['routerLink'] | undefined;
-  title?: string | undefined;
-  icon?: string | NbIconConfig | undefined;
-  disabled?: boolean | undefined;
-  responsive?: boolean | undefined;
-  queryParams?: RouterLink['queryParams'] | undefined;
-  queryParamsHandling?: RouterLink['queryParamsHandling'] | undefined;
-  fragment?: RouterLink['fragment'] | undefined;
-  preserveFragment?: RouterLink['preserveFragment'] | undefined;
-  skipLocationChange?: RouterLink['skipLocationChange'] | undefined;
-  replaceUrl?: RouterLink['replaceUrl'] | undefined;
-  state?: RouterLink['state'] | undefined;
-  activeLinkOptions?: RouterLinkActive['routerLinkActiveOptions'] | undefined;
+  route?: RouterLink['routerLink'];
+  title?: string;
+  icon?: string | NbIconConfig;
+  disabled?: boolean;
+  responsive?: boolean;
+  queryParams?: RouterLink['queryParams'];
+  queryParamsHandling?: RouterLink['queryParamsHandling'];
+  fragment?: RouterLink['fragment'];
+  preserveFragment?: RouterLink['preserveFragment'];
+  skipLocationChange?: RouterLink['skipLocationChange'];
+  replaceUrl?: RouterLink['replaceUrl'];
+  state?: RouterLink['state'];
+  activeLinkOptions?: RouterLinkActive['routerLinkActiveOptions'];
 }
 
 /**
- * Route tabset components.
- * Renders tabs inside of a router-outlet.
+ * Tabs that are router links, with a `router-outlet` under them for the active route's content.
  *
  * ```ts
- *  tabs = [
- *  {
- *    title: 'Route tab #1',
- *    route: '/pages/description',
- *    icon: 'home',
- *    responsive: true, // hide title before `$tabset-tab-text-hide-breakpoint` value
- *  },
- *  {
- *    title: 'Route tab #2',
- *    route: '/pages/images',
- *    }
- *  ];
- *
- *  <nb-route-tabset [tabs]="tabs"></nb-route-tabset>
+ * tabs: NbRouteTab[] = [
+ *   {
+ *     title: 'Route tab #1',
+ *     route: '/pages/description',
+ *     icon: 'home',
+ *     responsive: true, // hides the title on screens narrower than `$route-tabset-tab-text-hide-breakpoint`
+ *   },
+ *   {
+ *     title: 'Route tab #2',
+ *     route: '/pages/images',
+ *   },
+ * ];
  * ```
+ *
+ * ```html
+ * <nb-route-tabset [tabs]="tabs" />
+ * ```
+ *
+ * A tab is active while its link is, by `activeLinkOptions`; a tab's own `activeLinkOptions` add to the tabset's.
+ * A `disabled` tab is shown but isn't a link.
+ *
  * ### Installation
+ *
+ * Import `NbRouteTabsetComponent` into your standalone component:
+ * ```ts
+ * @Component({
+ *   imports: [NbRouteTabsetComponent],
+ * })
+ * export class PageComponent { }
+ * ```
+ *
+ * With NgModules:
  *
  * Import `NbRouteTabsetModule` to your feature module.
  * ```ts
@@ -68,6 +78,7 @@ export interface NbRouteTab {
  * route-tabset-shadow:
  * route-tabset-tab-background-color:
  * route-tabset-tab-padding:
+ * route-tabset-tab-small-padding:
  * route-tabset-tab-text-color:
  * route-tabset-tab-text-font-family:
  * route-tabset-tab-text-font-size:
@@ -82,6 +93,8 @@ export interface NbRouteTab {
  * route-tabset-tab-focus-background-color:
  * route-tabset-tab-focus-text-color:
  * route-tabset-tab-focus-underline-color:
+ * route-tabset-tab-outline-width:
+ * route-tabset-tab-outline-color:
  * route-tabset-tab-hover-background-color:
  * route-tabset-tab-hover-text-color:
  * route-tabset-tab-hover-underline-color:
@@ -96,84 +109,35 @@ export interface NbRouteTab {
  * route-tabset-scrollbar-width:
  */
 @Component({
-    selector: 'nb-route-tabset',
-    styleUrls: ['./route-tabset.component.scss'],
-    template: `
-    <ul class="route-tabset">
-      <ng-container *ngFor="let tab of tabs">
-        <li
-          *ngIf="tab.disabled; else enabled"
-          [class.responsive]="tab.responsive"
-          class="route-tab disabled"
-          tabindex="-1"
-        >
-          <a tabindex="-1" class="tab-link">
-            <nb-icon *ngIf="tab.icon" [config]="tab.icon"></nb-icon>
-            <span *ngIf="tab.title" class="tab-text">{{ tab.title }}</span>
-          </a>
-        </li>
-
-        <ng-template #enabled>
-          <li
-            routerLinkActive="active"
-            [routerLinkActiveOptions]="activeLinkOptions | nbMergeConfigs: tab.activeLinkOptions"
-            class="route-tab"
-          >
-            <a
-              (click)="selectTab(tab)"
-              [routerLink]="tab.route"
-              [class.responsive]="tab.responsive"
-              [queryParams]="tab.queryParams"
-              [queryParamsHandling]="tab.queryParamsHandling"
-              [fragment]="tab.fragment"
-              [preserveFragment]="tab.preserveFragment"
-              [skipLocationChange]="tab.skipLocationChange"
-              [replaceUrl]="tab.replaceUrl"
-              [state]="tab.state"
-              class="tab-link"
-            >
-              <nb-icon *ngIf="tab.icon" [config]="tab.icon"></nb-icon>
-              <span *ngIf="tab.title" class="tab-text">{{ tab.title }}</span>
-            </a>
-          </li>
-        </ng-template>
-      </ng-container>
-    </ul>
-    <router-outlet></router-outlet>
-  `,
-    standalone: false
+  selector: 'nb-route-tabset',
+  styleUrls: ['./route-tabset.component.scss'],
+  templateUrl: './route-tabset.component.html',
+  // Tabs are plain objects that apps can change in place.
+  changeDetection: ChangeDetectionStrategy.Eager,
+  imports: [
+    NbIconComponent,
+    RouterLinkActive,
+    RouterLink,
+    RouterOutlet,
+    NbMergeConfigsPipe,
+  ],
+  host: {
+    '[class.full-width]': 'fullWidth()',
+  },
 })
 export class NbRouteTabsetComponent {
-  @HostBinding('class.full-width') fullWidthValue: boolean = false;
+  readonly tabs = input<NbRouteTab[]>([]);
 
-  /**
-   * Tabs configuration
-   */
-  @Input() tabs: NbRouteTab[];
+  /** The `routerLinkActiveOptions` of the tabs' links; `{ exact: true }` by default. */
+  readonly activeLinkOptions = input<RouterLinkActive['routerLinkActiveOptions']>({ exact: true });
 
-  /**
-   * Options passed to `routerLinkActiveOptions` directive which set on tab links.
-   * `{ exact: true }` by default.
-   */
-  @Input() activeLinkOptions: RouterLinkActive['routerLinkActiveOptions'] = { exact: true };
+  /** The tabs share the tabset's width. */
+  readonly fullWidth = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
 
-  /**
-   * Take full width of a parent
-   * @param {boolean} val
-   */
-  @Input()
-  set fullWidth(val: boolean) {
-    this.fullWidthValue = convertToBoolProperty(val);
-  }
-  static ngAcceptInputType_fullWidth: NbBooleanInput;
-
-  /**
-   * Emits when tab is selected
-   * @type {EventEmitter<NbRouteTab>}
-   */
-  @Output() changeTab = new EventEmitter<NbRouteTab>();
+  /** Emits the tab whose link was clicked. */
+  readonly tabChange = output<NbRouteTab>();
 
   selectTab(tab: NbRouteTab) {
-    this.changeTab.emit(tab);
+    this.tabChange.emit(tab);
   }
 }
