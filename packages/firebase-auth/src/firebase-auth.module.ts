@@ -1,24 +1,23 @@
-/*
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-
-import { NgModule } from '@angular/core';
+import { NgModule, EnvironmentProviders, makeEnvironmentProviders } from '@angular/core';
 
 import { NbFirebasePasswordStrategy } from './strategies/password/firebase-password.strategy';
 import { NbFirebaseGoogleStrategy } from './strategies/google/firebase-google.strategy';
 import { NbFirebaseFacebookStrategy } from './strategies/facebook/firebase-facebook.strategy';
-import { NbFirebaseTwitteStrategy } from './strategies/twitter/firebase-twitter.strategy';
+import { NbFirebaseTwitterStrategy } from './strategies/twitter/firebase-twitter.strategy';
 
-
-@NgModule({
-  providers: [
+/**
+ * Provides the Firebase auth strategies, in place of importing `NbFirebaseAuthModule`.
+ */
+export function provideNbFirebaseAuth(): EnvironmentProviders {
+  return makeEnvironmentProviders([
     NbFirebasePasswordStrategy,
     NbFirebaseGoogleStrategy,
     NbFirebaseFacebookStrategy,
-    NbFirebaseTwitteStrategy,
-  ],
+    NbFirebaseTwitterStrategy,
+  ]);
+}
+
+@NgModule({
+  providers: [provideNbFirebaseAuth()],
 })
 export class NbFirebaseAuthModule { }

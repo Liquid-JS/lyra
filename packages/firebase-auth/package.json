@@ -1,0 +1,44 @@
+{
+  "name": "@liquid-js/lyr-firebase-auth",
+  "version": "22.0.0",
+  "type": "module",
+  "description": "Firebase auth strategies for Lyra",
+  "author": "HitkoDev <development@hitko.si>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Liquid-JS/lyra.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Liquid-JS/lyra/issues"
+  },
+  "homepage": "https://github.com/Liquid-JS/lyra/tree/master/packages/firebase-auth#readme",
+  "keywords": [
+    "angular",
+    "typescript",
+    "lyra",
+    "ui",
+    "components",
+    "auth",
+    "firebase"
+  ],
+  "scripts": {
+    "build": "run -T ng build firebase-auth --configuration production",
+    "watch": "run -T ng build firebase-auth --configuration development --watch",
+    "test": "run -T ng test firebase-auth --no-watch",
+    "test:watch": "run -T ng test firebase-auth",
+    "lint": "run -T ng lint firebase-auth",
+    "lint:fix": "run -T ng lint firebase-auth --fix",
+    "lint:styles": "run -T stylelint \"**/*.scss\"",
+    "lint:styles:fix": "run -T stylelint \"**/*.scss\" --fix"
+  },
+  "peerDependencies": {
+    "@angular/core": "^22.0.0",
+    "@angular/fire": "^22.0.0-rc.1",
+    "@liquid-js/lyr-auth": "^22.0.0",
+    "firebase": "^13.4.0",
+    "rxjs": "^6.5.3 || ^7.4.0",
+    "tslib": "^2.9.1"
+  },
+  "sideEffects": false
+}

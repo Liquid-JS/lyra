@@ -1,51 +1,48 @@
-import { Component } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Observable, of } from 'rxjs';
-import { catchError, share, take } from 'rxjs/operators';
-import { NbAuthService, NbAuthToken } from '@nebular/auth';
+import { of } from 'rxjs';
+import { catchError, take } from 'rxjs/operators';
+import { NbAuthService } from '@liquid-js/lyr-auth';
 
 import { FirebaseAPIService } from '../firebase-api.service';
+import { JsonPipe } from '@angular/common';
 
 @Component({
-    selector: 'nb-password-auth-showcase',
-    templateUrl: './password-auth-showcase.component.html',
-    styleUrls: ['./password-auth-showcase.component.scss'],
-    standalone: false
+  selector: 'nb-password-auth-showcase',
+  templateUrl: './password-auth-showcase.component.html',
+  styleUrls: ['./password-auth-showcase.component.scss'],
+  imports: [JsonPipe],
 })
 export class PasswordAuthShowcaseComponent {
+  private readonly authService = inject(NbAuthService);
+  private readonly router = inject(Router);
+  private readonly firebaseApi = inject(FirebaseAPIService);
+  private readonly route = inject(ActivatedRoute);
 
-  userToken$: Observable<NbAuthToken>;
-  isAuthenticated$: Observable<boolean>;
-  data$: Observable<any>;
-
-  constructor(
-    private authService: NbAuthService,
-    private router: Router,
-    private firebaseApi: FirebaseAPIService,
-    private route: ActivatedRoute,
-  ) {
-    this.userToken$ = this.authService.onTokenChange();
-    this.isAuthenticated$ = this.authService.isAuthenticated();
-  }
+  readonly userToken = toSignal(this.authService.onTokenChange());
+  readonly isAuthenticated = toSignal(this.authService.isAuthenticated());
+  readonly data = signal<any>(undefined);
 
   logout() {
-    this.router.navigate(['../logout'], { relativeTo: this.route });
+    void this.router.navigate(['../logout'], { relativeTo: this.route });
   }
 
   login() {
-    this.router.navigate(['../login'], { relativeTo: this.route });
+    void this.router.navigate(['../login'], { relativeTo: this.route });
   }
 
   resetPassword() {
-    this.router.navigate(['../reset-password'], { relativeTo: this.route });
+    void this.router.navigate(['../reset-password'], { relativeTo: this.route });
   }
 
   getData() {
-    this.data$ = this.firebaseApi.getGreeting()
+    this.firebaseApi
+      .getGreeting()
       .pipe(
         take(1),
         catchError((error) => of(error)),
-        share(),
-      );
+      )
+      .subscribe((data) => this.data.set(data));
   }
 }

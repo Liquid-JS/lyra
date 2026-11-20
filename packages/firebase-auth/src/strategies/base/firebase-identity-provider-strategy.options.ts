@@ -1,19 +1,15 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 import {
+  getDeepFromObject,
+  nbAuthMessages,
   NbPasswordStrategyMessage,
   NbPasswordStrategyModule,
   NbAuthJWTToken,
   NbAuthStrategyOptions,
   NbStrategyToken,
-} from '@nebular/auth';
+} from '@liquid-js/lyr-auth';
 
 export class NbFirebaseIdentityProviderStrategyOptions extends NbAuthStrategyOptions {
-  token?: NbStrategyToken = {
+  override token?: NbStrategyToken = {
     class: NbAuthJWTToken,
   };
   logout?: boolean | NbPasswordStrategyModule = {
@@ -32,15 +28,23 @@ export class NbFirebaseIdentityProviderStrategyOptions extends NbAuthStrategyOpt
     defaultErrors: ['Something went wrong, please try again.'],
     defaultMessages: ['You have been successfully authenticated.'],
   };
+  refreshToken?: boolean | NbPasswordStrategyModule = {
+    redirect: {
+      success: null,
+      failure: null,
+    },
+    defaultErrors: ['Something went wrong, please try again.'],
+    defaultMessages: ['Your token has been successfully refreshed.'],
+  };
   errors?: NbPasswordStrategyMessage = {
     key: 'message',
-    getter: (module: string, res, options: NbFirebaseIdentityProviderStrategyOptions) => options[module].defaultErrors,
+    getter: (module: string, _res: unknown, options: NbFirebaseIdentityProviderStrategyOptions) =>
+      nbAuthMessages(getDeepFromObject(options, `${module}.defaultErrors`)),
   };
   messages?: NbPasswordStrategyMessage = {
     key: 'message',
-    getter: (module: string, res, options: NbFirebaseIdentityProviderStrategyOptions) => {
-      return options[module].defaultMessages;
-    },
+    getter: (module: string, _res: unknown, options: NbFirebaseIdentityProviderStrategyOptions) =>
+      nbAuthMessages(getDeepFromObject(options, `${module}.defaultMessages`)),
   };
   scopes?: string[] = [];
   customParameters?: { [key: string]: string } = {};

@@ -1,82 +1,135 @@
-/*
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { Injectable } from '@angular/core';
-import { AngularFireAuth } from '@angular/fire/compat/auth';
+import { inject, Service } from '@angular/core';
+import { Auth } from '@angular/fire/auth';
+import { signOut, type User, type UserCredential } from 'firebase/auth';
 import { Observable, of as observableOf, from } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
-import { NbAuthResult, NbAuthIllegalTokenError, NbAuthStrategy } from '@nebular/auth';
+import { catchError, map, switchMap } from 'rxjs/operators';
+import {
+  getDeepFromObject,
+  NbAuthResult,
+  NbAuthIllegalTokenError,
+  NbAuthStrategy,
+  NbAuthStrategyOptions,
+  NbPasswordStrategyMessage,
+  NbPasswordStrategyModule,
+} from '@liquid-js/lyr-auth';
 
-import firebase from 'firebase/compat/app';
-import UserCredential = firebase.auth.UserCredential;
+/** The options of every Firebase strategy: the getters of its errors and messages. */
+type NbFirebaseStrategyOptions = NbAuthStrategyOptions & {
+  errors?: NbPasswordStrategyMessage;
+  messages?: NbPasswordStrategyMessage;
+};
 
-@Injectable()
-export abstract class NbFirebaseBaseStrategy extends NbAuthStrategy {
-  constructor(protected afAuth: AngularFireAuth) {
-    super();
-  }
+/** Whether a module's option is its options, rather than a flag. */
+function isModuleOptions(value: unknown): value is NbPasswordStrategyModule {
+  return typeof value === 'object' && value !== null;
+}
+
+/**
+ * The base of the Firebase strategies. `O` is the strategy's options class; each names its modules (actions) its own
+ * way, such as `login` and `authenticate`.
+ */
+@Service({ autoProvided: false })
+export abstract class NbFirebaseBaseStrategy<O extends NbFirebaseStrategyOptions = NbFirebaseStrategyOptions>
+  extends NbAuthStrategy<O> {
+  protected readonly auth = inject(Auth);
 
   logout(): Observable<NbAuthResult> {
     const module = 'logout';
-    return from(this.afAuth.signOut()).pipe(
+    return from(signOut(this.auth)).pipe(
       map(() => {
-        return new NbAuthResult(
-          true,
-          null,
-          this.getOption(`${module}.redirect.success`),
-          [],
-          this.getOption(`${module}.defaultMessages`),
-        );
+        const options = this.moduleOptions(module);
+        return new NbAuthResult(true, undefined, options.redirect?.success, [], options.defaultMessages);
       }),
       catchError((error) => this.processFailure(error, module)),
     );
   }
 
-  register(data?: any): Observable<NbAuthResult> {
+  register(_data?: unknown): Observable<NbAuthResult> {
     throw new Error(`'register' is not supported by '${this.constructor.name}', use 'authenticate'.`);
   }
 
-  requestPassword(data?: any): Observable<NbAuthResult> {
+  requestPassword(_data?: unknown): Observable<NbAuthResult> {
     throw new Error(`'requestPassword' is not supported by '${this.constructor.name}', use 'authenticate'.`);
   }
 
-  resetPassword(data: any = {}): Observable<NbAuthResult> {
+  resetPassword(_data?: unknown): Observable<NbAuthResult> {
     throw new Error(`'resetPassword' is not supported by '${this.constructor.name}', use 'authenticate'.`);
   }
 
-  refreshToken(data: any = {}): Observable<NbAuthResult> {
-    throw new Error(`'refreshToken' is not supported by '${this.constructor.name}', use 'authenticate'.`);
-  }
-
-  protected processFailure(error: any, module: string): Observable<NbAuthResult> {
-    const errorMessages = [];
-
-    if (error instanceof NbAuthIllegalTokenError) {
-      errorMessages.push(error.message);
-    } else {
-      errorMessages.push(this.getOption('errors.getter')(module, error, this.options));
-    }
-
-    return observableOf(
-      new NbAuthResult(false, error, this.getOption(`${module}.redirect.failure`), errorMessages, []),
+  /**
+   * Refreshes the Firebase ID token of the signed-in user. Firebase ID tokens expire after an hour, so every
+   * strategy needs this for `isAuthenticatedOrRefresh()`.
+   */
+  refreshToken(_data?: unknown): Observable<NbAuthResult> {
+    const module = 'refreshToken';
+    return from(this.auth.authStateReady()).pipe(
+      map(() => this.auth.currentUser),
+      switchMap((user) => {
+        if (user == null) {
+          return observableOf(
+            new NbAuthResult(false, undefined, this.moduleOptions(module).redirect?.failure, [
+              "There is no logged in user so refresh of id token isn't possible",
+            ]),
+          );
+        }
+        return this.refreshIdToken(user, module);
+      }),
     );
   }
 
-  protected processSuccess(res: UserCredential | null, module: string): Observable<NbAuthResult> {
-    return this.afAuth.idToken.pipe(
+  /** The options of a module (action), such as `login`: its redirects and default messages. */
+  protected moduleOptions(module: string): NbPasswordStrategyModule {
+    const options = getDeepFromObject(this.options, module);
+    return isModuleOptions(options) ? options : {};
+  }
+
+  protected processFailure(error: unknown, module: string): Observable<NbAuthResult> {
+    const errorMessages = new Array<string>();
+
+    const options = this.options;
+    const getter = options?.errors?.getter;
+    if (error instanceof NbAuthIllegalTokenError) {
+      errorMessages.push(error.message);
+    } else if (options && getter) {
+      errorMessages.push(...getter(module, error, options));
+    }
+
+    return observableOf(
+      new NbAuthResult(false, error, this.moduleOptions(module).redirect?.failure, errorMessages, []),
+    );
+  }
+
+  protected processSuccess(res: UserCredential, module: string): Observable<NbAuthResult<UserCredential>> {
+    const options = this.options;
+    const getter = options?.messages?.getter;
+    return from(res.user.getIdToken()).pipe(
       map((token) => {
         return new NbAuthResult(
           true,
           res,
-          this.getOption(`${module}.redirect.success`),
+          this.moduleOptions(module).redirect?.success,
           [],
-          this.getOption('messages.getter')(module, res, this.options),
+          options && getter ? getter(module, res, options) : undefined,
           this.createToken(token),
         );
       }),
+    );
+  }
+
+  protected refreshIdToken(user: User, module: string): Observable<NbAuthResult> {
+    return from(user.getIdToken(true)).pipe(
+      map((token) => {
+        const options = this.moduleOptions(module);
+        return new NbAuthResult(
+          true,
+          undefined,
+          options.redirect?.success,
+          [],
+          options.defaultMessages,
+          this.createToken(token),
+        );
+      }),
+      catchError((error) => this.processFailure(error, module)),
     );
   }
 }

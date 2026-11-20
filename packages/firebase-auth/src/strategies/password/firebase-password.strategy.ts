@@ -1,14 +1,21 @@
-/*
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { Injectable } from '@angular/core';
-import firebase from 'firebase/compat/app';
-import { Observable, of as observableOf, from } from 'rxjs';
-import { catchError, map, switchMap, take } from 'rxjs/operators';
-import { NbAuthStrategyOptions, NbAuthStrategyClass, NbAuthResult } from '@nebular/auth';
+import { inject, Service } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
+import {
+  confirmPasswordReset,
+  createUserWithEmailAndPassword,
+  sendPasswordResetEmail,
+  signInWithEmailAndPassword,
+  updatePassword,
+  type User,
+} from 'firebase/auth';
+import { Observable, from } from 'rxjs';
+import { catchError, map, switchMap } from 'rxjs/operators';
+import {
+  NbAuthCredentials,
+  NbAuthStrategyOptions,
+  NbAuthStrategyClass,
+  NbAuthResult,
+} from '@liquid-js/lyr-auth';
 
 import { NbFirebaseBaseStrategy } from '../base/firebase-base.strategy';
 import {
@@ -16,54 +23,41 @@ import {
   NbFirebasePasswordStrategyOptions,
 } from './firebase-password-strategy.options';
 
-@Injectable()
-export class NbFirebasePasswordStrategy extends NbFirebaseBaseStrategy {
-  protected defaultOptions: NbFirebasePasswordStrategyOptions = firebasePasswordStrategyOptions;
+@Service({ autoProvided: false })
+export class NbFirebasePasswordStrategy extends NbFirebaseBaseStrategy<NbFirebasePasswordStrategyOptions> {
+  protected override defaultOptions: NbFirebasePasswordStrategyOptions = firebasePasswordStrategyOptions;
+  private readonly route = inject(ActivatedRoute);
 
   static setup(options: NbFirebasePasswordStrategyOptions): [NbAuthStrategyClass, NbAuthStrategyOptions] {
     return [NbFirebasePasswordStrategy, options];
   }
 
-  authenticate({ email, password }: any): Observable<NbAuthResult> {
+  authenticate({ email, password }: Required<Pick<NbAuthCredentials, 'email' | 'password'>>): Observable<NbAuthResult> {
     const module = 'login';
-    return from(this.afAuth.signInWithEmailAndPassword(email, password)).pipe(
+    return from(signInWithEmailAndPassword(this.auth, email, password)).pipe(
       switchMap((res) => this.processSuccess(res, module)),
       catchError((error) => this.processFailure(error, module)),
     );
   }
 
-  refreshToken(data?: any): Observable<NbAuthResult> {
-    const module = 'refreshToken';
-    return this.afAuth.authState.pipe(
-      take(1),
-      switchMap((user) => {
-        if (user == null) {
-          return observableOf(
-            new NbAuthResult(false, null, this.getOption(`${module}.redirect.failure`), [
-              "There is no logged in user so refresh of id token isn't possible",
-            ]),
-          );
-        }
-        return this.refreshIdToken(user, module);
-      }),
-    );
-  }
-
-  register({ email, password }: any): Observable<NbAuthResult> {
+  override register({
+    email,
+    password,
+  }: Required<Pick<NbAuthCredentials, 'email' | 'password'>>): Observable<NbAuthResult> {
     const module = 'register';
-    return from(this.afAuth.createUserWithEmailAndPassword(email, password)).pipe(
+    return from(createUserWithEmailAndPassword(this.auth, email, password)).pipe(
       switchMap((res) => this.processSuccess(res, module)),
       catchError((error) => this.processFailure(error, module)),
     );
   }
 
-  requestPassword({ email }: any): Observable<NbAuthResult> {
+  override requestPassword({ email }: Required<Pick<NbAuthCredentials, 'email'>>): Observable<NbAuthResult> {
     const module = 'requestPassword';
-    return from(this.afAuth.sendPasswordResetEmail(email)).pipe(
+    return from(sendPasswordResetEmail(this.auth, email)).pipe(
       map(() => {
         return new NbAuthResult(
           true,
-          null,
+          undefined,
           this.getOption(`${module}.redirect.success`),
           [],
           this.getOption(`${module}.defaultMessages`),
@@ -73,13 +67,24 @@ export class NbFirebasePasswordStrategy extends NbFirebaseBaseStrategy {
     );
   }
 
-  resetPassword({ code, password }): Observable<NbAuthResult> {
+  /**
+   * Sets the new password with the code of Firebase's password reset email. The link in the email brings the user to
+   * the reset password page with the code in the query, under the options' `resetPasswordTokenKey` (Firebase's
+   * `oobCode`); a `code` in the data is used instead when it's given.
+   */
+  override resetPassword({ code, password }: { code?: string; password: string }): Observable<NbAuthResult> {
     const module = 'resetPassword';
-    return from(this.afAuth.confirmPasswordReset(code, password)).pipe(
+    const codeKey = this.getOption(`${module}.resetPasswordTokenKey`) ?? 'oobCode';
+    const queryCode: unknown = this.route.snapshot.queryParams[codeKey];
+    const resetCode = code ?? (typeof queryCode === 'string' ? queryCode : undefined);
+    if (!resetCode) {
+      return this.processFailure(new Error(`No password reset code in the page's "${codeKey}" query.`), module);
+    }
+    return from(this.confirmPasswordReset(resetCode, password)).pipe(
       map(() => {
         return new NbAuthResult(
           true,
-          null,
+          undefined,
           this.getOption(`${module}.redirect.success`),
           [],
           this.getOption(`${module}.defaultMessages`),
@@ -89,31 +94,21 @@ export class NbFirebasePasswordStrategy extends NbFirebaseBaseStrategy {
     );
   }
 
-  protected updatePassword(user, password, module) {
-    return from(user.updatePassword(password)).pipe(
-      map((token) => {
-        return new NbAuthResult(
-          true,
-          null,
-          this.getOption(`${module}.redirect.success`),
-          [],
-          this.getOption(`${module}.defaultMessages`),
-          this.createToken(token),
-        );
-      }),
-      catchError((error) => this.processFailure(error, module)),
-    );
+  /** Firebase's confirmPasswordReset, for the strategy's Auth. */
+  protected confirmPasswordReset(code: string, password: string): Promise<void> {
+    return confirmPasswordReset(this.auth, code, password);
   }
 
-  protected refreshIdToken(user: firebase.User, module): Observable<NbAuthResult> {
-    return from(user.getIdToken(true)).pipe(
+  protected updatePassword(user: User, password: string, module: string) {
+    return from(updatePassword(user, password)).pipe(
       map((token) => {
+        const options = this.moduleOptions(module);
         return new NbAuthResult(
           true,
-          null,
-          this.getOption(`${module}.redirect.success`),
+          undefined,
+          options.redirect?.success,
           [],
-          this.getOption(`${module}.defaultMessages`),
+          options.defaultMessages,
           this.createToken(token),
         );
       }),

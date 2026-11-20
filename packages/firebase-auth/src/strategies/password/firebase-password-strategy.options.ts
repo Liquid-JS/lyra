@@ -1,20 +1,22 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 import {
   getDeepFromObject,
+  nbAuthMessages,
   NbAuthJWTToken,
   NbAuthStrategyOptions,
   NbPasswordStrategyMessage,
   NbPasswordStrategyModule,
+  NbPasswordStrategyReset,
   NbStrategyToken,
-} from '@nebular/auth';
+} from '@liquid-js/lyr-auth';
+
+/**
+ * The options a getter is called with: the defaults merged with the configured ones, so the getter's key is set.
+ */
+type NbFirebasePasswordStrategyOptionsWithKey<K extends 'errors' | 'messages'> = NbFirebasePasswordStrategyOptions
+  & Record<K, { key: string }>;
 
 export class NbFirebasePasswordStrategyOptions extends NbAuthStrategyOptions {
-  token?: NbStrategyToken = {
+  override token?: NbStrategyToken = {
     class: NbAuthJWTToken,
   };
   register?: boolean | NbPasswordStrategyModule = {
@@ -57,31 +59,29 @@ export class NbFirebasePasswordStrategyOptions extends NbAuthStrategyOptions {
     defaultErrors: ['Something went wrong, please try again.'],
     defaultMessages: ['Reset password instructions have been sent to your email.'],
   };
-  resetPassword?: boolean | NbPasswordStrategyModule = {
+  resetPassword?: boolean | NbPasswordStrategyReset = {
     redirect: {
       success: '/',
       failure: null,
     },
+    // The query parameter of the reset link that holds Firebase's code.
+    resetPasswordTokenKey: 'oobCode',
     defaultErrors: ['Something went wrong, please try again.'],
     defaultMessages: ['Your password has been successfully changed.'],
   };
   errors?: NbPasswordStrategyMessage = {
     key: 'message',
-    getter: (module: string, res, options: NbFirebasePasswordStrategyOptions) => getDeepFromObject(
-      res,
-      options.errors.key,
-      options[module].defaultErrors,
-    ),
+    getter: (module: string, res: unknown, options: NbFirebasePasswordStrategyOptionsWithKey<'errors'>) =>
+      nbAuthMessages(getDeepFromObject(res, options.errors.key, getDeepFromObject(options, `${module}.defaultErrors`))),
   };
   messages?: NbPasswordStrategyMessage = {
     key: 'messages',
-    getter: (module: string, res, options: NbFirebasePasswordStrategyOptions) => getDeepFromObject(
-      res.body,
-      options.messages.key,
-      options[module].defaultMessages,
-    ),
+    // Firebase's sign-in calls answer with a `UserCredential`, which holds no messages: these are the module's
+    // defaults.
+    getter: (module: string, _res: unknown, options: NbFirebasePasswordStrategyOptionsWithKey<'messages'>) =>
+      nbAuthMessages(getDeepFromObject(options, `${module}.defaultMessages`)),
   };
 }
 
-// eslint-disable-next-line max-len
-export const firebasePasswordStrategyOptions: NbFirebasePasswordStrategyOptions = new NbFirebasePasswordStrategyOptions();
+export const firebasePasswordStrategyOptions: NbFirebasePasswordStrategyOptions =
+  new NbFirebasePasswordStrategyOptions();

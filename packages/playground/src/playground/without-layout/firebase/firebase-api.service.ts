@@ -1,11 +1,11 @@
-import { Injectable } from '@angular/core';
-import { AngularFireDatabase } from '@angular/fire/compat/database';
+import { inject, Service } from '@angular/core';
+import { Database, objectVal, ref } from '@angular/fire/database';
 
-@Injectable()
+@Service({ autoProvided: false })
 export class FirebaseAPIService {
-  constructor(private db: AngularFireDatabase) {}
+  private readonly db = inject(Database);
 
   getGreeting() {
-    return this.db.object('/greeting/').valueChanges();
+    return objectVal(ref(this.db, '/greeting/'));
   }
 }
