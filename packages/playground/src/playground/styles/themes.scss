@@ -1,3 +1,3 @@
-@forward "../../../../core/src/styles/theming";
-@use "../../../../core/src/styles/theming" as *;
-@use "../../../../core/src/styles/themes";
+@forward "@liquid-js/lyr-core/styles/theming";
+@use "@liquid-js/lyr-core/styles/theming" as *;
+@use "@liquid-js/lyr-core/styles/themes";

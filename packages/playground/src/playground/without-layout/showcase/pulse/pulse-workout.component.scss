@@ -1,4 +1,4 @@
-@use "../../../styles/themes" as *;
+@use "@liquid-js/lyr-core/styles/theming" as *;
 
 // The session's figures on a lit panel: the timer huge, the readouts under it, the controls at the bottom.
 .session {

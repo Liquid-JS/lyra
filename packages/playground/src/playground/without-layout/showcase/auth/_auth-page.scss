@@ -1,5 +1,5 @@
 // What the sign-in pages share: the brand, a title, and a form, in a card or plain on a column of its own.
-@use "../../../styles/themes" as *;
+@use "@liquid-js/lyr-core/styles/theming" as *;
 
 @mixin auth-page {
     :host {

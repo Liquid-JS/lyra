@@ -1,5 +1,5 @@
 // What the mobile screens share: a column of cards with room around it.
-@use "../../../styles/themes" as *;
+@use "@liquid-js/lyr-core/styles/theming" as *;
 
 :host {
     display: flex;

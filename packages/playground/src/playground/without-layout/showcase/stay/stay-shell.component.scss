@@ -1,4 +1,4 @@
-@use "../../../styles/themes" as *;
+@use "@liquid-js/lyr-core/styles/theming" as *;
 
 // The screens set their own width and spacing, so a photo can reach the window's edges.
 nb-layout {

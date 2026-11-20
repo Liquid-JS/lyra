@@ -1,5 +1,5 @@
 // What Relay's pages share: the mono face, the console's page header and the site's sections.
-@use "../../../styles/themes" as *;
+@use "@liquid-js/lyr-core/styles/theming" as *;
 
 /// Code, ids and figures, in the theme's mono face, or the system's where the theme has none.
 @mixin relay-mono {

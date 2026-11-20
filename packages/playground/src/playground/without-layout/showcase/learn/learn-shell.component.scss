@@ -1,4 +1,4 @@
-@use "../../../styles/themes" as *;
+@use "@liquid-js/lyr-core/styles/theming" as *;
 
 // The pages set their own width, so a tinted band can reach the window's edges.
 nb-layout {
