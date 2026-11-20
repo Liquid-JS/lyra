@@ -1,0 +1,27 @@
+<nb-card>
+    <nb-card-body>
+        <table [nbTreeGrid]="data"
+            equalColumnsWidth>
+            <tr nbTreeGridRow
+                *nbTreeGridRowDef="let row; columns: allColumns"></tr>
+
+            <ng-container [nbTreeGridColumnDef]="customColumn">
+                <td nbTreeGridCell
+                    *nbTreeGridCellDef="let row">
+                    @if (row.data.kind === 'dir') {
+                    <nb-tree-grid-row-toggle [expanded]="row.expanded" />
+                    }
+
+                    {{ row.data.name }}
+                </td>
+            </ng-container>
+
+            @for (column of defaultColumns; track column) {
+            <ng-container [nbTreeGridColumnDef]="column">
+                <td nbTreeGridCell
+                    *nbTreeGridCellDef="let row">{{ row.data[column] }}</td>
+            </ng-container>
+            }
+        </table>
+    </nb-card-body>
+</nb-card>

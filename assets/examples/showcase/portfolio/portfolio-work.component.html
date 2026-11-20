@@ -1,0 +1,54 @@
+<article>
+    <header class="head">
+        <div class="titles">
+            <p class="eyebrow"><span class="number">{{ project.index }}</span> Project</p>
+            <h1>{{ project.title }}</h1>
+            <p class="subtitle">{{ project.subtitle }}</p>
+        </div>
+        <dl class="meta">
+            @for (row of project.meta; track row[0]) {
+            <div>
+                <dt>{{ row[0] }}</dt>
+                <dd>{{ row[1] }}</dd>
+            </div>
+            }
+        </dl>
+    </header>
+
+    <figure class="lead">
+        <img [src]="picture(project.lead.file)"
+            [alt]="project.lead.alt" />
+    </figure>
+
+    <div class="text">
+        @for (paragraph of project.text; track paragraph) {
+        <p>{{ paragraph }}</p>
+        }
+    </div>
+
+    <section class="gallery"
+        aria-label="More pictures">
+        @for (item of project.gallery; track item.file) {
+        <figure>
+            <img [src]="picture(item.file)"
+                [alt]="item.alt"
+                loading="lazy" />
+        </figure>
+        }
+    </section>
+
+    <nav class="neighbours"
+        aria-label="Other projects">
+        <a routerLink="../work">
+            <nb-icon icon="arrow-back-outline" />
+            <span class="label">Previous</span>
+            <span class="name"><span class="number">{{ project.previous.index }}</span> {{ project.previous.title }}</span>
+        </a>
+        <a routerLink="../work"
+            class="next">
+            <nb-icon icon="arrow-forward-outline" />
+            <span class="label">Next</span>
+            <span class="name"><span class="number">{{ project.next.index }}</span> {{ project.next.title }}</span>
+        </a>
+    </nav>
+</article>

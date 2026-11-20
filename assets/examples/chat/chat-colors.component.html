@@ -1,0 +1,16 @@
+@for (chat of chats; track chat) {
+<nb-chat [title]="chat.title"
+    [status]="chat.status"
+    size="small">
+    @for (msg of chat.messages; track msg) {
+    <nb-chat-message [type]="msg.type"
+        [message]="msg.text"
+        [reply]="msg.reply"
+        [sender]="msg.user.name"
+        [date]="msg.date"
+        [files]="msg.files"
+        [avatar]="msg.user.avatar" />
+    }
+    <nb-chat-form (send)="sendMessage(chat.messages, $event)" />
+</nb-chat>
+}

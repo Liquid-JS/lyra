@@ -1,0 +1,29 @@
+<nb-card>
+    <nb-card-body class="example-items-col">
+
+        <nb-tag-list>
+            @for (tree of trees; track tree) {
+            <nb-tag appearance="filled"
+                [text]="tree"
+                status="primary" />
+            }
+        </nb-tag-list>
+
+        <nb-tag-list>
+            @for (tree of trees; track tree) {
+            <nb-tag appearance="outline"
+                [text]="tree"
+                status="primary" />
+            }
+        </nb-tag-list>
+
+        <nb-tag-list>
+            @for (tree of trees; track tree) {
+            <nb-tag appearance="hero"
+                [text]="tree"
+                status="primary" />
+            }
+        </nb-tag-list>
+
+    </nb-card-body>
+</nb-card>

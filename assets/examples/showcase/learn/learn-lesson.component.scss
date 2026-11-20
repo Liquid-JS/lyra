@@ -1,0 +1,232 @@
+@use "../../../styles/themes" as *;
+
+:host {
+    display: block;
+    width: 100%;
+    max-width: 80rem;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem 4rem;
+    box-sizing: border-box;
+}
+
+.columns {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 20rem;
+    gap: 2rem;
+}
+
+.main {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.crumbs {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    color: nb-theme(text-hint-color);
+
+    a {
+        color: inherit;
+    }
+}
+
+.eyebrow {
+    margin: 0;
+    color: nb-theme(text-primary-color);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.title-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1rem;
+
+    h1 {
+        margin: 0.25rem 0 0;
+    }
+}
+
+.overview {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+
+    p {
+        max-width: 44rem;
+        margin: 0;
+        line-height: 1.65;
+    }
+
+    h2 {
+        margin: 0.5rem 0 0;
+    }
+}
+
+.resources {
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+
+    li {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.625rem 0;
+        border-top: 1px solid nb-theme(divider-color);
+
+        &:first-child {
+            border-top: 0;
+        }
+    }
+
+    nb-icon {
+        color: nb-theme(text-primary-color);
+    }
+
+    .name {
+        flex: 1;
+    }
+
+    .caption {
+        color: nb-theme(text-hint-color);
+    }
+}
+
+.notes {
+    display: block;
+    max-width: 44rem;
+}
+
+.transcript {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+
+    li {
+        display: flex;
+        gap: 0.75rem;
+    }
+
+    p {
+        margin: 0;
+        line-height: 1.6;
+    }
+
+    button {
+        flex: none;
+        font-variant-numeric: tabular-nums;
+    }
+
+    // The line the video is at.
+    .current p {
+        color: nb-theme(text-basic-color);
+        font-weight: 500;
+    }
+
+    li:not(.current) p {
+        color: nb-theme(text-hint-color);
+    }
+}
+
+.pager {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding-top: 1rem;
+    border-top: 1px solid nb-theme(divider-color);
+}
+
+.side nb-card {
+    position: sticky;
+    top: 5.5rem;
+    margin: 0;
+    overflow: hidden;
+
+    nb-card-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 0.5rem;
+
+        .caption {
+            color: nb-theme(text-hint-color);
+        }
+    }
+}
+
+// The list and the progress bar run to the card's edges; the bar a thin square strip under the header.
+.chapter-body {
+    padding: 0;
+
+    nb-progress-bar {
+        --progress-bar-border-radius: 0;
+        --progress-bar-tiny-height: 0.5rem;
+    }
+}
+
+.chapter-lesson {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+
+    a {
+        flex: 1;
+        color: nb-theme(text-basic-color);
+        text-decoration: none;
+
+        &:hover {
+            color: nb-theme(text-primary-color);
+        }
+    }
+
+    .caption {
+        color: nb-theme(text-hint-color);
+    }
+
+    &.current {
+        background: nb-theme(color-primary-transparent-100);
+
+        a {
+            font-weight: 600;
+        }
+    }
+
+    &.done a {
+        color: nb-theme(text-hint-color);
+    }
+
+    &.quiz a {
+        font-weight: 600;
+    }
+}
+
+.next a {
+    font-weight: 600;
+}
+
+@media (width <= 991.98px) {
+    .columns {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .side nb-card {
+        position: static;
+    }
+}
+
+@media (width <= 575.98px) {
+    :host {
+        padding-inline: 1rem;
+    }
+}

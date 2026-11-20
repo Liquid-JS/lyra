@@ -1,0 +1,158 @@
+<nav class="crumbs caption"
+    aria-label="Breadcrumb">
+    <a routerLink="../course">Design Systems that Scale</a>
+    <nb-icon icon="chevron-right-outline" />
+    <span>Chapter 1 · {{ chapter.title }}</span>
+</nav>
+
+@if (!finished()) {
+<header class="head">
+    <div>
+        <p class="caption-2 eyebrow">Chapter quiz</p>
+        <h1 class="h2">{{ chapter.title }}</h1>
+    </div>
+    <nb-tag class="timer"
+        appearance="outline"
+        [status]="remaining() < 60 ? 'danger' : 'basic'"
+        [text]="clock()"
+        role="timer"
+        aria-live="off" />
+</header>
+
+<div class="progress">
+    <nb-progress-bar size="tiny"
+        status="primary"
+        [value]="progress()"
+        aria-label="Quiz progress" />
+    <span class="caption">Question {{ index() + 1 }} of {{ questions.length }}</span>
+</div>
+
+<nb-card class="question">
+    <nb-card-body>
+        <h2 class="h4">{{ question().text }}</h2>
+        @if (multiple()) {
+        <p class="caption hint">Choose all that apply.</p>
+        <div class="options"
+            role="group"
+            aria-label="Options">
+            @for (option of question().options; track option; let i = $index) {
+            <nb-checkbox class="option"
+                [class.right]="state(i) === 'right'"
+                [class.wrong]="state(i) === 'wrong'"
+                [checked]="picked().has(i)"
+                [disabled]="revealed()"
+                (checkedChange)="toggle(i, $event)">{{ option }}</nb-checkbox>
+            }
+        </div>
+        } @else {
+        <nb-radio-group class="options"
+            name="question"
+            [value]="[...picked()][0]"
+            [disabled]="revealed()"
+            (valueChange)="pickOne($event)">
+            @for (option of question().options; track option; let i = $index) {
+            <nb-radio class="option"
+                [class.right]="state(i) === 'right'"
+                [class.wrong]="state(i) === 'wrong'"
+                [value]="i">{{ option }}</nb-radio>
+            }
+        </nb-radio-group>
+        }
+
+        @if (revealed()) {
+        <nb-card class="explanation"
+            [accent]="isCorrect() ? 'success' : 'danger'"
+            role="status">
+            <nb-card-body>
+                <p class="verdict">
+                    <nb-icon [icon]="isCorrect() ? 'checkmark-circle-2' : 'close-circle'"
+                        [status]="isCorrect() ? 'success' : 'danger'" />
+                    {{ isCorrect() ? 'Correct' : 'Not quite' }}
+                </p>
+                <p>{{ question().explanation }}</p>
+            </nb-card-body>
+        </nb-card>
+        }
+    </nb-card-body>
+    <nb-card-footer>
+        <span class="caption">{{ multiple() ? 'Several answers' : 'One answer' }}</span>
+        @if (revealed()) {
+        <button nbButton
+            status="primary"
+            type="button"
+            (click)="next()">
+            {{ index()
+            < questions.length
+                -
+                1
+                ? 'Next question'
+                : 'See results'
+                }}
+                <nb-icon
+                icon="arrow-forward-outline" />
+        </button>
+        } @else {
+        <button nbButton
+            status="primary"
+            type="button"
+            [disabled]="!picked().size"
+            (click)="check()">Check answer</button>
+        }
+    </nb-card-footer>
+</nb-card>
+} @else {
+<nb-card class="results">
+    <nb-card-body>
+        <nb-progress-bar class="score"
+            shape="ring"
+            size="giant"
+            displayValue
+            [status]="passed() ? 'success' : 'warning'"
+            [value]="score()"
+            aria-label="Score" />
+        <div class="summary">
+            <p class="caption-2 eyebrow">Chapter quiz</p>
+            <h1 class="h2">{{ passed() ? 'Chapter complete' : 'Nearly there' }}</h1>
+            <p class="lead">{{ correct() }} of {{ questions.length }} correct, with {{ clock() }} to spare.</p>
+            <nb-tag appearance="filled"
+                [status]="passed() ? 'success' : 'warning'"
+                [text]="passed() ? 'Passed' : 'Below the pass mark of 70%'" />
+        </div>
+    </nb-card-body>
+    <nb-card-footer>
+        <button nbButton
+            ghost
+            type="button"
+            (click)="retake()">
+            <nb-icon icon="refresh-outline" />
+            Retake
+        </button>
+        <a nbButton
+            status="primary"
+            routerLink="../lesson">
+            Continue to chapter 2
+            <nb-icon icon="arrow-forward-outline" />
+        </a>
+    </nb-card-footer>
+</nb-card>
+
+<section aria-labelledby="review-title">
+    <h2 id="review-title"
+        class="h4">Your answers</h2>
+    <ol class="review">
+        @for (answer of answers(); track $index; let i = $index) {
+        <li>
+            <nb-icon [icon]="answer.correct ? 'checkmark-circle-2' : 'close-circle'"
+                [status]="answer.correct ? 'success' : 'danger'" />
+            <div>
+                <p class="question-text">{{ questions[i].text }}</p>
+                <p class="caption">You picked: {{ pickedText(answer, questions[i]) }}</p>
+                @if (!answer.correct) {
+                <p class="caption right-answer">Right answer: {{ pickedText({ picked: questions[i].answers, correct: true }, questions[i]) }}</p>
+                }
+            </div>
+        </li>
+        }
+    </ol>
+</section>
+}

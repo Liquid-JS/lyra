@@ -1,0 +1,213 @@
+@use "../../../styles/themes" as *;
+
+:host {
+    display: block;
+}
+
+.hero {
+    padding: 5rem 3rem 3rem;
+
+    h1 {
+        margin: 0.5rem 0 1.5rem;
+        font-style: italic;
+        text-wrap: balance;
+    }
+}
+
+.eyebrow {
+    margin: 0;
+    color: nb-theme(text-hint-color);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.statement {
+    max-width: 34rem;
+    margin: 0;
+    font-family: nb-theme(font-family-secondary);
+    font-size: 1.5rem;
+    line-height: 1.35;
+    text-wrap: balance;
+}
+
+// Six columns the pictures fill, wide and tall ones taking more; dense, so no cell is left empty.
+.grid {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    grid-auto-rows: 14rem;
+    grid-auto-flow: dense;
+    gap: 0.75rem;
+    padding: 0 3rem;
+}
+
+.tile {
+    position: relative;
+    display: block;
+    grid-column: span 2;
+    overflow: hidden;
+    background: nb-theme(color-basic-400);
+    color: nb-theme(text-control-color);
+    text-decoration: none;
+
+    &.wide {
+        grid-column: span 4;
+    }
+
+    &.tall {
+        grid-row: span 2;
+    }
+
+    img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.8s ease;
+    }
+
+    // What the picture is, over its lower edge, as the pointer rests on it or it's focused.
+    .overlay {
+        position: absolute;
+        inset: auto 0 0;
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 0 0.75rem;
+        padding: 2.5rem 1.25rem 1rem;
+
+        // Dark enough behind the text for it to read on a light picture too.
+        background: linear-gradient(to top, rgb(0, 0, 0, 0.75), rgb(0, 0, 0, 0.45) 60%, transparent);
+        text-shadow: 0 1px 2px rgb(0, 0, 0, 0.4);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .number {
+        grid-row: span 2;
+        font-family: nb-theme(font-family-secondary);
+        font-size: 1.75rem;
+        font-style: italic;
+        line-height: 1;
+    }
+
+    .title {
+        font-size: 1rem;
+        font-weight: 500;
+    }
+
+    .client {
+        font-size: 0.8125rem;
+        opacity: 0.8;
+    }
+
+    &:hover,
+    &:focus-visible {
+        .overlay {
+            opacity: 1;
+        }
+
+        img {
+            transform: scale(1.03);
+        }
+    }
+
+    &:focus-visible {
+        outline: 2px solid nb-theme(color-primary-default);
+        outline-offset: 2px;
+    }
+}
+
+.clients {
+    padding: 5rem 3rem 2rem;
+
+    ul {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1.5rem 3rem;
+        margin: 1.5rem 0 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    npg-showcase-logo {
+        height: 1.5rem;
+        color: nb-theme(text-hint-color);
+    }
+}
+
+.closing {
+    max-width: 40rem;
+    padding: 4rem 3rem 6rem;
+
+    h2 {
+        margin: 0 0 1rem;
+        text-wrap: balance;
+    }
+
+    p {
+        margin: 0 0 2rem;
+        color: nb-theme(text-hint-color);
+        font-size: 1.0625rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .tile img,
+    .tile .overlay {
+        transition: none;
+    }
+
+    .tile:hover img,
+    .tile:focus-visible img {
+        transform: none;
+    }
+}
+
+@media (width <= 991.98px) {
+    .hero,
+    .clients,
+    .closing {
+        padding-inline: 1.25rem;
+    }
+
+    .hero {
+        padding-top: 3rem;
+    }
+
+    // Two columns: the wide pictures take both.
+    .grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-auto-rows: 11rem;
+        gap: 0.5rem;
+        padding-inline: 0.5rem;
+    }
+
+    // Each picture takes a column, the wide ones and the last both, so the grid ends even.
+    .tile {
+        grid-column: span 1;
+    }
+
+    .tile.wide,
+    .tile:last-child {
+        grid-column: span 2;
+    }
+
+    // The overlay shows without a pointer.
+    .tile .overlay {
+        opacity: 1;
+        padding: 2rem 0.875rem 0.75rem;
+    }
+
+    .tile .number {
+        font-size: 1.25rem;
+    }
+
+    .tile .title {
+        font-size: 0.875rem;
+    }
+
+    .tile .client {
+        font-size: 0.75rem;
+    }
+}

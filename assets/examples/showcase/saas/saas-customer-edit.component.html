@@ -1,0 +1,125 @@
+<nb-breadcrumbs aria-label="Breadcrumb">
+    <nb-breadcrumb><a routerLink="../../customers">Customers</a></nb-breadcrumb>
+    <nb-breadcrumb>Jane Doe</nb-breadcrumb>
+</nb-breadcrumbs>
+<h1 class="h4">Edit customer</h1>
+
+<nb-card>
+    <nb-card-body class="form">
+        <div class="photo">
+            <nb-user size="giant"
+                name="Jane Doe"
+                onlyPicture
+                [picture]="photo" />
+            <button nbButton
+                ghost
+                size="small"
+                type="button">Change photo</button>
+        </div>
+
+        <form class="fields"
+            (submit)="$event.preventDefault()">
+            <div class="field">
+                <label class="label"
+                    for="customer-name">Full name</label>
+                <input nbInput
+                    fullWidth
+                    id="customer-name"
+                    autocomplete="off"
+                    value="Jane Doe" />
+            </div>
+            <div class="field">
+                <label class="label"
+                    for="customer-company">Company</label>
+                <input nbInput
+                    fullWidth
+                    id="customer-company"
+                    autocomplete="off"
+                    value="Northwind Traders" />
+            </div>
+            <div class="field">
+                <label class="label"
+                    for="customer-email">Email</label>
+                <input nbInput
+                    fullWidth
+                    id="customer-email"
+                    type="email"
+                    autocomplete="off"
+                    value="jane.doe@example.com" />
+            </div>
+            <div class="field">
+                <label class="label"
+                    id="customer-phone">Phone</label>
+                <nb-phone-input fullWidth
+                    name="phone"
+                    aria-labelledby="customer-phone"
+                    [(ngModel)]="phone" />
+            </div>
+            <div class="field">
+                <label class="label"
+                    id="customer-country">Country</label>
+                <nb-select fullWidth
+                    aria-labelledby="customer-country"
+                    selected="gb">
+                    <nb-option value="gb">United Kingdom</nb-option>
+                    <nb-option value="us">United States</nb-option>
+                    <nb-option value="ie">Ireland</nb-option>
+                </nb-select>
+            </div>
+            <div class="field">
+                <label class="label"
+                    for="customer-city">City</label>
+                <input nbInput
+                    fullWidth
+                    id="customer-city"
+                    autocomplete="off"
+                    value="London" />
+            </div>
+            <div class="field wide">
+                <span class="label"
+                    id="customer-plan">Plan</span>
+                <nb-radio-group name="plan"
+                    value="team"
+                    class="inline"
+                    aria-labelledby="customer-plan">
+                    <nb-radio value="starter">Starter</nb-radio>
+                    <nb-radio value="team">Team</nb-radio>
+                    <nb-radio value="enterprise">Enterprise</nb-radio>
+                </nb-radio-group>
+            </div>
+            <div class="field wide">
+                <label class="label"
+                    for="customer-notes">Notes</label>
+                <textarea nbInput
+                    fullWidth
+                    id="customer-notes"
+                    rows="4"
+                    placeholder="Anything the team should know"></textarea>
+            </div>
+            <div class="field wide">
+                <span class="label">Send updates by</span>
+                <div class="inline">
+                    <nb-checkbox checked>Email</nb-checkbox>
+                    <nb-checkbox checked>Text message</nb-checkbox>
+                    <nb-checkbox>Post</nb-checkbox>
+                </div>
+            </div>
+        </form>
+    </nb-card-body>
+    <nb-card-footer class="footer">
+        <button nbButton
+            edge="start"
+            ghost
+            status="danger"
+            type="button">Delete customer</button>
+        <span class="end">
+            <a nbButton
+                ghost
+                routerLink="../../customers">Cancel</a>
+            <button nbButton
+                status="primary"
+                type="button"
+                (click)="save()">Save</button>
+        </span>
+    </nb-card-footer>
+</nb-card>

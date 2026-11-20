@@ -1,0 +1,108 @@
+<h1 class="h4">Settings</h1>
+
+<nb-card>
+    <nb-tabset>
+        <nb-tab tabTitle="Profile">
+            <div class="profile">
+                <nb-user size="giant"
+                    name="Jane Doe"
+                    title="Account manager"
+                    [picture]="photo" />
+                <div class="fields">
+                    <div class="field">
+                        <label class="label"
+                            for="settings-name">Name</label>
+                        <input nbInput
+                            fullWidth
+                            id="settings-name"
+                            autocomplete="off"
+                            value="Jane Doe" />
+                    </div>
+                    <div class="field">
+                        <label class="label"
+                            for="settings-email">Email</label>
+                        <input nbInput
+                            fullWidth
+                            id="settings-email"
+                            type="email"
+                            autocomplete="off"
+                            value="jane.doe@example.com" />
+                    </div>
+                    <div class="field">
+                        <label class="label"
+                            id="settings-language">Language</label>
+                        <nb-select fullWidth
+                            aria-labelledby="settings-language"
+                            selected="en-gb">
+                            <nb-option value="en-gb">English (UK)</nb-option>
+                            <nb-option value="en-us">English (US)</nb-option>
+                        </nb-select>
+                    </div>
+                    <div class="field">
+                        <label class="label"
+                            id="settings-zone">Time zone</label>
+                        <nb-select fullWidth
+                            aria-labelledby="settings-zone"
+                            selected="london">
+                            <nb-option value="london">London (GMT+1)</nb-option>
+                            <nb-option value="new-york">New York (GMT-4)</nb-option>
+                        </nb-select>
+                    </div>
+                </div>
+            </div>
+        </nb-tab>
+
+        <nb-tab tabTitle="Notifications">
+            <nb-list>
+                @for (item of notifications; track item.title) {
+                <nb-list-item>
+                    <span>
+                        <span class="item-title">{{ item.title }}</span>
+                        <span class="caption hint">{{ item.description }}</span>
+                    </span>
+                    <nb-toggle [checked]="item.on"
+                        [attr.aria-label]="item.title" />
+                </nb-list-item>
+                }
+            </nb-list>
+        </nb-tab>
+
+        <nb-tab tabTitle="Plan">
+            <div class="plan">
+                <div>
+                    <p class="subtitle">Team plan</p>
+                    <p class="hint">£1,200 a year, renews on 1 June 2027</p>
+                </div>
+                <div class="usage">
+                    <span class="caption">8 of 10 seats</span>
+                    <nb-progress-bar status="primary"
+                        size="tiny"
+                        [value]="80"
+                        aria-label="8 of 10 seats used" />
+                    <span class="caption">340 GB of 1 TB storage</span>
+                    <nb-progress-bar status="info"
+                        size="tiny"
+                        [value]="34"
+                        aria-label="340 GB of 1 TB used" />
+                </div>
+                <div class="buttons">
+                    <button nbButton
+                        status="primary"
+                        type="button">Upgrade</button>
+                    <button nbButton
+                        ghost
+                        type="button">See invoices</button>
+                </div>
+            </div>
+        </nb-tab>
+    </nb-tabset>
+    <nb-card-footer class="footer">
+        <a nbButton
+            ghost
+            routerLink="../dashboard">Cancel</a>
+        <button nbButton
+            status="primary"
+            type="button"
+            (click)="save()">Save changes</button>
+    </nb-card-footer>
+</nb-card>

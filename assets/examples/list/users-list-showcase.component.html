@@ -1,0 +1,10 @@
+<nb-card size="small">
+    <nb-list>
+        @for (user of users; track user) {
+        <nb-list-item>
+            <nb-user [name]="user.name"
+                [title]="user.title" />
+        </nb-list-item>
+        }
+    </nb-list>
+</nb-card>

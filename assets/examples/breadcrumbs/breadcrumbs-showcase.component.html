@@ -1,0 +1,27 @@
+<nb-card>
+    <nb-card-header>
+        <nb-breadcrumbs>
+            @for (folder of trail(); track folder.path; let last = $last) {
+            <nb-breadcrumb>
+                @if (last) {
+                {{ folder.name }}
+                } @else {
+                <a routerLink="."
+                    [queryParams]="{ path: folder.path || null }">{{ folder.name }}</a>
+                }
+            </nb-breadcrumb>
+            }
+        </nb-breadcrumbs>
+        <h6>{{ trail().at(-1)?.name }}</h6>
+    </nb-card-header>
+    <nb-list>
+        @for (name of folders(); track name) {
+        <nb-list-item>
+            <a routerLink="."
+                [queryParams]="{ path: path() ? path() + '/' + name : name }">{{ name }}</a>
+        </nb-list-item>
+        } @empty {
+        <nb-list-item class="empty">No folders</nb-list-item>
+        }
+    </nb-list>
+</nb-card>

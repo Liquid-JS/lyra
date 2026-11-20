@@ -1,0 +1,17 @@
+<nb-card>
+    <nb-list nbInfiniteList
+        listenWindowScroll
+        [threshold]="500"
+        (bottomThreshold)="loadNext()">
+        @for (newsPost of news(); track newsPost) {
+        <nb-list-item>
+            <nb-news-post [post]="newsPost" />
+        </nb-list-item>
+        }
+        @for (_ of placeholders(); track $index) {
+        <nb-list-item>
+            <nb-news-post-placeholder />
+        </nb-list-item>
+        }
+    </nb-list>
+</nb-card>

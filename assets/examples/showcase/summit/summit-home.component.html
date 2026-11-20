@@ -1,0 +1,172 @@
+<section class="hero">
+    <div class="hero-inner">
+        <p class="eyebrow">{{ summit.dates }} · {{ summit.venue }}, {{ summit.city }}</p>
+        <h1 class="display">
+            <span>Summit</span>
+            <span class="year">’{{ summit.year % 100 }}</span>
+        </h1>
+        <p class="lead">{{ summit.tagline }} Two days of talks and workshops for the people who decide what gets built, and
+            the people who build it.</p>
+        <div class="buttons">
+            <a nbButton
+                status="control"
+                size="large"
+                routerLink="../tickets">Get tickets</a>
+            <a nbButton
+                appearance="outline"
+                status="basic"
+                size="large"
+                class="see-agenda"
+                routerLink="../agenda">See the agenda <nb-icon icon="arrow-forward-outline" /></a>
+        </div>
+    </div>
+    <div class="ticker"
+        aria-hidden="true">
+        <div class="ticker-track">
+            @for (word of ticker; track $index) {
+            <span>{{ word }}</span>
+            }
+            @for (word of ticker; track $index) {
+            <span>{{ word }}</span>
+            }
+        </div>
+    </div>
+</section>
+
+<section class="photo">
+    <img src="assets/showcase/summit/stage.webp"
+        alt="A speaker on the main stage, in front of a full hall"
+        width="1600"
+        height="900" />
+    <npg-showcase-grain [opacity]="0.25"
+        blend="overlay" />
+    <p class="photo-caption">Last year’s opening keynote. 1,400 people in the room; 9,000 watched the recording.</p>
+</section>
+
+<section class="stats"
+    aria-label="The conference in numbers">
+    @for (stat of stats; track stat.label) {
+    <div class="stat">
+        <span class="stat-value">{{ stat.value }}</span>
+        <span class="stat-label">{{ stat.label }}</span>
+    </div>
+    }
+</section>
+
+<section class="section">
+    <header class="section-header">
+        <h2>Speakers</h2>
+        <a routerLink="../speakers"
+            class="more">All 48 speakers <nb-icon icon="arrow-forward-outline" /></a>
+    </header>
+    <div class="speakers">
+        @for (speaker of featured; track speaker.id) {
+        <a class="speaker"
+            routerLink="../speakers">
+            <nb-user size="giant"
+                [name]="speaker.name"
+                [title]="speaker.role + ', ' + speaker.company"
+                [picture]="portrait(speaker.name)" />
+            <nb-tag-list>
+                @for (topic of speaker.topics; track topic) {
+                <nb-tag appearance="outline"
+                    size="tiny"
+                    [text]="topic" />
+                }
+            </nb-tag-list>
+        </a>
+        }
+    </div>
+</section>
+
+<section class="section band">
+    <header class="section-header">
+        <h2>Worth coming for</h2>
+        <a routerLink="../agenda"
+            class="more">Full agenda <nb-icon icon="arrow-forward-outline" /></a>
+    </header>
+    <div class="highlights">
+        @for (item of highlights; track item.session.id) {
+        <nb-card class="highlight">
+            <nb-card-body>
+                <div class="highlight-meta">
+                    @if (item.session.track !== 'break') {
+                    <nb-tag size="tiny"
+                        [status]="tracks[item.session.track].status"
+                        [text]="tracks[item.session.track].label" />
+                    }
+                    <span class="caption">{{ item.day.label }} · {{ item.session.start }}</span>
+                </div>
+                <h3>{{ item.session.title }}</h3>
+                <p>{{ item.session.summary }}</p>
+                @if (speakerById(item.session.speakers[0]); as speaker) {
+                <nb-user size="small"
+                    [name]="speaker.name"
+                    [title]="speaker.company"
+                    [picture]="portrait(speaker.name)" />
+                }
+            </nb-card-body>
+        </nb-card>
+        }
+    </div>
+</section>
+
+<section class="section sponsors"
+    aria-label="Sponsors">
+    <p class="hint">Made possible by</p>
+    <ul>
+        @for (sponsor of sponsors; track sponsor) {
+        <li><npg-showcase-logo colour="mono"
+                [name]="sponsor"
+                [label]="sponsor" /></li>
+        }
+    </ul>
+</section>
+
+<section class="section venue">
+    <div class="venue-text">
+        <h2>The venue</h2>
+        <p class="lead">{{ summit.venue }} sits on the river, ten minutes’ walk from downtown. One main stage, two rooms,
+            a workshop space and a terrace for lunch.</p>
+        <address>
+            <nb-icon icon="pin-outline" />
+            <span>{{ summit.address }}</span>
+        </address>
+        <h3>Where to stay</h3>
+        <ul class="hotels">
+            @for (hotel of hotels; track hotel.name) {
+            <li>
+                <span class="hotel-name">{{ hotel.name }}</span>
+                <span class="hint">{{ hotel.distance }} · {{ hotel.rate }} with code <code>{{ hotel.code }}</code></span>
+            </li>
+            }
+        </ul>
+    </div>
+    <figure class="venue-photo">
+        <img src="assets/showcase/summit/austin.webp"
+            alt="The Austin skyline across the river at dusk"
+            width="1200"
+            height="700" />
+    </figure>
+</section>
+
+<section class="section faq">
+    <h2>Questions</h2>
+    <nb-accordion>
+        @for (item of faq; track item.question) {
+        <nb-accordion-item>
+            <nb-accordion-item-header>{{ item.question }}</nb-accordion-item-header>
+            <nb-accordion-item-body>{{ item.answer }}</nb-accordion-item-body>
+        </nb-accordion-item>
+        }
+    </nb-accordion>
+</section>
+
+<section class="closing">
+    <h2 class="display">See you in Austin.</h2>
+    <p class="lead">Standard tickets are on sale until 31 March. Teams of five or more pay less.</p>
+    <a nbButton
+        status="control"
+        size="giant"
+        routerLink="../tickets">Get tickets</a>
+</section>

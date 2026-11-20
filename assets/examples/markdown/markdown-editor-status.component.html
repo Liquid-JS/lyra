@@ -1,0 +1,26 @@
+<nb-card>
+    <nb-card-body>
+        <label nbLabel
+            [for]="descriptionValidation">Description</label>
+        <nb-markdown-editor [formControl]="description"
+            nbValidation
+            #descriptionValidation="nbValidation"
+            height="auto"
+            placeholder="Describe the change" />
+        <nb-validation-errors [for]="descriptionValidation" />
+
+        <label id="notes-label"
+            class="label">Release notes</label>
+        <nb-markdown-editor [formControl]="notes"
+            readonly
+            height="auto"
+            aria-labelledby="notes-label" />
+
+        <label id="comment-label"
+            class="label">Comment</label>
+        <nb-markdown-editor [formControl]="comment"
+            mode="wysiwyg"
+            height="auto"
+            aria-labelledby="comment-label" />
+    </nb-card-body>
+</nb-card>

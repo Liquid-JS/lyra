@@ -1,0 +1,270 @@
+@use "../../../styles/themes" as *;
+
+:host {
+    display: block;
+    max-width: 72rem;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 3rem;
+
+    @media (width <= 767.98px) {
+        padding: 1.25rem 1rem 2rem;
+    }
+}
+
+.intro {
+    max-width: 44rem;
+    margin-bottom: 1.5rem;
+
+    h1 {
+        margin: 0 0 0.5rem;
+    }
+
+    .lead {
+        margin: 0 0 1.5rem;
+        color: nb-theme(text-hint-color);
+        font-size: 1.125rem;
+    }
+}
+
+// Where, when and who in one row, each as wide as it needs; a column on a phone.
+.search {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1.2fr) minmax(0, 0.8fr) auto;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border: 1px solid nb-theme(border-basic-color-4);
+    border-radius: calc(#{nb-theme(border-radius)} * 1.5);
+    background: nb-theme(background-basic-color-1);
+    box-shadow: 0 1rem 2rem -1.5rem rgb(43, 37, 31, 0.3);
+
+    @media (width <= 767.98px) {
+        grid-template-columns: 1fr;
+    }
+}
+
+.chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.5rem;
+    margin-bottom: 1.5rem;
+
+    nb-tag-list {
+        flex-wrap: wrap;
+    }
+}
+
+.results {
+    display: grid;
+    grid-template-columns: 16rem minmax(0, 1fr);
+    gap: 2rem;
+    align-items: start;
+
+    @media (width <= 991.98px) {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+// The filters stay in view beside the results; on a phone they open from a button.
+.filters-column {
+    position: sticky;
+    top: 5.5rem;
+
+    @media (width <= 991.98px) {
+        display: none;
+    }
+}
+
+.filters-button {
+    display: none;
+
+    @media (width <= 991.98px) {
+        display: inline-flex;
+    }
+}
+
+.filters-card {
+    margin: 0;
+
+    nb-card-body {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .label {
+        margin: 0.75rem 0 0;
+    }
+
+    .show-results {
+        margin-top: 1rem;
+    }
+}
+
+.filters-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    h2 {
+        margin: 0;
+    }
+}
+
+.checks {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.results-heading {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+
+    .count {
+        margin: 0;
+        color: nb-theme(text-hint-color);
+    }
+}
+
+.results-tools {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+    gap: 1.5rem;
+}
+
+.listing {
+    position: relative;
+    margin: 0;
+    overflow: visible;
+
+    // The photo keeps the card's corners; the badge sits past them.
+    .photo {
+        position: relative;
+        aspect-ratio: 4 / 3;
+        overflow: hidden;
+        border-start-start-radius: nb-theme(card-border-radius);
+        border-start-end-radius: nb-theme(card-border-radius);
+
+        img {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.4s ease;
+        }
+
+        @media (prefers-reduced-motion: no-preference) {
+            &:hover img {
+                transform: scale(1.04);
+            }
+        }
+    }
+
+    .save {
+        position: absolute;
+        inset-block-start: 0.5rem;
+        inset-inline-end: 0.5rem;
+        border-radius: 50%;
+        background: rgb(255, 255, 255, 0.85);
+        color: nb-theme(color-danger-default);
+
+        &:hover,
+        &:focus-visible {
+            background: nb-theme(background-basic-color-1);
+        }
+    }
+
+    nb-card-body {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+
+        p {
+            margin: 0;
+        }
+    }
+
+    .title-row {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 0.5rem;
+    }
+
+    .name {
+        font-family: nb-theme(text-heading-1-font-family);
+        font-size: 1.125rem;
+        font-weight: 500;
+        text-decoration: none;
+
+        &:hover,
+        &:focus-visible {
+            text-decoration: underline;
+        }
+    }
+
+    .place,
+    .facts {
+        color: nb-theme(text-hint-color);
+        font-size: 0.875rem;
+    }
+
+    nb-card-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .price {
+        margin: 0;
+        color: nb-theme(text-hint-color);
+
+        strong {
+            color: nb-theme(text-basic-color);
+            font-size: 1.125rem;
+        }
+    }
+}
+
+.empty {
+    margin: 0;
+    text-align: center;
+
+    nb-card-body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+        padding-block: 3rem;
+    }
+
+    nb-icon {
+        color: nb-theme(text-hint-color);
+        font-size: 2.5rem;
+    }
+
+    h2,
+    p {
+        margin: 0;
+    }
+
+    p {
+        color: nb-theme(text-hint-color);
+    }
+}
+
+nb-pagination {
+    display: flex;
+    justify-content: center;
+    margin-top: 2rem;
+}

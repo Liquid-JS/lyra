@@ -1,0 +1,35 @@
+<nb-card>
+    <nb-card-body [formGroup]="form">
+        <div class="field">
+            <label class="label"
+                for="validation-new-password">New password</label>
+            <input nbInput
+                fullWidth
+                id="validation-new-password"
+                type="password"
+                formControlName="password"
+                nbValidation
+                nbValidationTrigger="dirty"
+                nbValidationSuccess
+                #password="nbValidation" />
+            <nb-validation-errors [for]="password" />
+        </div>
+
+        <div class="field">
+            <label class="label"
+                for="validation-confirm-password">Repeat the password</label>
+            <input nbInput
+                fullWidth
+                id="validation-confirm-password"
+                type="password"
+                formControlName="confirm"
+                nbValidation
+                nbValidationSuccess
+                [nbValidationGroupErrors]="['mismatch']"
+                #confirm="nbValidation" />
+            <nb-validation-errors [for]="confirm">
+                <ng-template nbValidationError="mismatch">The passwords don't match</ng-template>
+            </nb-validation-errors>
+        </div>
+    </nb-card-body>
+</nb-card>

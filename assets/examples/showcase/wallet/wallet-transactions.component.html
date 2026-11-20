@@ -1,0 +1,189 @@
+<header class="page-header">
+    <div>
+        <h1 class="h4">Transactions</h1>
+        <p class="hint">
+            In June: <span class="in">+{{ moneyIn | currency: 'USD' : 'symbol' : '1.0-0' }}</span> in,
+            {{ moneyOut | currency: 'USD' : 'symbol' : '1.0-0' }} out
+        </p>
+    </div>
+    <button nbButton
+        appearance="outline"
+        type="button"
+        (click)="export()">
+        <nb-icon icon="download-outline" />
+        Export
+    </button>
+</header>
+
+<nb-card>
+    <nb-card-header class="filters">
+        <nb-form-field class="search">
+            <nb-icon nbPrefix
+                icon="search-outline" />
+            <input nbInput
+                fullWidth
+                type="search"
+                placeholder="Search merchants"
+                aria-label="Search merchants"
+                [ngModel]="source.filters()['search'] ?? ''"
+                (ngModelChange)="source.setFilter('search', $event)" />
+        </nb-form-field>
+        <nb-select placeholder="All categories"
+            aria-label="Category"
+            [selected]="source.filters()['category'] ?? ''"
+            (selectedChange)="source.setFilter('category', $event)">
+            <nb-option value="">All categories</nb-option>
+            @for (category of categories; track category.id) {
+            <nb-option [value]="category.id">{{ category.name }}</nb-option>
+            }
+        </nb-select>
+        <nb-select placeholder="All accounts"
+            aria-label="Account"
+            [selected]="source.filters()['account'] ?? ''"
+            (selectedChange)="source.setFilter('account', $event)">
+            <nb-option value="">All accounts</nb-option>
+            @for (account of accounts; track account.id) {
+            <nb-option [value]="account.id">{{ account.name }}</nb-option>
+            }
+        </nb-select>
+        <nb-form-field class="date">
+            <nb-icon nbPrefix
+                icon="calendar-outline" />
+            <input nbInput
+                fullWidth
+                placeholder="From"
+                aria-label="From date"
+                [nbDatepicker]="fromPicker"
+                [ngModel]="source.filters()['from'] ?? null"
+                (ngModelChange)="source.setFilter('from', $event)" />
+            <nb-datepicker #fromPicker />
+        </nb-form-field>
+        <nb-form-field class="date">
+            <nb-icon nbPrefix
+                icon="calendar-outline" />
+            <input nbInput
+                fullWidth
+                placeholder="To"
+                aria-label="To date"
+                [nbDatepicker]="toPicker"
+                [ngModel]="source.filters()['to'] ?? null"
+                (ngModelChange)="source.setFilter('to', $event)" />
+            <nb-datepicker #toPicker />
+        </nb-form-field>
+    </nb-card-header>
+
+    <!-- A wrapper of its own, so the card still finds its footer in either state. -->
+    <div class="rows">
+        @if (source.total() > 0) {
+        <div class="table">
+            <table nbTable
+                [dataSource]="source"
+                [nbSort]="source">
+                <ng-container nbColumnDef="date">
+                    <th nbHeaderCell
+                        nbSortHeader
+                        *nbHeaderCellDef>Date</th>
+                    <td nbCell
+                        class="date-cell"
+                        *nbCellDef="let transaction; of: source">
+                        <span>{{ transaction.date | date: 'd MMM' }}</span>
+                        <span class="caption hint">{{ transaction.date | date: 'h:mm a' }}</span>
+                    </td>
+                </ng-container>
+                <ng-container nbColumnDef="merchant">
+                    <th nbHeaderCell
+                        nbSortHeader
+                        *nbHeaderCellDef>Merchant</th>
+                    <td nbCell
+                        *nbCellDef="let transaction; of: source">
+                        <span class="merchant">
+                            <span class="initial"
+                                aria-hidden="true">{{ transaction.merchant[0] }}</span>
+                            <span class="merchant-name">
+                                {{ transaction.merchant }}
+                                @if (transaction.pending) {
+                                <nb-tag appearance="outline"
+                                    size="tiny"
+                                    status="basic"
+                                    text="Pending" />
+                                }
+                            </span>
+                        </span>
+                    </td>
+                </ng-container>
+                <ng-container nbColumnDef="category">
+                    <th nbHeaderCell
+                        nbSortHeader
+                        *nbHeaderCellDef>Category</th>
+                    <td nbCell
+                        *nbCellDef="let transaction; of: source">
+                        @let category = categoryOf(transaction.category);
+                        <nb-tag appearance="filled"
+                            size="tiny"
+                            [status]="category.status"
+                            [text]="category.name" />
+                    </td>
+                </ng-container>
+                <ng-container nbColumnDef="account">
+                    <th nbHeaderCell
+                        nbSortHeader
+                        *nbHeaderCellDef>Account</th>
+                    <td nbCell
+                        *nbCellDef="let transaction; of: source">
+                        <span class="account">{{ accountOf(transaction.account).name }}</span>
+                        <span class="caption hint">••••&nbsp;{{ accountOf(transaction.account).number }}</span>
+                    </td>
+                </ng-container>
+                <ng-container nbColumnDef="amount">
+                    <th nbHeaderCell
+                        nbSortHeader
+                        class="number"
+                        *nbHeaderCellDef>Amount</th>
+                    <td nbCell
+                        class="number amount"
+                        [class.credit]="transaction.amount > 0"
+                        *nbCellDef="let transaction; of: source">
+                        {{ transaction.amount > 0 ? '+' : '' }}{{ transaction.amount | currency: 'USD' : 'symbol' : '1.2-2' }}
+                    </td>
+                </ng-container>
+                <ng-container nbColumnDef="actions">
+                    <th nbHeaderCell
+                        *nbHeaderCellDef><span class="visually-hidden">Actions</span></th>
+                    <td nbCell
+                        class="actions"
+                        *nbCellDef="let transaction; of: source">
+                        <button nbButton
+                            ghost
+                            size="small"
+                            type="button"
+                            [attr.aria-label]="'More for ' + transaction.merchant"
+                            [nbContextMenu]="actions">
+                            <nb-icon icon="more-horizontal-outline" />
+                        </button>
+                    </td>
+                </ng-container>
+
+                <tr nbHeaderRow
+                    *nbHeaderRowDef="columns()"></tr>
+                <tr nbRow
+                    *nbRowDef="let transaction; of: source; columns: columns()"></tr>
+            </table>
+        </div>
+        } @else {
+        <div class="empty">
+            <nb-icon icon="search-outline" />
+            <p class="subtitle">Nothing matches these filters</p>
+            <p class="hint">Try another word, a wider date range, or all categories.</p>
+            <button nbButton
+                appearance="outline"
+                size="small"
+                type="button"
+                (click)="clear()">Clear filters</button>
+        </div>
+        }
+    </div>
+    <nb-card-footer [style.display]="source.total() > 0 ? null : 'none'">
+        <span class="caption">{{ source.total() }} transactions</span>
+        <nb-pagination [for]="source" />
+    </nb-card-footer>
+</nb-card>

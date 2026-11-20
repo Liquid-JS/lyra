@@ -1,0 +1,144 @@
+<header class="page-header">
+    <div>
+        <h1 class="h4">Documents</h1>
+        <p class="hint">Company files, by team</p>
+    </div>
+    <a nbButton
+        status="primary"
+        routerLink="new">
+        <nb-icon icon="plus-outline" />
+        New document
+    </a>
+</header>
+
+<section class="recent"
+    aria-labelledby="recent">
+    <h2 class="subtitle section-title"
+        id="recent">Recent</h2>
+    <div class="recent-files">
+        @for (file of recent(); track file.id) {
+        <nb-card class="recent-file">
+            <nb-card-body>
+                <nb-icon class="file-icon"
+                    [icon]="icons[file.kind]" />
+                <span class="file-name">{{ file.name }}</span>
+                <span class="caption hint">{{ file.modified | date: 'd MMM' }} · {{ file.owner }}</span>
+            </nb-card-body>
+        </nb-card>
+        }
+    </div>
+</section>
+
+<div class="grid">
+    <nb-card class="folders">
+        <nb-card-header>Folders</nb-card-header>
+        <nb-card-body>
+            <table [nbTreeGrid]="folders">
+                <tr nbTreeGridRow
+                    *nbTreeGridRowDef="let row; columns: folderColumns"
+                    [class.open]="row.data.name === folder()"
+                    (click)="open(row.data)"></tr>
+                <ng-container nbTreeGridColumnDef="name">
+                    <td nbTreeGridCell
+                        *nbTreeGridCellDef="let row">
+                        <nb-tree-grid-row-toggle [expanded]="row.expanded"
+                            [style.visibility]="row.hasChildren() ? null : 'hidden'" />
+                        <nb-icon class="folder-icon"
+                            [icon]="row.data.icon ?? 'folder-outline'" />
+                        {{ row.data.name }}
+                    </td>
+                </ng-container>
+            </table>
+        </nb-card-body>
+    </nb-card>
+
+    <nb-card class="listing">
+        <nb-card-header class="listing-header">
+            <span>{{ folder() }} <span class="caption hint">{{ files().length }} files</span></span>
+            <button nbButton
+                edge="end"
+                ghost
+                inline
+                size="small"
+                type="button">
+                <nb-icon icon="share-outline" />
+                Share folder
+            </button>
+        </nb-card-header>
+        <nb-card-body class="drop">
+            <nb-file-drop fullWidth
+                multiple
+                size="small"
+                prompt="Drop files here to add them to this folder"
+                aria-label="Upload files"
+                [formControl]="uploads" />
+        </nb-card-body>
+        <div class="table">
+            <table nbTable
+                [dataSource]="source"
+                [nbSort]="source">
+                <ng-container nbColumnDef="name">
+                    <th nbHeaderCell
+                        nbSortHeader
+                        *nbHeaderCellDef>Name</th>
+                    <td nbCell
+                        *nbCellDef="let file; of: source">
+                        <span class="file">
+                            <nb-icon class="file-icon"
+                                [icon]="icons[file.kind]" />
+                            {{ file.name }}
+                        </span>
+                    </td>
+                </ng-container>
+                <ng-container nbColumnDef="owner">
+                    <th nbHeaderCell
+                        nbSortHeader
+                        *nbHeaderCellDef>Owner</th>
+                    <td nbCell
+                        *nbCellDef="let file; of: source">
+                        <nb-user size="tiny"
+                            [name]="file.owner"
+                            [picture]="photoOf(file.owner)" />
+                    </td>
+                </ng-container>
+                <ng-container nbColumnDef="modified">
+                    <th nbHeaderCell
+                        nbSortHeader
+                        *nbHeaderCellDef>Modified</th>
+                    <td nbCell
+                        *nbCellDef="let file; of: source">{{ file.modified | date: 'd MMM, HH:mm' }}</td>
+                </ng-container>
+                <ng-container nbColumnDef="size">
+                    <th nbHeaderCell
+                        nbSortHeader
+                        class="number"
+                        *nbHeaderCellDef>Size</th>
+                    <td nbCell
+                        class="number"
+                        *nbCellDef="let file; of: source">{{ size(file.size) }}</td>
+                </ng-container>
+                <ng-container nbColumnDef="actions">
+                    <th nbHeaderCell
+                        *nbHeaderCellDef><span class="visually-hidden">Actions</span></th>
+                    <td nbCell
+                        class="actions"
+                        *nbCellDef="let file; of: source">
+                        <button nbButton
+                            ghost
+                            size="small"
+                            type="button"
+                            [attr.aria-label]="'Actions for ' + file.name"
+                            [nbContextMenu]="actions">
+                            <nb-icon icon="more-horizontal-outline" />
+                        </button>
+                    </td>
+                </ng-container>
+
+                <tr nbHeaderRow
+                    *nbHeaderRowDef="columns"></tr>
+                <tr nbRow
+                    *nbRowDef="let file; of: source; columns: columns"></tr>
+            </table>
+        </div>
+    </nb-card>
+</div>

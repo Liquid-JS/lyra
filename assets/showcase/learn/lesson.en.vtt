@@ -1,0 +1,46 @@
+WEBVTT
+
+00:00.500 --> 00:05.143
+In this lesson we'll write the page for a component from scratch,
+
+00:05.443 --> 00:11.657
+and talk about why the order of the sections matters more than the sections themselves.
+
+01:12.500 --> 01:15.571
+Most teams start with the properties table,
+
+01:15.871 --> 01:19.371
+because that is what the code gives you for free.
+
+01:19.671 --> 01:22.886
+But nobody opens the docs to learn the props;
+
+01:23.186 --> 01:27.686
+they open them to find out whether this is the right component.
+
+03:40.500 --> 03:43.786
+So the first section is usage: what it is for,
+
+03:44.086 --> 03:47.014
+what it is not for, and the alternatives.
+
+03:47.314 --> 03:50.243
+Two real examples beat ten abstract ones.
+
+06:05.500 --> 06:08.000
+Next, the anatomy.
+
+06:08.300 --> 06:10.800
+Name every part.
+
+06:11.100 --> 06:14.600
+The names end up in the code, in the design file,
+
+06:14.900 --> 06:18.757
+and in conversations, so pick them once and keep them.
+
+08:50.500 --> 08:53.929
+And then the properties, with every state shown.
+
+08:54.229 --> 08:58.157
+A state without an example is a state nobody will test.

@@ -1,0 +1,18 @@
+<nb-card>
+    <nb-card-body>
+        <nb-qr-code #code
+            data="https://github.com/Liquid-JS/lyra"
+            aria-label="Lyra on GitHub"
+            [options]="options" />
+    </nb-card-body>
+    <nb-card-footer>
+        <nb-card-actions>
+            <button nbButton
+                size="small"
+                (click)="code.download({ name: 'lyra', extension: 'svg' })">Download SVG</button>
+            <button nbButton
+                size="small"
+                (click)="code.download({ name: 'lyra', extension: 'png' })">Download PNG</button>
+        </nb-card-actions>
+    </nb-card-footer>
+</nb-card>

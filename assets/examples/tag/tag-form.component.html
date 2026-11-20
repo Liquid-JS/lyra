@@ -1,0 +1,18 @@
+<nb-card>
+    <nb-card-body>
+        <label class="label"
+            for="tag-form-recipients">Recipients</label>
+        <nb-tag-list [formControl]="recipients"
+            [tagValidator]="isEmail"
+            nbValidation
+            #validation="nbValidation">
+            <input nbTagInput
+                id="tag-form-recipients"
+                fullWidth
+                placeholder="Type or paste email addresses"
+                [separatorKeys]="separators" />
+        </nb-tag-list>
+        <nb-validation-errors [for]="validation" />
+        <p class="caption">Value: {{ recipients.value | json }}</p>
+    </nb-card-body>
+</nb-card>

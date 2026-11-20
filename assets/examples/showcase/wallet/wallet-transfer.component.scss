@@ -1,0 +1,222 @@
+@use "../../../styles/themes" as *;
+
+:host {
+    display: block;
+    font-variant-numeric: tabular-nums;
+}
+
+.page-header {
+    margin-bottom: 1.5rem;
+
+    h1,
+    p {
+        margin: 0;
+    }
+}
+
+.hint {
+    color: nb-theme(text-hint-color);
+}
+
+nb-card {
+    margin: 0;
+}
+
+.layout {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+    gap: 1.5rem;
+    align-items: start;
+
+    @media (width <= 991.98px) {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 1rem;
+    }
+}
+
+.aside {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+
+    p {
+        margin: 0;
+    }
+}
+
+.label {
+    display: block;
+    margin: 0 0 0.375rem;
+}
+
+nb-select {
+    margin-bottom: 1.25rem;
+}
+
+// Each destination is a row of the list, with the radio in front of it.
+.destinations {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+
+    ::ng-deep nb-radio label {
+        width: 100%;
+        padding: 0.5rem;
+        border-radius: nb-theme(border-radius);
+    }
+
+    ::ng-deep nb-radio label:hover {
+        background: nb-theme(color-basic-transparent-100);
+    }
+}
+
+.destination {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+
+    // The picture keeps its size beside a long name.
+    nb-user {
+        flex: none;
+    }
+}
+
+.destination-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.destination-name {
+    font-weight: 600;
+}
+
+// An icon on a tinted square, in a status's colour, as big as the people's pictures beside it.
+.tile {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: calc(#{nb-theme(border-radius)} * 0.5);
+    font-size: 1.125rem;
+
+    @each $status in primary, success, info, warning, danger {
+        &.status-#{$status} {
+            background: nb-theme(color-#{$status}-transparent-200);
+            color: nb-theme(color-#{$status}-default);
+        }
+    }
+}
+
+// The amount as big as the balance it comes from.
+.amount-field {
+    font-family: nb-theme(text-heading-1-font-family);
+    font-size: 1.75rem;
+    font-weight: 600;
+
+    ::ng-deep input {
+        font: inherit;
+        font-size: 1.75rem;
+        height: auto;
+        padding-block: 0.5rem;
+    }
+}
+
+.currency {
+    padding-inline-start: 0.75rem;
+    color: nb-theme(text-hint-color);
+}
+
+.quick {
+    margin-top: 0.75rem;
+}
+
+.warning {
+    margin-top: 0.75rem;
+}
+
+.fields {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    margin-top: 1.25rem;
+
+    @media (width <= 575.98px) {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.step-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    margin-top: 1.5rem;
+
+    &.centred {
+        justify-content: center;
+    }
+}
+
+.review {
+    margin-bottom: 0;
+
+    p {
+        margin: 0;
+    }
+}
+
+.review-amount {
+    margin-bottom: 1rem !important;
+    font-family: nb-theme(text-heading-1-font-family);
+    font-size: 2.25rem;
+    font-weight: 600;
+    line-height: 1.1;
+}
+
+.review-list,
+.limits {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 0.5rem 1.5rem;
+    margin: 0;
+
+    dt {
+        color: nb-theme(text-hint-color);
+    }
+
+    dd {
+        margin: 0;
+        font-weight: 500;
+    }
+}
+
+.done {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem 0 1rem;
+    text-align: center;
+
+    p {
+        margin: 0;
+    }
+}
+
+.done-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 4rem;
+    height: 4rem;
+    margin-bottom: 1rem;
+    border-radius: 50%;
+    background: nb-theme(color-success-transparent-200);
+    color: nb-theme(color-success-default);
+    font-size: 2rem;
+
+    // Its icon at the size above, which an icon doesn't take from what holds it.
+    nb-icon {
+        font-size: inherit;
+    }
+}

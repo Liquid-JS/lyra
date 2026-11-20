@@ -1,0 +1,9 @@
+@use "../../styles/themes" as *;
+
+h6 {
+    margin: 0;
+}
+
+.empty {
+    color: nb-theme(text-hint-color);
+}

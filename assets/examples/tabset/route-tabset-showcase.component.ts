@@ -1,0 +1,36 @@
+import { Component } from '@angular/core'
+import { NbRouteTab, NbCardComponent, NbCardBodyComponent, NbRouteTabsetComponent } from '@liquid-js/lyr-core'
+
+@Component({
+    templateUrl: './route-tabset-showcase.component.html',
+    imports: [NbCardComponent, NbCardBodyComponent, NbRouteTabsetComponent]
+})
+export class RouteTabsetShowcaseComponent {
+    tabs: NbRouteTab[] = [
+        {
+            title: 'Users',
+            icon: 'person',
+            route: './tab1'
+        },
+        {
+            title: 'Orders',
+            icon: 'paper-plane-outline',
+            responsive: true,
+            route: ['./tab2']
+        },
+        {
+            title: 'Query params',
+            icon: 'flash-outline',
+            responsive: true,
+            disabled: false,
+            route: './tab3',
+            queryParams: { param1: 123456, param2: 'test' }
+        },
+        {
+            title: 'Transaction',
+            icon: 'flash-outline',
+            responsive: true,
+            disabled: true
+        }
+    ]
+}

@@ -1,0 +1,153 @@
+@use "../../../styles/themes" as *;
+
+// The page's sections set their own width and spacing, so a band, e.g. the stats, reaches the window's edges.
+nb-layout {
+    --layout-padding: 0;
+    --layout-medium-padding: 0;
+    --layout-small-padding: 0;
+}
+
+nb-layout-header ::ng-deep nav {
+    gap: 2rem;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: nb-theme(text-basic-color);
+    font-family: nb-theme(text-heading-1-font-family);
+    font-size: 1.25rem;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.logo {
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: nb-theme(border-radius);
+    background: linear-gradient(135deg, nb-theme(color-primary-default) 50%, nb-theme(color-info-default) 50%);
+}
+
+.sections {
+    display: flex;
+    gap: 1.5rem;
+
+    a {
+        color: nb-theme(text-hint-color);
+        font-weight: 600;
+        text-decoration: none;
+
+        &:hover,
+        &.active {
+            color: nb-theme(text-basic-color);
+        }
+    }
+}
+
+.actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-inline-start: auto;
+}
+
+.menu {
+    display: none;
+}
+
+// Phones: the sections and sign-in move to a menu.
+@media (width <= 767.98px) {
+    .sections,
+    .sign-in {
+        display: none;
+    }
+
+    .menu {
+        display: inline-flex;
+    }
+}
+
+.page {
+    padding: 0;
+}
+
+.footer {
+    display: grid;
+    grid-template-columns: 2fr repeat(3, 1fr);
+    gap: 2rem;
+    width: 100%;
+    max-width: 72rem;
+    margin: 0 auto;
+    padding: 1rem 0;
+
+    @media (width <= 767.98px) {
+        grid-template-columns: repeat(2, 1fr);
+
+        .about {
+            grid-column: 1 / -1;
+        }
+    }
+
+    p {
+        color: nb-theme(text-hint-color);
+    }
+
+    ul {
+        margin: 0.75rem 0 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    li {
+        margin-bottom: 0.5rem;
+    }
+
+    a {
+        color: nb-theme(text-hint-color);
+        text-decoration: none;
+
+        &:hover {
+            color: nb-theme(text-basic-color);
+        }
+    }
+}
+
+nb-layout-footer ::ng-deep nav {
+    flex-direction: column;
+}
+
+.footer h2 {
+    margin: 0;
+}
+
+.newsletter {
+    display: flex;
+    flex-direction: column;
+
+    // The label's margin is the only space above the field.
+    .label {
+        margin-bottom: 0.5rem;
+    }
+}
+
+.newsletter-done {
+    margin: 0;
+}
+
+.newsletter-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+
+    input {
+        flex: 1 1 12rem;
+    }
+}
+
+.copyright {
+    max-width: 72rem;
+    margin: 1rem auto 0;
+    color: nb-theme(text-hint-color);
+    font-size: 0.875rem;
+    text-align: center;
+}

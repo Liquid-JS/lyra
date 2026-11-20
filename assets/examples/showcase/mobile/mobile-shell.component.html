@@ -1,0 +1,40 @@
+<nb-layout>
+    <nb-layout-header fixed>
+        @if (screen().back) {
+        <a nbButton
+            edge="start"
+            ghost
+            class="back"
+            routerLink="customers"
+            aria-label="Back to customers">
+            <nb-icon icon="arrow-back-outline" />
+        </a>
+        }
+        <h1 class="title">{{ screen().title }}</h1>
+        <button nbButton
+            edge="end"
+            ghost
+            class="action"
+            type="button"
+            aria-label="Notifications">
+            <nb-icon icon="bell-outline" />
+        </button>
+    </nb-layout-header>
+
+    <nb-layout-column class="screen">
+        <router-outlet />
+    </nb-layout-column>
+</nb-layout>
+
+<nav class="tabs"
+    aria-label="Sections">
+    @for (tab of tabs; track tab.path) {
+    <a [routerLink]="tab.path"
+        routerLinkActive="active"
+        #link="routerLinkActive"
+        [attr.aria-current]="link.isActive ? 'page' : null">
+        <nb-icon [icon]="tab.icon" />
+        <span>{{ tab.title }}</span>
+    </a>
+    }
+</nav>

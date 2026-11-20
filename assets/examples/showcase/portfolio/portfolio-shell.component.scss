@@ -1,0 +1,191 @@
+@use "../../../styles/themes" as *;
+
+// The pages set their own margins, so a picture can reach the window's edge.
+nb-layout {
+    --layout-padding: 0;
+    --layout-medium-padding: 0;
+    --layout-small-padding: 0;
+}
+
+.column {
+    padding: 0;
+}
+
+// The rail and the page side by side, under the grain.
+.ground {
+    position: relative;
+    display: grid;
+    grid-template-columns: 16rem minmax(0, 1fr);
+    min-height: 100vh;
+    background: nb-theme(layout-background-color);
+    color: nb-theme(text-basic-color);
+}
+
+.rail {
+    position: sticky;
+    top: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    box-sizing: border-box;
+    height: 100vh;
+    padding: 2.5rem 2rem;
+    border-inline-end: 1px solid nb-theme(divider-color);
+}
+
+.name {
+    color: inherit;
+    font-family: nb-theme(font-family-secondary);
+    font-size: 1.5rem;
+    font-style: italic;
+    font-weight: 400;
+    line-height: 1.1;
+    text-decoration: none;
+}
+
+.role {
+    margin-top: -1rem;
+    color: nb-theme(text-hint-color);
+    font-size: 0.8125rem;
+    line-height: 1.4;
+}
+
+nav {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 1rem;
+
+    a {
+        position: relative;
+        width: fit-content;
+        color: inherit;
+        font-size: 1.0625rem;
+        text-decoration: none;
+
+        // A line that draws itself under the page shown, and under the pointer.
+        &:after {
+            content: "";
+            position: absolute;
+            inset-inline: 0;
+            bottom: -0.125rem;
+            height: 1px;
+            background: currentcolor;
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.3s ease;
+        }
+
+        &:hover:after,
+        &:focus-visible:after,
+        &.active:after {
+            transform: scaleX(1);
+        }
+
+        &.active {
+            color: nb-theme(text-primary-color);
+        }
+    }
+}
+
+.availability {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: auto 0 0;
+    color: nb-theme(text-hint-color);
+    font-size: 0.8125rem;
+}
+
+.dot {
+    flex: none;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: nb-theme(color-success-default);
+}
+
+.socials {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 1rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: 0.8125rem;
+
+    a {
+        color: nb-theme(text-hint-color);
+        text-decoration: none;
+
+        &:hover,
+        &:focus-visible {
+            color: nb-theme(text-basic-color);
+            text-decoration: underline;
+        }
+    }
+}
+
+.copyright {
+    color: nb-theme(text-hint-color);
+    font-size: 0.75rem;
+}
+
+.page {
+    position: relative;
+    min-width: 0;
+}
+
+// The grain lies over everything, out of the way of the pointer.
+npg-showcase-grain {
+    z-index: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    nav a:after {
+        transition: none;
+    }
+}
+
+// Phones and tablets: the rail is a bar across the top, with the name and the pages.
+@media (width <= 991.98px) {
+    // The bar takes its height, and the page the rest.
+    .ground {
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-rows: auto 1fr;
+    }
+
+    .rail {
+        position: sticky;
+        z-index: 2;
+        flex-direction: row;
+        align-items: center;
+        gap: 1.5rem;
+        height: auto;
+        padding: 1rem 1.25rem;
+        border-inline-end: 0;
+        border-bottom: 1px solid nb-theme(divider-color);
+        background: nb-theme(layout-background-color);
+    }
+
+    .name {
+        font-size: 1.25rem;
+    }
+
+    nav {
+        flex-direction: row;
+        gap: 1rem;
+        margin: 0 0 0 auto;
+
+        a {
+            font-size: 0.9375rem;
+        }
+    }
+
+    .role,
+    .availability,
+    .socials,
+    .copyright {
+        display: none;
+    }
+}

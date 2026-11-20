@@ -1,0 +1,35 @@
+<nb-card class="account">
+    <nb-user size="large"
+        [picture]="avatar"
+        name="Jane Doe"
+        title="jane.doe@example.com" />
+</nb-card>
+
+@for (group of groups; track group.title) {
+<nb-card>
+    <nb-card-header>{{ group.title }}</nb-card-header>
+    <nb-list>
+        @for (item of group.items; track item.title) {
+        <nb-list-item>
+            <span class="tile"
+                [class]="'tile status-' + item.status"><nb-icon [icon]="item.icon" /></span>
+            @if (item.toggle) {
+            <nb-toggle labelPosition="start"
+                class="setting"
+                [checked]="item.on">{{ item.title }}</nb-toggle>
+            } @else {
+            <a class="setting"
+                routerLink="."
+                [class.danger]="item.status === 'danger'">
+                <span>{{ item.title }}</span>
+                @if (item.value) {
+                <span class="value">{{ item.value }}</span>
+                }
+                <nb-icon icon="chevron-right-outline" />
+            </a>
+            }
+        </nb-list-item>
+        }
+    </nb-list>
+</nb-card>
+}

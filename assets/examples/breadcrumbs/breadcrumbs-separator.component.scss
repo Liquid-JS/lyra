@@ -1,0 +1,6 @@
+@use "../../styles/themes" as *;
+
+// Icons aren't mirrored, so point the arrow the way the text reads.
+:host nb-icon {
+    @include nb-rtl(transform, scaleX(-1));
+}

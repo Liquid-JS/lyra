@@ -1,0 +1,198 @@
+<div class="page-header">
+    <div>
+        <h1 class="h5">Events</h1>
+        <p class="hint">Every delivery of the last 30 days, with each attempt.</p>
+    </div>
+    <div class="tools">
+        <nb-form-field>
+            <nb-icon nbPrefix
+                icon="search-outline" />
+            <input nbInput
+                fieldSize="small"
+                type="search"
+                placeholder="Filter by type"
+                aria-label="Filter by type"
+                (input)="search($any($event.target).value)" />
+        </nb-form-field>
+        <nb-select size="small"
+            placeholder="Any status"
+            aria-label="Status"
+            (selectedChange)="filterStatus($event)">
+            <nb-option value="">Any status</nb-option>
+            @for (item of statuses; track item) {
+            <nb-option [value]="item">{{ item }}</nb-option>
+            }
+        </nb-select>
+        <nb-form-field class="range">
+            <nb-icon nbPrefix
+                icon="calendar-outline" />
+            <input nbInput
+                fieldSize="small"
+                placeholder="Last 30 days"
+                aria-label="Date range"
+                [nbDatepicker]="range" />
+        </nb-form-field>
+        <nb-rangepicker #range />
+    </div>
+</div>
+
+<div class="layout">
+    <nb-card class="log">
+        <div class="table">
+            <table nbTable
+                [dataSource]="source">
+                <ng-container nbColumnDef="status">
+                    <th nbHeaderCell
+                        *nbHeaderCellDef>Status</th>
+                    <td nbCell
+                        *nbCellDef="let event; of: source">
+                        <nb-tag appearance="outline"
+                            size="tiny"
+                            [status]="status[event.status]"
+                            [text]="event.status" />
+                    </td>
+                </ng-container>
+                <ng-container nbColumnDef="id">
+                    <th nbHeaderCell
+                        *nbHeaderCellDef>Event</th>
+                    <td nbCell
+                        *nbCellDef="let event; of: source"
+                        class="mono">{{ event.id }}</td>
+                </ng-container>
+                <ng-container nbColumnDef="type">
+                    <th nbHeaderCell
+                        *nbHeaderCellDef>Type</th>
+                    <td nbCell
+                        *nbCellDef="let event; of: source"
+                        class="type">{{ event.type }}</td>
+                </ng-container>
+                <ng-container nbColumnDef="endpoint">
+                    <th nbHeaderCell
+                        *nbHeaderCellDef>Endpoint</th>
+                    <td nbCell
+                        *nbCellDef="let event; of: source"
+                        class="mono">{{ event.endpoint }}</td>
+                </ng-container>
+                <ng-container nbColumnDef="attempts">
+                    <th nbHeaderCell
+                        *nbHeaderCellDef
+                        class="number">Attempts</th>
+                    <td nbCell
+                        *nbCellDef="let event; of: source"
+                        class="number mono">{{ event.attempts.length }}</td>
+                </ng-container>
+                <ng-container nbColumnDef="latency">
+                    <th nbHeaderCell
+                        *nbHeaderCellDef
+                        class="number">Latency</th>
+                    <td nbCell
+                        *nbCellDef="let event; of: source"
+                        class="number mono">
+                        @if (event.latency) {
+                        {{ event.latency | number: '1.0-0' }} ms
+                        } @else {
+                        —
+                        }
+                    </td>
+                </ng-container>
+                <ng-container nbColumnDef="at">
+                    <th nbHeaderCell
+                        *nbHeaderCellDef>Time</th>
+                    <td nbCell
+                        *nbCellDef="let event; of: source"
+                        class="mono">{{ event.at | date: 'd MMM HH:mm:ss' }}</td>
+                </ng-container>
+                <tr nbHeaderRow
+                    *nbHeaderRowDef="columns"></tr>
+                <tr nbRow
+                    *nbRowDef="let event; columns: columns"
+                    tabindex="0"
+                    role="button"
+                    [class.selected]="selected()?.id === event.id"
+                    [attr.aria-pressed]="selected()?.id === event.id"
+                    (click)="open(event)"
+                    (keydown.enter)="open(event)"
+                    (keydown.space)="open(event); $event.preventDefault()"></tr>
+            </table>
+        </div>
+        <nb-card-footer>
+            <span class="hint">{{ source.total() }} events</span>
+            <nb-pagination size="small"
+                [for]="source" />
+        </nb-card-footer>
+    </nb-card>
+
+    @if (selected(); as event) {
+    <nb-card class="detail">
+        <nb-card-header>
+            <span class="detail-title">
+                <span class="mono">{{ event.id }}</span>
+                <nb-tag appearance="outline"
+                    size="tiny"
+                    [status]="status[event.status]"
+                    [text]="event.status" />
+            </span>
+            <button nbButton
+                ghost
+                size="tiny"
+                type="button"
+                aria-label="Close the event"
+                (click)="selected.set(undefined)">
+                <nb-icon icon="close-outline" />
+            </button>
+        </nb-card-header>
+        <nb-card-body>
+            <dl class="facts">
+                <div>
+                    <dt>Type</dt>
+                    <dd>{{ event.type }}</dd>
+                </div>
+                <div>
+                    <dt>Endpoint</dt>
+                    <dd class="mono">{{ event.endpoint }}</dd>
+                </div>
+                <div>
+                    <dt>Created</dt>
+                    <dd class="mono">{{ event.at | date: 'd MMM y, HH:mm:ss' }}</dd>
+                </div>
+            </dl>
+
+            <h2 class="label">Attempts</h2>
+            <nb-list class="attempts">
+                @for (attempt of event.attempts; track $index; let i = $index) {
+                <nb-list-item>
+                    <span class="mono">#{{ i + 1 }} · +{{ attempt.at }}</span>
+                    <span class="mono"
+                        [class.ok]="attempt.status < 300"
+                        [class.bad]="attempt.status >= 400">{{ attempt.status }}</span>
+                    <span class="mono">{{ attempt.latency | number: '1.0-0' }} ms</span>
+                </nb-list-item>
+                }
+            </nb-list>
+
+            <h2 class="label">Payload</h2>
+            <pre class="code"><code>{{ event.payload }}</code></pre>
+
+            <h2 class="label">Last response</h2>
+            <pre class="code"><code>{{ event.response }}</code></pre>
+        </nb-card-body>
+        <nb-card-footer>
+            <button nbButton
+                outline
+                size="small"
+                type="button">
+                <nb-icon icon="copy-outline" />
+                Copy as curl
+            </button>
+            <button nbButton
+                status="primary"
+                size="small"
+                type="button"
+                (click)="retry(event)">
+                <nb-icon icon="refresh-outline" />
+                Retry now
+            </button>
+        </nb-card-footer>
+    </nb-card>
+    }
+</div>

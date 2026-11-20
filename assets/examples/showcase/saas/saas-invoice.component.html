@@ -1,0 +1,90 @@
+<div class="page-header">
+    <h1 class="h4">Invoice INV-0731</h1>
+    <div class="tools">
+        <button nbButton
+            ghost
+            type="button">
+            <nb-icon icon="printer-outline" />
+            Print
+        </button>
+        <button nbButton
+            status="primary"
+            type="button">
+            <nb-icon icon="paper-plane-outline" />
+            Send
+        </button>
+    </div>
+</div>
+
+<nb-card>
+    <nb-card-body class="document">
+        <header class="top">
+            <span class="brand"><span class="logo"
+                    aria-hidden="true"></span> Acme</span>
+            <nb-tag status="warning"
+                appearance="outline"
+                text="Due in 14 days" />
+        </header>
+
+        <div class="parties">
+            <section>
+                <h2 class="label">From</h2>
+                <p>Acme Ltd<br>1 Example Street<br>London EC1A 1AA<br>United Kingdom</p>
+                <p class="hint">billing&#64;example.com</p>
+            </section>
+            <section>
+                <h2 class="label">Bill to</h2>
+                <npg-showcase-logo class="customer-logo"
+                    name="northwind"
+                    colour="mono"
+                    label="Northwind Traders" />
+                <p>Northwind Traders<br>Jane Doe<br>20 Sample Road<br>Leeds LS1 4AP</p>
+                <p class="hint">jane.doe&#64;example.com</p>
+            </section>
+            <section>
+                <h2 class="label">Issued</h2>
+                <p>{{ date | date: 'd MMMM y' }}</p>
+                <h2 class="label">Number</h2>
+                <p>INV-0731</p>
+            </section>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th scope="col">Description</th>
+                    <th scope="col"
+                        class="number">Quantity</th>
+                    <th scope="col"
+                        class="number">Price</th>
+                    <th scope="col"
+                        class="number">Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (line of lines; track line.description) {
+                <tr>
+                    <td>{{ line.description }}</td>
+                    <td class="number">{{ line.quantity }}</td>
+                    <td class="number">{{ line.price | currency: 'GBP' }}</td>
+                    <td class="number">{{ line.quantity * line.price | currency: 'GBP' }}</td>
+                </tr>
+                }
+            </tbody>
+        </table>
+
+        <dl class="totals">
+            <dt>Subtotal</dt>
+            <dd>{{ subtotal | currency: 'GBP' }}</dd>
+            <dt>VAT (20%)</dt>
+            <dd>{{ tax | currency: 'GBP' }}</dd>
+            <dt class="total">Total</dt>
+            <dd class="total">{{ subtotal + tax | currency: 'GBP' }}</dd>
+        </dl>
+
+        <footer>
+            <h2 class="label">Notes</h2>
+            <p>Thank you for your business. Please pay within 14 days by bank transfer to the account on file.</p>
+        </footer>
+    </nb-card-body>
+</nb-card>

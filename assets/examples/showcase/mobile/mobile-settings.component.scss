@@ -1,0 +1,53 @@
+@use "../../../styles/themes" as *;
+
+.account {
+    padding: 1.25rem;
+}
+
+nb-list-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.setting {
+    flex: 1;
+}
+
+// A row that opens a page: the label, its value, and a chevron.
+a.setting {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: nb-theme(text-basic-color);
+    text-decoration: none;
+
+    span:first-child {
+        flex: 1;
+    }
+
+    &.danger {
+        color: nb-theme(text-danger-color);
+    }
+
+    nb-icon {
+        color: nb-theme(text-hint-color);
+    }
+}
+
+.value {
+    color: nb-theme(text-hint-color);
+}
+
+nb-toggle.setting ::ng-deep {
+    label {
+        justify-content: space-between;
+        width: 100%;
+    }
+
+    // Reads like the other rows.
+    .text {
+        color: nb-theme(text-basic-color);
+        font: inherit;
+    }
+}

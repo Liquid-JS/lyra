@@ -1,0 +1,45 @@
+<nb-card>
+    <table nbTable
+        [dataSource]="source">
+        <nb-select-column />
+        <ng-container nbColumnDef="name">
+            <th nbHeaderCell
+                *nbHeaderCellDef>Name</th>
+            <td nbCell
+                *nbCellDef="let user; of: source">{{ user.name }}</td>
+        </ng-container>
+        <ng-container nbColumnDef="role">
+            <th nbHeaderCell
+                *nbHeaderCellDef>Role</th>
+            <td nbCell
+                *nbCellDef="let user; of: source">{{ user.role }}</td>
+        </ng-container>
+        <ng-container nbColumnDef="details">
+            <th nbHeaderCell
+                *nbHeaderCellDef><span class="visually-hidden">Details</span></th>
+            <td nbCell
+                *nbCellDef="let user; of: source">
+                <button nbButton
+                    ghost
+                    size="small"
+                    [nbExpandRow]="user"
+                    [attr.aria-label]="'Details of ' + user.name">
+                    <nb-icon [icon]="source.isExpanded(user) ? 'chevron-up-outline' : 'chevron-down-outline'" />
+                </button>
+            </td>
+        </ng-container>
+
+        <tr nbHeaderRow
+            *nbHeaderRowDef="columns"></tr>
+        <tr nbRow
+            *nbRowDef="let user; of: source; columns: columns"></tr>
+        <tr nbDetailRow
+            *nbDetailRowDef="let user; of: source">
+            {{ user.email }}, in {{ user.city }} since {{ user.joined.getFullYear() }}
+        </tr>
+    </table>
+    <nb-card-footer>
+        <span class="caption">{{ source.selection().length }} selected</span>
+        <nb-pagination [for]="source" />
+    </nb-card-footer>
+</nb-card>

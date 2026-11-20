@@ -1,0 +1,22 @@
+<nb-chat size="small">
+    <ng-template nbChatTitle
+        [context]="{ text: 'some text to pass into template' }"
+        let-data>
+        <div>Chat title content from template. Here is the text provided via context: "{{ data.text }}"</div>
+    </ng-template>
+
+    @for (msg of messages; track msg) {
+    <nb-chat-message [type]="msg.type"
+        [message]="msg.text"
+        [reply]="msg.reply"
+        [sender]="msg.user.name"
+        [date]="msg.date"
+        [files]="msg.files"
+        [quote]="msg.quote"
+        [latitude]="msg.latitude"
+        [longitude]="msg.longitude"
+        [avatar]="msg.user.avatar" />
+    }
+    <nb-chat-form (send)="sendMessage($event)"
+        dropFiles />
+</nb-chat>

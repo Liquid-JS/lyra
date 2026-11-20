@@ -1,0 +1,23 @@
+<nb-card>
+    <nb-card-body class="example-items-rows">
+        <nb-select multiple
+            chips
+            searchable
+            placeholder="Toppings"
+            [formControl]="all">
+            <nb-option selectAll>Select all</nb-option>
+            @for (topping of toppings; track topping) {
+            <nb-option [value]="topping">{{ topping }}</nb-option>
+            }
+        </nb-select>
+        <nb-select multiple
+            chips
+            placeholder="Up to 3 toppings"
+            [maxSelections]="3"
+            [formControl]="limited">
+            @for (topping of toppings; track topping) {
+            <nb-option [value]="topping">{{ topping }}</nb-option>
+            }
+        </nb-select>
+    </nb-card-body>
+</nb-card>

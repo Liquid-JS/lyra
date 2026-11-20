@@ -1,0 +1,159 @@
+@use "../../../styles/themes" as *;
+
+:host {
+    display: block;
+}
+
+.confirmed {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 40rem;
+    margin: 0 auto;
+    padding: 3rem 1.5rem 4rem;
+    box-sizing: border-box;
+    text-align: center;
+}
+
+// A big tick on a soft disc of its colour.
+.mark {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 6rem;
+    height: 6rem;
+    margin-bottom: 1.5rem;
+    border-radius: 50%;
+    background: nb-theme(color-success-transparent-200);
+    color: nb-theme(color-success-default);
+    font-size: 3.5rem;
+
+    @media (prefers-reduced-motion: no-preference) {
+        animation: pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    // Its icon at the size above, which an icon doesn't take from what holds it.
+    nb-icon {
+        font-size: inherit;
+    }
+}
+
+@keyframes pop {
+    from {
+        transform: scale(0.6);
+        opacity: 0;
+    }
+}
+
+h1 {
+    margin: 0 0 0.5rem;
+    letter-spacing: -0.02em;
+}
+
+.lead {
+    max-width: 30rem;
+    margin: 0 0 2rem;
+    color: nb-theme(text-hint-color);
+    font-size: 1.125rem;
+}
+
+.hint {
+    color: nb-theme(text-hint-color);
+}
+
+.details {
+    width: 100%;
+    margin: 0;
+    text-align: start;
+}
+
+.summary {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 2rem;
+    align-items: center;
+}
+
+dl {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin: 0;
+
+    div {
+        display: flex;
+        flex-direction: column;
+        gap: 0.125rem;
+    }
+
+    dt {
+        color: nb-theme(text-hint-color);
+        font-size: 0.8125rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+    }
+
+    dd {
+        margin: 0;
+        font-weight: 600;
+    }
+
+    code {
+        font-size: 1rem;
+    }
+}
+
+.code {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8125rem;
+
+    nb-qr-code {
+        width: 8.5rem;
+        padding: 0.5rem;
+        border-radius: 1rem;
+        background: #ffffff;
+    }
+}
+
+.actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid nb-theme(divider-color);
+}
+
+.policy {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    max-width: 32rem;
+    margin: 1.5rem 0 0;
+    font-size: 0.875rem;
+    text-align: start;
+
+    nb-icon {
+        flex: none;
+        font-size: 1.25rem;
+    }
+}
+
+@media (width <= 575.98px) {
+    .confirmed {
+        padding: 2rem 1rem 3rem;
+    }
+
+    .summary {
+        grid-template-columns: minmax(0, 1fr);
+        justify-items: start;
+    }
+
+    .code {
+        align-self: center;
+    }
+}

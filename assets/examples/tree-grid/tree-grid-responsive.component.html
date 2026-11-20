@@ -1,0 +1,48 @@
+<nb-card>
+    <nb-card-body>
+        <table [nbTreeGrid]="data"
+            equalColumnsWidth>
+            <tr nbTreeGridHeaderRow
+                *nbTreeGridHeaderRowDef="allColumns"></tr>
+            <tr nbTreeGridRow
+                *nbTreeGridRowDef="let row; columns: allColumns"></tr>
+
+            <ng-container nbTreeGridColumnDef="name">
+                <th nbTreeGridHeaderCell
+                    *nbTreeGridHeaderCellDef>name</th>
+                <td nbTreeGridCell
+                    *nbTreeGridCellDef="let row">
+                    @if (row.data.kind === 'dir') {
+                    <nb-tree-grid-row-toggle [expanded]="row.expanded" />
+                    }
+
+                    {{ row.data.name }}
+                </td>
+            </ng-container>
+
+            <ng-container nbTreeGridColumnDef="size"
+                [hideOn]="600">
+                <th nbTreeGridHeaderCell
+                    *nbTreeGridHeaderCellDef>size</th>
+                <td nbTreeGridCell
+                    *nbTreeGridCellDef="let row">{{ row.data.size }}</td>
+            </ng-container>
+
+            <ng-container nbTreeGridColumnDef="kind"
+                [hideOn]="1000">
+                <th nbTreeGridHeaderCell
+                    *nbTreeGridHeaderCellDef>kind</th>
+                <td nbTreeGridCell
+                    *nbTreeGridCellDef="let row">{{ row.data.kind }}</td>
+            </ng-container>
+
+            <ng-container nbTreeGridColumnDef="items"
+                [showOn]="1200">
+                <th nbTreeGridHeaderCell
+                    *nbTreeGridHeaderCellDef>items</th>
+                <td nbTreeGridCell
+                    *nbTreeGridCellDef="let row">{{ row.data.items || '-' }}</td>
+            </ng-container>
+        </table>
+    </nb-card-body>
+</nb-card>

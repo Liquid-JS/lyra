@@ -1,0 +1,13 @@
+<div class="example-items-rows">
+    <button nbButton
+        (click)="leave()">Leave page</button>
+    @for (invoice of invoices(); track invoice) {
+    <button nbButton
+        outline
+        status="danger"
+        (click)="delete(invoice)">Delete {{ invoice }}</button>
+    }
+</div>
+@for (entry of log(); track $index) {
+<p>{{ entry }}</p>
+}

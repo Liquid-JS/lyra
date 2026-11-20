@@ -1,0 +1,29 @@
+<router-outlet />
+<nb-layout>
+    <nb-layout-column>
+        <nb-card>
+            <nb-card-body>
+                <h2>You are authenticated</h2>
+                <p>You can call the secured API</p>
+                <button nbButton
+                    status="primary"
+                    (click)="loadWines()">Call API</button>
+                <button nbButton
+                    status="primary"
+                    (click)="logout()">Sign out</button>
+            </nb-card-body>
+        </nb-card>
+        @if (wines().length) {
+        <nb-card>
+            <nb-card-header> Alain'wines </nb-card-header>
+            <nb-list>
+                @for (wine of wines(); track wine) {
+                <nb-list-item>
+                    {{ wine.region }}, {{ wine.name }} ({{ wine.year }})
+                </nb-list-item>
+                }
+            </nb-list>
+        </nb-card>
+        }
+    </nb-layout-column>
+</nb-layout>

@@ -1,0 +1,75 @@
+@use "../../../styles/themes" as *;
+
+// The pages set their own width and spacing, so the home page's bands reach the window's edges.
+nb-layout {
+    --layout-padding: 0;
+    --layout-medium-padding: 0;
+    --layout-small-padding: 0;
+}
+
+nb-layout-header ::ng-deep nav {
+    gap: 2rem;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    color: nb-theme(text-basic-color);
+    font-family: nb-theme(text-heading-1-font-family);
+    font-size: 1.375rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    text-decoration: none;
+}
+
+// A still circle: the theme's primary, with a lighter ring.
+.logo {
+    width: 1.5rem;
+    height: 1.5rem;
+    border: 0.3125rem solid nb-theme(color-primary-200);
+    border-radius: 50%;
+    background: nb-theme(color-primary-default);
+    box-sizing: border-box;
+}
+
+.sections {
+    display: flex;
+    gap: 1.5rem;
+
+    a {
+        color: nb-theme(text-hint-color);
+        font-weight: 700;
+        text-decoration: none;
+
+        &:hover,
+        &.active {
+            color: nb-theme(text-basic-color);
+        }
+    }
+}
+
+.actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-inline-start: auto;
+}
+
+.menu {
+    display: none;
+}
+
+// Phones: the sections move to a menu.
+@media (width <= 767.98px) {
+    .sections {
+        display: none;
+    }
+
+    .menu {
+        display: inline-flex;
+    }
+}
+
+.page {
+    padding: 0;
+}

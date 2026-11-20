@@ -1,0 +1,221 @@
+@use "../../../styles/themes" as *;
+@use "relay-page" as *;
+
+// The site's sections set their own width, so bands reach the window's edges.
+.site {
+    --layout-padding: 0;
+    --layout-medium-padding: 0;
+    --layout-small-padding: 0;
+}
+
+nb-layout-header ::ng-deep nav {
+    gap: 1.5rem;
+}
+
+.brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.625rem;
+    color: nb-theme(text-basic-color);
+    font-size: 1.125rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    text-decoration: none;
+}
+
+// The mark: an amber square with a notch, the signal passed on.
+.mark {
+    width: 1.25rem;
+    height: 1.25rem;
+    border-radius: 0.3rem;
+    background:
+        linear-gradient(135deg, transparent 0 45%, nb-theme(background-basic-color-3) 45% 55%, transparent 55%),
+        nb-theme(color-primary-default);
+}
+
+.pages {
+    display: flex;
+    gap: 1.5rem;
+
+    a {
+        color: nb-theme(text-hint-color);
+        font-size: 0.9375rem;
+        font-weight: 500;
+        text-decoration: none;
+
+        &:hover,
+        &.active {
+            color: nb-theme(text-basic-color);
+        }
+    }
+}
+
+.actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-inline-start: auto;
+}
+
+.menu {
+    display: none;
+}
+
+@media (width <= 767.98px) {
+    .pages,
+    .sign-in {
+        display: none;
+    }
+
+    .menu {
+        display: inline-flex;
+    }
+}
+
+// The site's footer: the product and its link columns, on a hairline.
+nb-layout-footer {
+    --footer-padding: 0;
+
+    ::ng-deep nav {
+        display: block;
+        padding: 0;
+    }
+}
+
+.footer {
+    display: grid;
+    grid-template-columns: 2fr repeat(3, 1fr);
+    gap: 2rem;
+    width: 100%;
+    max-width: 72rem;
+    margin: 0 auto;
+    padding: 3rem 1.5rem 2rem;
+    box-sizing: border-box;
+
+    @media (width <= 767.98px) {
+        grid-template-columns: 1fr 1fr;
+        padding: 2.5rem 1rem 1.5rem;
+    }
+
+    .about {
+        grid-column: 1;
+        max-width: 20rem;
+
+        @media (width <= 767.98px) {
+            grid-column: 1 / -1;
+        }
+
+        p {
+            margin: 0.75rem 0 0;
+            color: nb-theme(text-hint-color);
+        }
+    }
+
+    .label {
+        margin: 0 0 0.75rem;
+        color: nb-theme(text-basic-color);
+        font-size: 0.8125rem;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+    }
+
+    ul {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    li + li {
+        margin-top: 0.5rem;
+    }
+
+    li a {
+        color: nb-theme(text-hint-color);
+        text-decoration: none;
+
+        &:hover {
+            color: nb-theme(text-basic-color);
+        }
+    }
+}
+
+.status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+}
+
+.dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: nb-theme(color-success-default);
+    box-shadow: 0 0 0 0.25rem nb-theme(color-success-transparent-300);
+}
+
+.copyright {
+    max-width: 72rem;
+    margin: 0 auto;
+    padding: 1.25rem 1.5rem 2rem;
+    border-top: 1px solid nb-theme(divider-color);
+    color: nb-theme(text-hint-color);
+    font-size: 0.8125rem;
+
+    @media (width <= 767.98px) {
+        padding: 1rem 1rem 1.5rem;
+    }
+}
+
+// The console's header: the project and environment beside the brand, search in the middle, the account at the end.
+.header-start {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+}
+
+.divider {
+    width: 1px;
+    height: 1.25rem;
+    background: nb-theme(divider-color);
+}
+
+.project {
+    font-weight: 500;
+}
+
+// As wide as its longest value, not the select's usual minimum.
+.environment ::ng-deep .select-button {
+    min-width: 0;
+}
+
+.search {
+    flex: 1;
+    max-width: 24rem;
+    margin-inline-start: 1.5rem;
+
+    @media (width <= 991.98px) {
+        display: none;
+    }
+}
+
+nb-actions {
+    margin-inline-start: auto;
+}
+
+nb-user {
+    @media (width <= 767.98px) {
+        ::ng-deep .info-container {
+            display: none;
+        }
+    }
+}
+
+// Phones keep the alerts and the account.
+@media (width <= 575.98px) {
+    .project,
+    .divider,
+    .docs-action {
+        display: none;
+    }
+}

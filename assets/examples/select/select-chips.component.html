@@ -1,0 +1,13 @@
+<nb-card>
+    <nb-card-body>
+        <nb-select multiple
+            chips
+            fullWidth
+            placeholder="Allergens"
+            [formControl]="selected">
+            @for (allergen of allergens; track allergen) {
+            <nb-option [value]="allergen">{{ allergen }}</nb-option>
+            }
+        </nb-select>
+    </nb-card-body>
+</nb-card>

@@ -1,0 +1,11 @@
+.logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+
+    img {
+        max-height: 6rem;
+        max-width: 100%;
+    }
+}

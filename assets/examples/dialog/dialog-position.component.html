@@ -1,0 +1,32 @@
+<div class="example-items-rows">
+    <button nbButton
+        (click)="open(dialog, 'top')">Top</button>
+    <button nbButton
+        (click)="open(dialog, 'bottom-end')">Bottom end</button>
+    <button nbButton
+        status="primary"
+        (click)="openNotice(notice)">Cookie notice</button>
+</div>
+
+<ng-template #dialog
+    let-ref="dialogRef">
+    <nb-card>
+        <nb-card-body>Placed at the edge of the viewport.</nb-card-body>
+        <nb-card-footer>
+            <button nbButton
+                (click)="ref.close()">Close</button>
+        </nb-card-footer>
+    </nb-card>
+</ng-template>
+
+<ng-template #notice
+    let-ref="dialogRef">
+    <nb-card>
+        <nb-card-body>This site uses cookies to remember your preferences.</nb-card-body>
+        <nb-card-footer>
+            <button nbButton
+                status="primary"
+                (click)="ref.close()">Accept</button>
+        </nb-card-footer>
+    </nb-card>
+</ng-template>

@@ -1,0 +1,127 @@
+// What the sign-in pages share: the brand, a title, and a form, in a card or plain on a column of its own.
+@use "../../../styles/themes" as *;
+
+@mixin auth-page {
+    :host {
+        display: block;
+        width: 100%;
+        max-width: 28rem;
+    }
+
+    nb-card {
+        margin: 0;
+    }
+
+    nb-card-body,
+    .plain {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    nb-card-body {
+        padding: 2.5rem;
+
+        @media (width <= 575.98px) {
+            padding: 1.5rem;
+        }
+    }
+
+    // On a column of its own, as in the split frame, the page reads from the start.
+    .plain {
+        .brand {
+            justify-content: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        header {
+            text-align: start;
+        }
+
+        .footer {
+            text-align: start;
+        }
+    }
+
+    .brand {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        color: nb-theme(text-basic-color);
+        font-family: nb-theme(text-heading-1-font-family);
+        font-size: 1.25rem;
+        font-weight: 700;
+        text-decoration: none;
+    }
+
+    .logo {
+        width: 1.75rem;
+        height: 1.75rem;
+        border-radius: nb-theme(border-radius);
+        background: linear-gradient(135deg, nb-theme(color-primary-default) 50%, nb-theme(color-info-default) 50%);
+    }
+
+    header {
+        text-align: center;
+
+        h1 {
+            margin: 0 0 0.25rem;
+        }
+
+        p {
+            margin: 0;
+            color: nb-theme(text-hint-color);
+        }
+    }
+
+    form {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    // The label's margin is the only space above the field, as a label's own margin in a page would be.
+    .field {
+        display: flex;
+        flex-direction: column;
+
+        .label {
+            margin-bottom: 0.5rem;
+        }
+    }
+
+    .label-row {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+    }
+
+    .providers {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.75rem;
+    }
+
+    // A line either side of the text.
+    .divider {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        color: nb-theme(text-hint-color);
+        font-size: 0.875rem;
+
+        &:before,
+        &:after {
+            content: "";
+            flex: 1;
+            border-top: 1px solid nb-theme(divider-color);
+        }
+    }
+
+    .footer {
+        margin: 0;
+        text-align: center;
+        color: nb-theme(text-hint-color);
+    }
+}

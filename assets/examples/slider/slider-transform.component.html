@@ -1,0 +1,44 @@
+<nb-card>
+    <nb-card-body class="fields">
+        <div>
+            <label nbLabel
+                [for]="priceField">Price (log)</label>
+            <nb-slider range
+                [min]="0"
+                [max]="10000"
+                [step]="10"
+                transform="log"
+                [formatValue]="formatPrice"
+                [formControl]="price"
+                nbValidation
+                #priceField="nbValidation" />
+            <p class="value caption">{{ formatPrice(price.value?.start ?? 0) }} to {{ formatPrice(price.value?.end ?? 0) }}</p>
+        </div>
+
+        <div>
+            <label nbLabel
+                [for]="seatsField">Licence seats (sqrt, open end)</label>
+            <nb-slider [min]="1"
+                [step]="1"
+                transform="sqrt"
+                [formControl]="seats"
+                nbValidation
+                #seatsField="nbValidation" />
+            <p class="value caption">{{ seats.value }} seats</p>
+        </div>
+
+        <div>
+            <label nbLabel
+                [for]="storageField">Storage (custom)</label>
+            <nb-slider [min]="0"
+                [max]="4096"
+                [step]="16"
+                [transform]="cubeRoot"
+                [formatValue]="formatStorage"
+                [formControl]="storage"
+                nbValidation
+                #storageField="nbValidation" />
+            <p class="value caption">{{ formatStorage(storage.value ?? 0) }}</p>
+        </div>
+    </nb-card-body>
+</nb-card>

@@ -1,0 +1,196 @@
+<header class="page-header">
+    <div>
+        <h1 class="h4">Requests</h1>
+        <p class="hint">Time off, rooms, equipment and expenses</p>
+    </div>
+</header>
+
+<div class="grid">
+    <nb-card class="new">
+        <nb-card-header>New request</nb-card-header>
+        <nb-card-body>
+            <nb-stepper #stepper
+                linear>
+                <nb-step label="Type"
+                    [completed]="!!kind()">
+                    <nb-radio-group class="kinds"
+                        name="kind"
+                        [ngModel]="kind()"
+                        (ngModelChange)="kind.set($event)">
+                        @for (item of kinds; track item.value) {
+                        <nb-radio class="kind"
+                            [value]="item.value">
+                            <span class="kind-body">
+                                <nb-icon class="kind-icon"
+                                    [icon]="item.icon" />
+                                <span>
+                                    <span class="kind-title">{{ item.title }}</span>
+                                    <span class="caption hint">{{ item.text }}</span>
+                                </span>
+                            </span>
+                        </nb-radio>
+                        }
+                    </nb-radio-group>
+                    <div class="step-actions">
+                        <button nbButton
+                            status="primary"
+                            type="button"
+                            nbStepperNext>Next</button>
+                    </div>
+                </nb-step>
+
+                <nb-step label="Dates"
+                    [completed]="days() > 0">
+                    <div class="field">
+                        <label class="label"
+                            for="request-dates">Dates</label>
+                        <input nbInput
+                            fullWidth
+                            id="request-dates"
+                            placeholder="Pick the first and last day"
+                            [nbDatepicker]="rangepicker"
+                            [ngModel]="range()"
+                            (ngModelChange)="range.set($event)" />
+                        <nb-rangepicker #rangepicker
+                            [min]="today" />
+                    </div>
+                    <nb-checkbox [checked]="halfDay()"
+                        (checkedChange)="halfDay.set($event)">The last day is a half day</nb-checkbox>
+                    <p class="days">
+                        @if (days() > 0) {
+                        <strong>{{ days() }}</strong> working {{ days() === 1 ? 'day' : 'days' }}, 14 left after this
+                        } @else {
+                        Weekends don't count.
+                        }
+                    </p>
+                    <div class="step-actions">
+                        <button nbButton
+                            ghost
+                            type="button"
+                            nbStepperPrevious>Back</button>
+                        <button nbButton
+                            status="primary"
+                            type="button"
+                            nbStepperNext>Next</button>
+                    </div>
+                </nb-step>
+
+                <nb-step label="Details">
+                    <div class="field">
+                        <label class="label"
+                            id="request-reason">Reason</label>
+                        <nb-select fullWidth
+                            aria-labelledby="request-reason"
+                            [selected]="reason()"
+                            (selectedChange)="reason.set($event ?? 'holiday')">
+                            @for (item of reasons; track item.value) {
+                            <nb-option [value]="item.value">{{ item.title }}</nb-option>
+                            }
+                        </nb-select>
+                    </div>
+                    <div class="field">
+                        <label class="label"
+                            for="request-cover">Who covers for you</label>
+                        <input nbInput
+                            fullWidth
+                            id="request-cover"
+                            autocomplete="off"
+                            [ngModel]="coverName()"
+                            (ngModelChange)="coverName.set($event)" />
+                    </div>
+                    <div class="field">
+                        <label class="label"
+                            for="request-note">Note for your manager</label>
+                        <textarea nbInput
+                            fullWidth
+                            id="request-note"
+                            rows="3"
+                            placeholder="Anything they should know"
+                            [ngModel]="note()"
+                            (ngModelChange)="note.set($event)"></textarea>
+                    </div>
+                    <div class="step-actions">
+                        <button nbButton
+                            ghost
+                            type="button"
+                            nbStepperPrevious>Back</button>
+                        <button nbButton
+                            status="primary"
+                            type="button"
+                            nbStepperNext>Review</button>
+                    </div>
+                </nb-step>
+
+                <nb-step label="Review">
+                    <dl class="review">
+                        <dt>Type</dt>
+                        <dd>{{ kindTitle() }}</dd>
+                        <dt>Dates</dt>
+                        <dd>
+                            @if (range()?.start; as start) {
+                            {{ start | date: 'EEE d MMM' }}
+                            @if (range()?.end; as end) {
+                            to {{ end | date: 'EEE d MMM' }}
+                            }
+                            · {{ days() }} {{ days() === 1 ? 'day' : 'days' }}
+                            } @else {
+                            Not picked yet
+                            }
+                        </dd>
+                        <dt>Reason</dt>
+                        <dd class="reason">{{ reason() }}</dd>
+                        <dt>Cover</dt>
+                        <dd>{{ coverName() || 'Nobody' }}</dd>
+                        <dt>Note</dt>
+                        <dd>{{ note() || 'None' }}</dd>
+                    </dl>
+                    <div class="step-actions">
+                        <button nbButton
+                            ghost
+                            type="button"
+                            nbStepperPrevious>Back</button>
+                        <button nbButton
+                            status="primary"
+                            type="button"
+                            (click)="submit(); stepper.reset()">
+                            <nb-icon icon="paper-plane-outline" />
+                            Send request
+                        </button>
+                    </div>
+                </nb-step>
+            </nb-stepper>
+        </nb-card-body>
+    </nb-card>
+
+    <div class="side">
+        <nb-card>
+            <nb-card-header>Leave this year</nb-card-header>
+            <nb-card-body>
+                <p class="balance"><strong>14</strong> of 25 days left</p>
+                <nb-progress-bar status="primary"
+                    size="tiny"
+                    [value]="44"
+                    aria-label="11 of 25 days taken" />
+                <p class="caption hint">8 more are booked for July.</p>
+            </nb-card-body>
+        </nb-card>
+
+        <nb-card>
+            <nb-card-header>My requests</nb-card-header>
+            <nb-list>
+                @for (request of requests(); track request.title) {
+                <nb-list-item class="request">
+                    <span>
+                        <span class="request-title">{{ request.title }}</span>
+                        <span class="caption hint">{{ request.detail }}</span>
+                    </span>
+                    <nb-tag appearance="outline"
+                        size="tiny"
+                        [status]="status[request.status]"
+                        [text]="request.status" />
+                </nb-list-item>
+                }
+            </nb-list>
+        </nb-card>
+    </div>
+</div>

@@ -1,0 +1,176 @@
+<header class="page-header">
+    <div>
+        <h1 class="h4">Good morning, Jane</h1>
+        <p class="hint">{{ today | date: 'EEEE, d MMMM' }}</p>
+    </div>
+    <a nbButton
+        status="primary"
+        [routerLink]="link('transfer')">
+        <nb-icon icon="paper-plane-outline" />
+        Send money
+    </a>
+</header>
+
+<section class="balance"
+    aria-label="Total balance">
+    <npg-showcase-glow class="glow one"
+        color="var(--color-primary-400)"
+        [opacity]="55"
+        [half]="45" />
+    <npg-showcase-glow class="glow two"
+        color="var(--color-info-400)"
+        [opacity]="40"
+        [half]="50" />
+    <div class="balance-body">
+        <p class="label">Total balance</p>
+        <p class="figure">{{ total | currency: 'USD' : 'symbol' : '1.2-2' }}</p>
+        <p class="change">
+            <nb-tag status="success"
+                appearance="filled"
+                size="tiny"
+                [text]="'+' + (monthChangeShare | number: '1.1-1') + '%'" />
+            <span>{{ monthChange | currency: 'USD' : 'symbol' : '1.0-0' }} more than this time last month</span>
+        </p>
+    </div>
+    <div class="balance-actions">
+        <a nbButton
+            status="control"
+            appearance="filled"
+            [routerLink]="link('transfer')">
+            <nb-icon icon="arrow-upward-outline" />
+            Send
+        </a>
+        <button nbButton
+            status="control"
+            appearance="outline"
+            type="button">
+            <nb-icon icon="arrow-downward-outline" />
+            Request
+        </button>
+        <button nbButton
+            status="control"
+            appearance="outline"
+            type="button">
+            <nb-icon icon="plus-outline" />
+            Top up
+        </button>
+    </div>
+</section>
+
+<section class="accounts"
+    aria-label="Accounts">
+    @for (account of accounts; track account.id) {
+    <nb-card>
+        <nb-card-body>
+            <div class="account-head">
+                <span class="tile"
+                    [class]="'tile status-' + account.status"><nb-icon [icon]="account.icon" /></span>
+                <span>
+                    <span class="account-name">{{ account.name }}</span>
+                    <span class="caption hint">••••&nbsp;{{ account.number }}</span>
+                </span>
+            </div>
+            @if (account.limit; as limit) {
+            <p class="account-balance">
+                {{ account.balance | currency: 'USD' : 'symbol' : '1.2-2' }}
+                <span class="caption hint">owed of {{ limit | currency: 'USD' : 'symbol' : '1.0-0' }}</span>
+            </p>
+            <nb-progress-bar size="tiny"
+                [status]="account.status"
+                [value]="used(account.balance, limit)"
+                [attr.aria-label]="used(account.balance, limit) + '% of the limit used'" />
+            } @else {
+            <p class="account-balance">{{ account.balance | currency: 'USD' : 'symbol' : '1.2-2' }}</p>
+            <p class="caption hint">Available now</p>
+            }
+        </nb-card-body>
+    </nb-card>
+    }
+</section>
+
+<div class="grid">
+    <nb-card class="wide">
+        <nb-card-header class="card-header">
+            <span>
+                Spending
+                <span class="caption hint">
+                    {{ spentThisMonth | currency: 'USD' : 'symbol' : '1.0-0' }} of
+                    {{ budgetThisMonth | currency: 'USD' : 'symbol' : '1.0-0' }} this month
+                </span>
+            </span>
+            <nb-button-group size="small"
+                aria-label="Period"
+                (valueChange)="pickPeriod($event)">
+                @for (item of periods; track item.id) {
+                <button nbButtonToggle
+                    [value]="item.id"
+                    [pressed]="period() === item.id">{{ item.title }}</button>
+                }
+            </nb-button-group>
+        </nb-card-header>
+        <nb-card-body>
+            <nb-line-chart area
+                smooth
+                [labels]="labels()"
+                [series]="spending()"
+                aria-label="Spending against the budget, by day" />
+        </nb-card-body>
+    </nb-card>
+
+    <nb-card class="categories">
+        <nb-card-header>Where it went</nb-card-header>
+        <nb-card-body>
+            <nb-pie-chart doughnut
+                [slices]="slices"
+                aria-label="Spending by category this month" />
+        </nb-card-body>
+    </nb-card>
+
+    <nb-card class="wide">
+        <nb-card-header class="card-header">
+            Recent transactions
+            <a nbButton
+                edge="end"
+                ghost
+                inline
+                size="small"
+                [routerLink]="link('transactions')">See all</a>
+        </nb-card-header>
+        <nb-list>
+            @for (transaction of recent; track transaction.id) {
+            @let category = categoryOf(transaction.category);
+            <nb-list-item class="transaction">
+                <span class="tile"
+                    [class]="'tile status-' + category.status"><nb-icon [icon]="category.icon" /></span>
+                <span class="transaction-text">
+                    <span class="merchant">{{ transaction.merchant }}</span>
+                    <span class="caption hint">
+                        {{ transaction.date | date: 'd MMM' }} · {{ category.name }}
+                        @if (transaction.pending) { · Pending }
+                    </span>
+                </span>
+                <span class="amount"
+                    [class.credit]="transaction.amount > 0">
+                    {{ transaction.amount > 0 ? '+' : '' }}{{ transaction.amount | currency: 'USD' : 'symbol' : '1.2-2' }}
+                </span>
+            </nb-list-item>
+            }
+        </nb-list>
+    </nb-card>
+
+    <nb-card>
+        <nb-card-header>Insights</nb-card-header>
+        <nb-list>
+            @for (insight of insights; track insight.title) {
+            <nb-list-item class="insight">
+                <span class="tile"
+                    [class]="'tile status-' + insight.status"><nb-icon [icon]="insight.icon" /></span>
+                <span>
+                    <span class="insight-title">{{ insight.title }}</span>
+                    <span class="caption">{{ insight.text }}</span>
+                </span>
+            </nb-list-item>
+            }
+        </nb-list>
+    </nb-card>
+</div>

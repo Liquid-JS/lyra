@@ -1,0 +1,21 @@
+<nb-card>
+    <nb-card-body>
+        <div class="example-items-rows">
+            <button (click)="toggleSize()"
+                nbButton>Change to {{ this.size === 'medium' ? 'large' : 'medium' }}</button>
+            <button (click)="toggleWeekNumber()"
+                nbButton>
+                {{ this.showWeekNumber ? 'Hide' : 'Show' }} week number column
+            </button>
+        </div>
+
+        <div class="example-items-rows">
+            <nb-calendar [(date)]="date"
+                [showWeekNumber]="showWeekNumber"
+                [size]="size" />
+            <nb-calendar-range [(range)]="dateRange"
+                [showWeekNumber]="showWeekNumber"
+                [size]="size" />
+        </div>
+    </nb-card-body>
+</nb-card>

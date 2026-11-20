@@ -1,0 +1,168 @@
+@use "../../../styles/themes" as *;
+
+:host {
+    display: block;
+    max-width: 76rem;
+    margin: 0 auto;
+}
+
+.page-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+
+    h1 {
+        margin: 0 0 0.25rem;
+    }
+
+    p {
+        margin: 0;
+    }
+}
+
+.hint {
+    color: nb-theme(text-hint-color);
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.5rem;
+
+    @media (width >= 1100px) {
+        grid-template-columns: minmax(0, 1fr) 20rem;
+    }
+}
+
+.main,
+.side {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+nb-card {
+    margin: 0;
+}
+
+.section-title {
+    margin: 0 0 0.75rem;
+}
+
+section {
+    display: flex;
+    flex-direction: column;
+}
+
+.announcement {
+    overflow: hidden;
+    margin-bottom: 1rem;
+
+    &:last-child {
+        margin-bottom: 0;
+    }
+
+    h3 {
+        margin: 0.75rem 0 0.375rem;
+    }
+
+    p {
+        margin: 0 0 1rem;
+    }
+}
+
+// The picture across the card's top, as wide as it.
+.cover {
+    aspect-ratio: 24 / 11;
+    object-fit: cover;
+}
+
+.announcement-head,
+.announcement-foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+.pinned {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    color: nb-theme(text-hint-color);
+}
+
+.feed-item {
+    gap: 0.875rem;
+}
+
+// A deed's icon on a tinted square, in its status's colour.
+.feed-icon {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: nb-theme(border-radius);
+    font-size: 1.125rem;
+
+    @each $status in basic, primary, success, info, warning, danger {
+        &.status-#{$status} {
+            background: nb-theme(color-#{$status}-transparent-200);
+            color: nb-theme(color-#{$status}-default);
+        }
+    }
+
+    &.status-basic {
+        color: nb-theme(text-hint-color);
+    }
+}
+
+.feed-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+}
+
+.inline-badge {
+    position: static;
+    margin-inline-start: 0.5rem;
+}
+
+.event {
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.event-time {
+    flex: none;
+    width: 3.25rem;
+    padding-top: 0.125rem;
+    color: nb-theme(text-primary-color);
+    font-weight: 600;
+}
+
+.event-title {
+    display: block;
+}
+
+// Two to a row where they fit, else one.
+.actions {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(10.5rem, 1fr));
+    gap: 0.5rem;
+
+    a {
+        justify-content: flex-start;
+    }
+}
+
+.celebration {
+    justify-content: space-between;
+    gap: 1rem;
+}

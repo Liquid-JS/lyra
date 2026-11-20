@@ -1,0 +1,150 @@
+@use "../../../styles/themes" as *;
+
+:host {
+    display: block;
+    padding: 5rem 3rem 6rem;
+}
+
+.eyebrow {
+    margin: 0;
+    color: nb-theme(text-hint-color);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+// The portrait beside the story.
+.intro {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+    gap: 3rem 4rem;
+    align-items: start;
+}
+
+.portrait {
+    position: sticky;
+    top: 3rem;
+    margin: 0;
+
+    img {
+        display: block;
+        width: 100%;
+        aspect-ratio: 4 / 5;
+        object-fit: cover;
+        background: nb-theme(color-basic-400);
+    }
+
+    figcaption {
+        margin-top: 0.5rem;
+        color: nb-theme(text-hint-color);
+        font-size: 0.8125rem;
+    }
+}
+
+.story h1 {
+    margin: 0.5rem 0 1.5rem;
+    font-size: clamp(2.25rem, 4.5vw, 3.5rem);
+    font-style: italic;
+    text-wrap: balance;
+}
+
+.bio {
+    columns: 2;
+    column-gap: 2.5rem;
+    margin-bottom: 2rem;
+    font-size: 1.0625rem;
+
+    p {
+        margin: 0 0 1rem;
+        break-inside: avoid;
+    }
+}
+
+.quote {
+    max-width: 44rem;
+    margin: 5rem 0;
+    padding-inline-start: 2rem;
+    border-inline-start: 2px solid nb-theme(color-primary-default);
+
+    p {
+        margin: 0 0 0.75rem;
+        font-family: nb-theme(font-family-secondary);
+        font-size: 1.75rem;
+        font-style: italic;
+        line-height: 1.3;
+        text-wrap: balance;
+    }
+
+    footer {
+        color: nb-theme(text-hint-color);
+        font-size: 0.9375rem;
+    }
+}
+
+.cv {
+    max-width: 48rem;
+
+    nb-accordion {
+        margin: 1rem 0 2rem;
+    }
+
+    ul {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    // The years in a column, lined up by their figures.
+    li {
+        display: grid;
+        grid-template-columns: 7rem 1fr;
+        gap: 0 1rem;
+        padding: 0.625rem 0;
+        border-top: 1px solid nb-theme(divider-color);
+    }
+
+    .years {
+        color: nb-theme(text-hint-color);
+        font-variant-numeric: tabular-nums;
+    }
+
+    .where {
+        grid-column: 2;
+        color: nb-theme(text-hint-color);
+        font-size: 0.9375rem;
+    }
+}
+
+@media (width <= 991.98px) {
+    :host {
+        padding: 2.5rem 1.25rem 4rem;
+    }
+
+    .intro {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 1.5rem;
+    }
+
+    .portrait {
+        position: static;
+        max-width: 18rem;
+    }
+
+    .bio {
+        columns: 1;
+    }
+
+    .quote {
+        margin: 3rem 0;
+        padding-inline-start: 1.25rem;
+
+        p {
+            font-size: 1.375rem;
+        }
+    }
+
+    .cv li {
+        grid-template-columns: 5.5rem 1fr;
+    }
+}

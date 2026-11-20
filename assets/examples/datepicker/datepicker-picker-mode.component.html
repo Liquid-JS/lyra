@@ -1,0 +1,29 @@
+<nb-card size="large">
+    <nb-card-body class="fields">
+        <div>
+            <label nbLabel
+                [for]="expiryField">Card expiry</label>
+            <input nbInput
+                placeholder="YYYY-MM"
+                [nbDatepicker]="month"
+                [formControl]="expiry"
+                nbValidation
+                #expiryField="nbValidation" />
+            <nb-datepicker #month
+                pickerMode="month" />
+        </div>
+
+        <div>
+            <label nbLabel
+                [for]="graduationField">Graduation year</label>
+            <input nbInput
+                placeholder="YYYY"
+                [nbDatepicker]="year"
+                [formControl]="graduation"
+                nbValidation
+                #graduationField="nbValidation" />
+            <nb-datepicker #year
+                pickerMode="year" />
+        </div>
+    </nb-card-body>
+</nb-card>

@@ -1,0 +1,21 @@
+<nb-card>
+    <nb-card-body [attr.aria-busy]="!profile()">
+        @let shown = profile() ?? sample;
+        <div class="profile">
+            <div class="avatar"
+                [nbSkeleton]="!profile()"
+                nbSkeletonShape="circle">{{ shown.initials }}</div>
+            <div>
+                <h3 class="subtitle"><span [nbSkeleton]="!profile()">{{ shown.name }}</span></h3>
+                <div class="caption"><span [nbSkeleton]="!profile()">{{ shown.role }}</span></div>
+                <p class="paragraph"><span [nbSkeleton]="!profile()">{{ shown.bio }}</span></p>
+            </div>
+        </div>
+    </nb-card-body>
+    <nb-card-footer>
+        <button nbButton
+            size="small"
+            [disabled]="!profile()"
+            (click)="reload()">Reload</button>
+    </nb-card-footer>
+</nb-card>

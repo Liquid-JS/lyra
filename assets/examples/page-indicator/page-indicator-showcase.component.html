@@ -1,0 +1,27 @@
+<nb-card>
+    @let slide = slides[page()];
+    <nb-card-body class="slide"
+        aria-live="polite">
+        <h3 class="subtitle">{{ slide.title }}</h3>
+        <p class="paragraph">{{ slide.text }}</p>
+    </nb-card-body>
+    <nb-card-footer>
+        <button nbButton
+            edge="start"
+            ghost
+            inline
+            size="small"
+            [disabled]="page() === 0"
+            (click)="move(-1)">Back</button>
+        <nb-page-indicator [count]="slides.length"
+            [(page)]="page" />
+        <button nbButton
+            edge="end"
+            ghost
+            inline
+            size="small"
+            status="primary"
+            [disabled]="page() === slides.length - 1"
+            (click)="move(1)">Next</button>
+    </nb-card-footer>
+</nb-card>

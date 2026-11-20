@@ -1,0 +1,25 @@
+<nb-card size="medium">
+    <nb-card-body>
+
+        <input [formControl]="inputFormControl"
+            nbInput
+            type="text"
+            placeholder="Enter value"
+            [nbAutocomplete]="auto" />
+
+        <nb-autocomplete #auto>
+
+            @for (group of filteredGroups(); track trackByFn($index, group)) {
+            <nb-option-group [title]="group.name">
+                @for (option of group.children; track option) {
+                <nb-option [value]="option">
+                    {{ option }}
+                </nb-option>
+                }
+            </nb-option-group>
+            }
+
+        </nb-autocomplete>
+
+    </nb-card-body>
+</nb-card>

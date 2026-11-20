@@ -1,0 +1,175 @@
+<header class="page-header">
+    <div>
+        <h1 class="h4">Budgets</h1>
+        <p class="hint">{{ daysLeft }} days left in the month</p>
+    </div>
+    <div class="tools">
+        <nb-select aria-label="Month"
+            [selected]="month()"
+            (selectedChange)="month.set($event ?? months[0])">
+            @for (item of months; track item) {
+            <nb-option [value]="item">{{ item }}</nb-option>
+            }
+        </nb-select>
+        <button nbButton
+            status="primary"
+            type="button"
+            (click)="open(addBudget)">
+            <nb-icon icon="plus-outline" />
+            Add budget
+        </button>
+    </div>
+</header>
+
+<nb-card class="summary">
+    <nb-card-body>
+        <div class="summary-figures">
+            <div>
+                <p class="caption hint">Spent</p>
+                <p class="figure">{{ spent() | currency: 'USD' : 'symbol' : '1.0-0' }}</p>
+            </div>
+            <div>
+                <p class="caption hint">Budgeted</p>
+                <p class="figure">{{ limit() | currency: 'USD' : 'symbol' : '1.0-0' }}</p>
+            </div>
+            <div>
+                <p class="caption hint">Left to spend</p>
+                <p class="figure left">{{ left() | currency: 'USD' : 'symbol' : '1.0-0' }}</p>
+            </div>
+        </div>
+        <nb-progress-bar size="medium"
+            [status]="spent() > limit() ? 'danger' : 'primary'"
+            [value]="(spent() / limit()) * 100"
+            [attr.aria-label]="(spent() / limit()) * 100 | number: '1.0-0'" />
+        <p class="caption hint">
+            @if (over() > 0) {
+            {{ over() }} of {{ views().length }} budgets are over; the rest are within reach.
+            } @else {
+            All budgets are within reach.
+            }
+        </p>
+    </nb-card-body>
+</nb-card>
+
+<div class="grid">
+    <section class="budgets"
+        aria-label="Budgets by category">
+        @for (budget of views(); track budget.category) {
+        <nb-card>
+            <nb-card-body>
+                <nb-progress-bar shape="ring"
+                    size="large"
+                    [status]="budget.status"
+                    displayValue
+                    [value]="budget.share"
+                    [attr.aria-label]="budget.share + '% of the ' + budget.name + ' budget'" />
+                <div class="budget-text">
+                    <span class="budget-head">
+                        <nb-icon [icon]="budget.icon" />
+                        <span class="budget-name">{{ budget.name }}</span>
+                        <nb-tag appearance="outline"
+                            size="tiny"
+                            [status]="budget.status"
+                            [text]="budget.label" />
+                    </span>
+                    <span class="budget-amounts">
+                        <span class="spent">{{ budget.spent | currency: 'USD' : 'symbol' : '1.0-0' }}</span>
+                        <span class="hint">of {{ budget.limit | currency: 'USD' : 'symbol' : '1.0-0' }}</span>
+                    </span>
+                    <span class="trend"
+                        [class.up]="budget.trend > 0">
+                        <nb-icon [icon]="budget.trend > 0 ? 'trending-up-outline' : 'trending-down-outline'" />
+                        {{ (budget.trend < 0
+                            ?
+                            -budget.trend
+                            :
+                            budget.trend)
+                            |
+                            currency: 'USD'
+                            : 'symbol'
+                            : '1.0-0'
+                            }}
+                            {{
+                            budget.trend> 0 ? 'more' : 'less' }} than last month
+                    </span>
+                </div>
+            </nb-card-body>
+        </nb-card>
+        }
+    </section>
+
+    <nb-card class="tips">
+        <nb-card-header>Worth a look</nb-card-header>
+        <nb-list>
+            @for (tip of tips; track tip.text) {
+            <nb-list-item class="tip">
+                <nb-icon [icon]="tip.icon"
+                    [status]="tip.status" />
+                <span>{{ tip.text }}</span>
+            </nb-list-item>
+            }
+        </nb-list>
+        <nb-card-footer>
+            <button nbButton
+                edge="start"
+                ghost
+                inline
+                size="small"
+                type="button">Review all alerts</button>
+        </nb-card-footer>
+    </nb-card>
+</div>
+
+<ng-template #addBudget>
+    <nb-card class="dialog">
+        <nb-card-header>Add a budget</nb-card-header>
+        <form [formGroup]="form"
+            (ngSubmit)="add()">
+            <nb-card-body>
+                <label class="label"
+                    for="budget-category">Category</label>
+                <nb-select fullWidth
+                    id="budget-category"
+                    placeholder="Choose a category"
+                    formControlName="category">
+                    @for (category of available(); track category.id) {
+                    <nb-option [value]="category.id">{{ category.name }}</nb-option>
+                    }
+                </nb-select>
+                @if (form.controls.category.touched && form.controls.category.invalid) {
+                <p class="caption error">Choose a category.</p>
+                }
+
+                <label class="label"
+                    for="budget-limit">Monthly limit</label>
+                <nb-form-field>
+                    <span nbPrefix
+                        class="prefix">$</span>
+                    <input nbInput
+                        fullWidth
+                        id="budget-limit"
+                        type="number"
+                        min="10"
+                        step="10"
+                        formControlName="limit" />
+                </nb-form-field>
+                <nb-slider formControlName="limit"
+                    [min]="10"
+                    [max]="1000"
+                    [step]="10"
+                    [showValue]="false"
+                    aria-label="Monthly limit" />
+                <p class="caption hint">A nudge when you're close, and a note when you go over.</p>
+            </nb-card-body>
+            <nb-card-footer class="dialog-actions">
+                <button nbButton
+                    ghost
+                    type="button"
+                    (click)="close()">Cancel</button>
+                <button nbButton
+                    status="primary"
+                    type="submit">Add budget</button>
+            </nb-card-footer>
+        </form>
+    </nb-card>
+</ng-template>

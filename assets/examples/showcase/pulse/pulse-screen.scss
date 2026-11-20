@@ -1,0 +1,63 @@
+// What Pulse's screens share: a column of cards with room around it, and a few of its own shapes.
+@use "../../../styles/themes" as *;
+
+:host {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    max-width: 36rem;
+    margin: 0 auto;
+}
+
+nb-card {
+    margin: 0;
+}
+
+.row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+// An icon on a tinted circle, in a status's colour.
+.tile {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    font-size: 1.25rem;
+
+    @each $status in primary, success, info, warning, danger {
+        &.status-#{$status} {
+            background: nb-theme(color-#{$status}-transparent-200);
+            color: nb-theme(color-#{$status}-default);
+        }
+    }
+}
+
+// A big figure with its unit beside it, in lining, tabular numerals.
+.figure {
+    font-size: 2rem;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.03em;
+    font-variant-numeric: tabular-nums;
+
+    small {
+        margin-inline-start: 0.125rem;
+        color: nb-theme(text-hint-color);
+        font-size: 0.875rem;
+        font-weight: 600;
+        letter-spacing: 0;
+    }
+}
+
+.hint {
+    margin: 0;
+    color: nb-theme(text-hint-color);
+    font-size: 0.8125rem;
+}

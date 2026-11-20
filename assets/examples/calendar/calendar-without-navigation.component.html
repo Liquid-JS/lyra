@@ -1,0 +1,10 @@
+<nb-card>
+    <nb-card-header>
+        <h1 class="h5">Selected date: {{ date | date }}</h1>
+    </nb-card-header>
+    <nb-card-body>
+        <nb-calendar [showNavigation]="false"
+            [(date)]="date"
+            showWeekNumber="true" />
+    </nb-card-body>
+</nb-card>

@@ -1,0 +1,13 @@
+<nb-card>
+    <nb-card-body>
+        <p class="subtitle config-title">States it can be in:</p>
+        <nb-checkbox [(checked)]="fullScreen">Full screen</nb-checkbox>
+        <nb-checkbox [(checked)]="docked">Docked</nb-checkbox>
+        <nb-checkbox [(checked)]="minimized">Minimized</nb-checkbox>
+        <nb-checkbox [(checked)]="closeButton">Close button</nb-checkbox>
+
+        <button (click)="openWindow()"
+            nbButton
+            class="open-window">Open window</button>
+    </nb-card-body>
+</nb-card>

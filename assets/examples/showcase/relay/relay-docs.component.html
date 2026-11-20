@@ -1,0 +1,36 @@
+<div class="docs">
+    <nav class="guides"
+        aria-label="Guides">
+        @for (group of nav; track group.title) {
+        <h2 class="label">{{ group.title }}</h2>
+        <ul>
+            @for (page of group.pages; track page) {
+            <li>
+                <a href="#"
+                    [class.current]="page === current"
+                    [attr.aria-current]="page === current ? 'page' : null"
+                    (click)="$event.preventDefault()">{{ page }}</a>
+            </li>
+            }
+        </ul>
+        }
+    </nav>
+
+    <article #article
+        class="page">
+        <p class="breadcrumb">Receiving <span aria-hidden="true">/</span> {{ current }}</p>
+        <nb-markdown-viewer [markdown]="markdown" />
+        <footer class="page-footer">
+            <span>Was this page helpful?</span>
+            <a href="#"
+                (click)="$event.preventDefault()">Yes</a>
+            <a href="#"
+                (click)="$event.preventDefault()">No</a>
+        </footer>
+    </article>
+
+    <aside class="outline">
+        <p class="label">On this page</p>
+        <nb-toc [container]="article" />
+    </aside>
+</div>

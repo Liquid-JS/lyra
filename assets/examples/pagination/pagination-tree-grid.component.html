@@ -1,0 +1,26 @@
+<nb-card>
+    <table [nbTreeGrid]="rows()">
+        <tr nbTreeGridHeaderRow
+            *nbTreeGridHeaderRowDef="columns"></tr>
+        <tr nbTreeGridRow
+            *nbTreeGridRowDef="let row; columns: columns"></tr>
+
+        @for (column of columns; track column) {
+        <ng-container [nbTreeGridColumnDef]="column">
+            <th nbTreeGridHeaderCell
+                *nbTreeGridHeaderCellDef>{{ column }}</th>
+            <td nbTreeGridCell
+                *nbTreeGridCellDef="let row">{{ row.data[column] }}</td>
+        </ng-container>
+        }
+    </table>
+    <nb-card-footer>
+        <nb-pagination [length]="length"
+            [(page)]="page"
+            [(pageSize)]="pageSize"
+            [pageSizeOptions]="[10, 25, 50]"
+            [loading]="loading()"
+            (pageChange)="load()"
+            (pageSizeChange)="load()" />
+    </nb-card-footer>
+</nb-card>

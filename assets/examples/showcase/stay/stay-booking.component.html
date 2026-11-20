@@ -1,0 +1,252 @@
+@let place = trips.listing();
+@let quote = trips.quote();
+
+@if (booked(); as trip) {
+<section class="done">
+    <nb-card class="done-card"
+        accent="success">
+        <nb-card-body>
+            <span class="tick"><nb-icon icon="checkmark-outline" /></span>
+            <h1 class="h3">You're going to {{ trip.listing.place }}</h1>
+            <p>Your stay at <strong>{{ trip.listing.name }}</strong> is confirmed. We've emailed the details and the
+                directions; {{ trip.listing.host.split(' ')[0] }} will be in touch a few days before you arrive.</p>
+            <dl class="summary">
+                <dt>Reference</dt>
+                <dd><code>{{ trip.reference }}</code></dd>
+                <dt>Dates</dt>
+                <dd>{{ trip.checkIn | date: 'EEE d MMM' }} – {{ trip.checkOut | date: 'EEE d MMM yyyy' }}</dd>
+                <dt>Guests</dt>
+                <dd>{{ trip.guests }}</dd>
+                <dt>Paid</dt>
+                <dd>{{ dueNow | currency: 'USD' : 'symbol' : '1.0-0' }}</dd>
+            </dl>
+            <div class="done-actions">
+                <a nbButton
+                    status="primary"
+                    routerLink="../trips">See your trips</a>
+                <a nbButton
+                    outline
+                    routerLink="../search">Keep looking</a>
+            </div>
+        </nb-card-body>
+    </nb-card>
+</section>
+} @else {
+<a class="back"
+    [routerLink]="['../listing', place.id]">
+    <nb-icon icon="arrow-back-outline" />
+    Back to {{ place.name }}
+</a>
+<h1 class="h2">Confirm and pay</h1>
+
+<form class="columns"
+    [formGroup]="form"
+    (ngSubmit)="confirm()">
+    <div class="main">
+        <section>
+            <h2 class="h5">Your trip</h2>
+            <dl class="trip">
+                <div>
+                    <dt>Dates</dt>
+                    @let range = trips.range();
+                    <dd>
+                        @if (range?.end) {
+                        {{ range?.start | date: 'd MMM' }} – {{ range?.end | date: 'd MMM yyyy' }}
+                        } @else {
+                        Not chosen yet
+                        }
+                    </dd>
+                    <a [routerLink]="['../listing', place.id]">Edit</a>
+                </div>
+                <div>
+                    <dt>Guests</dt>
+                    <dd>
+                        <nb-select size="small"
+                            aria-label="Guests"
+                            [selected]="trips.guests()"
+                            (selectedChange)="trips.guests.set($event ?? 2)">
+                            @for (guests of guestOptions; track guests) {
+                            @if (guests <= place.guests)
+                                {
+                                <nb-option
+                                [value]="guests">{{ guests }} {{ guests === 1 ? 'guest' : 'guests' }}</nb-option>
+                                }
+                                }
+                        </nb-select>
+                    </dd>
+                </div>
+            </dl>
+        </section>
+
+        <section>
+            <h2 class="h5">How you'd like to pay</h2>
+            <nb-radio-group class="payment"
+                name="payment"
+                formControlName="payment">
+                <nb-radio value="full">
+                    <span class="choice">
+                        <strong>Pay in full</strong>
+                        <span>{{ quote.total | currency: 'USD' : 'symbol' : '1.0-0' }} now</span>
+                    </span>
+                </nb-radio>
+                <nb-radio value="split">
+                    <span class="choice">
+                        <strong>Pay part now, part later</strong>
+                        <span>Half now, half a month before check-in. No extra fees.</span>
+                    </span>
+                </nb-radio>
+            </nb-radio-group>
+        </section>
+
+        <section>
+            <h2 class="h5">Pay with</h2>
+            <div class="fields">
+                <div class="field wide">
+                    <label nbLabel
+                        [for]="cardNumber">Card number</label>
+                    <nb-form-field>
+                        <nb-icon nbPrefix
+                            icon="credit-card-outline" />
+                        <input nbInput
+                            fullWidth
+                            inputmode="numeric"
+                            autocomplete="cc-number"
+                            placeholder="1234 5678 9012 3456"
+                            formControlName="cardNumber"
+                            nbMask="#### #### #### ####"
+                            nbValidation
+                            #cardNumber="nbValidation" />
+                    </nb-form-field>
+                    <nb-validation-errors [for]="cardNumber" />
+                </div>
+                <div class="field">
+                    <label nbLabel
+                        [for]="expiry">Expiry</label>
+                    <input nbInput
+                        fullWidth
+                        inputmode="numeric"
+                        autocomplete="cc-exp"
+                        placeholder="MM/YY"
+                        formControlName="expiry"
+                        nbMask="##/##"
+                        nbValidation
+                        #expiry="nbValidation" />
+                    <nb-validation-errors [for]="expiry" />
+                </div>
+                <div class="field">
+                    <label nbLabel
+                        [for]="cvc">CVC</label>
+                    <input nbInput
+                        fullWidth
+                        inputmode="numeric"
+                        autocomplete="cc-csc"
+                        placeholder="123"
+                        formControlName="cvc"
+                        nbMask="###"
+                        nbValidation
+                        #cvc="nbValidation" />
+                    <nb-validation-errors [for]="cvc" />
+                </div>
+                <div class="field wide">
+                    <label nbLabel
+                        [for]="name">Name on card</label>
+                    <input nbInput
+                        fullWidth
+                        autocomplete="cc-name"
+                        formControlName="name"
+                        nbValidation
+                        #name="nbValidation" />
+                    <nb-validation-errors [for]="name" />
+                </div>
+                <div class="field wide">
+                    <label nbLabel
+                        [for]="country">Country or region</label>
+                    <nb-select fullWidth
+                        formControlName="country"
+                        nbValidation
+                        #country="nbValidation">
+                        @for (option of countries; track option) {
+                        <nb-option [value]="option">{{ option }}</nb-option>
+                        }
+                    </nb-select>
+                    <nb-validation-errors [for]="country" />
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <h2 class="h5">Say hello to {{ place.host.split(' ')[0] }}</h2>
+            <p class="hint">Let your host know a little about you and why you're coming; it helps them get the place ready.
+            </p>
+            <textarea nbInput
+                fullWidth
+                rows="4"
+                aria-label="Message to the host"
+                placeholder="We're coming up for a long weekend of walking and would love any trail tips…"
+                formControlName="message"></textarea>
+        </section>
+
+        <section>
+            <h2 class="h5">Cancellation policy</h2>
+            <p class="hint">Free cancellation up to 7 days before check-in. After that, the first night and the cleaning fee
+                are kept; the rest is refunded.</p>
+            <h2 class="h5">Ground rules</h2>
+            <ul class="rules">
+                <li>Follow the house rules: check-in after 3 pm, out by 11 am.</li>
+                <li>Treat the place like your own, and tell the host if anything breaks.</li>
+                <li>No parties, and quiet after 10 pm.</li>
+            </ul>
+            <nb-checkbox formControlName="agree"
+                nbValidation
+                #agree="nbValidation">I agree to the house rules and the cancellation policy.</nb-checkbox>
+            <nb-validation-errors [for]="agree" />
+        </section>
+
+        <div class="confirm">
+            <button nbButton
+                status="primary"
+                size="large"
+                type="submit">
+                <nb-icon icon="lock-outline" />
+                Confirm and pay {{ dueNow | currency: 'USD' : 'symbol' : '1.0-0' }}
+            </button>
+            <p class="hint">Your card is charged when the host confirms, usually within a day.</p>
+        </div>
+    </div>
+
+    <aside class="side">
+        <nb-card>
+            <nb-card-body>
+                <div class="place">
+                    <img [src]="place.image"
+                        [alt]="place.name"
+                        width="800"
+                        height="600" />
+                    <div>
+                        <p class="type">{{ place.type }} in {{ place.place }}</p>
+                        <p class="name">{{ place.name }}</p>
+                        <npg-stay-rating [rating]="place.rating"
+                            [reviews]="place.reviews" />
+                    </div>
+                </div>
+                <h2 class="h6">Price details</h2>
+                <dl class="quote">
+                    <dt>{{ place.price | currency: 'USD' : 'symbol' : '1.0-0' }} × {{ quote.nights }} {{ quote.nights === 1 ?
+                        'night' : 'nights' }}</dt>
+                    <dd>{{ quote.stay | currency: 'USD' : 'symbol' : '1.0-0' }}</dd>
+                    <dt>Cleaning fee</dt>
+                    <dd>{{ quote.cleaning | currency: 'USD' : 'symbol' : '1.0-0' }}</dd>
+                    <dt>Service fee</dt>
+                    <dd>{{ quote.service | currency: 'USD' : 'symbol' : '1.0-0' }}</dd>
+                    <dt class="total">Total (USD)</dt>
+                    <dd class="total">{{ quote.total | currency: 'USD' : 'symbol' : '1.0-0' }}</dd>
+                    @if (form.controls.payment.value === 'split') {
+                    <dt>Due now</dt>
+                    <dd>{{ dueNow | currency: 'USD' : 'symbol' : '1.0-0' }}</dd>
+                    }
+                </dl>
+            </nb-card-body>
+        </nb-card>
+    </aside>
+</form>
+}

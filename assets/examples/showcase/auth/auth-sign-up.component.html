@@ -1,0 +1,63 @@
+@if (frame === 'card') {
+<nb-card>
+    <nb-card-body>
+        <ng-container *ngTemplateOutlet="content" />
+    </nb-card-body>
+</nb-card>
+} @else {
+<div class="plain">
+    <ng-container *ngTemplateOutlet="content" />
+</div>
+}
+
+<ng-template #content>
+    <a class="brand"
+        routerLink="../sign-in"><span class="logo"
+            aria-hidden="true"></span> Acme</a>
+
+    <header>
+        <h1 class="h4">Create your account</h1>
+        <p>Start your free 14-day trial; no card needed</p>
+    </header>
+
+    <form (submit)="$event.preventDefault()">
+        <div class="field">
+            <label class="label"
+                for="sign-up-name">Full name</label>
+            <input nbInput
+                fullWidth
+                id="sign-up-name"
+                autocomplete="name"
+                placeholder="Jane Doe" />
+        </div>
+        <div class="field">
+            <label class="label"
+                for="sign-up-email">Work email</label>
+            <input nbInput
+                fullWidth
+                id="sign-up-email"
+                type="email"
+                autocomplete="email"
+                placeholder="you@example.com" />
+        </div>
+        <div class="field">
+            <label class="label"
+                for="sign-up-password">Password</label>
+            <input nbInput
+                fullWidth
+                id="sign-up-password"
+                type="password"
+                autocomplete="new-password"
+                placeholder="At least 8 characters" />
+        </div>
+        <nb-checkbox>I agree to the <a href="#"
+                (click)="$event.preventDefault()">terms</a> and the <a href="#"
+                (click)="$event.preventDefault()">privacy policy</a></nb-checkbox>
+        <button nbButton
+            fullWidth
+            status="primary"
+            type="submit">Create account</button>
+    </form>
+
+    <p class="footer">Already have an account? <a routerLink="../sign-in">Sign in</a></p>
+</ng-template>

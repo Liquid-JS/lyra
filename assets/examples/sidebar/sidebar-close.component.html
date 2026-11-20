@@ -1,0 +1,20 @@
+<nb-layout>
+    <nb-layout-header fixed>
+        <button nbButton
+            ghost
+            aria-label="Menu"
+            (click)="toggle()"><nb-icon icon="menu-outline" /></button>
+    </nb-layout-header>
+
+    <nb-sidebar fixed
+        state="collapsed"
+        tag="menu"
+        closeOnNavigation
+        closeOnOutsideClick>
+        <nb-menu [items]="items" />
+    </nb-sidebar>
+
+    <nb-layout-column>
+        The sidebar opens over this content, and closes when you pick a page or click here.
+    </nb-layout-column>
+</nb-layout>

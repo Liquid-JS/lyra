@@ -1,0 +1,16 @@
+@for (alert of alerts; track alert) {
+<nb-alert [size]="alert.size"
+    [status]="alert.status"
+    closable
+    (close)="onClose(alert)">
+    Success message!
+</nb-alert>
+}
+
+@for (alert of accentAlerts; track alert) {
+<nb-alert [size]="alert.size"
+    [status]="alert.status"
+    [accent]="alert.accent">
+    Success message!
+</nb-alert>
+}

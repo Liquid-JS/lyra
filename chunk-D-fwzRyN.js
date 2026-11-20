@@ -1,0 +1,1 @@
+var o=[{path:``,loadComponent:()=>import(`./chunk-D_LZiuw8.js`).then(e=>e.NgdHomeComponent)}];export{o as HOME_ROUTES};

@@ -1,0 +1,15 @@
+<nb-card>
+    <nb-card-header>Selected Option: {{ option }}</nb-card-header>
+    <nb-card-body>
+
+        <nb-radio-group [(ngModel)]="option">
+            @for (option of options; track option) {
+            <nb-radio [disabled]="option.disabled"
+                [value]="option.value">
+                {{ option.label }}
+            </nb-radio>
+            }
+        </nb-radio-group>
+
+    </nb-card-body>
+</nb-card>

@@ -1,0 +1,135 @@
+@if (frame() === 'site') {
+<nb-layout class="site">
+    <nb-layout-header fixed>
+        <a class="brand"
+            routerLink="home"><span class="mark"
+                aria-hidden="true"></span>Relay</a>
+        <nav class="pages"
+            aria-label="Pages">
+            <a routerLink="docs">Docs</a>
+            <a routerLink="pricing"
+                routerLinkActive="active">Pricing</a>
+            <a href="#"
+                (click)="$event.preventDefault()">Changelog</a>
+        </nav>
+        <div class="actions">
+            <a nbButton
+                ghost
+                class="sign-in"
+                routerLink="overview">Sign in</a>
+            <a nbButton
+                status="primary"
+                routerLink="overview">Start free</a>
+            <button nbButton
+                ghost
+                class="menu"
+                type="button"
+                aria-label="Menu"
+                [nbContextMenu]="siteMenu">
+                <nb-icon icon="menu-2-outline" />
+            </button>
+        </div>
+    </nb-layout-header>
+
+    <nb-layout-column class="page">
+        <router-outlet />
+    </nb-layout-column>
+
+    <nb-layout-footer>
+        <div class="footer">
+            <div class="about">
+                <span class="brand"><span class="mark"
+                        aria-hidden="true"></span>Relay</span>
+                <p>Webhooks and event delivery for products that can't drop a message.</p>
+                <p class="status"><span class="dot"
+                        aria-hidden="true"></span>All systems operational</p>
+            </div>
+            @for (column of footer; track column.title) {
+            <div role="navigation"
+                [attr.aria-label]="column.title">
+                <h2 class="label">{{ column.title }}</h2>
+                <ul>
+                    @for (link of column.links; track link) {
+                    @if (footerPages[link]; as page) {
+                    <li><a [routerLink]="page">{{ link }}</a></li>
+                    } @else {
+                    <li><a href="#"
+                            (click)="$event.preventDefault()">{{ link }}</a></li>
+                    }
+                    }
+                </ul>
+            </div>
+            }
+        </div>
+        <p class="copyright">© {{ year }} Relay Inc. All rights reserved.</p>
+    </nb-layout-footer>
+</nb-layout>
+} @else {
+<nb-layout class="console">
+    <nb-layout-header fixed>
+        <div class="header-start">
+            <button nbButton
+                ghost
+                size="small"
+                type="button"
+                aria-label="Show or hide the menu"
+                (click)="toggleSidebar()">
+                <nb-icon icon="menu-2-outline" />
+            </button>
+            <a class="brand"
+                routerLink="home"><span class="mark"
+                    aria-hidden="true"></span>Relay</a>
+            <span class="divider"
+                aria-hidden="true"></span>
+            <span class="project">Acme</span>
+            <nb-select class="environment"
+                size="small"
+                appearance="outline"
+                aria-label="Environment"
+                [(selected)]="environment">
+                <nb-option value="live">Live</nb-option>
+                <nb-option value="test">Test</nb-option>
+            </nb-select>
+        </div>
+
+        <nb-form-field class="search">
+            <nb-icon nbPrefix
+                icon="search-outline" />
+            <input nbInput
+                fullWidth
+                fieldSize="small"
+                type="search"
+                placeholder="Search events, endpoints, keys…"
+                aria-label="Search" />
+        </nb-form-field>
+
+        <nb-actions size="small">
+            <nb-action icon="bell-outline"
+                title="Alerts"
+                badgeDot
+                badgeStatus="warning" />
+            <nb-action class="docs-action"
+                icon="book-open-outline"
+                title="Docs"
+                [link]="link('docs')" />
+            <nb-action>
+                <nb-user name="Jane Doe"
+                    title="Owner"
+                    size="small"
+                    [picture]="userPhoto"
+                    [nbContextMenu]="userMenu" />
+            </nb-action>
+        </nb-actions>
+    </nb-layout-header>
+
+    <nb-sidebar responsive
+        tag="relay">
+        <nb-menu tag="relay-console"
+            [items]="consoleMenu" />
+    </nb-sidebar>
+
+    <nb-layout-column>
+        <router-outlet />
+    </nb-layout-column>
+</nb-layout>
+}

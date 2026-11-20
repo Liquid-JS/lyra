@@ -1,0 +1,10 @@
+<button nbButton
+    status="primary"
+    (click)="open()">Enter Name</button>
+<br />
+<h3 class="h5">Names:</h3>
+<ul>
+    @for (name of names(); track name) {
+    <li>{{ name }}</li>
+    }
+</ul>

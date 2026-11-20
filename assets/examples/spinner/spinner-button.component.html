@@ -1,0 +1,31 @@
+<nb-card>
+    <nb-card-body class="example-items-rows">
+        <button [nbSpinner]="loading()"
+            nbSpinnerStatus="success"
+            nbButton
+            (click)="toggleLoadingAnimation()">
+            Download
+        </button>
+
+        <button [nbSpinner]="loading()"
+            nbSpinnerStatus="warning"
+            nbButton
+            (click)="toggleLoadingAnimation()">
+            Download
+        </button>
+
+        <button [nbSpinner]="loading()"
+            nbSpinnerStatus="danger"
+            nbButton
+            (click)="toggleLoadingAnimation()">
+            Download
+        </button>
+
+        <button [nbSpinner]="loading()"
+            nbSpinnerStatus="info"
+            nbButton
+            (click)="toggleLoadingAnimation()">
+            Download
+        </button>
+    </nb-card-body>
+</nb-card>

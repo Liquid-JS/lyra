@@ -1,0 +1,22 @@
+<nb-card size="small">
+    <nb-card-body>
+
+        <input [formControl]="inputFormControl"
+            nbInput
+            type="text"
+            placeholder="Enter value"
+            [nbAutocomplete]="auto" />
+
+        <nb-autocomplete #auto
+            activeFirst>
+
+            @for (option of filteredOptions(); track option) {
+            <nb-option [value]="option">
+                {{ option }}
+            </nb-option>
+            }
+
+        </nb-autocomplete>
+
+    </nb-card-body>
+</nb-card>

@@ -1,0 +1,17 @@
+<nb-card>
+    <nb-card-body class="fields">
+        @for (size of sizes; track size) {
+        <nb-color-picker [size]="size"
+            [aria-label]="size + ' color'"
+            [(ngModel)]="color" />
+        }
+        @for (status of statuses; track status) {
+        <nb-color-picker [status]="status"
+            [aria-label]="status + ' color'"
+            [(ngModel)]="color" />
+        }
+        <nb-color-picker aria-label="Disabled color"
+            disabled
+            [(ngModel)]="color" />
+    </nb-card-body>
+</nb-card>

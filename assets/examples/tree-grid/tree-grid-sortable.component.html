@@ -1,0 +1,42 @@
+<nb-card>
+    <nb-card-body>
+        <table [nbTreeGrid]="dataSource"
+            nbSort
+            (sort)="changeSort($event)"
+            equalColumnsWidth>
+            <tr nbTreeGridHeaderRow
+                *nbTreeGridHeaderRowDef="allColumns"></tr>
+            <tr nbTreeGridRow
+                *nbTreeGridRowDef="let row; columns: allColumns"></tr>
+
+            <ng-container [nbTreeGridColumnDef]="customColumn">
+                <th nbTreeGridHeaderCell
+                    [nbSortHeader]="getDirection(customColumn)"
+                    *nbTreeGridHeaderCellDef>
+                    {{ customColumn }}
+                </th>
+
+                <td nbTreeGridCell
+                    *nbTreeGridCellDef="let row">
+                    @if (row.data.kind === 'dir') {
+                    <nb-tree-grid-row-toggle [expanded]="row.expanded" />
+                    }
+
+                    {{ row.data.name }}
+                </td>
+            </ng-container>
+
+            @for (column of defaultColumns; track column) {
+            <ng-container [nbTreeGridColumnDef]="column">
+                <th nbTreeGridHeaderCell
+                    [nbSortHeader]="getDirection(column)"
+                    *nbTreeGridHeaderCellDef>
+                    {{ column }}
+                </th>
+                <td nbTreeGridCell
+                    *nbTreeGridCellDef="let row">{{ column === 'size' ? formatSize(row.data.size) : row.data[column] }}</td>
+            </ng-container>
+            }
+        </table>
+    </nb-card-body>
+</nb-card>

@@ -1,0 +1,14 @@
+<nb-card>
+    <nb-card-body class="example-items-rows">
+        @for (size of sizes; track size) {
+        <nb-file-drop [size]="size"
+            [prompt]="size" />
+        }
+    </nb-card-body>
+    <nb-card-body class="example-items-rows">
+        @for (size of sizes; track size) {
+        <nb-file-drop [size]="size"
+            [formControl]="file" />
+        }
+    </nb-card-body>
+</nb-card>

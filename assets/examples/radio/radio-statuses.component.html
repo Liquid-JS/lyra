@@ -1,0 +1,17 @@
+<nb-card>
+    <nb-card-body class="example-items-rows">
+        @for (status of statuses; track status) {
+        <nb-radio-group [name]="status"
+            [status]="status"
+            [class.control-status-example]="status === 'control'">
+            @for (option of options; track option) {
+            <nb-radio [checked]="option.checked"
+                [disabled]="option.disabled"
+                [value]="option.value">
+                {{ option.label }}
+            </nb-radio>
+            }
+        </nb-radio-group>
+        }
+    </nb-card-body>
+</nb-card>

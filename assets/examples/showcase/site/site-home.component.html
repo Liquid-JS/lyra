@@ -1,0 +1,182 @@
+<section class="hero">
+    <div class="hero-text">
+        <nb-tag status="primary"
+            appearance="outline"
+            size="small"
+            text="New: reports for every plan" />
+        <h1>The CRM your whole team will actually use</h1>
+        <p class="lead">Customers, invoices and reports in one calm place, so you can spend less time on admin and more on the
+            people you work with.</p>
+        <div class="buttons">
+            <a nbButton
+                status="primary"
+                size="large"
+                routerLink="../../auth/sign-up">Start free trial</a>
+            <a nbButton
+                ghost
+                size="large"
+                routerLink="."
+                fragment="features">
+                See how it works
+                <nb-icon icon="arrow-forward-outline" />
+            </a>
+        </div>
+        <p class="hint">14 days free. No card needed.</p>
+    </div>
+    <npg-site-mockup class="hero-mockup" />
+</section>
+
+<section class="customers"
+    aria-label="Customers">
+    <p class="hint">Trusted by teams at</p>
+    <ul>
+        @for (customer of customers; track customer.name) {
+        <li><npg-showcase-logo colour="mono"
+                [name]="customer.logo"
+                [label]="customer.name" /></li>
+        }
+    </ul>
+</section>
+
+<section id="features"
+    class="section">
+    <header class="section-header">
+        <h2>Everything you need, nothing you don't</h2>
+        <p class="lead">Acme covers the day-to-day of running a small business, and gets out of the way.</p>
+    </header>
+    <div class="features">
+        @for (feature of features; track feature.title) {
+        <div class="feature">
+            <span class="feature-icon"><nb-icon [icon]="feature.icon" /></span>
+            <h3>{{ feature.title }}</h3>
+            <p>{{ feature.text }}</p>
+        </div>
+        }
+    </div>
+</section>
+
+<section class="section split">
+    <npg-site-mockup variant="list" />
+    <div>
+        <h2>Know every customer at a glance</h2>
+        <p class="lead">Each customer's deals, invoices and conversations sit on one page, so anyone on the team can pick up
+            where someone else left off.</p>
+        <ul class="checks">
+            <li><nb-icon icon="checkmark-circle-2-outline" /> Full history of every email and call</li>
+            <li><nb-icon icon="checkmark-circle-2-outline" /> Tags and filters for any segment</li>
+            <li><nb-icon icon="checkmark-circle-2-outline" /> Import from a spreadsheet in minutes</li>
+        </ul>
+    </div>
+</section>
+
+<section class="section split reverse">
+    <npg-site-mockup />
+    <div>
+        <h2>See where your revenue comes from</h2>
+        <p class="lead">Dashboards update as invoices are paid. Spot your best customers and the ones that need a call.</p>
+        <a nbButton
+            appearance="outline"
+            routerLink="../blog">Read customer stories</a>
+    </div>
+</section>
+
+<section class="stats"
+    aria-label="Acme in numbers">
+    @for (stat of stats; track stat.label) {
+    <div>
+        <p class="stat">{{ stat.value }}</p>
+        <p>{{ stat.label }}</p>
+    </div>
+    }
+</section>
+
+<section class="section">
+    <header class="section-header">
+        <h2>Teams like yours love it</h2>
+    </header>
+    <div class="quotes">
+        @for (quote of quotes; track quote.name) {
+        <nb-card>
+            <nb-card-body>
+                <p class="quote">“{{ quote.text }}”</p>
+            </nb-card-body>
+            <nb-card-footer>
+                <nb-user [picture]="quote.avatar"
+                    [name]="quote.name"
+                    [title]="quote.role" />
+            </nb-card-footer>
+        </nb-card>
+        }
+    </div>
+</section>
+
+<section id="pricing"
+    class="section">
+    <header class="section-header">
+        <h2>Simple pricing</h2>
+        <p class="lead">Pay per team, not per feature. Cancel any time.</p>
+        <nb-button-group aria-label="Billing"
+            (valueChange)="setBilling($event)">
+            <button nbButtonToggle
+                value="monthly"
+                [pressed]="!yearly()">Monthly</button>
+            <button nbButtonToggle
+                value="yearly"
+                [pressed]="yearly()">Yearly, save 20%</button>
+        </nb-button-group>
+    </header>
+    <div class="plans">
+        @for (plan of plans; track plan.name; let i = $index) {
+        <nb-card [class.featured]="plan.featured"
+            [accent]="plan.featured ? 'primary' : ''">
+            <nb-card-header>
+                {{ plan.name }}
+                @if (plan.featured) {
+                <nb-tag status="primary"
+                    size="tiny"
+                    text="Most popular" />
+                }
+            </nb-card-header>
+            <nb-card-body>
+                <p class="hint">{{ plan.description }}</p>
+                <p class="price"><span>${{ prices()[i] }}</span> per user / month</p>
+                <ul class="checks">
+                    @for (feature of plan.features; track feature) {
+                    <li><nb-icon icon="checkmark-outline" /> {{ feature }}</li>
+                    }
+                </ul>
+            </nb-card-body>
+            <nb-card-footer>
+                <a nbButton
+                    fullWidth
+                    routerLink="../../auth/sign-up"
+                    [status]="plan.featured ? 'primary' : 'basic'"
+                    [appearance]="plan.featured ? 'filled' : 'outline'">Choose {{ plan.name }}</a>
+            </nb-card-footer>
+        </nb-card>
+        }
+    </div>
+</section>
+
+<section class="section faq">
+    <header class="section-header">
+        <h2>Questions, answered</h2>
+    </header>
+    <nb-accordion>
+        @for (item of questions; track item.question) {
+        <nb-accordion-item>
+            <nb-accordion-item-header>{{ item.question }}</nb-accordion-item-header>
+            <nb-accordion-item-body>{{ item.answer }}</nb-accordion-item-body>
+        </nb-accordion-item>
+        }
+    </nb-accordion>
+</section>
+
+<section class="cta">
+    <h2>Ready to get organised?</h2>
+    <p>Join 4,000 teams who run their customers on Acme.</p>
+    <a nbButton
+        size="large"
+        status="control"
+        routerLink="../../auth/sign-up">Start your free trial</a>
+</section>

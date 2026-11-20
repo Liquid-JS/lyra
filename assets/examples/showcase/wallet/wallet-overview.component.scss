@@ -1,0 +1,244 @@
+@use "../../../styles/themes" as *;
+
+:host {
+    display: block;
+    font-variant-numeric: tabular-nums;
+}
+
+.page-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+
+    h1,
+    p {
+        margin: 0;
+    }
+}
+
+.hint {
+    color: nb-theme(text-hint-color);
+}
+
+nb-card {
+    margin: 0;
+}
+
+// The balance, on ink with the theme's colours glowing through, as a card in a wallet.
+.balance {
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+    padding: 2rem;
+    border-radius: calc(#{nb-theme(border-radius)} * 1.5);
+    overflow: hidden;
+    background: linear-gradient(135deg, nb-theme(color-primary-900), nb-theme(color-basic-1000) 70%);
+    color: nb-theme(text-control-color);
+
+    p {
+        margin: 0;
+        color: inherit;
+    }
+
+    @media (width <= 575.98px) {
+        padding: 1.5rem;
+    }
+}
+
+.glow {
+    position: absolute;
+
+    &.one {
+        inset-block-start: -14rem;
+        inset-inline-end: -8rem;
+        width: 34rem;
+    }
+
+    &.two {
+        inset-block-end: -16rem;
+        inset-inline-start: -10rem;
+        width: 30rem;
+    }
+}
+
+.balance-body,
+.balance-actions {
+    position: relative;
+}
+
+.label {
+    font-size: 0.875rem;
+    opacity: 0.8;
+}
+
+// The figure in the heading face, big: what the page is for.
+.figure {
+    margin-block: 0.25rem 0.75rem !important;
+    font-family: nb-theme(text-heading-1-font-family);
+    font-size: clamp(2.25rem, 6vw, 3.25rem);
+    font-weight: 600;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+}
+
+.change {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.625rem;
+    font-size: 0.875rem;
+}
+
+.balance-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.625rem;
+}
+
+.accounts {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+
+    @media (width <= 767.98px) {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 1rem;
+    }
+
+    p {
+        margin: 0;
+    }
+}
+
+.account-head {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+
+    > span:last-child {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+    }
+}
+
+.account-name {
+    font-weight: 600;
+}
+
+.account-balance {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem !important;
+    font-family: nb-theme(text-heading-1-font-family);
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+// An icon on a tinted square, in a status's colour.
+.tile {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: calc(#{nb-theme(border-radius)} * 0.75);
+    font-size: 1.25rem;
+
+    @each $status in primary, success, info, warning, danger {
+        &.status-#{$status} {
+            background: nb-theme(color-#{$status}-transparent-200);
+            color: nb-theme(color-#{$status}-default);
+        }
+    }
+
+    &.status-basic {
+        background: nb-theme(color-basic-transparent-200);
+        color: nb-theme(text-hint-color);
+    }
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.5rem;
+
+    .wide {
+        grid-column: span 2;
+    }
+
+    @media (width <= 991.98px) {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 1rem;
+
+        .wide {
+            grid-column: auto;
+        }
+    }
+}
+
+.card-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+
+    .caption {
+        display: block;
+        margin-top: 0.125rem;
+        font-weight: 400;
+    }
+}
+
+.transaction,
+.insight {
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+
+    > span:nth-child(2) {
+        display: flex;
+        flex: 1;
+        flex-direction: column;
+        min-width: 0;
+    }
+}
+
+.insight {
+    align-items: flex-start;
+}
+
+.merchant,
+.insight-title {
+    font-weight: 600;
+}
+
+.amount {
+    flex: none;
+    font-weight: 600;
+
+    &.credit {
+        color: nb-theme(text-success-color);
+    }
+}
+
+// The donut in the middle of its card, which is as tall as the spending chart beside it.
+.categories nb-card-body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    justify-content: center;
+}

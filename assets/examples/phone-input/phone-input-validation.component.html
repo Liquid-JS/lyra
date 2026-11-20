@@ -1,0 +1,67 @@
+<nb-card>
+    <nb-card-body>
+        <form [formGroup]="form"
+            (ngSubmit)="save()">
+            <div class="field">
+                <label class="label"
+                    id="phone-mobile-label">Mobile</label>
+                <nb-phone-input formControlName="mobile"
+                    fullWidth
+                    aria-labelledby="phone-mobile-label"
+                    nbValidation
+                    #mobile="nbValidation" />
+                <nb-validation-errors [for]="mobile" />
+            </div>
+
+            <div class="field">
+                <label class="label"
+                    id="phone-office-label">Office (US, UK, Canada, Australia or Ireland)</label>
+                <nb-phone-input formControlName="office"
+                    [countries]="offices"
+                    fullWidth
+                    aria-labelledby="phone-office-label"
+                    nbValidation
+                    #office="nbValidation" />
+                <nb-validation-errors [for]="office" />
+            </div>
+
+            <div class="field">
+                <nb-checkbox formControlName="hasFax">Add a fax number</nb-checkbox>
+            </div>
+
+            @if (form.controls.hasFax.value) {
+            <div class="field">
+                <label class="label"
+                    id="phone-fax-label">Fax</label>
+                <nb-phone-input formControlName="fax"
+                    fullWidth
+                    aria-labelledby="phone-fax-label"
+                    nbValidation
+                    #fax="nbValidation" />
+                <nb-validation-errors [for]="fax" />
+            </div>
+            }
+
+            <div class="field">
+                <label class="label"
+                    for="phone-support">Support line, as text (US or Canada)</label>
+                <input nbInput
+                    fullWidth
+                    id="phone-support"
+                    type="tel"
+                    formControlName="support"
+                    nbValidation
+                    #support="nbValidation" />
+                <nb-validation-errors [for]="support" />
+            </div>
+
+            <button nbButton
+                status="primary"
+                type="submit">Save</button>
+        </form>
+
+        @if (saved(); as values) {
+        <p class="paragraph saved">Saved: <code>{{ values | json }}</code></p>
+        }
+    </nb-card-body>
+</nb-card>

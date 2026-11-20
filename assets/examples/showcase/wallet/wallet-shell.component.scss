@@ -1,0 +1,132 @@
+@use "../../../styles/themes" as *;
+
+$tabs-height: 4rem;
+$phone: 767.98px;
+
+nb-layout-header ::ng-deep nav {
+    gap: 1.5rem;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    color: nb-theme(text-basic-color);
+    font-family: nb-theme(text-heading-1-font-family);
+    font-size: 1.25rem;
+    font-weight: 700;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+// A coin: the primary colour with a lighter crescent.
+.logo {
+    width: 1.625rem;
+    height: 1.625rem;
+    border-radius: 50%;
+    background:
+        radial-gradient(circle at 35% 35%, nb-theme(color-primary-300) 0 28%, transparent 30%),
+        nb-theme(color-primary-default);
+}
+
+// The sections in the header, where there's room; on a phone they're the tabs below.
+.sections {
+    display: flex;
+    gap: 0.25rem;
+    margin-inline-start: 1rem;
+
+    a {
+        padding: 0.5rem 0.875rem;
+        border-radius: nb-theme(border-radius);
+        color: nb-theme(text-hint-color);
+        font-weight: 600;
+        text-decoration: none;
+
+        &:hover {
+            color: nb-theme(text-basic-color);
+        }
+
+        &.active {
+            background: nb-theme(color-primary-transparent-100);
+            color: nb-theme(text-primary-color);
+        }
+
+        &:focus-visible {
+            outline: none;
+            box-shadow: 0 0 0 nb-theme(outline-width) nb-theme(outline-color);
+        }
+    }
+
+    @media (max-width: $phone) {
+        display: none;
+    }
+}
+
+nb-actions {
+    margin-inline-start: auto;
+}
+
+// A phone shows the avatar only.
+nb-user ::ng-deep .info-container {
+    @media (max-width: $phone) {
+        display: none;
+    }
+}
+
+// The pages are a column of a comfortable width, with room for the tabs on a phone.
+.page {
+    --layout-padding: 2rem 1.5rem 3rem;
+    --layout-medium-padding: 1.5rem 1.5rem 3rem;
+    --layout-small-padding: 1rem 1rem calc(#{$tabs-height} + 1.5rem);
+
+    ::ng-deep > * {
+        display: block;
+        width: 100%;
+        max-width: 72rem;
+        margin: 0 auto;
+    }
+}
+
+// The tabs along the bottom, in the header's colours, on a phone only.
+.tabs {
+    position: fixed;
+    inset-inline: 0;
+    bottom: 0;
+    z-index: 1040;
+    display: none;
+    height: $tabs-height;
+    padding-bottom: env(safe-area-inset-bottom);
+    border-top: 1px solid nb-theme(divider-color);
+    background: nb-theme(header-background-color);
+
+    @media (max-width: $phone) {
+        display: flex;
+    }
+
+    a {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.25rem;
+        color: nb-theme(text-hint-color);
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-decoration: none;
+
+        nb-icon {
+            font-size: 1.5rem;
+        }
+
+        &.active {
+            color: nb-theme(text-primary-color);
+            box-shadow: inset 0 2px 0 nb-theme(color-primary-default);
+        }
+
+        &:focus-visible {
+            outline: none;
+            box-shadow: inset 0 0 0 nb-theme(outline-width) nb-theme(outline-color);
+        }
+    }
+}

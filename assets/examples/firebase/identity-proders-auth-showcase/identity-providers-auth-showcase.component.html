@@ -1,0 +1,29 @@
+<div>Authenticated: {{ isAuthenticated() }}</div>
+
+@if (isAuthenticated()) {
+<div>
+    Current User Token:
+    <pre> {{ userToken() | json }} </pre>
+</div>
+}
+
+@if (data()) {
+<div>
+    Data from backend
+    <pre>{{ data() | json }}</pre>
+</div>
+}
+
+@if (isAuthenticated()) {
+<button (click)="logout()">
+    Logout
+</button>
+}
+
+@if (isAuthenticated() === false) {
+<button (click)="loginWithGoogle()">
+    Login with google
+</button>
+}
+
+<button (click)="getData()">Get data from Firebase</button>

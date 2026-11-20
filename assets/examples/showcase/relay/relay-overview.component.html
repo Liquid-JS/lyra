@@ -1,0 +1,97 @@
+<div class="page-header">
+    <div>
+        <h1 class="h5">Overview</h1>
+        <p class="hint">Acme · live · last 24 hours</p>
+    </div>
+    <div class="tools">
+        <a nbButton
+            outline
+            size="small"
+            routerLink="../events">
+            <nb-icon icon="list-outline" />
+            Event log
+        </a>
+        <button nbButton
+            status="primary"
+            size="small"
+            type="button">
+            <nb-icon icon="plus-outline" />
+            New endpoint
+        </button>
+    </div>
+</div>
+
+<div class="stats">
+    @for (stat of stats; track stat.title) {
+    <nb-card>
+        <nb-card-body>
+            <p class="caption">{{ stat.title }}</p>
+            <p class="value mono">{{ stat.value }}</p>
+            <p class="stat">
+                <span class="change"
+                    [class.good]="(stat.change > 0) === (stat.title !== 'p95 latency' && stat.title !== 'Retries')">
+                    <nb-icon [icon]="stat.change > 0 ? 'trending-up-outline' : 'trending-down-outline'" />
+                    <span class="mono">{{ stat.change > 0 ? '+' : '' }}{{ stat.change | number: '1.1-2' }}%</span>
+                </span>
+                <span class="caption against">vs {{ stat.against }}</span>
+            </p>
+        </nb-card-body>
+    </nb-card>
+    }
+</div>
+
+<div class="grid">
+    <nb-card class="chart">
+        <nb-card-header>Deliveries by the hour</nb-card-header>
+        <nb-card-body>
+            <nb-line-chart area
+                smooth
+                [labels]="hours"
+                [series]="series"
+                aria-label="Deliveries and failures by the hour; deliveries peak in the afternoon, failures spike at 16:00" />
+        </nb-card-body>
+    </nb-card>
+
+    <nb-card class="failures">
+        <nb-card-header>
+            <span>Needs attention</span>
+            <a routerLink="../events">See all</a>
+        </nb-card-header>
+        <nb-list>
+            @for (event of failures; track event.id) {
+            <nb-list-item>
+                <span class="event">
+                    <span class="type">{{ event.type }}</span>
+                    <span class="caption mono meta"><span class="route">{{ event.id }} → {{ event.endpoint }}</span><span class="at">·
+                            {{ event.at | date: 'HH:mm' }}</span></span>
+                </span>
+                <nb-tag appearance="outline"
+                    size="tiny"
+                    [status]="status[event.status]"
+                    [text]="event.status" />
+            </nb-list-item>
+            }
+        </nb-list>
+    </nb-card>
+
+    <nb-card class="endpoints">
+        <nb-card-header>Endpoints</nb-card-header>
+        <nb-list>
+            @for (endpoint of endpoints; track endpoint.id) {
+            <nb-list-item>
+                <span class="endpoint">
+                    <span class="url mono">{{ endpoint.url }}</span>
+                    <span class="caption">{{ endpoint.id }} · {{ endpoint.region }}</span>
+                </span>
+                <span class="rate">
+                    <span class="mono">{{ endpoint.successRate | number: '1.1-1' }}%</span>
+                    <nb-progress-bar size="tiny"
+                        [status]="health(endpoint.successRate)"
+                        [value]="endpoint.successRate"
+                        [attr.aria-label]="endpoint.successRate + '% delivered'" />
+                </span>
+            </nb-list-item>
+            }
+        </nb-list>
+    </nb-card>
+</div>
