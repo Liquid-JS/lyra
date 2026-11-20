@@ -1,0 +1,22 @@
+<nb-card [size]="'medium'">
+  <nb-card-header>List inside nb-card-body</nb-card-header>
+  <nb-card-body>
+    <nb-list>
+      @for (fruit of fruits; track fruit) {
+      <nb-list-item>
+        {{ fruit }}
+      </nb-list-item>
+      }
+    </nb-list>
+  </nb-card-body>
+</nb-card>
+<nb-card [size]="'medium'">
+  <nb-card-header>List inside nb-card</nb-card-header>
+  <nb-list>
+    @for (fruit of fruits; track fruit) {
+    <nb-list-item>
+      {{ fruit }}
+    </nb-list-item>
+    }
+  </nb-list>
+</nb-card>

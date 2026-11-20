@@ -13,6 +13,9 @@
 
   .reveal-button {
     line-height: nb-theme(card-text-line-height);
+    // Inside the card's border, so the chevron ends where the card's text does, on its last line.
+    margin-inline-end: nb-theme(card-border-width);
+    margin-bottom: nb-theme(card-border-width);
     padding: nb-theme(card-padding);
   }
 }

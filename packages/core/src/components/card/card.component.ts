@@ -1,18 +1,11 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
+import { Component, computed, Directive, input, linkedSignal } from '@angular/core';
 
-import { Component, Input, HostBinding } from '@angular/core';
-
-import { NbStatusService } from '../../services/status.service';
-import { NbComponentSize } from '../component-size';
-import { NbComponentOrCustomStatus, NbComponentStatus } from '../component-status';
+import { injectNbDefaults, NbCardAppearance } from '@liquid-js/lyr-core/base';
+import { NbComponentSize } from '@liquid-js/lyr-core/base';
+import { NbComponentOrCustomStatus, NbComponentStatus } from '@liquid-js/lyr-core/base';
 
 /**
- * Component intended to be used within the `<nb-card>` component.
- * It adds styles for a preset header section.
+ * The header of an `nb-card`, coloured by the card's `status`.
  *
  * @styles
  *
@@ -37,36 +30,51 @@ import { NbComponentOrCustomStatus, NbComponentStatus } from '../component-statu
  * card-header-control-text-color:
  */
 @Component({
-    selector: 'nb-card-header',
-    template: `<ng-content></ng-content>`,
-    standalone: false
+  selector: 'nb-card-header',
+  template: `<ng-content />`,
 })
-export class NbCardHeaderComponent {
-}
+export class NbCardHeaderComponent {}
 
 /**
- * Component intended to be used within  the `<nb-card>` component.
- * Adds styles for a preset body section.
+ * The main content of an `nb-card`, padded and aligned with its header and footer.
  */
 @Component({
-    selector: 'nb-card-body',
-    template: `<ng-content></ng-content>`,
-    standalone: false
+  selector: 'nb-card-body',
+  template: `<ng-content />`,
 })
-export class NbCardBodyComponent {
-}
+export class NbCardBodyComponent {}
 
 /**
- * Component intended to be used within  the `<nb-card>` component.
- * Adds styles for a preset footer section.
+ * The footer of an `nb-card`, divided from the content above it.
  */
 @Component({
-    selector: 'nb-card-footer',
-    template: `<ng-content></ng-content>`,
-    standalone: false
+  selector: 'nb-card-footer',
+  template: `<ng-content />`,
 })
-export class NbCardFooterComponent {
-}
+export class NbCardFooterComponent {}
+
+/**
+ * Buttons at the end of a card's header or footer. They're centered on a line of its text, and as tall as the
+ * header or footer's padding allows without making it taller.
+ *
+ * ```html
+ * <nb-card-header>
+ *   <h6>Users</h6>
+ *   <nb-card-actions>
+ *     <button nbButton ghost aria-label="Edit"><nb-icon icon="edit-outline" /></button>
+ *   </nb-card-actions>
+ * </nb-card-header>
+ * ```
+ *
+ * @styles
+ *
+ * card-actions-gap:
+ */
+@Component({
+  selector: 'nb-card-actions',
+  template: `<ng-content />`,
+})
+export class NbCardActionsComponent {}
 
 /**
  * Basic content container component.
@@ -86,6 +94,16 @@ export class NbCardFooterComponent {
  *
  * ### Installation
  *
+ * Import `NbCardComponent`, `NbCardHeaderComponent`, `NbCardBodyComponent`, `NbCardFooterComponent` into your standalone component:
+ * ```ts
+ * @Component({
+ *   imports: [NbCardComponent, NbCardHeaderComponent, NbCardBodyComponent, NbCardFooterComponent],
+ * })
+ * export class PageComponent { }
+ * ```
+ *
+ * With NgModules:
+ *
  * Import `NbCardModule` to your feature module.
  * ```ts
  * @NgModule({
@@ -101,22 +119,34 @@ export class NbCardFooterComponent {
  * Card with header and footer:
  * @stacked-example(With Header & Footer, card/card-full.component)
  *
- * Most of the time main card content goes to `nb-card-body`,
- * so it is styled and aligned in accordance with the header and footer.
- * In case you need a higher level of control, you can pass contend directly to `nb-card`,
- * so `nb-card-body` styling will not be applied.
- *
- * Consider an example with `nb-list` component:
+ * The main content goes in `nb-card-body`, padded and aligned with the header and footer. Content put straight in
+ * `nb-card` gets no padding, e.g. an `nb-list` that reaches the card's edges:
  * @stacked-example(Card with list, card/card-without-body.component)
  *
- * Colored cards could be simply configured by providing a `status` property:
+ * Put buttons in `nb-card-actions`, at the end of the header or footer:
+ * @stacked-example(Card actions, card/card-actions.component)
+ *
+ * `status` colours the card's header:
  * @stacked-example(Colored Card, card/card-colors.component)
  *
- * It is also possible to assign an `accent` property for a slight card highlight
- * as well as combine it with `status`:
+ * `accent` is a band of a status colour along the card's top, a slighter highlight, which combines with `status`:
  * @stacked-example(Accent Card, card/card-accents.component)
  *
- * Cards of smaller sizes could be combined and put on the same row with a bigger card so they have the same heights.
+ * Put an image or a coloured block at a card's top with `nbCardMedia`, or its bottom with `nbCardMedia="bottom"`. It
+ * reaches the card's edges and covers the card's border, as a coloured header and an accent do:
+ * @stacked-example(Card with media, card/card-media.component)
+ *
+ * `appearance="filled"` makes a tinted card without an outer border, e.g. for cards inside a card or on a white page,
+ * and `appearance="floating"` a card with a shadow instead of a border, over the page; chats, accordions and tables
+ * have it too:
+ * @stacked-example(Card Appearances, card/card-appearances.component)
+ *
+ * A card that leads somewhere has an `nbCardLink`: a link or button inside it, usually its title, that covers the
+ * whole card, so the card responds to hover, presses and focus as one. Other buttons and links in the card stay
+ * their own. Screen readers find the link with its own text, so give it one that names the card:
+ * @stacked-example(Interactive Card, card/card-interactive.component)
+ *
+ * `size` gives a card a fixed height, so cards of smaller sizes stack beside a bigger one in a row:
  * @stacked-example(Card sizes combinations, card/card-sizes-combinations.component)
  *
  * @additional-example(Multiple Sizes, card/card-sizes.component)
@@ -133,8 +163,10 @@ export class NbCardFooterComponent {
  * card-border-style:
  * card-border-color:
  * card-border-radius:
+ * card-accent-height:
  * card-padding:
  * card-shadow:
+ * card-floating-shadow:
  * card-divider-color:
  * card-divider-style:
  * card-divider-width:
@@ -147,155 +179,102 @@ export class NbCardFooterComponent {
  * card-scrollbar-color:
  * card-scrollbar-background-color:
  * card-scrollbar-width:
+ * card-filled-background-color:
+ * card-filled-divider-color:
+ * card-hover-background-color:
+ * card-hover-border-color:
+ * card-active-background-color:
+ * card-active-border-color:
+ * card-filled-hover-background-color:
+ * card-filled-active-background-color:
+ * card-outline-width:
+ * card-outline-color:
  */
 @Component({
-    selector: 'nb-card',
-    styleUrls: ['./card.component.scss'],
-    template: `
-    <ng-content select="nb-card-header"></ng-content>
-    <ng-content select="nb-card-body"></ng-content>
-    <ng-content></ng-content>
-    <ng-content select="nb-card-footer"></ng-content>
-  `,
-    standalone: false
+  selector: 'nb-card',
+  styleUrls: ['./card.component.scss'],
+  templateUrl: './card.component.html',
+  host: {
+    '[class]': 'hostClasses()',
+    '[class.accent]': '!!accent()',
+  },
 })
 export class NbCardComponent {
+  // The app's defaults for this type, which the inputs below start from.
+  protected readonly nbDefaults = injectNbDefaults('card');
 
   /**
-   * Card size, available sizes:
-   * tiny, small, medium, large, giant
+   * A fixed height: `tiny`, `small`, `medium`, `large` or `giant`. Unset by default, so the card is as tall as its
+   * content.
    */
-  @Input()
-  get size(): '' | NbComponentSize {
-    return this._size;
-  }
-  set size(value: '' | NbComponentSize) {
-    this._size = value;
-  }
-  _size: '' | NbComponentSize = '';
+  readonly size = input<'' | NbComponentSize>('');
 
   /**
-   * Card status:
-   * `basic`, `primary`, `info`, `success`, `warning`, `danger`, `control`
+   * Colours the header: `basic`, `primary`, `info`, `success`, `warning`, `danger`, `control` or a custom status.
+   * Unset by default.
    */
-  @Input()
-  status: '' | NbComponentOrCustomStatus = '';
+  readonly status = input<'' | NbComponentOrCustomStatus>('');
 
   /**
-   * Card accent (color of the top border):
-   * `basic`, `primary`, `info`, `success`, `warning`, `danger`, `control`
+   * A band of a status colour along the top: `basic`, `primary`, `info`, `success`, `warning`, `danger` or
+   * `control`. Unset by default.
    */
-  @Input()
-  accent: '' | NbComponentStatus = '';
+  readonly accent = input<'' | NbComponentStatus>('');
 
-  @HostBinding('class.size-tiny')
-  get tiny() {
-    return this.size === 'tiny';
-  }
+  /**
+   * Card appearance: `outline`, a card with a border, `filled`, a tinted card without one, or `floating`, a card with
+   * a shadow instead of a border, over the page.
+   */
+  readonly appearanceInput = input<NbCardAppearance | undefined>(undefined, { alias: 'appearance' });
+  /** The appearance in use: the input's, the app's default, or 'outline'. */
+  readonly appearance = linkedSignal<NbCardAppearance>(
+    () => this.appearanceInput() ?? this.nbDefaults().appearance ?? 'outline',
+  );
 
-  @HostBinding('class.size-small')
-  get small() {
-    return this.size === 'small';
-  }
+  protected readonly hostClasses = computed(() =>
+    [
+      `appearance-${this.appearance()}`,
+      this.size() && `size-${this.size()}`,
+      this.status() && `status-${this.status()}`,
+      this.accent() && `accent-${this.accent()}`,
+    ].filter(Boolean),
+  );
+}
 
-  @HostBinding('class.size-medium')
-  get medium() {
-    return this.size === 'medium';
-  }
+/**
+ * Makes a link or button inside a `nb-card`, usually its title, cover the whole card: a click anywhere on the card
+ * follows it, and the card shows its hover, active and focus states. Other buttons and links in the card stay
+ * clickable on their own.
+ *
+ * ```html
+ * <nb-card>
+ *   <nb-card-header><a nbCardLink routerLink="/plans/team">Team plan</a></nb-card-header>
+ *   <nb-card-body>For up to 20 people.</nb-card-body>
+ * </nb-card>
+ * ```
+ */
+@Directive({
+  selector: '[nbCardLink]',
+  host: { class: 'card-link' },
+})
+export class NbCardLinkDirective {}
 
-  @HostBinding('class.size-large')
-  get large() {
-    return this.size === 'large';
-  }
-
-  @HostBinding('class.size-giant')
-  get giant() {
-    return this.size === 'giant';
-  }
-
-  @HostBinding('class.status-primary')
-  get primary() {
-    return this.status === 'primary';
-  }
-
-  @HostBinding('class.status-info')
-  get info() {
-    return this.status === 'info';
-  }
-
-  @HostBinding('class.status-success')
-  get success() {
-    return this.status === 'success';
-  }
-
-  @HostBinding('class.status-warning')
-  get warning() {
-    return this.status === 'warning';
-  }
-
-  @HostBinding('class.status-danger')
-  get danger() {
-    return this.status === 'danger';
-  }
-
-  @HostBinding('class.status-basic')
-  get basic() {
-    return this.status === 'basic';
-  }
-
-  @HostBinding('class.status-control')
-  get control() {
-    return this.status === 'control';
-  }
-
-  @HostBinding('class.accent')
-  get hasAccent() {
-    return this.accent;
-  }
-
-  @HostBinding('class.accent-primary')
-  get primaryAccent() {
-    return this.accent === 'primary';
-  }
-
-  @HostBinding('class.accent-info')
-  get infoAccent() {
-    return this.accent === 'info';
-  }
-
-  @HostBinding('class.accent-success')
-  get successAccent() {
-    return this.accent === 'success';
-  }
-
-  @HostBinding('class.accent-warning')
-  get warningAccent() {
-    return this.accent === 'warning';
-  }
-
-  @HostBinding('class.accent-danger')
-  get dangerAccent() {
-    return this.accent === 'danger';
-  }
-
-  @HostBinding('class.accent-basic')
-  get basicAccent() {
-    return this.accent === 'basic';
-  }
-
-  @HostBinding('class.accent-control')
-  get controlAccent() {
-    return this.accent === 'control';
-  }
-
-  @HostBinding('class')
-  get additionalClasses(): string[] {
-    if (this.statusService.isCustomStatus(this.status)) {
-      return [this.statusService.getStatusClass(this.status)];
-    }
-    return [];
-  }
-
-  constructor(protected statusService: NbStatusService) {
-  }
+/**
+ * An image, video or coloured block at a card's top, or with `nbCardMedia="bottom"` its bottom. It reaches the card's
+ * edges, covers its border and follows its rounded corners.
+ *
+ * ```html
+ * <nb-card>
+ *   <img nbCardMedia src="cover.webp" alt="" />
+ *   <nb-card-body>The team behind the product.</nb-card-body>
+ * </nb-card>
+ * ```
+ */
+@Directive({
+  selector: '[nbCardMedia]',
+  host: { class: 'card-media' },
+})
+export class NbCardMediaDirective {
+  /** Where the media goes: the card's top (by default), or its `bottom`; set as a plain attribute. */
+  readonly nbCardMedia = input<'' | 'top' | 'bottom'>('');
 }

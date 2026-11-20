@@ -1,0 +1,126 @@
+@for (card of cards; track card) {
+<nb-card [size]="card.size"
+  [status]="card.status">
+  <nb-card-header>
+    <span>Header</span>
+  </nb-card-header>
+  @if (card.size !== 'tiny') {
+  <nb-card-body>
+    <span>Body</span>
+  </nb-card-body>
+  }
+  @if (card.size !== 'tiny') {
+  <nb-card-footer>
+    <span>Footer</span>
+  </nb-card-footer>
+  }
+</nb-card>
+}
+
+<h3>Accent Cards</h3>
+
+@for (card of enhancedCards.accentCards; track card) {
+<nb-card [size]="card.size"
+  [status]="card.status"
+  [accent]="card.accent">
+  <nb-card-header>
+    <span>Header</span>
+  </nb-card-header>
+  <nb-card-body>
+    <span>Body</span>
+  </nb-card-body>
+  <nb-card-footer>
+    <span>Footer</span>
+  </nb-card-footer>
+</nb-card>
+}
+
+<h3>Reveal Cards</h3>
+
+@for (card of enhancedCards.revealCards; track card) {
+<nb-reveal-card>
+  <nb-card-front>
+    <nb-card [accent]="card.accent"
+      [status]="card.status"
+      [size]="card.size">
+      @if (card.size !== 'tiny') {
+      <nb-card-header>
+        <span>Front Header</span>
+      </nb-card-header>
+      }
+      <nb-card-body>
+        <span>Front Reveal Card Body</span>
+      </nb-card-body>
+      @if (card.size !== 'tiny') {
+      <nb-card-footer>
+        <span>Front Footer</span>
+      </nb-card-footer>
+      }
+    </nb-card>
+  </nb-card-front>
+  <nb-card-back>
+    <nb-card [accent]="card.accent"
+      [status]="card.status"
+      [size]="card.size">
+      @if (card.size !== 'tiny') {
+      <nb-card-header>
+        <span>Back Header</span>
+      </nb-card-header>
+      }
+      <nb-card-body>
+        <span>Back Reveal Card Body</span>
+      </nb-card-body>
+      @if (card.size !== 'tiny') {
+      <nb-card-footer>
+        <span>Back Footer</span>
+      </nb-card-footer>
+      }
+    </nb-card>
+  </nb-card-back>
+</nb-reveal-card>
+}
+
+<h3>Flip Cards</h3>
+
+@for (card of enhancedCards.flipCards; track card) {
+<nb-flip-card>
+  <nb-card-front>
+    <nb-card [accent]="card.accent"
+      [status]="card.status"
+      [size]="card.size">
+      @if (card.size !== 'tiny') {
+      <nb-card-header>
+        <span>Front Header</span>
+      </nb-card-header>
+      }
+      <nb-card-body>
+        <span>Front Flip Card Body</span>
+      </nb-card-body>
+      @if (card.size !== 'tiny') {
+      <nb-card-footer>
+        <span>Front Footer</span>
+      </nb-card-footer>
+      }
+    </nb-card>
+  </nb-card-front>
+  <nb-card-back>
+    <nb-card [accent]="card.accent"
+      [status]="card.status"
+      [size]="card.size">
+      @if (card.size !== 'tiny') {
+      <nb-card-header>
+        <span>Back Header</span>
+      </nb-card-header>
+      }
+      <nb-card-body>
+        <span>Back Flip Card Body</span>
+      </nb-card-body>
+      @if (card.size !== 'tiny') {
+      <nb-card-footer>
+        <span>Back Footer</span>
+      </nb-card-footer>
+      }
+    </nb-card>
+  </nb-card-back>
+</nb-flip-card>
+}

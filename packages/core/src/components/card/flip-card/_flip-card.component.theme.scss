@@ -4,6 +4,8 @@
   .flip-button {
     line-height: nb-theme(card-text-line-height);
     margin-bottom: nb-theme(card-margin-bottom);
+    // Inside the card's border, so the chevron ends where the card's text does.
+    margin-inline-end: nb-theme(card-border-width);
     padding: nb-theme(card-padding);
   }
 

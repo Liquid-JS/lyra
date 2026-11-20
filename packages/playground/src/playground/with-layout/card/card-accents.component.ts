@@ -1,16 +1,10 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { Component } from '@angular/core';
+import { NbCardComponent, NbCardHeaderComponent, NbCardBodyComponent } from '@liquid-js/lyr-core';
 
 @Component({
-    selector: 'nb-card-accents',
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    templateUrl: './card-accents.component.html',
-    standalone: false
+  selector: 'nb-card-accents',
+  templateUrl: './card-accents.component.html',
+  imports: [NbCardComponent, NbCardHeaderComponent, NbCardBodyComponent],
 })
 export class CardAccentsComponent {
 }

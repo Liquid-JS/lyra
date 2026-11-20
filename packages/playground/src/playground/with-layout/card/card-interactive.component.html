@@ -1,0 +1,23 @@
+<div class="cards">
+  @for (plan of plans; track plan.id) {
+  <nb-card [appearance]="plan.id === 'team' ? 'filled' : 'outline'">
+    <nb-card-header>
+      <a nbCardLink
+        routerLink="."
+        [queryParams]="{ plan: plan.id }">{{ plan.name }} plan</a>
+    </nb-card-header>
+    <nb-card-body>{{ plan.description }}</nb-card-body>
+    <nb-card-footer>
+      <button nbButton
+        edge="start"
+        ghost
+        inline
+        size="small"
+        type="button"
+        (click)="compared.set(plan.name)">Compare</button>
+    </nb-card-footer>
+  </nb-card>
+  }
+</div>
+
+<p class="result">Chosen: {{ chosen() ?? 'none' }}. Comparing: {{ compared() ?? 'none' }}.</p>

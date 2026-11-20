@@ -1,11 +1,19 @@
-import { Component, Input, HostBinding } from '@angular/core';
+import { Component, input, model } from '@angular/core';
+import { NbIconComponent } from '@liquid-js/lyr-core/icon';
+import { injectNbTexts, NbLocalize } from '@liquid-js/lyr-core/base';
+import { ɵconvertToBoolProperty as convertToBoolProperty, NbBooleanInput } from '@liquid-js/lyr-core/base';
+
+/** @internal */
+declare const $localize: NbLocalize;
 
 /**
+ * A card with a back that slides up over its front.
  *
  * Reveal card example:
  * @stacked-example(My example, reveal-card/reveal-card-showcase.component)
  *
- * As a content Reveal card accepts two instances of `nb-card` - for front and back sides.
+ * Its content is two `nb-card`s, in `nb-card-front` and `nb-card-back`. A button in the corner reveals the back, by
+ * a click, Enter or Space; `revealed` does it from code.
  *
  * Basic reveal card configuration:
  *
@@ -29,6 +37,16 @@ import { Component, Input, HostBinding } from '@angular/core';
  * ```
  *
  * ### Installation
+ *
+ * Import `NbRevealCardComponent`, `NbCardFrontComponent`, `NbCardBackComponent` into your standalone component:
+ * ```ts
+ * @Component({
+ *   imports: [NbRevealCardComponent, NbCardFrontComponent, NbCardBackComponent],
+ * })
+ * export class PageComponent { }
+ * ```
+ *
+ * With NgModules:
  *
  * Import `NbCardModule` to your feature module.
  * ```ts
@@ -55,35 +73,35 @@ import { Component, Input, HostBinding } from '@angular/core';
  * @additional-example(Multiple Sizes, reveal-card/reveal-card-sizes.component)
  */
 @Component({
-    selector: 'nb-reveal-card',
-    styleUrls: ['./reveal-card.component.scss'],
-    template: `
-    <ng-content select="nb-card-front"></ng-content>
-    <div class="second-card-container">
-      <ng-content select="nb-card-back"></ng-content>
-    </div>
-    <a *ngIf="showToggleButton" class="reveal-button" (click)="toggle()">
-      <nb-icon icon="chevron-down-outline" pack="nebular-essentials" aria-hidden="true"></nb-icon>
-    </a>
-  `,
-    standalone: false
+  selector: 'nb-reveal-card',
+  styleUrls: ['./reveal-card.component.scss'],
+  templateUrl: './reveal-card.component.html',
+  imports: [NbIconComponent],
+  host: {
+    '[class.revealed]': 'revealed()',
+  },
 })
 export class NbRevealCardComponent {
-  /**
-   * Reveal state
-   * @type boolean
-   */
-  @Input()
-  @HostBinding('class.revealed')
-  revealed: boolean = false;
+  protected readonly texts = injectNbTexts('revealCard', () => ({
+    toggle: $localize`:@@nb.revealCard.toggle:Reveal card`,
+  }));
 
   /**
-   * Show/hide toggle button to be able to control toggle from your code
-   * @type {boolean}
+   * Whether the back is shown. Two-way bindable, so the card can be revealed from code.
    */
-  @Input() showToggleButton = true;
+  readonly revealed = model<boolean>(false);
+
+  /**
+   * Shows the button that reveals the back (default). Without it, reveal it with `revealed`.
+   */
+  readonly showToggleButton = input<boolean, NbBooleanInput>(true, { transform: convertToBoolProperty });
+
+  /**
+   * Accessible name of the toggle button; "Reveal card" by default.
+   */
+  readonly toggleButtonLabel = input<string>();
 
   toggle() {
-    this.revealed = !this.revealed;
+    this.revealed.update((revealed) => !revealed);
   }
 }

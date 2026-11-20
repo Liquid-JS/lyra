@@ -1,16 +1,24 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { Component } from '@angular/core';
+import {
+  NbFlipCardComponent,
+  NbCardFrontComponent,
+  NbCardBackComponent,
+  NbCardComponent,
+  NbCardHeaderComponent,
+  NbCardBodyComponent,
+} from '@liquid-js/lyr-core';
 
 @Component({
-    selector: 'nb-flip-card-sizes',
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    templateUrl: './flip-card-sizes.component.html',
-    standalone: false
+  selector: 'nb-flip-card-sizes',
+  templateUrl: './flip-card-sizes.component.html',
+  imports: [
+    NbFlipCardComponent,
+    NbCardFrontComponent,
+    NbCardComponent,
+    NbCardHeaderComponent,
+    NbCardBodyComponent,
+    NbCardBackComponent,
+  ],
 })
 export class FlipCardSizesComponent {
 }

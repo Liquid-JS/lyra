@@ -1,34 +1,30 @@
 import { Component } from '@angular/core';
 import { fruits } from '../list/fruits-list';
+import {
+  NbCardComponent,
+  NbCardHeaderComponent,
+  NbCardBodyComponent,
+  NbListComponent,
+  NbListItemComponent,
+} from '@liquid-js/lyr-core';
 
 @Component({
-    template: `
-    <nb-card [size]="'medium'">
-      <nb-card-header>List inside nb-card-body</nb-card-header>
-      <nb-card-body>
-        <nb-list>
-          <nb-list-item *ngFor="let fruit of fruits">
-            {{ fruit }}
-          </nb-list-item>
-        </nb-list>
-      </nb-card-body>
-    </nb-card>
-    <nb-card [size]="'medium'">
-      <nb-card-header>List inside nb-card</nb-card-header>
-      <nb-list>
-        <nb-list-item *ngFor="let fruit of fruits">
-          {{ fruit }}
-        </nb-list-item>
-      </nb-list>
-    </nb-card>
-  `,
-    styles: [`
-    nb-card {
-      min-width: 18rem;
-    }
-  `],
-    host: { class: 'example-height-60 example-horizontal-spread' },
-    standalone: false
+  templateUrl: './card-without-body.component.html',
+  styles: [
+    `
+      nb-card {
+        min-width: 18rem;
+      }
+    `,
+  ],
+  host: { class: 'example-height-60 example-horizontal-spread' },
+  imports: [
+    NbCardComponent,
+    NbCardHeaderComponent,
+    NbCardBodyComponent,
+    NbListComponent,
+    NbListItemComponent,
+  ],
 })
 export class CardWithoutBodyComponent {
   fruits = fruits;

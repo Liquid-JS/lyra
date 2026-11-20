@@ -1,8 +1,4 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
+@use '../../../styles/theming' as *;
 
 @mixin prefix-backface-visibility($value) {
   backface-visibility: $value;
@@ -18,22 +14,26 @@
   position: relative;
 }
 
-:host-context(.flipped) {
-  .flipcard-body {
+// Not `:host-context`, which would flip a nested flip card with its parent, and child combinators throughout:
+// a nested flip card's template has the same encapsulation attribute.
+:host(.flipped) {
+  > .flipcard-body {
+    // Turns towards the start, the way the button's chevron points.
     transform: rotateY(-180deg);
+    @include nb-rtl(transform, rotateY(180deg));
 
-    .front-container {
+    > .front-container {
       opacity: 0;
       transition: opacity 0s 0.25s;
       @include prefix-backface-visibility(hidden);
 
-      .flip-button {
+      > .flip-button {
         opacity: 0;
         z-index: -1;
       }
     }
 
-    .back-container {
+    > .back-container {
       @include prefix-backface-visibility(visible);
     }
   }
@@ -53,7 +53,7 @@
     .flip-button {
       cursor: pointer;
       position: absolute;
-      right: 0;
+      inset-inline-end: 0;
       bottom: 0;
       opacity: 1;
       transition: opacity 0s 0.15s;
@@ -69,4 +69,8 @@
     @include prefix-backface-visibility(hidden);
     transform: rotateY(180deg);
   }
+}
+
+:host .flip-button nb-icon {
+  @include nb-rtl(transform, scaleX(-1));
 }

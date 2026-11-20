@@ -1,11 +1,19 @@
-import { Component, Input, HostBinding } from '@angular/core';
+import { Component, input, model } from '@angular/core';
+import { NbIconComponent } from '@liquid-js/lyr-core/icon';
+import { injectNbTexts, NbLocalize } from '@liquid-js/lyr-core/base';
+import { ɵconvertToBoolProperty as convertToBoolProperty, NbBooleanInput } from '@liquid-js/lyr-core/base';
+
+/** @internal */
+declare const $localize: NbLocalize;
 
 /**
+ * A card with two sides, which flips over to show its back.
  *
  * Flip card example:
  * @stacked-example(Showcase, flip-card/flip-card-showcase.component)
  *
- * As a content Flip card accepts two instances of `nb-card` - for front and back sides.
+ * Its content is two `nb-card`s, in `nb-card-front` and `nb-card-back`. A button in the corner flips it, by a click,
+ * Enter or Space; `flipped` flips it from code.
  *
  * Basic flip card configuration:
  *
@@ -29,6 +37,16 @@ import { Component, Input, HostBinding } from '@angular/core';
  * ```
  *
  * ### Installation
+ *
+ * Import `NbFlipCardComponent`, `NbCardFrontComponent`, `NbCardBackComponent` into your standalone component:
+ * ```ts
+ * @Component({
+ *   imports: [NbFlipCardComponent, NbCardFrontComponent, NbCardBackComponent],
+ * })
+ * export class PageComponent { }
+ * ```
+ *
+ * With NgModules:
  *
  * Import `NbCardModule` to your feature module.
  * ```ts
@@ -56,42 +74,35 @@ import { Component, Input, HostBinding } from '@angular/core';
  *
  */
 @Component({
-    selector: 'nb-flip-card',
-    styleUrls: ['./flip-card.component.scss'],
-    template: `
-    <div class="flipcard-body">
-      <div class="front-container">
-        <ng-content select="nb-card-front"></ng-content>
-        <a *ngIf="showToggleButton" class="flip-button" (click)="toggle()">
-          <nb-icon icon="chevron-left-outline" pack="nebular-essentials" aria-hidden="true"></nb-icon>
-        </a>
-      </div>
-      <div class="back-container">
-        <ng-content select="nb-card-back"></ng-content>
-        <a *ngIf="showToggleButton" class="flip-button" (click)="toggle()">
-          <nb-icon icon="chevron-left-outline" pack="nebular-essentials" aria-hidden="true"></nb-icon>
-        </a>
-      </div>
-    </div>
-  `,
-    standalone: false
+  selector: 'nb-flip-card',
+  styleUrls: ['./flip-card.component.scss'],
+  templateUrl: './flip-card.component.html',
+  imports: [NbIconComponent],
+  host: {
+    '[class.flipped]': 'flipped()',
+  },
 })
 export class NbFlipCardComponent {
-  /**
-   * Flip state
-   * @type boolean
-   */
-  @Input()
-  @HostBinding('class.flipped')
-  flipped: boolean = false;
+  protected readonly texts = injectNbTexts('flipCard', () => ({
+    toggle: $localize`:@@nb.flipCard.toggle:Flip card`,
+  }));
 
   /**
-   * Show/hide toggle button to be able to control toggle from your code
-   * @type {boolean}
+   * Whether the back is shown. Two-way bindable, so the card can be flipped from code.
    */
-  @Input() showToggleButton = true;
+  readonly flipped = model<boolean>(false);
+
+  /**
+   * Shows the button that flips the card (default). Without it, flip the card with `flipped`.
+   */
+  readonly showToggleButton = input<boolean, NbBooleanInput>(true, { transform: convertToBoolProperty });
+
+  /**
+   * Accessible name of the toggle button; "Flip card" by default.
+   */
+  readonly toggleButtonLabel = input<string>();
 
   toggle() {
-    this.flipped = !this.flipped;
+    this.flipped.update((flipped) => !flipped);
   }
 }

@@ -1,18 +1,14 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 import { NgModule } from '@angular/core';
 
-import { NbSharedModule } from '../shared/shared.module';
-import { NbIconModule } from '../icon/icon.module';
+import { NbIconModule } from '@liquid-js/lyr-core/icon';
 import {
+  NbCardActionsComponent,
   NbCardComponent,
   NbCardBodyComponent,
   NbCardFooterComponent,
   NbCardHeaderComponent,
+  NbCardLinkDirective,
+  NbCardMediaDirective,
 } from './card.component';
 
 import { NbRevealCardComponent } from './reveal-card/reveal-card.component';
@@ -24,6 +20,9 @@ const NB_CARD_COMPONENTS = [
   NbCardBodyComponent,
   NbCardFooterComponent,
   NbCardHeaderComponent,
+  NbCardActionsComponent,
+  NbCardLinkDirective,
+  NbCardMediaDirective,
   NbRevealCardComponent,
   NbFlipCardComponent,
   NbCardFrontComponent,
@@ -31,15 +30,7 @@ const NB_CARD_COMPONENTS = [
 ];
 
 @NgModule({
-  imports: [
-    NbSharedModule,
-    NbIconModule,
-  ],
-  declarations: [
-    ...NB_CARD_COMPONENTS,
-  ],
-  exports: [
-    ...NB_CARD_COMPONENTS,
-  ],
+  imports: [NbIconModule, ...NB_CARD_COMPONENTS],
+  exports: [...NB_CARD_COMPONENTS],
 })
 export class NbCardModule { }
