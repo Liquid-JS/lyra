@@ -1,45 +1,44 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
+import { ComponentRef, EnvironmentInjector, inject, Service } from '@angular/core';
+import { outputToObservable } from '@angular/core/rxjs-interop';
+import { defer, Observable } from 'rxjs';
+import { filter } from 'rxjs/operators';
 
-import { ComponentRef, Inject, Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
-import { filter, takeUntil } from 'rxjs/operators';
-
-import { NbComponentPortal, NbOverlayRef } from '../cdk/overlay/mapping';
-import { NbOverlayService, patch } from '../cdk/overlay/overlay-service';
-import { NbPositionBuilderService } from '../cdk/overlay/overlay-position';
-import { NbGlobalLogicalPosition, NbGlobalPosition, NbPositionHelper } from '../cdk/overlay/position-helper';
+import { NbComponentPortal, NbOverlayRef } from '@liquid-js/lyr-core/cdk';
+import { NbOverlayService, patch } from '@liquid-js/lyr-core/cdk';
+import { NbPositionBuilderService } from '@liquid-js/lyr-core/cdk';
+import { NbGlobalLogicalPosition, NbGlobalPosition, NbPositionHelper } from '@liquid-js/lyr-core/cdk';
 import { NbToastrContainerComponent } from './toastr-container.component';
 import { NB_TOASTR_CONFIG, NbToastrConfig } from './toastr-config';
 import { NbToast } from './model';
 import { NbToastComponent } from './toast.component';
-import { NB_DOCUMENT } from '../../theme.options';
+import { NB_DOCUMENT } from '@liquid-js/lyr-core/base';
 
 export class NbToastRef {
-  toastInstance: NbToastComponent;
+  /** Emits once the toast is closed, as a dialog's and a window's `onClose` do. */
+  readonly onClose: Observable<void>;
+  /** Emits as the toast is clicked. */
+  readonly onClick: Observable<void>;
 
-  constructor(private toastContainer: NbToastContainer, private toast: NbToast) {}
+  constructor(
+    private toastContainer: NbToastContainer,
+    private toast: NbToast,
+    /** The toast. */
+    public toastInstance: NbToastComponent,
+  ) {
+    // Read as they're observed, from the toast the ref has then.
+    this.onClose = defer(() => outputToObservable(this.toastInstance.destroy));
+    this.onClick = defer(() => outputToObservable(this.toastInstance.toastClick));
+  }
 
   close() {
     this.toastContainer.destroy(this.toast);
   }
-
-  onClose(): Observable<void> {
-    return this.toastInstance.destroy.asObservable();
-  }
-
-  onClick(): Observable<void> {
-    return this.toastInstance.toastClick.asObservable();
-  }
 }
 
 export class NbToastContainer {
-  protected toasts: NbToast[] = [];
-  protected prevToast: NbToast;
-  protected destroyTimeouts: Map<NbToast, ReturnType<typeof setTimeout>> = new Map();
+  protected toasts = new Array<NbToast>();
+  protected prevToast?: NbToast;
+  protected destroyTimeouts = new Map<NbToast, ReturnType<typeof setTimeout>>();
 
   get nativeElement() {
     return this.containerRef.location.nativeElement;
@@ -51,7 +50,7 @@ export class NbToastContainer {
     protected positionHelper: NbPositionHelper,
   ) {}
 
-  attach(toast: NbToast): NbToastRef {
+  attach(toast: NbToast): NbToastRef | undefined {
     if (toast.config.preventDuplicates && this.isDuplicate(toast)) {
       return undefined;
     }
@@ -69,23 +68,27 @@ export class NbToastContainer {
 
     if (toast.config.duration) {
       this.setDestroyTimeout(toast);
+      this.subscribeOnHold(toastComponent, toast);
+    }
 
-      if (toast.config.pauseOnHover) {
-        this.subscribeOnHover(toastComponent, toast);
-      }
+    if (toast.config.actions?.length && !toast.config.closeButton) {
+      // An action closes the toast unless it says otherwise.
+      this.subscribeOnCloseClick(toastComponent, toast);
     }
 
     this.prevToast = toast;
 
-    const toastRef = new NbToastRef(this, toast);
-    toastRef.toastInstance = toastComponent;
+    const toastRef = new NbToastRef(this, toast, toastComponent);
+    if (toastComponent) {
+      toastComponent.ref = toastRef;
+    }
 
     return toastRef;
   }
 
   destroy(toast: NbToast) {
     if (this.prevToast === toast) {
-      this.prevToast = null;
+      this.prevToast = undefined;
     }
 
     this.clearDestroyTimeout(toast);
@@ -100,7 +103,7 @@ export class NbToastContainer {
   }
 
   protected isDuplicatePrevious(toast: NbToast): boolean {
-    return this.prevToast && this.toastDuplicateCompareFunc(this.prevToast, toast);
+    return !!this.prevToast && this.toastDuplicateCompareFunc(this.prevToast, toast);
   }
 
   protected isDuplicateAmongAll(toast: NbToast): boolean {
@@ -133,13 +136,14 @@ export class NbToastContainer {
   protected attachToTop(toast: NbToast): NbToastComponent {
     this.toasts.unshift(toast);
     this.updateContainer();
-    return this.containerRef.instance.toasts.first;
+    return this.containerRef.instance.toasts()[0];
   }
 
   protected attachToBottom(toast: NbToast): NbToastComponent {
     this.toasts.push(toast);
     this.updateContainer();
-    return this.containerRef.instance.toasts.last;
+    const toasts = this.containerRef.instance.toasts();
+    return toasts[toasts.length - 1];
   }
 
   protected setDestroyTimeout(toast: NbToast) {
@@ -155,28 +159,32 @@ export class NbToastContainer {
     this.destroyTimeouts.delete(toast);
   }
 
+  // A toast's outputs complete when it's destroyed, which ends these subscriptions.
   protected subscribeOnCloseClick(toastComponent: NbToastComponent, toast: NbToast) {
-    toastComponent.closeClick.pipe(takeUntil(toastComponent.destroy)).subscribe(() => this.destroy(toast));
+    outputToObservable(toastComponent.closeClick).subscribe(() => this.destroy(toast));
   }
 
-  protected subscribeOnHover(toastComponent: NbToastComponent, toast: NbToast) {
-    toastComponent.pointerEnter
-      .pipe(takeUntil(toastComponent.destroy))
-      .subscribe(() => this.clearDestroyTimeout(toast));
-    toastComponent.pointerLeave.pipe(takeUntil(toastComponent.destroy)).subscribe(() => this.setDestroyTimeout(toast));
+  // Paused while hovered (with `pauseOnHover`), focused, or an action runs; the full duration starts again after.
+  protected subscribeOnHold(toastComponent: NbToastComponent, toast: NbToast) {
+    outputToObservable(toastComponent.holdChange).subscribe((held) => {
+      if (held) {
+        this.clearDestroyTimeout(toast);
+      } else if (this.toasts.includes(toast)) {
+        // Not after an action closed it.
+        this.setDestroyTimeout(toast);
+      }
+    });
   }
 
   protected subscribeOnClick(toastComponent: NbToastComponent, toast: NbToast) {
-    toastComponent.toastClick
-      .pipe(
-        filter(() => toast.config.destroyByClick),
-        takeUntil(toastComponent.destroy),
-      )
+    outputToObservable(toastComponent.toastClick)
+      .pipe(filter(() => toast.config.destroyByClick))
       .subscribe(() => this.destroy(toast));
   }
 
   protected updateContainer() {
-    patch(this.containerRef, { content: this.toasts, position: this.position });
+    // A copy, so the container sees a changed input rather than the same array.
+    patch(this.containerRef, { content: [...this.toasts], position: this.position });
   }
 }
 
@@ -185,41 +193,42 @@ interface NbToastrOverlayWithContainer {
   toastrContainer: NbToastContainer;
 }
 
-@Injectable()
+@Service({ autoProvided: false })
 export class NbToastrContainerRegistry {
-  protected overlays: Map<NbGlobalPosition, NbToastrOverlayWithContainer> = new Map();
+  protected readonly overlay = inject(NbOverlayService);
+  protected readonly positionBuilder = inject(NbPositionBuilderService);
+  protected readonly positionHelper = inject(NbPositionHelper);
+  protected readonly document = inject(NB_DOCUMENT);
+  protected readonly environmentInjector = inject(EnvironmentInjector, { optional: true });
 
-  constructor(
-    protected overlay: NbOverlayService,
-    protected positionBuilder: NbPositionBuilderService,
-    protected positionHelper: NbPositionHelper,
-    @Inject(NB_DOCUMENT) protected document: any,
-  ) {}
+  protected overlays = new Map<NbGlobalPosition, NbToastrOverlayWithContainer>();
 
   get(position: NbGlobalPosition): NbToastContainer {
     const logicalPosition: NbGlobalLogicalPosition = this.positionHelper.toLogicalPosition(position);
 
-    const overlayWithContainer = this.overlays.get(logicalPosition);
+    let overlayWithContainer = this.overlays.get(logicalPosition);
     if (!overlayWithContainer || !this.existsInDom(overlayWithContainer.toastrContainer)) {
       if (overlayWithContainer) {
         overlayWithContainer.overlayRef.dispose();
       }
-      this.instantiateContainer(logicalPosition);
+      overlayWithContainer = this.instantiateContainer(logicalPosition);
     }
 
-    return this.overlays.get(logicalPosition).toastrContainer;
+    return overlayWithContainer.toastrContainer;
   }
 
-  protected instantiateContainer(position: NbGlobalLogicalPosition) {
+  protected instantiateContainer(position: NbGlobalLogicalPosition): NbToastrOverlayWithContainer {
     const toastrOverlayWithContainer = this.createContainer(position);
     this.overlays.set(position, toastrOverlayWithContainer);
+    return toastrOverlayWithContainer;
   }
 
   protected createContainer(position: NbGlobalLogicalPosition): NbToastrOverlayWithContainer {
     const positionStrategy = this.positionBuilder.global().position(position);
     const ref = this.overlay.create({ positionStrategy });
     this.addClassToOverlayHost(ref);
-    const containerRef = ref.attach(new NbComponentPortal(NbToastrContainerComponent, null, null));
+    const portal = new NbComponentPortal(NbToastrContainerComponent, null, this.environmentInjector ?? null);
+    const containerRef = ref.attach(portal);
     return {
       overlayRef: ref,
       toastrContainer: new NbToastContainer(position, containerRef, this.positionHelper),
@@ -236,13 +245,22 @@ export class NbToastrContainerRegistry {
 }
 
 /**
- * The `NbToastrService` provides a capability to build toast notifications.
+ * Shows toast notifications.
  *
  * @stacked-example(Showcase, toastr/toastr-showcase.component)
  *
- * `NbToastrService.show(message, title, config)` accepts three params, title and config are optional.
+ * `NbToastrService.show(message, title, config)` takes a message; the title and config are optional.
  *
  * ### Installation
+ *
+ * Add `provideNbToastr()` to the application providers:
+ * ```ts
+ * bootstrapApplication(AppComponent, {
+ *   providers: [provideNbToastr(config)],
+ * });
+ * ```
+ *
+ * With NgModules:
  *
  * Import `NbToastrModule.forRoot()` to your app module.
  * ```ts
@@ -257,120 +275,109 @@ export class NbToastrContainerRegistry {
  *
  * ### Usage
  *
- * Calling `NbToastrService.show(...)` will render new toast and return `NbToastrRef` with
- * help of which you may close newly created toast by calling `close` method.
+ * `NbToastrService.show(...)` renders a toast and returns its `NbToastRef`, whose `close` method closes it:
  *
  * ```ts
  * const toastRef: NbToastRef = this.toastrService.show(...);
  * toastRef.close();
  * ```
  *
- * Config accepts following options:
+ * The config's options:
  *
- * `position` - determines where on the screen toast will be rendered.
+ * `position` - where on the screen the toast appears.
  * Default is `top-end`.
  *
  * @stacked-example(Position, toastr/toastr-positions.component)
  *
- * `status` - coloring and icon of the toast.
+ * `status` - the colour and icon of the toast.
  * Default is `basic`.
  *
  * @stacked-example(Status, toastr/toastr-statuses.component)
  *
- * `duration` - the time after which the toast will be destroyed.
- * `0` means endless toast, that may be destroyed by click only.
- * Default is 3000 ms.
+ * `duration` - how long the toast stays, in ms. `0` keeps it until it's closed: by a click, its close button or
+ * an action.
+ * Default is 3000.
  *
  * @stacked-example(Duration, toastr/toastr-duration.component)
  *
- * `destroyByClick` - provides a capability to destroy toast by click.
+ * `destroyByClick` - a click on the toast closes it.
  * Default is true.
  *
  * @stacked-example(Destroy by click, toastr/toastr-destroy-by-click.component)
  *
- * `preventDuplicates` - don't create new toast if it has the same title, message and status.
+ * `preventDuplicates` - drops a toast with the same title, message and status as one shown; `show` then returns
+ * `undefined`.
  * Default is false.
  *
  * @stacked-example(Prevent duplicates, toastr/toastr-prevent-duplicates.component)
  *
- * `duplicatesBehaviour` - determines how to treat the toasts duplication.
- * Compare with the previous message `previous`
- * or with all visible messages `all`.
+ * `duplicatesBehaviour` - what a duplicate is compared with: the previous toast (`previous`) or all visible ones
+ * (`all`).
  *
  * @stacked-example(Prevent duplicates behaviour , toastr/toastr-prevent-duplicates-behaviour.component)
  *
- * `limit` - the number of visible toasts in the toast container. The number of toasts is unlimited by default.
+ * `limit` - how many toasts a position shows at once; the oldest goes when a new one exceeds it. Unlimited by
+ * default.
  *
  * @stacked-example(Prevent duplicates behaviour , toastr/toastr-limit.component)
  *
- * `hasIcon` - if true then render toast icon.
- * `icon` - you can pass icon class that will be applied into the toast.
+ * `icon` - a custom icon, by name or config; the status's icon by default, and `''` for none.
  *
  * @stacked-example(Has icon, toastr/toastr-icon.component)
+ *
+ * `actions` - buttons under the message, e.g. to undo what the toast tells about. The toast closes after an action
+ * (unless it sets `close: false`); an action that returns a promise shows a loading button until it completes. The
+ * toast's timer is paused while the focus is in it, or an action runs.
+ *
+ * @stacked-example(Actions, toastr/toastr-actions.component)
  * */
-@Injectable()
+@Service({ autoProvided: false })
 export class NbToastrService {
-  constructor(
-    @Inject(NB_TOASTR_CONFIG) protected globalConfig: NbToastrConfig,
-    protected containerRegistry: NbToastrContainerRegistry,
-  ) {}
+  protected readonly globalConfig = inject<NbToastrConfig>(NB_TOASTR_CONFIG);
+  protected readonly containerRegistry = inject(NbToastrContainerRegistry);
 
   /**
-   * Shows toast with message, title and user config.
-   * */
-  show(message, title?, userConfig?: Partial<NbToastrConfig>): NbToastRef {
+   * Shows a toast and returns its ref, or `undefined` when `preventDuplicates` drops it.
+   */
+  show(message: string, title?: string, userConfig?: Partial<NbToastrConfig>): NbToastRef | undefined {
     const config = new NbToastrConfig({ ...this.globalConfig, ...userConfig });
     const container = this.containerRegistry.get(config.position);
     const toast = { message, title, config };
     return container.attach(toast);
   }
 
-  /**
-   * Shows success toast with message, title and user config.
-   * */
-  success(message, title?, config?: Partial<NbToastrConfig>): NbToastRef {
+  /** `show` with the `success` status. */
+  success(message: string, title?: string, config?: Partial<NbToastrConfig>): NbToastRef | undefined {
     return this.show(message, title, { ...config, status: 'success' });
   }
 
-  /**
-   * Shows info toast with message, title and user config.
-   * */
-  info(message, title?, config?: Partial<NbToastrConfig>): NbToastRef {
+  /** `show` with the `info` status. */
+  info(message: string, title?: string, config?: Partial<NbToastrConfig>): NbToastRef | undefined {
     return this.show(message, title, { ...config, status: 'info' });
   }
 
-  /**
-   * Shows warning toast with message, title and user config.
-   * */
-  warning(message, title?, config?: Partial<NbToastrConfig>): NbToastRef {
+  /** `show` with the `warning` status. */
+  warning(message: string, title?: string, config?: Partial<NbToastrConfig>): NbToastRef | undefined {
     return this.show(message, title, { ...config, status: 'warning' });
   }
 
-  /**
-   * Shows primary toast with message, title and user config.
-   * */
-  primary(message, title?, config?: Partial<NbToastrConfig>): NbToastRef {
+  /** `show` with the `primary` status. */
+  primary(message: string, title?: string, config?: Partial<NbToastrConfig>): NbToastRef | undefined {
     return this.show(message, title, { ...config, status: 'primary' });
   }
 
-  /**
-   * Shows danger toast with message, title and user config.
-   * */
-  danger(message, title?, config?: Partial<NbToastrConfig>): NbToastRef {
+  /** `show` with the `danger` status. */
+  danger(message: string, title?: string, config?: Partial<NbToastrConfig>): NbToastRef | undefined {
     return this.show(message, title, { ...config, status: 'danger' });
   }
 
-  /**
-   * Shows default toast with message, title and user config.
-   * */
-  default(message, title?, config?: Partial<NbToastrConfig>): NbToastRef {
+  /** `show` with the `basic` status. */
+  default(message: string, title?: string, config?: Partial<NbToastrConfig>): NbToastRef | undefined {
     return this.show(message, title, { ...config, status: 'basic' });
   }
 
-  /**
-   * Shows control toast with message, title and user config.
-   * */
-  control(message, title?, config?: Partial<NbToastrConfig>): NbToastRef {
+  /** `show` with the `control` status. */
+  control(message: string, title?: string, config?: Partial<NbToastrConfig>): NbToastRef | undefined {
     return this.default(message, title, { ...config, status: 'control' });
   }
 }

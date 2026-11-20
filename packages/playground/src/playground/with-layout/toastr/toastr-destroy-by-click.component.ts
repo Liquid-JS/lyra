@@ -1,34 +1,25 @@
-import { Component, HostBinding } from '@angular/core';
-import { NbToastrService } from '@nebular/theme';
+import { Component, inject } from '@angular/core';
+import { NbToastrService, NbButtonComponent } from '@liquid-js/lyr-core';
 
 @Component({
-    selector: 'nb-toastr-destroy-by-click',
-    template: `
-    <button nbButton (click)="showToast(true)">Destroy by click</button>
-    <button nbButton (click)="showToast(false)">Destroy by timeout only</button>
-  `,
-    styles: [
-        `
+  selector: 'nb-toastr-destroy-by-click',
+  templateUrl: './toastr-destroy-by-click.component.html',
+  styles: [
+    `
       ::ng-deep nb-layout-column {
         height: 80vw;
       }
     `,
-    ],
-    standalone: false
+  ],
+  host: { class: 'example-items-rows' },
+  imports: [NbButtonComponent],
 })
 export class ToastrDestroyByClickComponent {
-  private index: number = 0;
+  private readonly toastrService = inject(NbToastrService);
 
-  @HostBinding('class')
-  className = 'example-items-rows';
+  private index = 0;
 
-  constructor(private toastrService: NbToastrService) {
-  }
-
-  showToast(destroyByClick) {
-    this.toastrService.show(
-      'This is super toast message',
-      `This is toast number: ${++this.index}`,
-      { destroyByClick });
+  showToast(destroyByClick: boolean) {
+    this.toastrService.show('This is super toast message', `This is toast number: ${++this.index}`, { destroyByClick });
   }
 }

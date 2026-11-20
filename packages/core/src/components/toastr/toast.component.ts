@@ -1,28 +1,32 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 import {
   Component,
+  computed,
   ElementRef,
-  EventEmitter,
-  HostBinding,
-  HostListener,
-  Input,
+  ErrorHandler,
+  inject,
+  input,
   OnDestroy,
   OnInit,
-  Output,
+  output,
   Renderer2,
+  signal,
 } from '@angular/core';
 
-import { NbStatusService } from '../../services/status.service';
-import { NbIconConfig } from '../icon/icon.component';
-import { NbToast } from './model';
+import { NbStatusService } from '@liquid-js/lyr-core/base';
+import { NbIconConfig, NbIconComponent } from '@liquid-js/lyr-core/icon';
+import { NbButtonComponent } from '@liquid-js/lyr-core/button';
+import { NbComponentOrCustomStatus } from '@liquid-js/lyr-core/base';
+import { NbToast, NbToastAction } from './model';
+import type { NbToastRef } from './toastr.service';
+import { injectNbTexts, NbLocalize } from '@liquid-js/lyr-core/base';
+
+/** @internal */
+declare const $localize: NbLocalize;
 
 /**
- * The `NbToastComponent` is responsible for rendering each toast with appropriate styles.
+ * A toast, as `NbToastrService` shows it. A `danger` or `warning` toast is a live `alert`, announced at once; the
+ * others are a polite `status`. Its auto-dismiss timer pauses while the focus is in it, an action runs, or (with
+ * `pauseOnHover`) the pointer is over it.
  *
  * @styles
  *
@@ -90,106 +94,168 @@ import { NbToast } from './model';
  * toastr-destroyable-control-hover-border-color:
  * */
 @Component({
-    selector: 'nb-toast',
-    styleUrls: ['./toast.component.scss'],
-    templateUrl: './toast.component.html',
-    standalone: false
+  selector: 'nb-toast',
+  styleUrls: ['./toast.component.scss'],
+  templateUrl: './toast.component.html',
+  imports: [NbIconComponent, NbButtonComponent],
+  host: {
+    'aria-atomic': 'true',
+    '[attr.role]': 'role()',
+    '[attr.aria-live]': 'ariaLive()',
+    '[class]': 'statusClass()',
+    '[class.destroy-by-click]': 'destroyByClick()',
+    '[class.has-close-button]': 'closeButton()',
+    '[class.has-actions]': 'actions().length > 0',
+    '[class.has-icon]': 'hasIcon()',
+    '[class.custom-icon]': 'customIcon()',
+    '(click)': 'onClick()',
+    '(mouseenter)': 'onMouseEnter()',
+    '(mouseleave)': 'onMouseLeave()',
+    '(focusin)': 'onFocusIn($event)',
+    '(focusout)': 'onFocusOut($event)',
+  },
 })
 export class NbToastComponent implements OnInit, OnDestroy {
-  @Input()
-  toast: NbToast;
+  protected readonly texts = injectNbTexts('toastr', () => ({
+    close: $localize`:@@nb.toastr.close:Close`,
+  }));
 
-  @Output() destroy: EventEmitter<void> = new EventEmitter();
-  @Output() toastClick: EventEmitter<void> = new EventEmitter();
-  @Output() closeClick: EventEmitter<void> = new EventEmitter();
-  @Output() pointerEnter: EventEmitter<void> = new EventEmitter();
-  @Output() pointerLeave: EventEmitter<void> = new EventEmitter();
+  protected readonly renderer = inject(Renderer2);
+  protected readonly elementRef = inject(ElementRef);
+  protected readonly statusService = inject(NbStatusService);
 
-  @HostBinding('class.status-success')
-  get success(): boolean {
-    return this.toast.config.status === 'success';
-  }
+  readonly toast = input.required<NbToast>();
 
-  @HostBinding('class.status-info')
-  get info(): boolean {
-    return this.toast.config.status === 'info';
-  }
+  readonly destroy = output<void>();
+  readonly toastClick = output<void>();
+  readonly closeClick = output<void>();
+  readonly pointerEnter = output<void>();
+  readonly pointerLeave = output<void>();
+  /**
+   * Whether the toast's auto-dismiss timer is paused: the pointer is over it (with `pauseOnHover`), the focus is in it,
+   * or an action runs.
+   */
+  readonly holdChange = output<boolean>();
 
-  @HostBinding('class.status-warning')
-  get warning(): boolean {
-    return this.toast.config.status === 'warning';
-  }
+  /**
+   * The toast's ref, which actions get; set by its container.
+   */
+  ref?: NbToastRef;
 
-  @HostBinding('class.status-primary')
-  get primary(): boolean {
-    return this.toast.config.status === 'primary';
-  }
+  protected readonly errorHandler = inject(ErrorHandler);
+  protected readonly hovered = signal(false);
+  protected readonly focused = signal(false);
+  // The action that runs, whose button is loading.
+  protected readonly pending = signal<NbToastAction | undefined>(undefined);
+  protected wasHeld = false;
+  protected returnFocus?: HTMLElement;
+  protected readonly held = computed(
+    () => (this.hovered() && this.toast().config.pauseOnHover) || this.focused() || !!this.pending(),
+  );
 
-  @HostBinding('class.status-danger')
-  get danger(): boolean {
-    return this.toast.config.status === 'danger';
-  }
+  readonly actions = computed(() => this.toast().config.actions ?? []);
 
-  @HostBinding('class.status-basic')
-  get basic(): boolean {
-    return this.toast.config.status === 'basic';
-  }
+  // Buttons stand out on the toast: light on a toast of a color, of the primary color on a light one.
+  protected readonly actionStatus = computed<NbComponentOrCustomStatus>(() => {
+    const { status } = this.toast().config;
+    return status === 'basic' || status === 'control' ? 'primary' : 'control';
+  });
 
-  @HostBinding('class.status-control')
-  get control(): boolean {
-    return this.toast.config.status === 'control';
-  }
+  // The close button is chrome: ghost, light on a toast of a colour, as its text is, and basic on a light one.
+  protected readonly closeStatus = computed<NbComponentOrCustomStatus>(() => {
+    const { status } = this.toast().config;
+    return status === 'basic' || status === 'control' ? 'basic' : 'control';
+  });
 
-  @HostBinding('class.destroy-by-click')
-  get destroyByClick(): boolean {
-    return this.toast.config.destroyByClick;
-  }
+  protected readonly isUrgent = computed(() => {
+    const { status } = this.toast().config;
+    return status === 'danger' || status === 'warning';
+  });
 
-  @HostBinding('class.has-close-button')
-  get closeButton(): boolean {
-    return this.toast.config.closeButton;
-  }
+  readonly role = computed(() => (this.isUrgent() ? 'alert' : 'status'));
 
-  @HostBinding('class.has-icon')
-  get hasIcon(): boolean {
-    const { icon } = this.toast.config;
+  readonly ariaLive = computed(() => (this.isUrgent() ? 'assertive' : 'polite'));
+
+  protected readonly statusClass = computed(() => this.statusService.getStatusClass(this.toast().config.status));
+
+  readonly destroyByClick = computed(() => this.toast().config.destroyByClick);
+
+  readonly closeButton = computed(() => this.toast().config.closeButton);
+
+  readonly icon = computed<string | NbIconConfig>(() => this.toast().config.icon);
+
+  readonly hasIcon = computed(() => {
+    const icon = this.icon();
     if (typeof icon === 'string') {
       return true;
     }
 
     return !!(icon && (icon as NbIconConfig).icon);
-  }
+  });
 
-  @HostBinding('class.custom-icon')
-  get customIcon(): boolean {
-    return !!this.icon;
-  }
+  readonly customIcon = computed(() => !!this.icon());
 
-  get icon(): string | NbIconConfig {
-    return this.toast.config.icon;
-  }
-
-  @HostBinding('class')
-  get additionalClasses(): string[] {
-    if (this.statusService.isCustomStatus(this.toast.config.status)) {
-      return [this.statusService.getStatusClass(this.toast.config.status)];
-    }
-    return [];
-  }
-
-  @HostListener('click')
   onClick() {
     this.toastClick.emit();
   }
 
-  @HostListener('mouseenter')
   onMouseEnter() {
+    this.hovered.set(true);
+    this.updateHold();
     this.pointerEnter.emit();
   }
 
-  @HostListener('mouseleave')
   onMouseLeave() {
+    this.hovered.set(false);
+    this.updateHold();
     this.pointerLeave.emit();
+  }
+
+  protected onFocusIn(event: FocusEvent) {
+    // Where the focus came from, to go back to when the toast closes with the focus in it.
+    const from = event.relatedTarget as HTMLElement | null;
+    if (!this.focused() && from && !this.elementRef.nativeElement.contains(from)) {
+      this.returnFocus = from;
+    }
+    this.focused.set(true);
+    this.updateHold();
+  }
+
+  protected onFocusOut(event: FocusEvent) {
+    if (!this.elementRef.nativeElement.contains(event.relatedTarget as Node | null)) {
+      this.focused.set(false);
+      this.updateHold();
+    }
+  }
+
+  // Tells the container at once, so the timer can't run out in between.
+  protected updateHold() {
+    const held = this.held();
+    if (held !== this.wasHeld) {
+      this.wasHeld = held;
+      this.holdChange.emit(held);
+    }
+  }
+
+  protected async runAction(action: NbToastAction, event: MouseEvent) {
+    // Keeps a destroy-by-click toast from also handling the click as a toast click.
+    event.stopPropagation();
+    if (this.pending()) {
+      return;
+    }
+    this.pending.set(action);
+    this.updateHold();
+    try {
+      await action.action?.(this.ref as NbToastRef);
+      if (action.close !== false) {
+        this.closeClick.emit();
+      }
+    } catch (error) {
+      this.errorHandler.handleError(error);
+    } finally {
+      this.pending.set(undefined);
+      this.updateHold();
+    }
   }
 
   onCloseClick(event: MouseEvent) {
@@ -198,19 +264,18 @@ export class NbToastComponent implements OnInit, OnDestroy {
     this.closeClick.emit();
   }
 
-  constructor(
-    protected renderer: Renderer2,
-    protected elementRef: ElementRef,
-    protected statusService: NbStatusService,
-  ) {}
-
   ngOnInit() {
-    if (this.toast.config.toastClass) {
-      this.renderer.addClass(this.elementRef.nativeElement, this.toast.config.toastClass);
+    const { toastClass } = this.toast().config;
+    if (toastClass) {
+      this.renderer.addClass(this.elementRef.nativeElement, toastClass);
     }
   }
 
   ngOnDestroy() {
+    // Closing with the focus in it, e.g. by an action, would leave the focus nowhere.
+    if (this.elementRef.nativeElement.contains(this.elementRef.nativeElement.ownerDocument.activeElement)) {
+      this.returnFocus?.focus();
+    }
     this.destroy.emit();
   }
 }

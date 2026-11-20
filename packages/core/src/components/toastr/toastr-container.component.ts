@@ -1,77 +1,75 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { Component, Input, OnDestroy, OnInit, QueryList, ViewChildren } from '@angular/core';
-import { animate, style, transition, trigger } from '@angular/animations';
-import { takeUntil } from 'rxjs/operators';
-import { Subject } from 'rxjs';
+import { AnimationCallbackEvent, Component, computed, inject, input, viewChildren } from '@angular/core';
 
 import { NbToastComponent } from './toast.component';
 import { NbToast } from './model';
-import { NbLayoutDirectionService } from '../../services/direction.service';
-import { NbGlobalPosition, NbPositionHelper } from '../cdk/overlay/position-helper';
+import { NbLayoutDirectionService } from '@liquid-js/lyr-core/base';
+import { NbGlobalPosition, NbPositionHelper } from '@liquid-js/lyr-core/cdk';
 
-const voidState = style({
-  transform: 'translateX({{ direction }}110%)',
-  height: 0,
-  marginLeft: '0',
-  marginRight: '0',
-  marginTop: '0',
-  marginBottom: '0',
-});
-
-const defaultOptions = { params: { direction: '' } };
+const SLIDE_DURATION = 100;
 
 @Component({
-    selector: 'nb-toastr-container',
-    template: `
-    <nb-toast [@fadeIn]="fadeIn" *ngFor="let toast of content" [toast]="toast"></nb-toast>`,
-    animations: [
-        trigger('fadeIn', [
-            transition(':enter', [voidState, animate(100)], defaultOptions),
-            transition(':leave', [animate(100, voidState)], defaultOptions),
-        ]),
-    ],
-    standalone: false
+  selector: 'nb-toastr-container',
+  template: `@for (toast of content(); track toast) {
+    <nb-toast [toast]="toast" (animate.enter)="slideIn($event)" (animate.leave)="slideOut($event)" />
+  }`,
+  imports: [NbToastComponent],
 })
-export class NbToastrContainerComponent implements OnInit, OnDestroy {
+export class NbToastrContainerComponent {
+  protected readonly layoutDirection = inject(NbLayoutDirectionService);
+  protected readonly positionHelper = inject(NbPositionHelper);
 
-  protected destroy$ = new Subject<void>();
+  readonly content = input<NbToast[]>([]);
 
-  @Input()
-  content: NbToast[] = [];
+  readonly context = input<object>();
 
-  @Input()
-  context: Object;
+  readonly position = input.required<NbGlobalPosition>();
 
-  @Input()
-  position: NbGlobalPosition;
+  readonly toasts = viewChildren(NbToastComponent);
 
-  @ViewChildren(NbToastComponent)
-  toasts: QueryList<NbToastComponent>;
+  // Toasts slide in from the side of the screen they're on, which depends on the layout direction.
+  readonly slideDirection = computed(() => {
+    this.layoutDirection.direction();
+    return this.positionHelper.isRightPosition(this.position()) ? '' : '-';
+  });
 
-  fadeIn;
-
-  constructor(protected layoutDirection: NbLayoutDirectionService,
-              protected positionHelper: NbPositionHelper) {
+  // A toast slides in while its height and margins open, and out while they close, so the others move smoothly.
+  protected slideIn(event: AnimationCallbackEvent) {
+    this.slide(event, false);
   }
 
-  ngOnInit() {
-    this.layoutDirection.onDirectionChange()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(() => this.onDirectionChange());
+  protected slideOut(event: AnimationCallbackEvent) {
+    this.slide(event, true);
   }
 
-  ngOnDestroy() {
-    this.destroy$.next();
-    this.destroy$.complete();
-  }
+  private slide(event: AnimationCallbackEvent, leaving: boolean) {
+    const toast = event.target as HTMLElement;
+    if (typeof toast.animate !== 'function' || matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      event.animationComplete();
+      return;
+    }
 
-  protected onDirectionChange() {
-    const direction = this.positionHelper.isRightPosition(this.position) ? '' : '-';
-    this.fadeIn = { value: '', params: { direction } };
+    const style = getComputedStyle(toast);
+    const shown: Keyframe = {
+      transform: 'none',
+      height: style.height,
+      marginTop: style.marginTop,
+      marginRight: style.marginRight,
+      marginBottom: style.marginBottom,
+      marginLeft: style.marginLeft,
+    };
+    const hidden: Keyframe = {
+      transform: `translateX(${this.slideDirection()}110%)`,
+      height: '0',
+      marginTop: '0',
+      marginRight: '0',
+      marginBottom: '0',
+      marginLeft: '0',
+    };
+    const animation = toast.animate(leaving ? [shown, hidden] : [hidden, shown], {
+      duration: SLIDE_DURATION,
+      // A leaving toast stays hidden until it's removed.
+      fill: leaving ? 'forwards' : 'none',
+    });
+    animation.finished.then(() => event.animationComplete(), () => event.animationComplete());
   }
 }

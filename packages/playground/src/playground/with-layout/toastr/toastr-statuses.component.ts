@@ -1,38 +1,29 @@
-import { Component, HostBinding } from '@angular/core';
-import { NbToastrService, NbComponentStatus } from '@nebular/theme';
+import { Component, inject } from '@angular/core';
+import {
+  NbToastrService,
+  NbComponentStatus,
+  NbCardComponent,
+  NbCardBodyComponent,
+  NbButtonComponent,
+} from '@liquid-js/lyr-core';
 
 @Component({
-    selector: 'nb-toastr-statuses',
-    template: `
-    <nb-card>
-      <nb-card-body class="example-items-rows">
-        <button nbButton status="basic" (click)="showToast('basic')">Basic</button>
-        <button nbButton status="primary" (click)="showToast('primary')">Primary</button>
-        <button nbButton status="success" (click)="showToast('success')">Success</button>
-        <button nbButton status="info" (click)="showToast('info')">Info</button>
-        <button nbButton status="warning" (click)="showToast('warning')">Warning</button>
-        <button nbButton status="danger" (click)="showToast('danger')">Danger</button>
-        <button nbButton status="control" (click)="showToast('control')">Control</button>
-      </nb-card-body>
-    </nb-card>
-  `,
-    styles: [
-        `
+  selector: 'nb-toastr-statuses',
+  templateUrl: './toastr-statuses.component.html',
+  styles: [
+    `
       ::ng-deep nb-layout-column {
         height: 80vw;
       }
     `,
-    ],
-    standalone: false
+  ],
+  host: { class: 'example-items-rows' },
+  imports: [NbCardComponent, NbCardBodyComponent, NbButtonComponent],
 })
 export class ToastrStatusesComponent {
-  private index: number = 0;
+  private readonly toastrService = inject(NbToastrService);
 
-  @HostBinding('class')
-  classes = 'example-items-rows';
-
-  constructor(private toastrService: NbToastrService) {
-  }
+  private index = 0;
 
   showToast(status: NbComponentStatus) {
     this.toastrService.show(status, `Toast: ${++this.index}`, { status });

@@ -1,31 +1,26 @@
-import { Component, HostBinding } from '@angular/core';
-import { NbGlobalPhysicalPosition, NbToastrService } from '@nebular/theme';
+import { Component, inject } from '@angular/core';
+import { NbComponentStatus, NbGlobalPhysicalPosition, NbToastrService, NbButtonComponent } from '@liquid-js/lyr-core';
 
 @Component({
-    template: `
-    <button nbButton (click)="showToast(positions.TOP_RIGHT, 'success')">Top Right</button>
-    <button nbButton (click)="showToast(positions.BOTTOM_LEFT, 'info')">Bottom left</button>
-  `,
-    styles: [
-        `
+  templateUrl: './toastr-showcase.component.html',
+  styles: [
+    `
       ::ng-deep nb-layout-column {
         height: 80vw;
       }
     `,
-    ],
-    standalone: false
+  ],
+  host: { class: 'example-items-rows' },
+  imports: [NbButtonComponent],
 })
 export class ToastrShowcaseComponent {
-  private index: number = 0;
+  private readonly toastrService = inject(NbToastrService);
 
-  @HostBinding('class')
-  classes = 'example-items-rows';
+  private index = 0;
 
   positions = NbGlobalPhysicalPosition;
 
-  constructor(private toastrService: NbToastrService) {}
-
-  showToast(position, status) {
+  showToast(position: NbGlobalPhysicalPosition, status: NbComponentStatus) {
     this.index += 1;
     this.toastrService.show(status || 'Success', `Toast ${this.index}`, { position, status });
   }
