@@ -1,9 +1,30 @@
-# @liquid-js/lyr-extras
+# Lyra extras
 
-Part of [Lyra](https://github.com/Liquid-JS/lyra). Documentation: <https://liquid-js.github.io/lyra/>
+[![GitHub license](https://img.shields.io/github/license/Liquid-JS/lyra.svg)](https://github.com/Liquid-JS/lyra/blob/master/LICENSE.txt)
+[![npm](https://img.shields.io/npm/dm/@liquid-js/lyr-extras.svg)](https://www.npmjs.com/package/@liquid-js/lyr-extras)
+[![scope](https://img.shields.io/npm/v/@liquid-js/lyr-extras.svg)](https://www.npmjs.com/package/@liquid-js/lyr-extras)
 
 Lyra components built on other libraries. Each component is in its own entry point, so an app only installs the
-libraries of the components it uses:
+libraries of the components it uses.
+
+## Quick links
+
+- [QR code](https://liquid-js.github.io/lyra/extras/components/qr-code/overview/)
+- [Markdown editor](https://liquid-js.github.io/lyra/extras/components/markdown-editor/overview/)
+- [Markdown viewer](https://liquid-js.github.io/lyra/extras/components/markdown-viewer/overview/)
+- [Phone input](https://liquid-js.github.io/lyra/extras/components/phone-input/overview/)
+- [Input mask](https://liquid-js.github.io/lyra/extras/components/input-mask/overview/)
+- [Color picker](https://liquid-js.github.io/lyra/extras/components/color-picker/overview/)
+- [Chart](https://liquid-js.github.io/lyra/extras/components/chart/overview/)
+- [Video and audio](https://liquid-js.github.io/lyra/extras/components/video-audio/overview/)
+
+### Installing
+
+Install the package with the libraries of the components you use, e.g. for the QR code:
+
+```sh
+npm install --save @liquid-js/lyr-extras @liquid-js/qr-code-styling
+```
 
 | Entry point                             | Component                                                        | Needs                                                                                                   |
 | --------------------------------------- | ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
@@ -19,3 +40,23 @@ libraries of the components it uses:
 Video.js 10's packages, which the video and audio players need, are under the Apache 2.0 licence. Streams and
 embeds play with Video.js's engines, e.g. `@videojs/hlsjs-video` for HLS, which an app sets with
 `provideNbMediaPlayer` and which are only downloaded when a player first needs one.
+
+### Import a component
+
+```ts
+import { NbQrCodeComponent } from '@liquid-js/lyr-extras/qr-code'
+
+@Component({
+    ...
+    imports: [
+        ...
+        NbQrCodeComponent
+    ]
+})
+```
+
+### Include it in HTML template
+
+```html
+<nb-qr-code data="https://example.com/" />
+```

@@ -41,10 +41,11 @@ The repository is a Yarn workspace on the Node version in `.nvmrc`. Run `yarn in
   as in Chromium. Safari leaves buttons, links, checkboxes and radios without a `tabindex` out of the Tab order, and
   Playwright's WebKit does the same only on macOS with keyboard navigation off (System Settings → Keyboard), so the
   check skips itself elsewhere
-- `yarn lint` / `yarn lint:styles` - ESLint with the repository's check scripts, and stylelint; `yarn lint:fix` applies
-  fixes
-- `yarn format:html` - format the component templates with js-beautify, the formatter VS Code uses for HTML;
-  `js-beautify.json` and `.vscode/settings.json` hold the same options, so formatting on save gives the same result
+- `yarn lint` - ESLint with the repository's check scripts; `yarn lint:fix` applies fixes
+- `yarn lint:sass` - stylelint; `yarn lint:sass:fix` applies fixes
+- `yarn lint:html` - format the templates with js-beautify, the formatter VS Code uses for HTML; each package's
+  `js-beautify.json` holds the root's options, as `.vscode/settings.json` does, so formatting on save gives the same
+  result
 - `yarn format:md` - format the docs' articles, the READMEs and this file with the markdown editor's formatter, which
   writes typographic quotes, dashes and ellipses as plain characters and `<hr>` as `---`; `yarn lint` checks them.
   Its settings are in `scripts/remark-config.ts`, which VS Code's remark extension (`unifiedjs.vscode-remark`,
