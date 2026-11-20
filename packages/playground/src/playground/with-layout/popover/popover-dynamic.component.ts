@@ -1,53 +1,69 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { AfterViewInit, Component, OnDestroy, TemplateRef, ViewChild } from '@angular/core';
-import { NbPopoverDirective, NbPosition, NbTrigger } from '@nebular/theme';
+import { AfterViewInit, Component, OnDestroy, TemplateRef, signal, viewChild } from '@angular/core';
+import {
+  NbPopoverDirective,
+  NbPosition,
+  NbTrigger,
+  NbOverlayContent,
+  NbButtonComponent,
+  NbPopoverDirective as NbPopoverDirective_1,
+  NbCardComponent,
+  NbCardHeaderComponent,
+  NbCardBodyComponent,
+  NbTabsetComponent,
+  NbTabComponent,
+  NbListComponent,
+  NbListItemComponent,
+} from '@liquid-js/lyr-core';
 
 import { PopoverListComponent, PopoverTabsComponent } from './components/dynamic.components';
 
-
 @Component({
-    selector: 'nb-popover-dynamic',
-    templateUrl: './popover-dynamic.component.html',
-    styleUrls: ['./popover-dynamic.scss'],
-    standalone: false
+  selector: 'nb-popover-dynamic',
+  templateUrl: './popover-dynamic.component.html',
+  styleUrls: ['./popover-dynamic.scss'],
+  imports: [
+    NbButtonComponent,
+    NbPopoverDirective_1,
+    NbCardComponent,
+    NbCardHeaderComponent,
+    NbTabsetComponent,
+    NbTabComponent,
+    NbCardBodyComponent,
+    NbListComponent,
+    NbListItemComponent,
+  ],
 })
 export class PopoverDynamicComponent implements OnDestroy, AfterViewInit {
-
-  @ViewChild(NbPopoverDirective) popover: NbPopoverDirective;
-  @ViewChild('tabs', { read: TemplateRef }) templateTabs: TemplateRef<any>;
-  @ViewChild('list', { read: TemplateRef }) templateList: TemplateRef<any>;
+  readonly popover = viewChild.required(NbPopoverDirective);
+  readonly templateTabs = viewChild.required('tabs', { read: TemplateRef });
+  readonly templateList = viewChild.required('list', { read: TemplateRef });
 
   componentList = PopoverListComponent;
   componentTabs = PopoverTabsComponent;
   textContent = 'Hello World';
-  component: any = this.componentList;
-  trigger = NbTrigger.CLICK;
-  position = NbPosition.BOTTOM;
-  items = [];
-  interval: any;
+  readonly component = signal<NbOverlayContent>(this.componentList);
+  readonly trigger = signal<NbTrigger | `${NbTrigger}`>(NbTrigger.CLICK);
+  readonly position = signal<NbPosition | `${NbPosition}`>(NbPosition.BOTTOM);
+  items = new Array<NbOverlayContent>();
+  interval?: ReturnType<typeof setInterval>;
 
   stopRuntimeChange() {
     if (this.interval) {
       clearInterval(this.interval);
-      this.interval = null;
+      this.interval = undefined;
     }
   }
 
-  changeComponent(component) {
-    this.component = component;
+  changeComponent(component: NbOverlayContent) {
+    this.component.set(component);
   }
 
-  changeTrigger(trigger) {
-    this.trigger = trigger;
+  changeTrigger(trigger: NbTrigger | `${NbTrigger}`) {
+    this.trigger.set(trigger);
   }
 
-  changePlacement(placement) {
-    this.position = placement;
+  changePlacement(placement: NbPosition | `${NbPosition}`) {
+    this.position.set(placement);
   }
 
   startRuntimeChange() {
@@ -60,13 +76,7 @@ export class PopoverDynamicComponent implements OnDestroy, AfterViewInit {
   }
 
   ngAfterViewInit() {
-    this.items = [
-      this.componentList,
-      this.componentTabs,
-      this.templateList,
-      this.templateTabs,
-      this.textContent,
-    ];
+    this.items = [this.componentList, this.componentTabs, this.templateList(), this.templateTabs(), this.textContent];
   }
 
   ngOnDestroy() {

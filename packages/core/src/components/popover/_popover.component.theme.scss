@@ -1,26 +1,42 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 @use '../../styles/theming' as *;
+@use 'popover-look' as look;
+
+// The overlay's `left` and `right` classes are its start and end (`start` and `end` positions resolved for the
+// direction), so the arrow on the side facing the host follows the direction too.
+@mixin popover-arrow-at-end($arrow-size) {
+  $offset: calc(-1 * #{$arrow-size} - #{$arrow-size} / 2 + 2px);
+
+  @include nb-ltr() {
+    right: $offset;
+    transform: rotate(90deg);
+  }
+  @include nb-rtl() {
+    left: $offset;
+    transform: rotate(270deg);
+  }
+}
+
+@mixin popover-arrow-at-start($arrow-size) {
+  $offset: calc(-1 * #{$arrow-size} - #{$arrow-size} / 2 + 2px);
+
+  @include nb-ltr() {
+    left: $offset;
+    transform: rotate(270deg);
+  }
+  @include nb-rtl() {
+    right: $offset;
+    transform: rotate(90deg);
+  }
+}
 
 @mixin nb-popover-theme {
   nb-popover {
     $arrow-size: nb-theme(popover-arrow-size);
 
-    border: nb-theme(popover-border-width) solid nb-theme(popover-border-color);
-    border-radius: nb-theme(popover-border-radius);
-    background: nb-theme(popover-background-color);
-    box-shadow: nb-theme(popover-shadow);
-    color: nb-theme(popover-text-color);
+    @include look.surface();
 
     .primitive-overlay {
-      font-family: nb-theme(popover-text-font-family);
-      font-size: nb-theme(popover-text-font-size);
-      font-weight: nb-theme(popover-text-font-weight);
-      line-height: nb-theme(popover-text-line-height);
+      @include look.text();
       padding: nb-theme(popover-padding);
     }
 
@@ -61,21 +77,18 @@
     }
 
     &.nb-overlay-left .arrow {
-      right: calc(-1 * #{$arrow-size} - #{$arrow-size} / 2 + 2px);
+      @include popover-arrow-at-end($arrow-size);
       top: calc(50% - #{$arrow-size} * 0.5);
-      transform: rotate(90deg);
     }
 
     &.nb-overlay-start-top .arrow {
-      right: calc(-1 * #{$arrow-size} - #{$arrow-size} / 2 + 2px);
+      @include popover-arrow-at-end($arrow-size);
       bottom: $arrow-size;
-      transform: rotate(90deg);
     }
 
     &.nb-overlay-start-bottom .arrow {
-      right: calc(-1 * #{$arrow-size} - #{$arrow-size} / 2 + 2px);
+      @include popover-arrow-at-end($arrow-size);
       top: $arrow-size;
-      transform: rotate(90deg);
     }
 
     &.nb-overlay-top .arrow {
@@ -99,21 +112,18 @@
     }
 
     &.nb-overlay-right .arrow {
-      left: calc(-1 * #{$arrow-size} - #{$arrow-size} / 2 + 2px);
+      @include popover-arrow-at-start($arrow-size);
       top: calc(50% - #{$arrow-size} * 0.5);
-      transform: rotate(270deg);
     }
 
     &.nb-overlay-end-top .arrow {
-      left: calc(-1 * #{$arrow-size} - #{$arrow-size} / 2 + 2px);
+      @include popover-arrow-at-start($arrow-size);
       bottom: $arrow-size;
-      transform: rotate(270deg);
     }
 
     &.nb-overlay-end-bottom .arrow {
-      left: calc(-1 * #{$arrow-size} - #{$arrow-size} / 2 + 2px);
+      @include popover-arrow-at-start($arrow-size);
       top: $arrow-size;
-      transform: rotate(270deg);
     }
   }
 }

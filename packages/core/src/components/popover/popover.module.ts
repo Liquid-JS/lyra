@@ -1,19 +1,11 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 import { NgModule } from '@angular/core';
 
-import { NbOverlayModule } from '../cdk/overlay/overlay.module';
+import { NbOverlayModule } from '@liquid-js/lyr-core/cdk';
 import { NbPopoverDirective } from './popover.directive';
 import { NbPopoverComponent } from './popover.component';
 
-
 @NgModule({
-  imports: [NbOverlayModule],
-  declarations: [NbPopoverDirective, NbPopoverComponent],
+  imports: [NbOverlayModule, NbPopoverDirective, NbPopoverComponent],
   exports: [NbPopoverDirective],
 })
 export class NbPopoverModule {

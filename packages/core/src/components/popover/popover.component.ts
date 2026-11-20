@@ -1,27 +1,11 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import {
-  Component,
-  Input,
-  TemplateRef,
-  Type,
-  ViewChild,
-} from '@angular/core';
-import { NbComponentPortal, NbTemplatePortal } from '../cdk/overlay/mapping';
-import {
-  NbOverlayContainerComponent,
-  NbPositionedContainerComponent,
-  NbRenderableContainer,
-} from '../cdk/overlay/overlay-container';
-
+import { ChangeDetectionStrategy, Component, input, TemplateRef, Type, viewChild } from '@angular/core';
+import { NbComponentPortal, NbTemplatePortal } from '@liquid-js/lyr-core/cdk';
+import { NbOverlayContainerComponent, NbPositionedContainerComponent, NbRenderableContainer } from '@liquid-js/lyr-core/cdk';
+import { NbOverlayContent } from '@liquid-js/lyr-core/cdk';
 
 /**
- * Overlay container.
- * Renders provided content inside.
+ * The container `nbPopover` opens: an arrowed overlay with the directive's content, a template, a component or a
+ * string.
  *
  * @styles
  *
@@ -39,19 +23,22 @@ import {
  * popover-padding:
  * */
 @Component({
-    selector: 'nb-popover',
-    styleUrls: ['./popover.component.scss'],
-    template: `
-    <span class="arrow"></span>
-    <nb-overlay-container></nb-overlay-container>
-  `,
-    standalone: false
+  selector: 'nb-popover',
+  styleUrls: ['./popover.component.scss'],
+  templateUrl: './popover.component.html',
+  // Hosted content may not use signals, so it's checked on every change detection.
+  changeDetection: ChangeDetectionStrategy.Eager,
+  imports: [NbOverlayContainerComponent],
+  host: {
+    'animate.enter': 'nb-overlay-enter',
+    'animate.leave': 'nb-overlay-leave',
+  },
 })
 export class NbPopoverComponent extends NbPositionedContainerComponent implements NbRenderableContainer {
-  @ViewChild(NbOverlayContainerComponent) overlayContainer: NbOverlayContainerComponent;
+  readonly overlayContainer = viewChild.required(NbOverlayContainerComponent);
 
-  @Input() content: any;
-  @Input() context: Object;
+  readonly content = input<NbOverlayContent>();
+  readonly context = input<object>();
 
   renderContent() {
     this.detachContent();
@@ -59,31 +46,33 @@ export class NbPopoverComponent extends NbPositionedContainerComponent implement
   }
 
   protected detachContent() {
-    this.overlayContainer.detach();
+    this.overlayContainer().detach();
   }
 
   protected attachContent() {
-    if (this.content instanceof TemplateRef) {
-      this.attachTemplate();
-    } else if (this.content instanceof Type) {
-      this.attachComponent();
+    const content = this.content();
+    if (content instanceof TemplateRef) {
+      this.attachTemplate(content);
+    } else if (content instanceof Type) {
+      this.attachComponent(content);
     } else {
-      this.attachString();
+      this.attachString(content);
     }
   }
 
-  protected attachTemplate() {
-    this.overlayContainer
-      .attachTemplatePortal(new NbTemplatePortal(this.content, null, <any>{ $implicit: this.context }));
+  protected attachTemplate(content: TemplateRef<unknown>) {
+    this.overlayContainer().attachTemplatePortal(
+      new NbTemplatePortal(content, undefined, { $implicit: this.context() }),
+    );
   }
 
-  protected attachComponent() {
-    const portal = new NbComponentPortal(this.content, null, null);
-    const ref = this.overlayContainer.attachComponentPortal(portal, this.context);
+  protected attachComponent(content: Type<unknown>) {
+    const portal = new NbComponentPortal(content, null, null);
+    const ref = this.overlayContainer().attachComponentPortal(portal, this.context());
     ref.changeDetectorRef.detectChanges();
   }
 
-  protected attachString() {
-    this.overlayContainer.attachStringContent(this.content);
+  protected attachString(content?: string) {
+    this.overlayContainer().attachStringContent(content);
   }
 }

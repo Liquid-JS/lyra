@@ -1,38 +1,37 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 import {
   AfterViewInit,
+  computed,
+  DestroyRef,
   Directive,
   ElementRef,
-  Input,
+  inject,
+  input,
   OnChanges,
   OnDestroy,
   OnInit,
-  Output,
-  EventEmitter,
+  output,
+  signal,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
-import { NbDynamicOverlay, NbDynamicOverlayController } from '../cdk/overlay/dynamic/dynamic-overlay';
-import { NbDynamicOverlayHandler } from '../cdk/overlay/dynamic/dynamic-overlay-handler';
-import { NbAdjustment, NbPosition, NbPositionValues, NbAdjustmentValues } from '../cdk/overlay/overlay-position';
-import { NbOverlayContent } from '../cdk/overlay/overlay-service';
-import { NbTrigger, NbTriggerValues } from '../cdk/overlay/overlay-trigger';
-import { NbOverlayConfig } from '../cdk/overlay/mapping';
+import { NbDynamicOverlay, NbDynamicOverlayController } from '@liquid-js/lyr-core/cdk';
+import { NbDynamicOverlayHandler, nbCreateDynamicOverlayHandler } from '@liquid-js/lyr-core/cdk';
+import { NbAdjustment, NbPosition, NbPositionValues, NbAdjustmentValues } from '@liquid-js/lyr-core/cdk';
+import { NbOverlayContent } from '@liquid-js/lyr-core/cdk';
+import { NbTrigger, NbTriggerValues } from '@liquid-js/lyr-core/cdk';
+import { NbOverlayConfig } from '@liquid-js/lyr-core/cdk';
 import { NbPopoverComponent } from './popover.component';
-import { takeUntil, skip } from 'rxjs/operators';
-import { Subject } from 'rxjs';
+import { skip } from 'rxjs/operators';
+import { ɵconvertToBoolProperty as convertToBoolProperty, ɵconvertToOptionalBoolProperty as convertToOptionalBoolProperty, NbBooleanInput } from '@liquid-js/lyr-core/base';
+
+let lastPopoverId = 0;
 
 /**
- * Powerful popover directive, which provides the best UX for your users.
+ * Opens a popover with a template, a component or a text beside its host element.
  *
  * @stacked-example(Showcase, popover/popover-showcase.component)
  *
- * Popover can accept different content such as:
- * TemplateRef
+ * A template:
  *
  * ```html
  * <button [nbPopover]="templateRef"></button>
@@ -41,6 +40,16 @@ import { Subject } from 'rxjs';
  * </ng-template>
  * ```
  * ### Installation
+ *
+ * Import `NbPopoverDirective` into your standalone component:
+ * ```ts
+ * @Component({
+ *   imports: [NbPopoverDirective],
+ * })
+ * export class PageComponent { }
+ * ```
+ *
+ * With NgModules:
  *
  * Import `NbPopoverModule` to your feature module.
  * ```ts
@@ -54,150 +63,144 @@ import { Subject } from 'rxjs';
  * ```
  * ### Usage
  *
- * Custom components
+ * A component:
  *
  * ```html
  * <button [nbPopover]="MyPopoverComponent"></button>
  * ```
  *
- * Both custom components and templateRef popovers can receive *contentContext* property
- * that will be passed to the content props.
+ * A template gets `nbPopoverContext` as its `$implicit` context, a component as its inputs.
  *
- * Primitive types
+ * A text:
  *
  * ```html
  * <button nbPopover="Hello, Popover!"></button>
  * ```
  *
- * Popover has different placements, such as: top, bottom, left, right, start and end
- * which can be used as following:
+ * `nbPopoverPlacement` places it on a side of the host: `top` (default), `bottom`, `left`, `right`, `start` or `end`,
+ * or at a corner, e.g. `top-start`:
  *
  * @stacked-example(Placements, popover/popover-placements.component)
  *
- * By default popover will try to adjust itself to maximally fit viewport
- * and provide the best user experience. It will try to change position of the popover container.
- * If you want to disable this behaviour set it `noop`.
+ * Where the popover doesn't fit the viewport, it moves to another side, `clockwise` by default; `nbPopoverAdjustment`
+ * picks another order, or `noop` keeps the placement:
  *
  * ```html
  * <button nbPopover="Hello, Popover!" nbPopoverAdjustment="noop"></button>
  * ```
  *
- * Popover has a number of triggers which provides an ability to show and hide the component in different ways:
+ * `nbPopoverTrigger` sets what shows and hides it:
  *
- * - Click mode shows the component when a user clicks on the host element and hides when the user clicks
- * somewhere on the document outside the component.
- * - Hint provides capability to show the component when the user hovers over the host element
- * and hide when the user hovers out of the host.
- * - Hover works like hint mode with one exception - when the user moves mouse from host element to
- * the container element the component remains open, so that it is possible to interact with it content.
- * - Focus mode is applied when user focuses the element.
- * - Noop mode - the component won't react to the user interaction.
+ * - `click` (default) shows it on a click on the host and hides it on a click anywhere else, including the popover,
+ * except an overlay opened from it (such as a select's options), and on Escape. The host gets `aria-expanded` and
+ * `aria-controls`, as a disclosure button.
+ * - `hint` shows it while the mouse is over the host or the keyboard focus is in it, and hides it on Escape.
+ * - `hover` is `hint` for the mouse only, and keeps the popover open while the mouse moves into it, so its content
+ * can be used.
+ * - `focus` shows it while the focus is in the host or the popover, and hides it on a click outside both.
+ * - `noop` leaves it to `show()`, `hide()` and `toggle()`.
  *
  * @stacked-example(Available Triggers, popover/popover-modes.component.html)
  *
- * Noop mode is especially useful when you need to control Popover programmatically, for example show/hide
- * as a result of some third-party action, like HTTP request or validation check:
+ * `noop` fits a popover the app controls, e.g. shown after a request or a validation check:
  *
  * @stacked-example(Manual Control, popover/popover-noop.component)
  *
- * Below are examples for manual popover settings control, both via template binding and code.
+ * The settings can change while the popover is in use, through bindings or in code:
  * @stacked-example(Popover Settings, popover/popover-dynamic.component)
  *
- * Please note, while manipulating Popover setting via code, you need to call `rebuild()` method to apply the settings
- * changed.
+ * Settings changed in code take effect once `rebuild()` is called.
  * @stacked-example(Popover Settings Code, popover/popover-dynamic-code.component)
  *
  * @additional-example(Template Ref, popover/popover-template-ref.component)
  * @additional-example(Custom Component, popover/popover-custom-component.component)
  * */
 @Directive({
-    selector: '[nbPopover]',
-    exportAs: 'nbPopover',
-    providers: [NbDynamicOverlayHandler, NbDynamicOverlay],
-    standalone: false
+  selector: '[nbPopover]',
+  exportAs: 'nbPopover',
+  host: {
+    // A host the popover opens from on click says whether it's open, and what it opens, as a disclosure does.
+    '[attr.aria-expanded]': 'discloses() ? expanded() : null',
+    '[attr.aria-controls]': 'discloses() && expanded() ? containerId : null',
+  },
 })
 export class NbPopoverDirective implements NbDynamicOverlayController, OnChanges, AfterViewInit, OnDestroy, OnInit {
+  protected readonly hostRef = inject(ElementRef);
+  protected readonly destroyRef = inject(DestroyRef);
+
   protected popoverComponent = NbPopoverComponent;
-  protected dynamicOverlay: NbDynamicOverlay;
-  protected destroy$ = new Subject<void>();
+  protected dynamicOverlay?: NbDynamicOverlay;
+
+  /** The popover's content: a template, a component or a text. */
+  readonly content = input<NbOverlayContent>(undefined, { alias: 'nbPopover' });
+
+  /** A template's `$implicit` context, or a component's inputs. */
+  readonly context = input<object>({}, { alias: 'nbPopoverContext' });
 
   /**
-   * Popover content which will be rendered in NbArrowedOverlayContainerComponent.
-   * Available content: template ref, component and any primitive.
-   * */
-  @Input('nbPopover')
-  content: NbOverlayContent;
+   * The side of the host the popover opens on: `top` (default), `bottom`, `left`, `right`, `start` or `end`, or a
+   * corner such as `top-start` or `end-bottom`.
+   */
+  readonly position = input<NbPosition, NbPositionValues>(NbPosition.TOP, {
+    alias: 'nbPopoverPlacement',
+    transform: (value) => value as NbPosition,
+  });
 
   /**
-   * Container content context. Will be applied to the rendered component.
-   * */
-  @Input('nbPopoverContext')
-  context: Object = {};
+   * The order in which other sides are tried when the popover doesn't fit the viewport: `clockwise` (default),
+   * `counterclockwise`, `vertical`, `horizontal`, or `noop` to keep the placement.
+   */
+  readonly adjustment = input<NbAdjustment, NbAdjustmentValues>(NbAdjustment.CLOCKWISE, {
+    alias: 'nbPopoverAdjustment',
+    transform: (value) => value as NbAdjustment,
+  });
+
+  /** What shows and hides the popover: `click` (default), `hover`, `hint`, `focus` or `noop`. */
+  readonly trigger = input<NbTrigger, NbTriggerValues>(NbTrigger.CLICK, {
+    alias: 'nbPopoverTrigger',
+    transform: (value) => value as NbTrigger,
+  });
+
+  /** The distance from the host, in pixels. */
+  readonly offset = input(15, { alias: 'nbPopoverOffset' });
+
+  /** Keeps the popover closed; a disabled popover doesn't open on its trigger. */
+  readonly disabled = input<boolean, NbBooleanInput>(false, {
+    alias: 'nbPopoverDisabled',
+    transform: convertToBoolProperty,
+  });
 
   /**
-   * Position will be calculated relatively host element based on the position.
-   * Can be top, right, bottom, left, start or end.
-   * */
-  // eslint-disable-next-line @angular-eslint/no-input-rename
-  @Input('nbPopoverPlacement')
-  position: NbPosition = NbPosition.TOP;
-  static ngAcceptInputType_position: NbPositionValues;
+   * @deprecated Use `nbPopoverDisabled`. The popover used to read the tooltip's input name by mistake.
+   * @docs-private
+   */
+  readonly legacyDisabled = input<boolean | undefined, NbBooleanInput>(undefined, {
+    alias: 'nbTooltipDisabled',
+    transform: convertToOptionalBoolProperty,
+  });
 
-  /**
-   * Container position will be changes automatically based on this strategy if container can't fit view port.
-   * Set this property to `noop` value if you want to disable automatically adjustment.
-   * Available values: `clockwise` (default), `counterclockwise`, `vertical`, `horizontal`, `noop`.
-   * */
-  @Input('nbPopoverAdjustment')
-  get adjustment(): NbAdjustment {
-    return this._adjustment;
-  }
-  set adjustment(value: NbAdjustment) {
-    this._adjustment = value;
-  }
-  protected _adjustment: NbAdjustment = NbAdjustment.CLOCKWISE;
-  static ngAcceptInputType_adjustment: NbAdjustmentValues;
+  /** A class for the overlay pane, e.g. to size the popover. */
+  readonly popoverClass = input('', { alias: 'nbPopoverClass' });
 
-  /**
-   * Describes when the container will be shown.
-   * Available options: `click`, `hover`, `hint`, `focus` and `noop`
-   * */
-  @Input('nbPopoverTrigger')
-  trigger: NbTrigger = NbTrigger.CLICK;
-  static ngAcceptInputType_trigger: NbTriggerValues;
+  /** Whether the popover is disabled, through `nbPopoverDisabled` or the deprecated `nbTooltipDisabled`. */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated -- the deprecated nbTooltipDisabled still disables the popover, for backwards compatibility.
+  readonly isDisabled = computed(() => this.legacyDisabled() ?? this.disabled());
 
-  /**
-   * Sets popover offset
-   * */
-  @Input('nbPopoverOffset')
-  offset = 15;
+  /** Emits when the popover opens or closes, after the view initialises. */
+  readonly nbPopoverShowStateChange = output<{ isShown: boolean }>();
 
-  /** Disables the display of the tooltip. */
-  // eslint-disable-next-line @angular-eslint/no-input-rename
-  @Input('nbTooltipDisabled') disabled: boolean = false;
+  protected readonly overlayConfig = computed<NbOverlayConfig>(() => ({ panelClass: this.popoverClass() }));
 
-  @Input('nbPopoverClass')
-  get popoverClass(): string {
-    return this._popoverClass;
-  }
-  set popoverClass(value: string) {
-    if (value !== this.popoverClass) {
-      this._popoverClass = value;
-      this.overlayConfig = { panelClass: this.popoverClass };
-    }
-  }
-  _popoverClass: string = '';
-
-  @Output()
-  nbPopoverShowStateChange = new EventEmitter<{ isShown: boolean }>();
-
-  protected overlayConfig: NbOverlayConfig = { panelClass: this.popoverClass };
+  protected readonly expanded = signal(false);
+  protected readonly containerId = `nb-popover-${lastPopoverId++}`;
+  protected readonly discloses = computed(() => this.trigger() === NbTrigger.CLICK);
 
   get isShown(): boolean {
     return !!(this.dynamicOverlay && this.dynamicOverlay.isAttached);
   }
 
-  constructor(protected hostRef: ElementRef, protected dynamicOverlayHandler: NbDynamicOverlayHandler) {}
+  protected readonly dynamicOverlayHandler =
+    inject(NbDynamicOverlayHandler, { optional: true, self: true }) ?? nbCreateDynamicOverlayHandler();
 
   ngOnInit() {
     this.dynamicOverlayHandler.host(this.hostRef).componentType(this.popoverComponent);
@@ -210,42 +213,53 @@ export class NbPopoverDirective implements NbDynamicOverlayController, OnChanges
   ngAfterViewInit() {
     this.dynamicOverlay = this.configureDynamicOverlay().build();
 
-    this.dynamicOverlay.isShown
-      .pipe(skip(1), takeUntil(this.destroy$))
+    const overlay = this.dynamicOverlay;
+    overlay.isShown.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((isShown: boolean) => {
+      this.expanded.set(isShown);
+      overlay.containerElement?.setAttribute('id', this.containerId);
+    });
+    overlay.isShown
+      .pipe(skip(1), takeUntilDestroyed(this.destroyRef))
       .subscribe((isShown: boolean) => this.nbPopoverShowStateChange.emit({ isShown }));
   }
 
+  /** Applies settings changed in code; bindings apply on their own. */
   rebuild() {
     this.dynamicOverlay = this.configureDynamicOverlay().rebuild();
   }
 
   show() {
-    this.dynamicOverlay.show();
+    this.builtOverlay().show();
   }
 
   hide() {
-    this.dynamicOverlay.hide();
+    this.builtOverlay().hide();
   }
 
   toggle() {
-    this.dynamicOverlay.toggle();
+    this.builtOverlay().toggle();
   }
 
   ngOnDestroy() {
     this.dynamicOverlayHandler.destroy();
-    this.destroy$.next();
-    this.destroy$.complete();
+  }
+
+  private builtOverlay(): NbDynamicOverlay {
+    if (!this.dynamicOverlay) {
+      throw new Error('NbPopoverDirective: the popover is built once the view initialises.');
+    }
+    return this.dynamicOverlay;
   }
 
   protected configureDynamicOverlay() {
     return this.dynamicOverlayHandler
-      .position(this.position)
-      .trigger(this.trigger)
-      .disabled(this.disabled)
-      .offset(this.offset)
-      .adjustment(this.adjustment)
-      .content(this.content)
-      .context(this.context)
-      .overlayConfig(this.overlayConfig);
+      .position(this.position())
+      .trigger(this.trigger())
+      .disabled(this.isDisabled())
+      .offset(this.offset())
+      .adjustment(this.adjustment())
+      .content(this.content())
+      .context(this.context())
+      .overlayConfig(this.overlayConfig());
   }
 }

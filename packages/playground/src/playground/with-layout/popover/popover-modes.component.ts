@@ -1,25 +1,21 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 import { Component } from '@angular/core';
+import { NbButtonComponent, NbPopoverDirective } from '@liquid-js/lyr-core';
 
 @Component({
-    selector: 'nb-popover-modes',
-    templateUrl: './popover-modes.component.html',
-    styles: [`
-    :host {
-      display: block;
-      padding-bottom: 5rem;
-    }
+  selector: 'nb-popover-modes',
+  templateUrl: './popover-modes.component.html',
+  styles: [
+    `
+      :host {
+        display: block;
+        padding-bottom: 5rem;
+      }
 
-    button + button {
-      margin-left: 1rem;
-    }
-  `],
-    standalone: false
+      button + button {
+        margin-inline-start: 1rem;
+      }
+    `,
+  ],
+  imports: [NbButtonComponent, NbPopoverDirective],
 })
-export class PopoverModesComponent {
-}
+export class PopoverModesComponent {}

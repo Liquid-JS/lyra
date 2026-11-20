@@ -1,0 +1,18 @@
+// The popover's look: its theme writes it on the popover, and `nb-panel(popover)` on any element.
+@use '../../styles/core/theming/get-value' as *;
+
+/// The border, corners, background and shadow, and the text colour.
+@mixin surface() {
+  border: nb-theme(popover-border-width) solid nb-theme(popover-border-color);
+  border-radius: nb-theme(popover-border-radius);
+  background: nb-theme(popover-background-color);
+  box-shadow: nb-theme(popover-shadow);
+  color: nb-theme(popover-text-color);
+}
+
+@mixin text() {
+  font-family: nb-theme(popover-text-font-family);
+  font-size: nb-theme(popover-text-font-size);
+  font-weight: nb-theme(popover-text-font-weight);
+  line-height: nb-theme(popover-text-line-height);
+}
