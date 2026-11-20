@@ -1,0 +1,38 @@
+@use '../../styles/theming' as *;
+
+@mixin nb-page-indicator-theme() {
+  nb-page-indicator {
+    gap: nb-theme(page-indicator-gap);
+
+    // Room around each dot, so the long one keeps the same space to its neighbours.
+    .page-dot {
+      padding: nb-theme(page-indicator-dot-padding);
+    }
+
+    .page-dot::before {
+      width: nb-theme(page-indicator-dot-size);
+      height: nb-theme(page-indicator-dot-size);
+      background-color: nb-theme(page-indicator-dot-color);
+      transition-duration: nb-theme(page-indicator-animation-duration);
+      transition-property: width, background-color;
+    }
+
+    .page-dot:hover::before {
+      background-color: nb-theme(page-indicator-dot-hover-color);
+    }
+
+    .page-dot.active::before {
+      width: nb-theme(page-indicator-active-dot-width);
+    }
+
+    .page-dot:focus-visible::before {
+      @include nb-outline(nb-theme(page-indicator-outline-width), nb-theme(page-indicator-outline-color));
+    }
+
+    @each $status in nb-get-statuses() {
+      &.status-#{$status} .page-dot.active::before {
+        background-color: nb-theme(page-indicator-#{$status}-active-color);
+      }
+    }
+  }
+}
