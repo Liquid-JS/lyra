@@ -1,8 +1,8 @@
 import { Directive } from '@angular/core';
 
-@Directive({
-    selector: '[nbSuffix]',
-    standalone: false
-})
+/**
+ * Marks content of an `nb-form-field` to show after its control, e.g. a button that shows a password.
+ */
+@Directive({ selector: '[nbSuffix]' })
 export class NbSuffixDirective {
 }

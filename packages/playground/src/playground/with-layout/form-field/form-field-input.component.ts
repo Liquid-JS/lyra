@@ -1,19 +1,22 @@
 import { Component } from '@angular/core';
+import {
+  NbCardComponent,
+  NbCardBodyComponent,
+  NbFormFieldComponent,
+  NbIconComponent,
+  NbPrefixDirective,
+  NbInputDirective,
+} from '@liquid-js/lyr-core';
 
 @Component({
-    template: `
-    <nb-card size="small">
-      <nb-card-body>
-
-        <nb-form-field>
-          <nb-icon nbPrefix icon="at-outline" pack="eva"></nb-icon>
-          <input type="text" nbInput>
-        </nb-form-field>
-
-      </nb-card-body>
-    </nb-card>
-  `,
-    standalone: false
+  templateUrl: './form-field-input.component.html',
+  imports: [
+    NbCardComponent,
+    NbCardBodyComponent,
+    NbFormFieldComponent,
+    NbIconComponent,
+    NbPrefixDirective,
+    NbInputDirective,
+  ],
 })
-export class FormFieldInputComponent {
-}
+export class FormFieldInputComponent {}

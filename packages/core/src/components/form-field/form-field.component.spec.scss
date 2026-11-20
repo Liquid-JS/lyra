@@ -1,0 +1,12 @@
+// The default theme's form field and input styles, which specs don't load otherwise.
+@use '@liquid-js/lyr-core/styles/all' as *;
+@use '../input/input.directive.theme' as input;
+@use 'form-field.component.theme' as form-field;
+
+$nb-enabled-themes: (default);
+
+@include nb-install() {
+  @include nb-theme-base();
+  @include input.nb-input-theme();
+  @include form-field.nb-form-field-theme();
+}

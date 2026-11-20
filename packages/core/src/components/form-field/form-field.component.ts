@@ -1,40 +1,35 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 import {
-  Component,
-  ChangeDetectionStrategy,
-  ContentChild,
   AfterContentChecked,
-  ChangeDetectorRef,
-  ContentChildren,
-  QueryList,
-  AfterContentInit,
-  OnDestroy,
-  NgZone,
+  afterRenderEffect,
+  Component,
+  computed,
+  contentChild,
+  contentChildren,
+  DestroyRef,
   ElementRef,
-  Renderer2,
-  AfterViewInit,
-  HostBinding,
+  inject,
+  NgZone,
+  Signal,
+  viewChild,
 } from '@angular/core';
-import { merge, Subject, Observable, combineLatest, ReplaySubject } from 'rxjs';
-import { takeUntil, distinctUntilChanged, map, tap } from 'rxjs/operators';
 
 import { NbPrefixDirective } from './prefix.directive';
 import { NbSuffixDirective } from './suffix.directive';
 import { NbFormFieldControl, NbFormControlState, NbFormFieldControlConfig } from './form-field-control';
+import { ɵenableTransitionsAfterRender as enableTransitionsAfterRender } from '@liquid-js/lyr-core/base';
 
 export type NbFormControlAddon = 'prefix' | 'suffix';
 
 function throwFormControlElementNotFound() {
-  throw new Error(`NbFormFieldComponent must contain [nbInput]`)
+  throw new Error(`NbFormFieldComponent must contain [nbInput]`);
 }
 
-/*
- * NbFormFieldComponent
+/**
+ * Shows content before and after a control, such as `nbInput`: an icon, a button or text marked `nbPrefix` or
+ * `nbSuffix`.
+ *
+ * Addons are at least `form-field-addon-{size}-width` wide, and grow to fit their content, e.g. a unit or a URL
+ * scheme; the control's padding follows their width.
  *
  * @styles
  *
@@ -55,6 +50,16 @@ function throwFormControlElementNotFound() {
  * form-field-addon-disabled-text-color:
  * form-field-addon-tiny-height:
  * form-field-addon-tiny-width:
+ * form-field-tiny-width:
+ * form-field-small-width:
+ * form-field-medium-width:
+ * form-field-large-width:
+ * form-field-giant-width:
+ * form-field-tiny-max-width:
+ * form-field-small-max-width:
+ * form-field-medium-max-width:
+ * form-field-large-max-width:
+ * form-field-giant-max-width:
  * form-field-addon-tiny-icon-size:
  * form-field-addon-tiny-font-size:
  * form-field-addon-tiny-line-height:
@@ -85,92 +90,63 @@ function throwFormControlElementNotFound() {
  * form-field-addon-giant-font-weight:
  **/
 @Component({
-    selector: 'nb-form-field',
-    styleUrls: ['./form-field.component.scss'],
-    templateUrl: './form-field.component.html',
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  selector: 'nb-form-field',
+  styleUrls: ['./form-field.component.scss'],
+  templateUrl: './form-field.component.html',
+  host: {
+    '[class]': 'formFieldClasses()',
+  },
 })
-export class NbFormFieldComponent implements AfterContentChecked, AfterContentInit, AfterViewInit, OnDestroy {
+export class NbFormFieldComponent implements AfterContentChecked {
+  protected readonly elementRef = inject(ElementRef);
 
-  protected readonly destroy$ = new Subject<void>();
+  readonly prefix = contentChildren(NbPrefixDirective, { descendants: true });
+  readonly suffix = contentChildren(NbSuffixDirective, { descendants: true });
 
-  protected formControlState$ = new ReplaySubject<NbFormControlState>(1);
-  prefixClasses$: Observable<string[]> = this.formControlState$.pipe(map(s => this.getAddonClasses('prefix', s)));
-  suffixClasses$: Observable<string[]> = this.formControlState$.pipe(map(s => this.getAddonClasses('suffix', s)));
+  readonly formControl = contentChild(NbFormFieldControl);
+  readonly formControlConfig = contentChild(NbFormFieldControlConfig);
 
-  @ContentChildren(NbPrefixDirective, { descendants: true }) prefix: QueryList<NbPrefixDirective>;
-  @ContentChildren(NbSuffixDirective, { descendants: true }) suffix: QueryList<NbSuffixDirective>;
+  protected readonly formControlState = computed(() => this.formControl()?.controlState(), {
+    equal: (oldState, state) => this.isStatesEqual(oldState, state),
+  });
 
-  @ContentChild(NbFormFieldControl, { static: false }) formControl: NbFormFieldControl;
-  @ContentChild(NbFormFieldControlConfig, { static: false }) formControlConfig: NbFormFieldControlConfig;
+  protected readonly formFieldClasses = computed(() => {
+    const state = this.formControlState();
+    if (!state) {
+      return [];
+    }
+    return [`nb-form-field-size-${state.size}`, ...(state.fullWidth ? [] : ['nb-form-field-limited-width'])];
+  });
 
-  @HostBinding('class') formFieldClasses;
+  readonly shouldShowPrefix = computed(() => this.getFormControlConfig().supportsPrefix && !!this.prefix().length);
+  readonly shouldShowSuffix = computed(() => this.getFormControlConfig().supportsSuffix && !!this.suffix().length);
 
-  constructor(
-    protected cd: ChangeDetectorRef,
-    protected zone: NgZone,
-    protected elementRef: ElementRef,
-    protected renderer: Renderer2,
-  ) {
+  readonly prefixClasses = computed(() => this.getAddonClasses('prefix', this.formControlState()));
+  readonly suffixClasses = computed(() => this.getAddonClasses('suffix', this.formControlState()));
+
+  protected readonly prefixElement = viewChild<ElementRef<HTMLElement>>('prefixAddon');
+  protected readonly suffixElement = viewChild<ElementRef<HTMLElement>>('suffixAddon');
+  protected readonly zone = inject(NgZone);
+  protected resizeObserver?: ResizeObserver;
+  protected readonly addonProperties = new Map<Element, string>();
+
+  constructor() {
+    enableTransitionsAfterRender(this.elementRef.nativeElement);
+    this.observeAddonWidth(this.prefixElement, '--nb-form-field-prefix-width');
+    this.observeAddonWidth(this.suffixElement, '--nb-form-field-suffix-width');
+    inject(DestroyRef).onDestroy(() => this.resizeObserver?.disconnect());
   }
 
   ngAfterContentChecked() {
-    if (!this.formControl) {
+    if (!this.formControl()) {
       throwFormControlElementNotFound();
     }
   }
 
-  ngAfterContentInit() {
-    this.subscribeToFormControlStateChange();
-    this.subscribeToAddonChange();
-  }
-
-  ngAfterViewInit() {
-    // TODO: #2254
-    this.zone.runOutsideAngular(() => setTimeout(() => {
-      this.renderer.addClass(this.elementRef.nativeElement, 'nb-transition');
-    }));
-  }
-
-  ngOnDestroy() {
-    this.destroy$.next();
-  }
-
-  shouldShowPrefix(): boolean {
-    return this.getFormControlConfig().supportsPrefix && !!this.prefix.length;
-  }
-
-  shouldShowSuffix(): boolean {
-    return this.getFormControlConfig().supportsSuffix && !!this.suffix.length;
-  }
-
-  protected subscribeToFormControlStateChange() {
-    const { disabled$, focused$, size$, status$, fullWidth$ } = this.formControl;
-
-    combineLatest([disabled$, focused$, size$, status$, fullWidth$])
-      .pipe(
-        map(([disabled, focused, size, status, fullWidth]) => ({ disabled, focused, size, status, fullWidth })),
-        distinctUntilChanged((oldState, state) => this.isStatesEqual(oldState, state)),
-        tap(({ size, fullWidth }) => {
-          const formFieldClasses = [`nb-form-field-size-${size}`];
-          if (!fullWidth) {
-            formFieldClasses.push('nb-form-field-limited-width')
-          }
-          this.formFieldClasses = formFieldClasses.join(' ');
-        }),
-        takeUntil(this.destroy$),
-      )
-      .subscribe(this.formControlState$);
-  }
-
-  protected subscribeToAddonChange() {
-    merge(this.prefix.changes, this.suffix.changes)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(() => this.cd.markForCheck());
-  }
-
-  protected getAddonClasses(addon: NbFormControlAddon, state: NbFormControlState): string[] {
+  protected getAddonClasses(addon: NbFormControlAddon, state?: NbFormControlState): string[] {
+    if (!state) {
+      return [];
+    }
     const classes = [
       'nb-form-field-addon',
       `nb-form-field-${addon}-${state.size}`,
@@ -187,15 +163,43 @@ export class NbFormFieldComponent implements AfterContentChecked, AfterContentIn
     return classes;
   }
 
-  protected getFormControlConfig(): NbFormFieldControlConfig {
-    return this.formControlConfig || new NbFormFieldControlConfig();
+  // The control is padded by the addon's width, which the theme uses as a fallback until it's measured.
+  protected observeAddonWidth(addon: Signal<ElementRef<HTMLElement> | undefined>, property: string) {
+    afterRenderEffect((onCleanup) => {
+      const element = addon()?.nativeElement;
+      if (!element || typeof ResizeObserver === 'undefined') {
+        return;
+      }
+      const host: HTMLElement = this.elementRef.nativeElement;
+      this.zone.runOutsideAngular(() => {
+        this.resizeObserver ??= new ResizeObserver((entries) => {
+          for (const entry of entries) {
+            const name = this.addonProperties.get(entry.target);
+            if (name) {
+              host.style.setProperty(name, `${entry.borderBoxSize[0].inlineSize}px`);
+            }
+          }
+        });
+        this.addonProperties.set(element, property);
+        this.resizeObserver.observe(element);
+      });
+      onCleanup(() => {
+        this.resizeObserver?.unobserve(element);
+        this.addonProperties.delete(element);
+        host.style.removeProperty(property);
+      });
+    });
   }
 
-  protected isStatesEqual(oldState: NbFormControlState, state: NbFormControlState): boolean {
-    return oldState.status === state.status &&
-           oldState.disabled === state.disabled &&
-           oldState.focused === state.focused &&
-           oldState.fullWidth === state.fullWidth &&
-           oldState.size === state.size;
+  protected getFormControlConfig(): NbFormFieldControlConfig {
+    return this.formControlConfig() || new NbFormFieldControlConfig();
+  }
+
+  protected isStatesEqual(oldState?: NbFormControlState, state?: NbFormControlState): boolean {
+    return oldState?.status === state?.status &&
+           oldState?.disabled === state?.disabled &&
+           oldState?.focused === state?.focused &&
+           oldState?.fullWidth === state?.fullWidth &&
+           oldState?.size === state?.size;
   }
 }

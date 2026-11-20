@@ -1,13 +1,19 @@
-<div *ngIf="shouldShowPrefix()" [ngClass]="prefixClasses$ | async">
-  <ng-content select="[nbPrefix]"></ng-content>
+@if (shouldShowPrefix()) {
+<div #prefixAddon
+  [class]="prefixClasses()">
+  <ng-content select="[nbPrefix]" />
 </div>
+}
 
 <div class="nb-form-control-container"
-     [class.nb-form-field-control-with-prefix]="shouldShowPrefix()"
-     [class.nb-form-field-control-with-suffix]="shouldShowSuffix()">
-  <ng-content></ng-content>
+  [class.nb-form-field-control-with-prefix]="shouldShowPrefix()"
+  [class.nb-form-field-control-with-suffix]="shouldShowSuffix()">
+  <ng-content />
 </div>
 
-<div *ngIf="shouldShowSuffix()" [ngClass]="suffixClasses$ | async">
-  <ng-content select="[nbSuffix]"></ng-content>
+@if (shouldShowSuffix()) {
+<div #suffixAddon
+  [class]="suffixClasses()">
+  <ng-content select="[nbSuffix]" />
 </div>
+}

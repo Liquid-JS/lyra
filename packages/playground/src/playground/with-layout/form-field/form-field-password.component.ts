@@ -1,24 +1,25 @@
 import { Component } from '@angular/core';
+import {
+  NbCardComponent,
+  NbCardBodyComponent,
+  NbFormFieldComponent,
+  NbInputDirective,
+  NbButtonComponent,
+  NbSuffixDirective,
+  NbIconComponent,
+} from '@liquid-js/lyr-core';
 
 @Component({
-    template: `
-   <nb-card size="small">
-     <nb-card-body>
-
-       <nb-form-field>
-         <input [type]="getInputType()" nbInput>
-         <button nbSuffix nbButton ghost (click)="toggleShowPassword()">
-           <nb-icon [icon]="showPassword ? 'eye-outline' : 'eye-off-2-outline'"
-                    pack="eva"
-                    [attr.aria-label]="showPassword ? 'hide password' : 'show password'">
-           </nb-icon>
-         </button>
-       </nb-form-field>
-
-     </nb-card-body>
-   </nb-card>
- `,
-    standalone: false
+  templateUrl: './form-field-password.component.html',
+  imports: [
+    NbCardComponent,
+    NbCardBodyComponent,
+    NbFormFieldComponent,
+    NbInputDirective,
+    NbButtonComponent,
+    NbSuffixDirective,
+    NbIconComponent,
+  ],
 })
 export class FormFieldPasswordComponent {
   showPassword = true;

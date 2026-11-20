@@ -1,30 +1,24 @@
+import { Signal, Service } from '@angular/core';
+import { NbComponentOrCustomStatus } from '@liquid-js/lyr-core/base';
+import { NbComponentSize } from '@liquid-js/lyr-core/base';
+
 /**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
+ * Provided by a control that an `nb-form-field` can hold, such as `nbInput` or `nb-select`, with the state the field
+ * renders its size and addons by: `{ provide: NbFormFieldControl, useExisting: MyControl }`.
  */
-
-import { Injectable } from '@angular/core';
-import { NbComponentOrCustomStatus } from '../component-status';
-import { NbComponentSize } from '../component-size';
-import { Observable } from 'rxjs';
-
-/*
- * Class used as injection token to provide form element.
- **/
-@Injectable()
+@Service({ autoProvided: false })
 export abstract class NbFormFieldControl {
-  status$: Observable<NbComponentOrCustomStatus>;
-  size$: Observable<NbComponentSize>;
-  focused$: Observable<boolean>;
-  disabled$: Observable<boolean>;
-  fullWidth$: Observable<boolean>;
+  /**
+   * The control's state, which the form field renders its size and addons with.
+   */
+  abstract readonly controlState: Signal<NbFormControlState>;
 }
 
-/*
- * Optional config to be provided on NbFormFieldControl to alter default settings.
- **/
-@Injectable()
+/**
+ * Provided next to `NbFormFieldControl` by a control that doesn't take a prefix or a suffix, e.g. `nb-select`, whose
+ * arrow is at its end.
+ */
+@Service({ autoProvided: false })
 export class NbFormFieldControlConfig {
   supportsPrefix = true;
   supportsSuffix = true;
