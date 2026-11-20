@@ -1,0 +1,43 @@
+<nb-card>
+  <nb-card-body class="example-items-col">
+    <nb-input-group aria-label="Price">
+      <input type="number"
+        nbInput
+        placeholder="Amount"
+        aria-label="Amount" />
+      <nb-select selected="eur"
+        aria-label="Currency">
+        <nb-option value="eur">EUR</nb-option>
+        <nb-option value="usd">USD</nb-option>
+        <nb-option value="gbp">GBP</nb-option>
+      </nb-select>
+    </nb-input-group>
+
+    <nb-input-group aria-label="Search">
+      <input type="search"
+        nbInput
+        placeholder="Search"
+        aria-label="Search" />
+      <button nbButton
+        status="primary">Search</button>
+    </nb-input-group>
+
+    <nb-input-group aria-label="Share link">
+      <nb-form-field>
+        <nb-icon nbPrefix
+          icon="link-2-outline"
+          pack="icons" />
+        <input nbInput
+          readonly
+          value="https://example.com/share/f3a9"
+          aria-label="Link" />
+      </nb-form-field>
+      <button nbButton
+        outline
+        aria-label="Copy link">
+        <nb-icon icon="copy-outline"
+          pack="icons" />
+      </button>
+    </nb-input-group>
+  </nb-card-body>
+</nb-card>

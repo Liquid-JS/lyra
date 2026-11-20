@@ -1,0 +1,18 @@
+// The default theme's styles for the group and the controls in it, which specs don't load otherwise.
+@use '@liquid-js/lyr-core/styles/all' as *;
+@use '../button/button.component.theme' as button;
+@use '../form-field/form-field.component.theme' as form-field;
+@use '../input/input.directive.theme' as input;
+@use '../select/select.component.theme' as select;
+@use 'input-group.component.theme' as input-group;
+
+$nb-enabled-themes: (default);
+
+@include nb-install() {
+  @include nb-theme-base();
+  @include button.nb-buttons-theme();
+  @include input.nb-input-theme();
+  @include select.nb-select-theme();
+  @include form-field.nb-form-field-theme();
+  @include input-group.nb-input-group-theme();
+}

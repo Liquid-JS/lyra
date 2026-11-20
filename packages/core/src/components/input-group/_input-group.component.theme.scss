@@ -1,0 +1,56 @@
+@use '../../styles/theming' as *;
+
+// The elements that draw a control's border: the group's children, or elements in them such as a form field's
+// input. Buttons in a form field's addons aren't joined.
+$nb-input-group-controls: '[nbInput], .nb-tag-list-with-input, .select-button, [nbButton], [nbButtonToggle]';
+$nb-input-group-full-width: '.input-full-width, .full-width, nb-form-field:not(.nb-form-field-limited-width)';
+
+@mixin nb-input-group-joined($child, $corners...) {
+  > #{$child}:is(#{$nb-input-group-controls}),
+  > #{$child} :is(#{$nb-input-group-controls}):not(.nb-form-field-addon > *) {
+    @each $corner in $corners {
+      border-#{$corner}-radius: 0;
+    }
+  }
+}
+
+@mixin nb-input-group-theme() {
+  nb-input-group {
+    display: inline-flex;
+    align-items: center;
+    vertical-align: middle;
+    max-width: 100%;
+
+    // It fills its container when a control in it does, and those controls share what the others leave.
+    &:has(> :is(#{$nb-input-group-full-width})) {
+      display: flex;
+      width: 100%;
+    }
+
+    > * {
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    > :is(#{$nb-input-group-full-width}) {
+      flex: 1 1 0;
+      min-width: 0;
+    }
+
+    // Borders overlap, so the one under the pointer or with focus shows in full.
+    > :not(:first-child) {
+      margin-inline-start: calc(#{nb-theme(input-border-width)} * -1);
+    }
+
+    > :hover {
+      z-index: 1;
+    }
+
+    > :focus-within {
+      z-index: 2;
+    }
+
+    @include nb-input-group-joined(':not(:first-child)', start-start, end-start);
+    @include nb-input-group-joined(':not(:last-child)', start-end, end-end);
+  }
+}

@@ -1,0 +1,30 @@
+<nb-card>
+  <nb-card-body class="example-items-col">
+    <nb-input-group aria-label="Phone number">
+      <nb-select selected="+1"
+        aria-label="Country code">
+        <nb-option value="+1">+1</nb-option>
+        <nb-option value="+44">+44</nb-option>
+        <nb-option value="+61">+61</nb-option>
+      </nb-select>
+      <input type="tel"
+        nbInput
+        fullWidth
+        placeholder="Phone number"
+        aria-label="Phone number" />
+      <button nbButton
+        status="primary">Verify</button>
+    </nb-input-group>
+
+    <nb-input-group aria-label="Name">
+      <input nbInput
+        fullWidth
+        placeholder="First name"
+        aria-label="First name" />
+      <input nbInput
+        fullWidth
+        placeholder="Last name"
+        aria-label="Last name" />
+    </nb-input-group>
+  </nb-card-body>
+</nb-card>
