@@ -1,46 +1,31 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 @use '../../styles/theming' as *;
 
 @mixin nb-toggle-theme() {
   nb-toggle {
     .toggle {
-      height: nb-theme(toggle-height);
-      width: nb-theme(toggle-width);
       border-width: nb-theme(toggle-border-width);
       border-style: solid;
       border-radius: nb-theme(toggle-border-radius);
       cursor: nb-theme(toggle-cursor);
 
-      /*
-        We need to set initial positions as Angular animations won't work in IE11 if positions have no initial value.
-        Setting it in SCSS as we don't have access to theme variables from TS.
-      */
+      // The switcher moves along one edge in both states, so the position transitions between two lengths.
       @include nb-ltr() {
-        &.checked .toggle-switcher {
-          $size: nb-theme(toggle-switcher-size);
-          $border-width: nb-theme(toggle-border-width);
-          left: calc(100% - #{$size} - #{$border-width} - #{$border-width});
+        .toggle-switcher {
+          left: 0;
         }
 
-        &:not(.checked) .toggle-switcher {
-          right: 0;
+        &.checked .toggle-switcher {
+          left: calc(100% - var(--nb-toggle-switcher-size) - #{nb-theme(toggle-border-width)} * 2);
         }
       }
 
       @include nb-rtl() {
-        &.checked .toggle-switcher {
-          $size: nb-theme(toggle-switcher-size);
-          $border-width: nb-theme(toggle-border-width);
-          right: calc(100% - #{$size} - #{$border-width} - #{$border-width});
+        .toggle-switcher {
+          right: 0;
         }
 
-        &:not(.checked) .toggle-switcher {
-          left: 0;
+        &.checked .toggle-switcher {
+          right: calc(100% - var(--nb-toggle-switcher-size) - #{nb-theme(toggle-border-width)} * 2);
         }
       }
     }
@@ -54,20 +39,35 @@
     }
 
     .toggle-switcher {
-      width: nb-theme(toggle-switcher-size);
-      height: nb-theme(toggle-switcher-size);
-
-      nb-icon {
-        height: nb-theme(toggle-switcher-icon-size);
-        width: nb-theme(toggle-switcher-icon-size);
-      }
+      width: var(--nb-toggle-switcher-size);
+      height: var(--nb-toggle-switcher-size);
     }
 
     .text {
       font-family: nb-theme(toggle-text-font-family);
-      font-size: nb-theme(toggle-text-font-size);
-      font-weight: nb-theme(toggle-text-font-weight);
-      line-height: nb-theme(toggle-text-line-height);
+    }
+  }
+
+  @each $size in nb-get-sizes() {
+    nb-toggle.size-#{$size} {
+      // The switcher's position follows its size too.
+      --nb-toggle-switcher-size: #{nb-theme(toggle-#{$size}-switcher-size)};
+
+      .toggle {
+        height: nb-theme(toggle-#{$size}-height);
+        width: nb-theme(toggle-#{$size}-width);
+      }
+
+      .toggle-switcher nb-icon {
+        height: nb-theme(toggle-#{$size}-switcher-icon-size);
+        width: nb-theme(toggle-#{$size}-switcher-icon-size);
+      }
+
+      .text {
+        font-size: nb-theme(toggle-#{$size}-text-font-size);
+        font-weight: nb-theme(toggle-#{$size}-text-font-weight);
+        line-height: nb-theme(toggle-#{$size}-text-line-height);
+      }
     }
   }
 
@@ -124,7 +124,12 @@
       }
     }
 
+    // The switcher off, then on: dark themes give it a colour of its own off, apart from the surface it's on.
     .toggle-switcher {
+      background-color: nb-theme(toggle-#{$status}-switcher-background-color);
+    }
+
+    .toggle.checked .toggle-switcher {
       background-color: nb-theme(toggle-#{$status}-checked-switcher-background-color);
 
       nb-icon {

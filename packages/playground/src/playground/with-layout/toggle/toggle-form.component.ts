@@ -1,28 +1,20 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 import { Component } from '@angular/core';
-import { FormControl } from '@angular/forms';
+import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { NbCardComponent, NbCardBodyComponent, NbToggleComponent } from '@liquid-js/lyr-core';
 
 @Component({
-    selector: 'nb-toggle-form',
-    template: `
-    <nb-card>
-      <nb-card-body class="example-items-col">
-        <nb-toggle [(ngModel)]="toggleNgModel">Toggle with NgModel</nb-toggle>
-        <nb-toggle [formControl]="toggleFormControl">Toggle with FormControl</nb-toggle>
-      </nb-card-body>
-    </nb-card>
-  `,
-    standalone: false
+  selector: 'nb-toggle-form',
+  templateUrl: './toggle-form.component.html',
+  imports: [
+    NbCardComponent,
+    NbCardBodyComponent,
+    NbToggleComponent,
+    FormsModule,
+    ReactiveFormsModule,
+  ],
 })
 export class ToggleFormComponent {
-
   toggleNgModel = true;
 
   toggleFormControl = new FormControl();
-
 }

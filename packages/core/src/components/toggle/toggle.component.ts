@@ -1,43 +1,46 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 import {
   Component,
-  Input,
-  HostBinding,
-  forwardRef,
-  ChangeDetectorRef,
-  OnInit,
-  Output,
-  EventEmitter,
-  OnDestroy,
-  ChangeDetectionStrategy,
-  Renderer2,
+  computed,
   ElementRef,
-  AfterViewInit,
-  NgZone,
+  forwardRef,
+  inject,
+  input,
+  linkedSignal,
+  output,
 } from '@angular/core';
-import { trigger, state, style, animate, transition } from '@angular/animations';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
-import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
 
-import { NbStatusService } from '../../services/status.service';
-import { NbLayoutDirectionService } from '../../services/direction.service';
-import { NbComponentOrCustomStatus } from '../component-status';
-import { convertToBoolProperty, NbBooleanInput } from '../helpers';
+import { injectNbDefaults } from '@liquid-js/lyr-core/base';
+import { NbStatusService } from '@liquid-js/lyr-core/base';
+import { NbLayoutDirectionService } from '@liquid-js/lyr-core/base';
+import { NbComponentOrCustomStatus } from '@liquid-js/lyr-core/base';
+import { NbComponentSize } from '@liquid-js/lyr-core/base';
+import { ɵconvertToBoolProperty as convertToBoolProperty, NbBooleanInput } from '@liquid-js/lyr-core/base';
+import { ɵfocusOnClick as focusOnClick } from '@liquid-js/lyr-core/base';
+import { NbValidationDirective } from '@liquid-js/lyr-core/validation';
+import { NbIconComponent } from '@liquid-js/lyr-core/icon';
+import { ɵenableTransitionsAfterRender as enableTransitionsAfterRender } from '@liquid-js/lyr-core/base';
+
+let lastToggleId = 0;
 
 /**
- * Toggle is a control representing `on` and `off` states.
+ * A switch between on and off, with a label; a native checkbox with the `switch` role underneath.
  *
  * @stacked-example(Showcase, toggle/toggle-showcase.component)
  *
  * ### Installation
  *
- * Import `NbToggleComponent` to your feature module.
+ * Import `NbToggleComponent` into your standalone component:
+ * ```ts
+ * @Component({
+ *   imports: [NbToggleComponent],
+ * })
+ * export class PageComponent { }
+ * ```
+ *
+ * With NgModules:
+ *
+ * Import `NbToggleModule` to your feature module.
  * ```ts
  * @NgModule({
  *   imports: [
@@ -49,42 +52,74 @@ import { convertToBoolProperty, NbBooleanInput } from '../helpers';
  * ```
  * ### Usage
  *
- * Toggle may have one of the following statuses: `basic`, `primary`, `success`, `warning`, `danger`, `info`, `control`
+ * `status` colours it: `basic` (default), `primary`, `success`, `warning`, `danger`, `info` or `control`.
  *
  * @stacked-example(Toggle status, toggle/toggle-status.component)
  *
- * Toggle can be disabled via `disabled` input.
+ * `disabled` disables it:
  *
  * @stacked-example(Disabled Toggles, toggle/toggle-disabled.component)
  *
- * Toggle may have a label with following positions: `left`, `right`, `start`, `end` (default)
+ * `size` sizes it: `tiny`, `small`, `medium` (default), `large` or `giant`.
+ *
+ * @stacked-example(Toggle sizes, toggle/toggle-sizes.component)
+ *
+ * The content is its label, placed with `labelPosition`: `left`, `right`, `start` or `end` (default).
  *
  * @stacked-example(Toggles With Labels, toggle/toggle-label-position.component.ts)
  *
- * You can set control state via `checked` binding:
+ * Bind `checked` and `checkedChange` without forms:
  *
  * ```html
  * <nb-toggle [(checked)]="checked"></nb-toggle>
  * ```
  *
- * Or it could be set via reactive forms or ngModel bindings:
+ * Or use reactive forms or `ngModel`:
  *
  * @stacked-example(Toggle form binding, toggle/toggle-form.component)
  *
  * @styles
  *
- * toggle-height:
- * toggle-width:
+ * toggle-tiny-height:
+ * toggle-tiny-width:
+ * toggle-small-height:
+ * toggle-small-width:
+ * toggle-medium-height:
+ * toggle-medium-width:
+ * toggle-large-height:
+ * toggle-large-width:
+ * toggle-giant-height:
+ * toggle-giant-width:
  * toggle-border-width:
  * toggle-border-radius:
  * toggle-outline-width:
  * toggle-outline-color:
- * toggle-switcher-size:
- * toggle-switcher-icon-size:
+ * toggle-tiny-switcher-size:
+ * toggle-tiny-switcher-icon-size:
+ * toggle-small-switcher-size:
+ * toggle-small-switcher-icon-size:
+ * toggle-medium-switcher-size:
+ * toggle-medium-switcher-icon-size:
+ * toggle-large-switcher-size:
+ * toggle-large-switcher-icon-size:
+ * toggle-giant-switcher-size:
+ * toggle-giant-switcher-icon-size:
  * toggle-text-font-family:
- * toggle-text-font-size:
- * toggle-text-font-weight:
- * toggle-text-line-height:
+ * toggle-tiny-text-font-size:
+ * toggle-tiny-text-font-weight:
+ * toggle-tiny-text-line-height:
+ * toggle-small-text-font-size:
+ * toggle-small-text-font-weight:
+ * toggle-small-text-line-height:
+ * toggle-medium-text-font-size:
+ * toggle-medium-text-font-weight:
+ * toggle-medium-text-line-height:
+ * toggle-large-text-font-size:
+ * toggle-large-text-font-weight:
+ * toggle-large-text-line-height:
+ * toggle-giant-text-font-size:
+ * toggle-giant-text-font-weight:
+ * toggle-giant-text-line-height:
  * toggle-cursor:
  * toggle-disabled-cursor:
  * toggle-basic-text-color:
@@ -93,6 +128,7 @@ import { convertToBoolProperty, NbBooleanInput } from '../helpers';
  * toggle-basic-checked-background-color:
  * toggle-basic-checked-border-color:
  * toggle-basic-checked-switcher-background-color:
+ * toggle-basic-switcher-background-color:
  * toggle-basic-checked-switcher-checkmark-color:
  * toggle-basic-focus-background-color:
  * toggle-basic-focus-border-color:
@@ -117,6 +153,7 @@ import { convertToBoolProperty, NbBooleanInput } from '../helpers';
  * toggle-primary-checked-background-color:
  * toggle-primary-checked-border-color:
  * toggle-primary-checked-switcher-background-color:
+ * toggle-primary-switcher-background-color:
  * toggle-primary-checked-switcher-checkmark-color:
  * toggle-primary-focus-background-color:
  * toggle-primary-focus-border-color:
@@ -141,6 +178,7 @@ import { convertToBoolProperty, NbBooleanInput } from '../helpers';
  * toggle-success-checked-background-color:
  * toggle-success-checked-border-color:
  * toggle-success-checked-switcher-background-color:
+ * toggle-success-switcher-background-color:
  * toggle-success-checked-switcher-checkmark-color:
  * toggle-success-focus-background-color:
  * toggle-success-focus-border-color:
@@ -165,6 +203,7 @@ import { convertToBoolProperty, NbBooleanInput } from '../helpers';
  * toggle-info-checked-background-color:
  * toggle-info-checked-border-color:
  * toggle-info-checked-switcher-background-color:
+ * toggle-info-switcher-background-color:
  * toggle-info-checked-switcher-checkmark-color:
  * toggle-info-focus-background-color:
  * toggle-info-focus-border-color:
@@ -189,6 +228,7 @@ import { convertToBoolProperty, NbBooleanInput } from '../helpers';
  * toggle-warning-checked-background-color:
  * toggle-warning-checked-border-color:
  * toggle-warning-checked-switcher-background-color:
+ * toggle-warning-switcher-background-color:
  * toggle-warning-checked-switcher-checkmark-color:
  * toggle-warning-focus-background-color:
  * toggle-warning-focus-border-color:
@@ -213,6 +253,7 @@ import { convertToBoolProperty, NbBooleanInput } from '../helpers';
  * toggle-danger-checked-background-color:
  * toggle-danger-checked-border-color:
  * toggle-danger-checked-switcher-background-color:
+ * toggle-danger-switcher-background-color:
  * toggle-danger-checked-switcher-checkmark-color:
  * toggle-danger-focus-background-color:
  * toggle-danger-focus-border-color:
@@ -237,6 +278,7 @@ import { convertToBoolProperty, NbBooleanInput } from '../helpers';
  * toggle-control-checked-background-color:
  * toggle-control-checked-border-color:
  * toggle-control-checked-switcher-background-color:
+ * toggle-control-switcher-background-color:
  * toggle-control-checked-switcher-checkmark-color:
  * toggle-control-focus-background-color:
  * toggle-control-focus-border-color:
@@ -257,218 +299,111 @@ import { convertToBoolProperty, NbBooleanInput } from '../helpers';
  * toggle-control-disabled-text-color:
  */
 @Component({
-    selector: 'nb-toggle',
-    animations: [
-        trigger('position', [
-            state('right', style({ right: 0, left: '*' })),
-            state('left', style({ left: 0, right: '*' })),
-            transition(':enter', [animate(0)]),
-            transition('right <=> left', [animate('0.15s')]),
-        ]),
-    ],
-    template: `
-    <label class="toggle-label">
-      <input type="checkbox"
-             class="native-input visually-hidden"
-             role="switch"
-             [attr.aria-checked]="checked"
-             [disabled]="disabled"
-             [checked]="checked"
-             (change)="updateValue($event)"
-             (blur)="onTouched()"
-             (click)="onInputClick($event)">
-      <div class="toggle" [class.checked]="checked">
-        <span [@position]="checkState()" class="toggle-switcher">
-          <nb-icon *ngIf="checked" icon="checkmark-bold-outline" pack="nebular-essentials"></nb-icon>
-        </span>
-      </div>
-      <span class="text">
-        <ng-content></ng-content>
-      </span>
-    </label>
-  `,
-    styleUrls: [`./toggle.component.scss`],
-    providers: [{
-            provide: NG_VALUE_ACCESSOR,
-            useExisting: forwardRef(() => NbToggleComponent),
-            multi: true,
-        }],
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  selector: 'nb-toggle',
+  templateUrl: './toggle.component.html',
+  styleUrls: [`./toggle.component.scss`],
+  providers: [{
+    provide: NG_VALUE_ACCESSOR,
+    useExisting: forwardRef(() => NbToggleComponent),
+    multi: true,
+  }],
+  imports: [NbIconComponent],
+  host: {
+    '[class]': 'hostClasses()',
+  },
 })
-export class NbToggleComponent implements OnInit, AfterViewInit, OnDestroy, ControlValueAccessor {
+export class NbToggleComponent implements ControlValueAccessor {
+  // The app's defaults for this type, which the inputs below start from.
+  protected readonly nbDefaults = injectNbDefaults('toggle');
 
-  onChange: any = () => { };
-  onTouched: any = () => { };
+  protected readonly focusOnClick = focusOnClick;
+  private readonly layoutDirection = inject(NbLayoutDirectionService);
+  private readonly hostElement = inject<ElementRef<HTMLElement>>(ElementRef);
+  protected readonly statusService = inject(NbStatusService);
 
-  private destroy$ = new Subject<void>();
+  onChange: (value: boolean) => void = () => {};
+  onTouched: () => void = () => {};
 
-  /**
-   * Toggle checked
-   * @type {boolean}
-   */
-  @Input()
-  get checked(): boolean {
-    return this._checked;
-  }
-  set checked(value: boolean) {
-    this._checked = convertToBoolProperty(value);
-  }
-  private _checked: boolean = false;
-  static ngAcceptInputType_checked: NbBooleanInput;
+  /** Whether the toggle is on; a user or a form changes it from there, see `isChecked`. */
+  readonly checked = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
 
-  /**
-   * Controls input disabled state
-   */
-  @Input()
-  get disabled(): boolean {
-    return this._disabled;
-  }
-  set disabled(value: boolean) {
-    this._disabled = convertToBoolProperty(value);
-  }
-  private _disabled: boolean = false;
-  static ngAcceptInputType_disabled: NbBooleanInput;
+  /** Disables the toggle; a form changes it from there, see `isDisabled`. */
+  readonly disabled = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
+
+  protected readonly validation = inject(NbValidationDirective, { self: true, optional: true });
+
+  // The label's text, which names the toggle after an `nbLabel` of its `nbValidation`, as a select's value follows it.
+  protected readonly textId = `nb-toggle-text-${lastToggleId++}`;
+  protected readonly labelledBy = computed(() => {
+    const labels = this.validation?.labelledBy();
+    return labels ? `${labels} ${this.textId}` : null;
+  });
 
   /**
-   * Toggle status.
-   * Possible values are: `basic`, `primary`, `success`, `warning`, `danger`, `info`, `control`.
+   * `basic` (default), `primary`, `success`, `warning`, `danger`, `info` or `control`. With `nbValidation`, the
+   * validation status takes over while the control shows errors or success.
    */
-  @Input() status: NbComponentOrCustomStatus = 'basic';
+  readonly status = input<NbComponentOrCustomStatus>('basic');
 
-  /**
-   * Toggle label position.
-   * Possible values are: `left`, `right`, `start`, `end` (default)
-   */
-  @Input() labelPosition: 'left' | 'right' | 'start' | 'end' = 'end';
+  // With `nbValidation`, the status it gives while the control shows errors or success.
+  protected readonly resolvedStatus = computed(() => this.validation?.status() ?? this.status());
 
-  /**
-   * Output when checked state is changed by a user
-   * @type EventEmitter<boolean>
-   */
-  @Output() checkedChange = new EventEmitter<boolean>();
+  /** `tiny`, `small`, `medium` (default), `large` or `giant`. */
+  readonly sizeInput = input<NbComponentSize | undefined>(undefined, { alias: 'size' });
+  /** The size in use: the input's, the app's default, or 'medium'. */
+  readonly size = linkedSignal<NbComponentSize>(() => this.sizeInput() ?? this.nbDefaults().size ?? 'medium');
 
-  @HostBinding('class.status-primary')
-  get primary() {
-    return this.status === 'primary';
+  /** Where the label goes: `left`, `right`, `start` or `end` (default). */
+  readonly labelPosition = input<'left' | 'right' | 'start' | 'end'>('end');
+
+  /** Emits when the user switches the toggle; not for `checked` or a form's writes. */
+  readonly checkedChange = output<boolean>();
+
+  /** Whether the toggle is checked: the `checked` input, until a user or a form changes it. */
+  readonly isChecked = linkedSignal(() => this.checked());
+
+  /** Whether the toggle is disabled: the `disabled` input, until a form changes it. */
+  readonly isDisabled = linkedSignal(() => this.disabled());
+
+  protected readonly hostClasses = computed(() => [
+    this.statusService.getStatusClass(this.resolvedStatus()),
+    `size-${this.size()}`,
+    `toggle-label-${this.labelPosition()}`,
+  ]);
+
+  // The side the knob is on: the end side when checked, so `right` in LTR and `left` in RTL.
+  readonly checkState = computed(() => {
+    const atEnd = this.isChecked();
+    return atEnd === this.layoutDirection.isLtr() ? 'right' : 'left';
+  });
+
+  constructor() {
+    // The focusable element is inside: the button or the native input gets aria-invalid and aria-describedby.
+    this.validation?.delegateAria();
+    enableTransitionsAfterRender(this.hostElement.nativeElement);
   }
 
-  @HostBinding('class.status-success')
-  get success() {
-    return this.status === 'success';
-  }
-
-  @HostBinding('class.status-warning')
-  get warning() {
-    return this.status === 'warning';
-  }
-
-  @HostBinding('class.status-danger')
-  get danger() {
-    return this.status === 'danger';
-  }
-
-  @HostBinding('class.status-info')
-  get info() {
-    return this.status === 'info';
-  }
-
-  @HostBinding('class.status-basic')
-  get basic() {
-    return this.status === 'basic';
-  }
-
-  @HostBinding('class.status-control')
-  get control() {
-    return this.status === 'control';
-  }
-
-  @HostBinding('class')
-  get additionalClasses(): string[] {
-    if (this.statusService.isCustomStatus(this.status)) {
-      return [this.statusService.getStatusClass(this.status)];
-    }
-    return [];
-  }
-
-  @HostBinding('class.toggle-label-left')
-  get labelLeft() {
-    return this.labelPosition === 'left';
-  }
-
-  @HostBinding('class.toggle-label-right')
-  get labelRight() {
-    return this.labelPosition === 'right';
-  }
-
-  @HostBinding('class.toggle-label-start')
-  get labelStart() {
-    return this.labelPosition === 'start';
-  }
-
-  @HostBinding('class.toggle-label-end')
-  get labelEnd() {
-    return this.labelPosition === 'end';
-  }
-
-  constructor(
-    private changeDetector: ChangeDetectorRef,
-    private layoutDirection: NbLayoutDirectionService,
-    private renderer: Renderer2,
-    private hostElement: ElementRef<HTMLElement>,
-    private zone: NgZone,
-    protected statusService: NbStatusService,
-  ) {}
-
-  ngOnInit(): void {
-    this.layoutDirection.onDirectionChange()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(() => this.changeDetector.detectChanges());
-  }
-
-  ngAfterViewInit() {
-    // TODO: #2254
-    this.zone.runOutsideAngular(() => setTimeout(() => {
-      this.renderer.addClass(this.hostElement.nativeElement, 'nb-transition');
-    }));
-  }
-
-  ngOnDestroy() {
-    this.destroy$.next();
-    this.destroy$.complete();
-  }
-
-  checkState(): string {
-    if (this.checked) {
-      return this.layoutDirection.isLtr() ? 'right' : 'left';
-    }
-
-    return this.layoutDirection.isLtr() ? 'left' : 'right';
-  }
-
-  registerOnChange(fn: any) {
+  registerOnChange(fn: (value: boolean) => void) {
     this.onChange = fn;
   }
 
-  registerOnTouched(fn: any) {
+  registerOnTouched(fn: () => void) {
     this.onTouched = fn;
   }
 
-  writeValue(val: any) {
-    this.checked = val;
-    this.changeDetector.markForCheck();
+  writeValue(value: boolean | null) {
+    this.isChecked.set(!!value);
   }
 
   setDisabledState(val: boolean) {
-    this.disabled = convertToBoolProperty(val);
-    this.changeDetector.markForCheck();
+    this.isDisabled.set(convertToBoolProperty(val));
   }
 
-  updateValue(event: Event): void {
-    const input = (event.target as HTMLInputElement);
-    this.checked = input.checked;
-    this.checkedChange.emit(this.checked);
-    this.onChange(this.checked);
+  updateValue(event: Event) {
+    const nativeInput = event.target as HTMLInputElement;
+    this.isChecked.set(nativeInput.checked);
+    this.checkedChange.emit(nativeInput.checked);
+    this.onChange(nativeInput.checked);
   }
 
   onInputClick(event: Event) {

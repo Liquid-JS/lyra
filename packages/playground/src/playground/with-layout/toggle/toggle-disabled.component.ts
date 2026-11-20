@@ -1,22 +1,9 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 import { Component } from '@angular/core';
+import { NbCardComponent, NbCardBodyComponent, NbToggleComponent } from '@liquid-js/lyr-core';
 
 @Component({
-    selector: 'nb-toggle-disabled',
-    template: `
-    <nb-card>
-      <nb-card-body class="example-items-col">
-        <nb-toggle disabled></nb-toggle>
-        <nb-toggle [checked]="true" disabled></nb-toggle>
-      </nb-card-body>
-    </nb-card>
-  `,
-    standalone: false
+  selector: 'nb-toggle-disabled',
+  templateUrl: './toggle-disabled.component.html',
+  imports: [NbCardComponent, NbCardBodyComponent, NbToggleComponent],
 })
-export class ToggleDisabledComponent {
-}
+export class ToggleDisabledComponent {}

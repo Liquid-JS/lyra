@@ -1,0 +1,29 @@
+<label class="toggle-label">
+  <input type="checkbox"
+    class="native-input visually-hidden"
+    tabindex="0"
+    [attr.aria-invalid]="validation?.ariaInvalid()"
+    [attr.aria-describedby]="validation?.describedBy()"
+    [attr.aria-labelledby]="labelledBy()"
+    [attr.aria-required]="validation?.ariaRequired()"
+    role="switch"
+    [attr.aria-checked]="isChecked()"
+    [disabled]="isDisabled()"
+    [checked]="isChecked()"
+    (change)="updateValue($event)"
+    (blur)="onTouched()"
+    (click)="onInputClick($event); focusOnClick($event)">
+  <div class="toggle"
+    [class.checked]="isChecked()">
+    <span class="toggle-switcher">
+      @if (isChecked()) {
+      <nb-icon icon="checkmark-bold-outline"
+        pack="essentials" />
+      }
+    </span>
+  </div>
+  <span class="text"
+    [id]="textId">
+    <ng-content />
+  </span>
+</label>
