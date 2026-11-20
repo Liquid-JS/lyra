@@ -1,11 +1,28 @@
-/*
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { Component, Input } from '@angular/core';
-import { NbSortDirection, NbSortRequest, NbTreeGridDataSource, NbTreeGridDataSourceBuilder } from '@nebular/theme';
+import { Component, inject, forwardRef, input } from '@angular/core';
+import {
+  NbSortDirection,
+  NbSortRequest,
+  NbTreeGridDataSource,
+  NbTreeGridDataSourceBuilder,
+  NbTreeGridRowToggleComponent,
+  NbIconComponent,
+  NbCardComponent,
+  NbCardBodyComponent,
+  NbInputDirective,
+  NbFilterInputDirective,
+  NbTreeGridComponent,
+  NbSortDirective,
+  NbSortHeaderComponent,
+  NbTreeGridHeaderRowDefDirective,
+  NbTreeGridRowDefDirective,
+  NbTreeGridHeaderCellDefDirective,
+  NbTreeGridCellDefDirective,
+  NbTreeGridHeaderRowComponent,
+  NbTreeGridRowComponent,
+  NbTreeGridColumnDefDirective,
+  NbTreeGridHeaderCellDirective,
+  NbTreeGridCellDirective,
+} from '@liquid-js/lyr-core';
 
 interface TreeNode<T> {
   data: T;
@@ -21,26 +38,46 @@ interface FSEntry {
 }
 
 @Component({
-    selector: 'nb-tree-grid-showcase',
-    templateUrl: './tree-grid-showcase.component.html',
-    styleUrls: ['./tree-grid-shared.scss', './tree-grid-showcase.component.scss'],
-    standalone: false
+  selector: 'nb-tree-grid-showcase',
+  templateUrl: './tree-grid-showcase.component.html',
+  styleUrls: ['./tree-grid-shared.scss', './tree-grid-showcase.component.scss'],
+  imports: [
+    NbCardComponent,
+    NbCardBodyComponent,
+    NbInputDirective,
+    NbFilterInputDirective,
+    NbTreeGridComponent,
+    NbSortDirective,
+    NbTreeGridHeaderRowDefDirective,
+    NbTreeGridHeaderRowComponent,
+    NbTreeGridRowDefDirective,
+    NbTreeGridRowComponent,
+    NbTreeGridColumnDefDirective,
+    NbTreeGridHeaderCellDefDirective,
+    NbTreeGridHeaderCellDirective,
+    NbSortHeaderComponent,
+    NbTreeGridCellDefDirective,
+    NbTreeGridCellDirective,
+    forwardRef(() => FsIconComponent),
+  ],
 })
 export class TreeGridShowcaseComponent {
+  private readonly dataSourceBuilder = inject<NbTreeGridDataSourceBuilder<FSEntry>>(NbTreeGridDataSourceBuilder);
+
   customColumn = 'name';
-  defaultColumns = [ 'size', 'kind', 'items' ];
-  allColumns = [ this.customColumn, ...this.defaultColumns ];
+  defaultColumns = ['size', 'kind', 'items'];
+  allColumns = [this.customColumn, ...this.defaultColumns];
 
   dataSource: NbTreeGridDataSource<FSEntry>;
 
-  sortColumn: string;
+  sortColumn?: string;
   sortDirection: NbSortDirection = NbSortDirection.NONE;
 
-  constructor(private dataSourceBuilder: NbTreeGridDataSourceBuilder<FSEntry>) {
+  constructor() {
     this.dataSource = this.dataSourceBuilder.create(this.data);
   }
 
-  updateSort(sortRequest: NbSortRequest): void {
+  updateSort(sortRequest: NbSortRequest) {
     this.sortColumn = sortRequest.column;
     this.sortDirection = sortRequest.direction;
   }
@@ -74,9 +111,7 @@ export class TreeGridShowcaseComponent {
       children: [
         {
           data: { name: 'Report 1', kind: 'dir', size: '100 KB', items: 1 },
-          children: [
-            { data: { name: 'report-1.doc', kind: 'doc', size: '100 KB' } },
-          ],
+          children: [{ data: { name: 'report-1.doc', kind: 'doc', size: '100 KB' } }],
         },
         {
           data: { name: 'Report 2', kind: 'dir', size: '300 KB', items: 2 },
@@ -99,26 +134,26 @@ export class TreeGridShowcaseComponent {
   getShowOn(index: number) {
     const minWithForMultipleColumns = 400;
     const nextColumnStep = 100;
-    return minWithForMultipleColumns + (nextColumnStep * index);
+    return minWithForMultipleColumns + nextColumnStep * index;
   }
 }
 
 @Component({
-    selector: 'nb-fs-icon',
-    template: `
-    <nb-tree-grid-row-toggle [expanded]="expanded" *ngIf="isDir(); else fileIcon">
-    </nb-tree-grid-row-toggle>
-    <ng-template #fileIcon>
-      <nb-icon icon="file-text-outline"></nb-icon>
-    </ng-template>
+  selector: 'nb-fs-icon',
+  template: `
+    @if (isDir()) {
+      <nb-tree-grid-row-toggle [expanded]="expanded()" />
+    } @else {
+      <nb-icon icon="file-text-outline" />
+    }
   `,
-    standalone: false
+  imports: [NbTreeGridRowToggleComponent, NbIconComponent],
 })
 export class FsIconComponent {
-  @Input() kind: string;
-  @Input() expanded: boolean;
+  readonly kind = input<string>();
+  readonly expanded = input<boolean>();
 
   isDir(): boolean {
-    return this.kind === 'dir';
+    return this.kind() === 'dir';
   }
 }

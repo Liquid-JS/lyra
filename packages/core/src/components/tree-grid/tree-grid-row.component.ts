@@ -1,67 +1,65 @@
-import { Component, ElementRef, HostListener, Inject, Input, OnDestroy } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, inject, input, OnDestroy } from '@angular/core';
 import { Subject, timer } from 'rxjs';
 import { take, takeUntil } from 'rxjs/operators';
-import { NbCdkFooterRow, NbCdkHeaderRow, NbCdkRow } from '../cdk/table/type-mappings';
-import { NbFooterRowComponent, NbHeaderRowComponent, NbRowComponent } from '../cdk/table/row';
-import { NbTreeGridComponent } from './tree-grid.component';
+import { ɵNbCdkFooterRow as NbCdkFooterRow, ɵNbCdkHeaderRow as NbCdkHeaderRow, ɵNbCdkRow as NbCdkRow } from '@liquid-js/lyr-core/cdk-table';
+import { NbFooterRowComponent, NbHeaderRowComponent, NbRowComponent, NbCellOutletDirective } from '@liquid-js/lyr-core/cdk-table';
 import { NB_TREE_GRID } from './tree-grid-injection-tokens';
+import { ɵconvertToBoolProperty as convertToBoolProperty, NbBooleanInput } from '@liquid-js/lyr-core/base';
 
 export const NB_ROW_DOUBLE_CLICK_DELAY: number = 200;
 
 /**
- * Cells container. Adds the right class and role.
+ * A data row. A click toggles it and a double click toggles it with all its descendants, unless `clickToToggle` is
+ * off.
  */
 @Component({
-    // eslint-disable-next-line @angular-eslint/component-selector
-    selector: 'tr[nbTreeGridRow]',
-    template: `<ng-container nbCellOutlet></ng-container>`,
-    // eslint-disable-next-line @angular-eslint/no-host-metadata-property
-    host: {
-        class: 'nb-tree-grid-row',
-        role: 'row',
-    },
-    providers: [{ provide: NbCdkRow, useExisting: NbTreeGridRowComponent }],
-    standalone: false
+  selector: 'tr[nbTreeGridRow]',
+  template: `<ng-container nbCellOutlet />`,
+  host: {
+    class: 'nb-tree-grid-row',
+    role: 'row',
+    '(click)': 'toggleIfEnabledNode()',
+    '(dblclick)': 'toggleIfEnabledNodeDeep()',
+  },
+  providers: [{ provide: NbCdkRow, useExisting: NbTreeGridRowComponent }],
+  // As in the CDK table, rows and the cells rendered into them are checked on every change detection.
+  changeDetection: ChangeDetectionStrategy.Eager,
+  imports: [NbCellOutletDirective],
 })
 export class NbTreeGridRowComponent extends NbRowComponent implements OnDestroy {
+  readonly elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
+
   private readonly doubleClick$ = new Subject<void>();
-  private readonly tree: NbTreeGridComponent<any>;
+  private readonly tree = inject(NB_TREE_GRID);
 
   /**
-   * Time to wait for second click to expand row deeply.
-   * 200ms by default.
+   * How long a click waits for a second one, in ms, before it toggles the row; a double click within that time
+   * toggles the row deeply instead. 200 by default.
    */
-  @Input() doubleClickDelay: number = NB_ROW_DOUBLE_CLICK_DELAY;
+  readonly doubleClickDelay = input<number>(NB_ROW_DOUBLE_CLICK_DELAY);
 
   /**
-   * Toggle row on click. Enabled by default.
+   * Whether clicks toggle the row.
    */
-  @Input() clickToToggle: boolean = true;
+  readonly clickToToggle = input<boolean, NbBooleanInput>(true, { transform: convertToBoolProperty });
 
-  @HostListener('click')
-  toggleIfEnabledNode(): void {
-    if (!this.clickToToggle) {
+  toggleIfEnabledNode() {
+    if (!this.clickToToggle()) {
       return;
     }
 
-    timer(NB_ROW_DOUBLE_CLICK_DELAY)
+    timer(this.doubleClickDelay())
       .pipe(take(1), takeUntil(this.doubleClick$))
       .subscribe(() => this.tree.toggleRow(this));
   }
 
-  @HostListener('dblclick')
   toggleIfEnabledNodeDeep() {
-    if (!this.clickToToggle) {
+    if (!this.clickToToggle()) {
       return;
     }
 
     this.doubleClick$.next();
     this.tree.toggleRow(this, { deep: true });
-  }
-
-  constructor(@Inject(NB_TREE_GRID) tree, public elementRef: ElementRef<HTMLElement>) {
-    super();
-    this.tree = tree as NbTreeGridComponent<any>;
   }
 
   ngOnDestroy() {
@@ -70,29 +68,29 @@ export class NbTreeGridRowComponent extends NbRowComponent implements OnDestroy 
 }
 
 @Component({
-    // eslint-disable-next-line @angular-eslint/component-selector
-    selector: 'tr[nbTreeGridHeaderRow]',
-    template: ` <ng-container nbCellOutlet></ng-container>`,
-    // eslint-disable-next-line @angular-eslint/no-host-metadata-property
-    host: {
-        class: 'nb-tree-grid-header-row',
-        role: 'row',
-    },
-    providers: [{ provide: NbCdkHeaderRow, useExisting: NbTreeGridHeaderRowComponent }],
-    standalone: false
+  selector: 'tr[nbTreeGridHeaderRow]',
+  template: ` <ng-container nbCellOutlet />`,
+  host: {
+    class: 'nb-tree-grid-header-row',
+    role: 'row',
+  },
+  providers: [{ provide: NbCdkHeaderRow, useExisting: NbTreeGridHeaderRowComponent }],
+  // As in the CDK table, rows and the cells rendered into them are checked on every change detection.
+  changeDetection: ChangeDetectionStrategy.Eager,
+  imports: [NbCellOutletDirective],
 })
 export class NbTreeGridHeaderRowComponent extends NbHeaderRowComponent {}
 
 @Component({
-    // eslint-disable-next-line @angular-eslint/component-selector
-    selector: 'tr[nbTreeGridFooterRow]',
-    template: ` <ng-container nbCellOutlet></ng-container>`,
-    // eslint-disable-next-line @angular-eslint/no-host-metadata-property
-    host: {
-        class: 'nb-tree-grid-footer-row',
-        role: 'row',
-    },
-    providers: [{ provide: NbCdkFooterRow, useExisting: NbTreeGridFooterRowComponent }],
-    standalone: false
+  selector: 'tr[nbTreeGridFooterRow]',
+  template: ` <ng-container nbCellOutlet />`,
+  host: {
+    class: 'nb-tree-grid-footer-row',
+    role: 'row',
+  },
+  providers: [{ provide: NbCdkFooterRow, useExisting: NbTreeGridFooterRowComponent }],
+  // As in the CDK table, rows and the cells rendered into them are checked on every change detection.
+  changeDetection: ChangeDetectionStrategy.Eager,
+  imports: [NbCellOutletDirective],
 })
 export class NbTreeGridFooterRowComponent extends NbFooterRowComponent {}

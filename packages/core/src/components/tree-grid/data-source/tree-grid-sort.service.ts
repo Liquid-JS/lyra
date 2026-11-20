@@ -1,22 +1,18 @@
-/*
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-
-import { Injectable } from '@angular/core';
+import { Service } from '@angular/core';
 import { NbSortDirection, NbSortRequest } from '../tree-grid-sort.component';
 import { NbTreeGridPresentationNode } from './tree-grid.model';
 
+// The values a column sorts by.
+type NbTreeGridSortValue = string | number | bigint | boolean | Date;
+
 /**
- * Service used to sort tree grid data. Uses Array.prototype.sort method.
- * If you need custom sorting, you can extend this service and override comparator or whole sort method.
+ * Sorts the tree grid's rows by a column's value at every level, comparing values as JavaScript does. For custom
+ * sorting, extend the service and override `comparator` or `sort`.
  */
-@Injectable()
+@Service()
 export class NbTreeGridSortService<T> {
 
-  sort(request: NbSortRequest, data: NbTreeGridPresentationNode<T>[]): NbTreeGridPresentationNode<T>[] {
+  sort(request: NbSortRequest | undefined, data: NbTreeGridPresentationNode<T>[]): NbTreeGridPresentationNode<T>[] {
     if (!request) {
       return data;
     }
@@ -37,16 +33,17 @@ export class NbTreeGridSortService<T> {
   ): number {
     const key = request.column;
     const dir = request.direction;
-    const a = na.data[key];
-    const b = nb.data[key];
+    // The column values, compared as JavaScript compares them.
+    const a = (na.data as Record<string, NbTreeGridSortValue>)[key];
+    const b = (nb.data as Record<string, NbTreeGridSortValue>)[key];
 
     let res = 0;
 
     if (a > b) {
-      res = 1
+      res = 1;
     }
     if (a < b) {
-      res = -1
+      res = -1;
     }
 
     return dir === NbSortDirection.ASCENDING ? res : res * -1;

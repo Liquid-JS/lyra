@@ -1,26 +1,22 @@
-/*
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 import {
   Component,
-  ContentChild,
+  computed,
+  contentChild,
   Directive,
-  EventEmitter,
-  HostBinding,
-  HostListener,
-  Inject,
-  Input,
-  Output,
+  inject,
+  input,
+  model,
+  output,
   TemplateRef,
 } from '@angular/core';
+import { NgTemplateOutlet } from '@angular/common';
 
-import { convertToBoolProperty, NbBooleanInput, NbNullableInput } from '../helpers';
-import { NB_SORT_HEADER_COLUMN_DEF } from '../cdk/table/cell';
+import { ɵconvertToBoolProperty as convertToBoolProperty, NbBooleanInput, ɵNbNullableInput as NbNullableInput } from '@liquid-js/lyr-core/base';
+import { NB_SORT_HEADER_COLUMN_DEF } from '@liquid-js/lyr-core/cdk-table';
 
-/** Column definition associated with a `NbSortHeaderDirective`. */
+import { NbIconComponent } from '@liquid-js/lyr-core/icon';
+
+/** The column definition of an `NbSortHeaderComponent`. */
 interface NbSortHeaderColumnDef {
   name: string;
 }
@@ -31,7 +27,14 @@ export interface NbSortRequest {
 }
 
 export interface NbSortable {
-  sort(sortRequest: NbSortRequest);
+  sort(sortRequest: NbSortRequest): void;
+}
+
+/** Something sorted that also tells how, such as a table's data source, so its sort headers show it. */
+export interface NbSortState {
+  sortBy(sortRequest: NbSortRequest): void;
+  /** The direction a column is sorted in. */
+  sortDirection(column: string): NbSortDirection;
 }
 
 export type NbSortDirectionValues = 'asc' | 'desc' | '';
@@ -40,28 +43,34 @@ export enum NbSortDirection {
   DESCENDING = 'desc',
   NONE = '',
 }
-const sortDirections: NbSortDirection[] = [
-  NbSortDirection.ASCENDING,
-  NbSortDirection.DESCENDING,
-  NbSortDirection.NONE,
-];
+const sortDirections: NbSortDirection[] = [NbSortDirection.ASCENDING, NbSortDirection.DESCENDING, NbSortDirection.NONE];
 
 /**
- * Directive triggers sort method of passed object when sort header changes direction
+ * On the table: when one of its `nbSortHeader` cells is clicked, sorts what it's given (`sortBy` or `sort`, e.g. the
+ * tree grid's data source) and emits `sort`. A data source that tells its direction also drives the headers' icons.
  */
-@Directive({
-    selector: '[nbSort]',
-    standalone: false
-})
+@Directive({ selector: '[nbSort]' })
 export class NbSortDirective {
-  @Input('nbSort') sortable: NbSortable;
-  static ngAcceptInputType_sortable: NbSortable | NbNullableInput;
+  readonly sortable = input<NbSortable | NbSortState, NbSortable | NbSortState | NbNullableInput>(undefined, {
+    alias: 'nbSort',
+    transform: (sortable: NbSortable | NbSortState | NbNullableInput) =>
+      (sortable || undefined) as NbSortable | NbSortState,
+  });
 
-  @Output() sort: EventEmitter<NbSortRequest> = new EventEmitter<NbSortRequest>();
+  /** The direction a column is sorted in, when what's sorted tells it. */
+  directionOf(column: string): NbSortDirection | undefined {
+    const sortable = this.sortable();
+    return sortable && 'sortDirection' in sortable ? sortable.sortDirection(column) : undefined;
+  }
+
+  readonly sort = output<NbSortRequest>();
 
   emitSort(sortRequest: NbSortRequest) {
-    if (this.sortable && this.sortable.sort) {
-      this.sortable.sort(sortRequest);
+    const sortable = this.sortable();
+    if (sortable && 'sortBy' in sortable) {
+      sortable.sortBy(sortRequest);
+    } else if (sortable && sortable.sort) {
+      sortable.sort(sortRequest);
     }
     this.sort.emit(sortRequest);
   }
@@ -75,133 +84,96 @@ export interface NbSortHeaderIconDirectiveContext {
 }
 
 /**
- * Directive for headers sort icons. Mark you icon implementation with this structural directive and
- * it'll set template's implicit context with current direction. Context also has `isAscending`,
- * `isDescending` and `isNone` properties.
+ * A custom sort icon, as a structural directive inside `nbSortHeader`. The template's implicit context is the current
+ * direction; the context also has `isAscending`, `isDescending` and `isNone`.
  */
-@Directive({
-    selector: '[nbSortHeaderIcon]',
-    standalone: false
-})
+@Directive({ selector: '[nbSortHeaderIcon]' })
 export class NbSortHeaderIconDirective {}
 
 @Component({
-    selector: 'nb-sort-icon',
-    template: `
-    <ng-container *ngIf="isDirectionSet()">
-      <nb-icon *ngIf="isAscending()" icon="chevron-down-outline" pack="nebular-essentials" aria-hidden="true"></nb-icon>
-      <nb-icon *ngIf="isDescending()" icon="chevron-up-outline" pack="nebular-essentials" aria-hidden="true"></nb-icon>
-    </ng-container>
-  `,
-    standalone: false
+  selector: 'nb-sort-icon',
+  templateUrl: './sort-icon.component.html',
+  imports: [NbIconComponent],
 })
 export class NbSortIconComponent {
-  @Input() direction: NbSortDirection = NbSortDirection.NONE;
+  readonly direction = input<NbSortDirection | NbSortDirectionValues | undefined>(NbSortDirection.NONE);
 
-  isAscending(): boolean {
-    return this.direction === NbSortDirection.ASCENDING;
-  }
+  readonly isAscending = computed(() => this.direction() === NbSortDirection.ASCENDING);
 
-  isDescending(): boolean {
-    return this.direction === NbSortDirection.DESCENDING;
-  }
+  readonly isDescending = computed(() => this.direction() === NbSortDirection.DESCENDING);
 
-  isDirectionSet(): boolean {
-    return this.isAscending() || this.isDescending();
-  }
+  readonly isDirectionSet = computed(() => this.isAscending() || this.isDescending());
 }
 
 /**
- * Marks header as sort header so it emitting sort event when clicked.
+ * A header cell that sorts its column. Each click cycles the direction, ascending, descending, none, and the table's
+ * `nbSort` directive sorts and emits. The cell is a button, so the keyboard reaches it, and it carries `aria-sort`.
  */
 @Component({
-    selector: '[nbSortHeader]',
-    template: `
-    <button
-      class="nb-tree-grid-header-change-sort-button"
-      type="button"
-      [attr.disabled]="getDisabledAttributeValue()"
-      (click)="sortData()">
-      <ng-content></ng-content>
-    </button>
-    <nb-sort-icon *ngIf="!sortIcon; else customIcon" [direction]="direction"></nb-sort-icon>
-    <ng-template #customIcon [ngTemplateOutlet]="sortIcon" [ngTemplateOutletContext]="getIconContext()"></ng-template>
-  `,
-    standalone: false
+  selector: '[nbSortHeader]',
+  templateUrl: './sort-header.component.html',
+  imports: [NbSortIconComponent, NgTemplateOutlet],
+  host: {
+    '[class.disabled]': 'disabled()',
+    '[attr.aria-sort]': 'ariaSort()',
+    '(click)': 'sortIfEnabled()',
+  },
 })
 export class NbSortHeaderComponent {
+  private readonly sort = inject(NbSortDirective);
+  private readonly columnDef = inject<NbSortHeaderColumnDef>(NB_SORT_HEADER_COLUMN_DEF);
 
-  @ContentChild(NbSortHeaderIconDirective, { read: TemplateRef })
-  sortIcon: TemplateRef<NbSortHeaderIconDirectiveContext>;
-
-  /**
-   * Current sort direction. Possible values: `asc`, `desc`, ``(none)
-   * @type {NbSortDirection}
-   */
-  @Input('nbSortHeader') direction: NbSortDirection;
-  static ngAcceptInputType_direction: NbSortDirectionValues;
-
-  private disabledValue: boolean = false;
+  readonly sortIcon = contentChild(NbSortHeaderIconDirective, { read: TemplateRef<NbSortHeaderIconDirectiveContext> });
 
   /**
-   * Disable sort header
+   * Current sort direction. Possible values: `asc`, `desc`, ``(none). It supports two-way binding with
+   * `[(nbSortHeader)]`, and changes when the header sorts.
    */
-  @Input()
-  @HostBinding('class.disabled')
-  set disabled(value) {
-    this.disabledValue = convertToBoolProperty(value);
-  }
-  get disabled(): boolean {
-    return this.disabledValue;
-  }
-  static ngAcceptInputType_disabled: NbBooleanInput;
+  readonly direction = model<NbSortDirection | NbSortDirectionValues | undefined>(undefined, { alias: 'nbSortHeader' });
 
-  @HostListener('click')
+  readonly disabled = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
+
   sortIfEnabled() {
-    if (!this.disabled) {
+    if (!this.disabled()) {
       this.sortData();
     }
   }
 
-  constructor(
-    private sort: NbSortDirective,
-    @Inject(NB_SORT_HEADER_COLUMN_DEF) private columnDef: NbSortHeaderColumnDef,
-  ) {}
+  /** The direction shown: what's sorted tells it, e.g. a table's data source, or else `direction`. */
+  readonly shownDirection = computed(() => this.sort.directionOf(this.columnDef.name) ?? this.direction());
 
-  isAscending(): boolean {
-    return this.direction === NbSortDirection.ASCENDING;
-  }
+  readonly isAscending = computed(() => this.shownDirection() === NbSortDirection.ASCENDING);
 
-  isDescending(): boolean {
-    return this.direction === NbSortDirection.DESCENDING;
-  }
+  readonly isDescending = computed(() => this.shownDirection() === NbSortDirection.DESCENDING);
 
-  sortData(): void {
+  /** For assistive technologies, on the sorted column's header cell only. */
+  protected readonly ariaSort = computed(() =>
+    this.isAscending() ? 'ascending' : this.isDescending() ? 'descending' : null,
+  );
+
+  sortData() {
     const sortRequest = this.createSortRequest();
     this.sort.emitSort(sortRequest);
   }
 
-  getIconContext(): NbSortHeaderIconDirectiveContext {
-    return {
-      $implicit: this.direction,
-      isAscending: this.isAscending(),
-      isDescending: this.isDescending(),
-      isNone: !this.isAscending() && !this.isDescending(),
-    };
-  }
+  readonly iconContext = computed<NbSortHeaderIconDirectiveContext>(() => ({
+    $implicit: this.shownDirection() as NbSortDirection,
+    isAscending: this.isAscending(),
+    isDescending: this.isDescending(),
+    isNone: !this.isAscending() && !this.isDescending(),
+  }));
 
-  getDisabledAttributeValue(): '' | null {
-    return this.disabled ? '' : null;
-  }
+  readonly disabledAttributeValue = computed<'' | undefined>(() => (this.disabled() ? '' : undefined));
 
   private createSortRequest(): NbSortRequest {
-    this.direction = this.getNextDirection();
-    return { direction: this.direction, column: this.columnDef.name };
+    const direction = this.getNextDirection();
+    this.direction.set(direction);
+    return { direction, column: this.columnDef.name };
   }
 
   private getNextDirection(): NbSortDirection {
     const sortDirectionCycle = sortDirections;
-    let nextDirectionIndex = sortDirectionCycle.indexOf(this.direction) + 1;
+    let nextDirectionIndex = sortDirectionCycle.indexOf(this.shownDirection() as NbSortDirection) + 1;
     if (nextDirectionIndex >= sortDirectionCycle.length) {
       nextDirectionIndex = 0;
     }

@@ -1,48 +1,36 @@
-/*
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 import {
+  AfterContentInit,
   AfterViewInit,
-  Attribute,
-  ChangeDetectorRef,
+  ChangeDetectionStrategy,
   Component,
-  ElementRef,
-  HostBinding,
-  Inject,
-  Input,
-  IterableDiffers,
+  DestroyRef,
+  EmbeddedViewRef,
+  inject,
+  input,
+  linkedSignal,
+  OnChanges,
   OnDestroy,
   QueryList,
-  EmbeddedViewRef,
+  SimpleChanges,
   ViewContainerRef,
-  Optional,
-  SkipSelf,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { injectNbDefaults, NbContainerAppearance } from '@liquid-js/lyr-core/base';
 import { CDK_TABLE } from '@angular/cdk/table';
-import { fromEvent, merge, Subject } from 'rxjs';
-import { debounceTime, takeUntil } from 'rxjs/operators';
+import { fromEvent, merge } from 'rxjs';
+import { debounceTime } from 'rxjs/operators';
 
-import { NB_DOCUMENT, NB_WINDOW } from '../../theme.options';
-import { NbPlatform } from '../cdk/platform/platform-service';
-import { NbDirectionality } from '../cdk/bidi/bidi-service';
-import {
-  NB_TABLE_TEMPLATE,
-  NbTable,
-  NB_TABLE_PROVIDERS,
-  NB_VIEW_REPEATER_STRATEGY,
-} from '../cdk/table/table.module';
-import { NB_STICKY_POSITIONING_LISTENER, NbRowContext } from '../cdk/table/type-mappings';
-import { NbViewportRulerAdapter } from '../cdk/adapter/viewport-ruler-adapter';
+import { NB_WINDOW } from '@liquid-js/lyr-core/base';
+import { NbPlatform } from '@liquid-js/lyr-core/base';
+import { NB_TABLE_TEMPLATE, NbTable, NB_TABLE_PROVIDERS } from '@liquid-js/lyr-core/cdk-table';
+import { ɵNbRowContext as NbRowContext } from '@liquid-js/lyr-core/cdk-table';
 import { NbTreeGridDataSource, NbTreeGridDataSourceBuilder } from './data-source/tree-grid-data-source';
 import { NB_DEFAULT_ROW_LEVEL, NbTreeGridPresentationNode } from './data-source/tree-grid.model';
 import { NbToggleOptions } from './data-source/tree-grid.service';
 import { NB_TREE_GRID } from './tree-grid-injection-tokens';
 import { NbTreeGridRowComponent } from './tree-grid-row.component';
 import { NbTreeGridCellDirective } from './tree-grid-cell.component';
-import { convertToBoolProperty, NbBooleanInput } from '../helpers';
+import { ɵconvertToBoolProperty as convertToBoolProperty, NbBooleanInput } from '@liquid-js/lyr-core/base';
 import { NbTreeGridColumnDefDirective } from './tree-grid-column-def.directive';
 import {
   NbTreeGridFooterRowDefDirective,
@@ -50,13 +38,23 @@ import {
   NbTreeGridRowDefDirective,
 } from './tree-grid-def.component';
 import { NbColumnsService } from './tree-grid-columns.service';
+import { NbHeaderRowOutletDirective, NbDataRowOutletDirective, NbNoDataRowOutletDirective, NbFooterRowOutletDirective } from '@liquid-js/lyr-core/cdk-table';
 
 /**
- * Tree grid component that can be used to display nested rows of data.
- * Supports filtering and sorting.
+ * A table of nested rows, which open and close, with sorting and filtering.
  * @stacked-example(Showcase, tree-grid/tree-grid-showcase.component)
  *
  * ### Installation
+ *
+ * Import `NbTreeGridModule` into your standalone component:
+ * ```ts
+ * @Component({
+ *   imports: [NbTreeGridModule],
+ * })
+ * export class PageComponent { }
+ * ```
+ *
+ * With NgModules:
  *
  * Import `NbTreeGridModule` to your feature module.
  * ```ts
@@ -71,40 +69,59 @@ import { NbColumnsService } from './tree-grid-columns.service';
  *
  * ### Usage
  *
- * As the most basic usage you need to define [nbTreeGridRowDef](docs/components/treegrid/api#nbtreegridrowdefdirective)
- * where you should pass columns to display in rows and
- * [nbTreeGridColumnDef](docs/components/treegrid/api#nbtreegridcolumndefdirective) - component containing cell
- * definitions for each column passed to row definition.
+ * At the least, define the row with [nbTreeGridRowDef](components/data/tree-grid/api#nbtreegridrowdefdirective),
+ * which lists the columns to show, and a
+ * [nbTreeGridColumnDef](components/data/tree-grid/api#nbtreegridcolumndefdirective) for each of those columns, with
+ * its cell definitions.
  * @stacked-example(Basic, tree-grid/tree-grid-basic.component)
  *
- * `NbTreeGridComponent`'s source input and `NbTreeGridDataSourceBuilder.create` expecting data to be an array of
- * objects with `data`, `children` and `expanded` properties. If your data doesn't match this interface, you can pass
- * getter functions for each property as arguments to `NbTreeGridDataSourceBuilder.create` method.
+ * The `source` input and `NbTreeGridDataSourceBuilder.create` take an array of nodes with `data`, `children` and
+ * `expanded` properties. For nodes of another shape, pass `NbTreeGridDataSourceBuilder.create` a getter for each of
+ * the three.
  * @stacked-example(Custom node structure, tree-grid/tree-grid-custom-node-structure.component)
  *
- * To use sorting you can add `nbSort` directive to table and subscribe to `sort` method. When user click on header,
- * sort event will be emitted. Event object contain clicked column name and desired sort direction.
+ * To sort, put the `nbSort` directive on the table and `nbSortHeader` on the header cells. A click on a header
+ * emits `sort` with the column's name and the next direction, and sorts the data source when `nbSort` is given one.
+ * The data source sorts every level: the top-level rows, and each row's children among themselves, so a child stays
+ * under its parent. Values compare as JavaScript compares them, so a column to sort by holds numbers or dates rather
+ * than their text.
  * @stacked-example(Sortable, tree-grid/tree-grid-sortable.component)
  *
- * You can use `Data Source Builder` to create `NbTreeGridDataSource` which would have toggle, sort and
- * filter methods. Then you can call this methods to change sort or toggle rows programmatically. Also `nbSort` and
- * `nbFilterInput` directives both support `NbTreeGridDataSource`, so you can pass it directly as an input and
- * directives will trigger sort, toggle themselves.
+ * `NbTreeGridDataSourceBuilder` creates an `NbTreeGridDataSource`, whose `toggle`, `sort` and `filter` methods
+ * change the grid from code. The `nbSort` and `nbFilterInput` directives take the data source directly and call
+ * them themselves.
  * @stacked-example(Data Source Builder, tree-grid/tree-grid-showcase.component)
  *
- * You can create responsive grid by setting `hideOn` and `showOn` inputs of
- * [nbTreeGridColumnDef](docs/components/tree-grid/api#nbtreegridcolumndefdirective) directive.
- * When viewport reaches specified width grid hides or shows columns.
+ * The data source's `filter(query)` shows only the rows that match, e.g. as the user types in a field:
+ * @stacked-example(Filter, tree-grid/tree-grid-filterable.component)
+ *
+ * The `hideOn` and `showOn` inputs of
+ * [nbTreeGridColumnDef](components/data/tree-grid/api#nbtreegridcolumndefdirective) hide or show a column by the
+ * window's width, which the grid follows as the window is resized.
  * @stacked-example(Responsive columns, tree-grid/tree-grid-responsive.component)
  *
- * To customize sort or row toggle icons you can use `nbSortHeaderIcon` and `nbTreeGridRowToggle` directives
- * respectively. `nbSortHeaderIcon` is a structural directive and it's implicit context set to current direction.
- * Also context has three properties: `isAscending`, `isDescending` and `isNone`.
+ * To customise the sort or row toggle icons, use the `nbSortHeaderIcon` and `nbTreeGridRowToggle` directives.
+ * `nbSortHeaderIcon` is a structural directive whose implicit context is the current direction; the context also
+ * has `isAscending`, `isDescending` and `isNone`.
  * @stacked-example(Custom icons, tree-grid/tree-grid-custom-icons.component)
  *
- * By default, row to toggle happens when user clicks anywhere in the row. Also double click expands row deeply.
- * To disable this you can set `[clickToToggle]="false"` input of `nbTreeGridRow`.
+ * By default, a click anywhere in a row toggles it, and a double click toggles it with all its descendants.
+ * `[clickToToggle]="false"` on `nbTreeGridRow` turns both off.
  * @stacked-example(Disable click toggle, tree-grid/tree-grid-disable-click-toggle.component)
+ *
+ * A grid with no rows to show, e.g. no data or none that matches a filter, shows its `nbTreeGridNoDataRowDef` row.
+ * Its `nbTreeGridNoDataCell` spans the columns the grid shows.
+ *
+ * ```html
+ * <tr *nbTreeGridNoDataRowDef>
+ *   <td nbTreeGridNoDataCell>No files match</td>
+ * </tr>
+ * ```
+ * @stacked-example(No data, tree-grid/tree-grid-no-data.component)
+ *
+ * `compact` takes less padding in the cells, and `striped` gives every other row a background. A grid placed directly
+ * in `nb-card` lines up with the card's header and footer, and the card's border takes the place of its own.
+ * @stacked-example(Compact and striped in a card, tree-grid/tree-grid-variants.component)
  *
  * @styles
  *
@@ -113,6 +130,10 @@ import { NbColumnsService } from './tree-grid-columns.service';
  * tree-grid-cell-border-color:
  * tree-grid-row-min-height:
  * tree-grid-cell-padding:
+ * tree-grid-compact-cell-padding:
+ * tree-grid-card-edge-padding:
+ * tree-grid-edge-padding:
+ * tree-grid-floating-shadow:
  * tree-grid-header-background-color:
  * tree-grid-header-text-color:
  * tree-grid-header-text-font-family:
@@ -133,82 +154,112 @@ import { NbColumnsService } from './tree-grid-columns.service';
  * tree-grid-row-text-font-size:
  * tree-grid-row-text-font-weight:
  * tree-grid-row-text-line-height:
+ * tree-grid-striped-row-background-color:
+ * tree-grid-no-data-text-color:
+ * tree-grid-no-data-padding:
  * tree-grid-sort-header-button-background-color:
  * tree-grid-sort-header-button-border:
  * tree-grid-sort-header-button-padding:
  */
 @Component({
-    selector: 'table[nbTreeGrid]',
-    template: NB_TABLE_TEMPLATE,
-    styleUrls: ['./tree-grid.component.scss'],
-    providers: [
-        { provide: NB_TREE_GRID, useExisting: NbTreeGridComponent },
-        { provide: CDK_TABLE, useExisting: NbTreeGridComponent },
-        NbColumnsService,
-        ...NB_TABLE_PROVIDERS,
-    ],
-    standalone: false
+  selector: 'table[nbTreeGrid]',
+  template: NB_TABLE_TEMPLATE,
+  styleUrls: ['./tree-grid.component.scss'],
+  providers: [
+    { provide: NB_TREE_GRID, useExisting: NbTreeGridComponent },
+    { provide: CDK_TABLE, useExisting: NbTreeGridComponent },
+    NbColumnsService,
+    ...NB_TABLE_PROVIDERS,
+  ],
+  // As in the CDK table, rows and the cells rendered into them are checked on every change detection.
+  changeDetection: ChangeDetectionStrategy.Eager,
+  imports: [
+    NbHeaderRowOutletDirective,
+    NbDataRowOutletDirective,
+    NbNoDataRowOutletDirective,
+    NbFooterRowOutletDirective,
+  ],
+  host: {
+    class: 'nb-tree-grid',
+    '[class.nb-tree-grid-compact]': 'compact()',
+    '[class.nb-tree-grid-striped]': 'striped()',
+    '[class]': '`appearance-${appearance()}`',
+  },
 })
-export class NbTreeGridComponent<T> extends NbTable<NbTreeGridPresentationNode<T>>
-                                    implements AfterViewInit, OnDestroy {
+export class NbTreeGridComponent<T>
+  extends NbTable<NbTreeGridPresentationNode<T>>
+  implements OnChanges, AfterContentInit, AfterViewInit, OnDestroy {
+  protected readonly destroyRef = inject(DestroyRef);
+  private readonly dataSourceBuilder = inject<NbTreeGridDataSourceBuilder<T>>(NbTreeGridDataSourceBuilder);
+  private readonly window = inject(NB_WINDOW);
+  private readonly platform = inject(NbPlatform);
 
-  constructor(private dataSourceBuilder: NbTreeGridDataSourceBuilder<T>,
-              differs: IterableDiffers,
-              changeDetectorRef: ChangeDetectorRef,
-              elementRef: ElementRef,
-              @Attribute('role') role: string,
-              dir: NbDirectionality,
-              @Inject(NB_DOCUMENT) document,
-              platform: NbPlatform,
-              @Inject(NB_WINDOW) private window,
-              @Inject(NB_VIEW_REPEATER_STRATEGY) protected readonly _viewRepeater,
-              _viewportRuler: NbViewportRulerAdapter,
-              @Optional() @SkipSelf() @Inject(NB_STICKY_POSITIONING_LISTENER)
-              protected readonly _stickyPositioningListener,
-  ) {
-    super(differs, changeDetectorRef, elementRef, role, dir, document, platform, _viewRepeater,
-          _viewportRuler, _stickyPositioningListener);
-    this.platform = platform;
+  private _source?: NbTreeGridDataSource<T>;
+
+  constructor() {
+    super();
+    // The rows are presentation nodes made anew on every change; the row of a data item stays the same row, so
+    // opening or closing one keeps the others, and their toggles turn in place.
+    this.trackBy = (_index, node) => node.data;
   }
 
-  private destroy$ = new Subject<void>();
-  private _source: NbTreeGridDataSource<T>;
-  private platform: NbPlatform;
+  /**
+   * The rows: an array of nodes (`{ data, children, expanded }`), or a data source built from one.
+   */
+  readonly source = input<T[] | NbTreeGridDataSource<T>>(undefined, { alias: 'nbTreeGrid' });
 
   /**
-   * The table's data
-   * @param data
-   * @type {<T>[] | NbTreeGridDataSource}
+   * The indent of each nesting level, e.g. `1rem`, applied to a nested row's first cell as its start padding. By
+   * default the cell's own padding, once per level.
    */
-  @Input('nbTreeGrid') set source(data: T[] | NbTreeGridDataSource<T>) {
-    if (!data) {
+  readonly levelPadding = input<string>('');
+
+  /**
+   * Gives every shown column the same width.
+   */
+  readonly equalColumnsWidth = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
+
+  // The app's defaults for tree grids, which the appearance starts from.
+  protected readonly nbDefaults = injectNbDefaults('treeGrid');
+
+  /**
+   * Appearance on its own: `outline`, its cells' borders, or `floating`, a shadow in place of its outer borders, over
+   * the page. In a card, it has the card's.
+   */
+  readonly appearanceInput = input<NbContainerAppearance | undefined>(undefined, { alias: 'appearance' });
+  /** The appearance in use: the input's, the app's default, or 'outline'. */
+  readonly appearance = linkedSignal<NbContainerAppearance>(
+    () => this.appearanceInput() ?? this.nbDefaults().appearance ?? 'outline',
+  );
+
+  /**
+   * Less padding in the cells, for dense data.
+   */
+  readonly compact = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
+
+  /**
+   * A background on every other row.
+   */
+  readonly striped = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
+
+  // Applied in ngOnChanges, as the setter did, so the CDK table has the data source before it renders rows.
+  ngOnChanges({ source }: SimpleChanges) {
+    const data = this.source();
+    if (!source || !data) {
       return;
     }
 
-    if (data instanceof NbTreeGridDataSource) {
-      this._source = data;
-    } else {
-      this._source = this.dataSourceBuilder.create(data);
-    }
+    this._source = data instanceof NbTreeGridDataSource ? data : this.dataSourceBuilder.create(data);
     this.dataSource = this._source;
   }
 
-  @Input() levelPadding: string = '';
-
-  /**
-   * Make all columns equal width. False by default.
-   */
-  @Input()
-  set equalColumnsWidth(value: boolean) {
-    this.equalColumnsWidthValue = convertToBoolProperty(value);
+  override ngAfterContentInit() {
+    super.ngAfterContentInit();
+    // Before the table first renders, so it starts with the columns that fit the window.
+    if (this.platform.isBrowser) {
+      this.updateVisibleColumns();
+    }
   }
-  get equalColumnsWidth(): boolean {
-    return this.equalColumnsWidthValue;
-  }
-  private equalColumnsWidthValue: boolean = false;
-  static ngAcceptInputType_equalColumnsWidth: NbBooleanInput;
-
-  @HostBinding('class.nb-tree-grid') readonly treeClass = true;
 
   ngAfterViewInit() {
     this.checkDefsCount();
@@ -217,37 +268,30 @@ export class NbTreeGridComponent<T> extends NbTable<NbTreeGridPresentationNode<T
       this._contentHeaderRowDefs.changes,
       this._contentFooterRowDefs.changes,
     );
-    rowsChange$.pipe(takeUntil(this.destroy$))
-      .subscribe(() => this.checkDefsCount());
+    rowsChange$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => this.checkDefsCount());
 
-    if (this.platform.isBrowser) {
-      this.updateVisibleColumns();
-
+    if (this.platform.isBrowser && this.window) {
       const windowResize$ = fromEvent(this.window, 'resize').pipe(debounceTime(50));
       merge(rowsChange$, this._contentColumnDefs.changes, windowResize$)
-        .pipe(takeUntil(this.destroy$))
+        .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe(() => this.updateVisibleColumns());
     }
   }
 
-  ngOnDestroy() {
+  override ngOnDestroy() {
     super.ngOnDestroy();
-    this.destroy$.next();
-    this.destroy$.complete();
   }
 
-  toggleRow(row: NbTreeGridRowComponent, options?: NbToggleOptions): void {
-    const context = this.getRowContext(row);
-    this._source.toggle(context.$implicit.data, options);
+  toggleRow(row: NbTreeGridRowComponent, options?: NbToggleOptions) {
+    this._source?.toggle(this.getRowNode(row).data, options);
   }
 
-  toggleCellRow(cell: NbTreeGridCellDirective): void {
-    const context = this.getCellContext(cell);
-    this._source.toggle(context.$implicit.data);
+  toggleCellRow(cell: NbTreeGridCellDirective) {
+    this._source?.toggle(this.getCellNode(cell).data);
   }
 
   getColumnWidth(): string {
-    if (this.equalColumnsWidth) {
+    if (this.equalColumnsWidth()) {
       return `${100 / this.getColumnsCount()}%`;
     }
     return '';
@@ -255,24 +299,29 @@ export class NbTreeGridComponent<T> extends NbTable<NbTreeGridPresentationNode<T
 
   getCellLevel(cell: NbTreeGridCellDirective, columnName: string): number {
     if (this.isFirstColumn(columnName)) {
-      return this.getCellContext(cell).$implicit.level;
+      return this.getCellNode(cell).level;
     }
     return NB_DEFAULT_ROW_LEVEL;
   }
 
-  private getRowContext(row: NbTreeGridRowComponent): NbRowContext<NbTreeGridPresentationNode<T>> {
-    return this.getContextByRowEl(row.elementRef.nativeElement);
+  // Rows and cells are rendered by the grid, so their row views are in the row outlet.
+  private getRowNode(row: NbTreeGridRowComponent): NbTreeGridPresentationNode<T> {
+    return this.getNodeByRowEl(row.elementRef.nativeElement);
   }
 
-  private getCellContext(cell: NbTreeGridCellDirective): NbRowContext<NbTreeGridPresentationNode<T>> {
-    return this.getContextByCellEl(cell.elementRef.nativeElement);
+  private getCellNode(cell: NbTreeGridCellDirective): NbTreeGridPresentationNode<T> {
+    return this.getNodeByRowEl(cell.elementRef.nativeElement.parentElement);
   }
 
-  private getContextByCellEl(cellEl: HTMLElement): NbRowContext<NbTreeGridPresentationNode<T>> {
-    return this.getContextByRowEl(cellEl.parentElement);
+  private getNodeByRowEl(rowEl: HTMLElement | null): NbTreeGridPresentationNode<T> {
+    const node = rowEl ? this.getContextByRowEl(rowEl)?.$implicit : undefined;
+    if (!node) {
+      throw new Error('NbTreeGridComponent: the row is not rendered by the tree grid.');
+    }
+    return node;
   }
 
-  private getContextByRowEl(rowEl: HTMLElement): NbRowContext<NbTreeGridPresentationNode<T>> {
+  private getContextByRowEl(rowEl: HTMLElement): NbRowContext<NbTreeGridPresentationNode<T>> | undefined {
     const rowsContainer: ViewContainerRef = this._rowOutlet.viewContainer;
 
     for (let i = 0; i < rowsContainer.length; i++) {
@@ -287,18 +336,21 @@ export class NbTreeGridComponent<T> extends NbTable<NbTreeGridPresentationNode<T
   }
 
   private getColumns(): string[] {
-    let rowDef: NbTreeGridHeaderRowDefDirective | NbTreeGridRowDefDirective<any>;
+    let rowDef: NbTreeGridHeaderRowDefDirective | NbTreeGridRowDefDirective<unknown>;
 
     if (this._contentHeaderRowDefs.length) {
       rowDef = this._contentHeaderRowDefs.first as NbTreeGridHeaderRowDefDirective;
     } else {
-      rowDef = this._contentRowDefs.first as NbTreeGridRowDefDirective<any>;
+      rowDef = this._contentRowDefs.first as NbTreeGridRowDefDirective<unknown>;
     }
 
     return Array.from(rowDef.getVisibleColumns() || []);
   }
 
-  private getColumnsCount(): number {
+  /**
+   * How many columns the grid shows, which can change with the window's width.
+   */
+  getColumnsCount(): number {
     return this.getColumns().length;
   }
 
@@ -306,7 +358,7 @@ export class NbTreeGridComponent<T> extends NbTable<NbTreeGridPresentationNode<T
     return this.getColumns()[0] === columnName;
   }
 
-  private checkDefsCount(): void {
+  private checkDefsCount() {
     if (this._contentRowDefs.length > 1) {
       throw new Error(`Found multiple row definitions`);
     }
@@ -318,17 +370,20 @@ export class NbTreeGridComponent<T> extends NbTable<NbTreeGridPresentationNode<T
     }
   }
 
-  private updateVisibleColumns(): void {
+  private updateVisibleColumns() {
+    if (!this.window) {
+      return;
+    }
     const width = this.window.innerWidth;
-    const columnDefs = (this._contentColumnDefs as QueryList<NbTreeGridColumnDefDirective>);
+    const columnDefs = this._contentColumnDefs as QueryList<NbTreeGridColumnDefDirective>;
 
     const columnsToHide: string[] = columnDefs
       .filter((col: NbTreeGridColumnDefDirective) => col.shouldHide(width))
-      .map(col => col.name);
+      .map((col) => col.name);
 
     const columnsToShow: string[] = columnDefs
       .filter((col: NbTreeGridColumnDefDirective) => col.shouldShow(width))
-      .map(col => col.name);
+      .map((col) => col.name);
 
     if (!columnsToHide.length && !columnsToShow.length) {
       return;
@@ -336,9 +391,9 @@ export class NbTreeGridComponent<T> extends NbTable<NbTreeGridPresentationNode<T
 
     const rowDefs = [
       this._contentHeaderRowDefs.first as NbTreeGridHeaderRowDefDirective,
-      this._contentRowDefs.first as NbTreeGridRowDefDirective<any>,
+      this._contentRowDefs.first as NbTreeGridRowDefDirective<unknown>,
       this._contentFooterRowDefs.first as NbTreeGridFooterRowDefDirective,
-    ].filter(d => !!d);
+    ].filter((d) => !!d);
 
     for (const rowDef of rowDefs) {
       for (const column of columnsToHide) {
@@ -349,5 +404,7 @@ export class NbTreeGridComponent<T> extends NbTable<NbTreeGridPresentationNode<T
         rowDef.showColumn(column);
       }
     }
+    // The table renders changed columns when it's next checked, which a window resize doesn't schedule.
+    this._changeDetectorRef.markForCheck();
   }
 }

@@ -1,49 +1,65 @@
-/*
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { Component, HostListener, Input } from '@angular/core';
+import { Component, inject, input } from '@angular/core';
 import { NbTreeGridCellDirective } from './tree-grid-cell.component';
+import { NbIconComponent } from '@liquid-js/lyr-core/icon';
+import { injectNbTexts, NbLocalize } from '@liquid-js/lyr-core/base';
+import { ɵconvertToOptionalBoolProperty as convertToOptionalBoolProperty, NbBooleanInput } from '@liquid-js/lyr-core/base';
+
+/** @internal */
+declare const $localize: NbLocalize;
 
 /**
- * NbTreeGridRowToggleComponent
+ * A chevron button in a cell that toggles the cell's row. It points down while the row is open, else towards the
+ * row's end, and its label says whether it expands or collapses.
  */
 @Component({
-    selector: 'nb-tree-grid-row-toggle',
-    template: `
-    <button class="row-toggle-button" [attr.aria-label]="expanded ? 'collapse' : 'expand'">
-      <nb-icon [icon]="expanded ? 'chevron-down-outline' : 'chevron-right-outline'"
-               pack="nebular-essentials"
-               aria-hidden="true">
-      </nb-icon>
-    </button>
-  `,
-    styles: [`
-    button {
-      background: transparent;
-      border: none;
-      padding: 0;
-    }
-  `],
-    standalone: false
+  selector: 'nb-tree-grid-row-toggle',
+  templateUrl: './tree-grid-row-toggle.component.html',
+  styles: [
+    `
+      button {
+        background: transparent;
+        border: none;
+        padding: 0;
+      }
+
+      /* The chevron turns as the row opens and closes: down while it's open, else towards the row's end. */
+      nb-icon {
+        transition: transform 0.15s ease-in;
+        transform: rotate(-90deg);
+      }
+      :host-context([dir='rtl']) nb-icon {
+        transform: rotate(90deg);
+      }
+      nb-icon.expanded {
+        transform: none;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        nb-icon {
+          transition: none;
+        }
+      }
+    `,
+  ],
+  imports: [NbIconComponent],
+  host: {
+    '(click)': 'toggleRow($event)',
+  },
 })
 export class NbTreeGridRowToggleComponent {
-  private expandedValue: boolean;
-  @Input()
-  set expanded(value: boolean) {
-    this.expandedValue = value;
-  }
-  get expanded(): boolean {
-    return this.expandedValue;
-  }
+  protected readonly texts = injectNbTexts('treeGrid', () => ({
+    collapse: $localize`:@@nb.treeGrid.collapse:collapse`,
+    expand: $localize`:@@nb.treeGrid.expand:expand`,
+  }));
 
-  @HostListener('click', ['$event'])
-  toggleRow($event) {
+  private readonly cell = inject(NbTreeGridCellDirective);
+
+  /** Whether the row is open, which turns the chevron and sets the label. */
+  readonly expanded = input<boolean | undefined, NbBooleanInput>(undefined, {
+    transform: convertToOptionalBoolProperty,
+  });
+
+  toggleRow($event: Event) {
     this.cell.toggleRow();
     $event.stopPropagation();
   }
-
-  constructor(private cell: NbTreeGridCellDirective) {}
 }

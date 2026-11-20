@@ -1,14 +1,7 @@
-/*
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
 
-import { NbTableModule } from '../cdk/table/table.module';
-import { NbIconModule } from '../icon/icon.module';
+import { NbTableModule } from '@liquid-js/lyr-core/cdk-table';
+import { NbIconModule } from '@liquid-js/lyr-core/icon';
 import { NbTreeGridComponent } from './tree-grid.component';
 import {
   NbTreeGridCellDefDirective,
@@ -16,6 +9,7 @@ import {
   NbTreeGridFooterRowDefDirective,
   NbTreeGridHeaderCellDefDirective,
   NbTreeGridHeaderRowDefDirective,
+  NbTreeGridNoDataRowDefDirective,
   NbTreeGridRowDefDirective,
 } from './tree-grid-def.component';
 import {
@@ -27,6 +21,7 @@ import {
   NbTreeGridCellDirective,
   NbTreeGridFooterCellDirective,
   NbTreeGridHeaderCellDirective,
+  NbTreeGridNoDataCellDirective,
 } from './tree-grid-cell.component';
 import {
   NbSortDirective,
@@ -34,11 +29,6 @@ import {
   NbSortHeaderIconDirective,
   NbSortIconComponent,
 } from './tree-grid-sort.component';
-import { NbTreeGridDataSourceBuilder } from './data-source/tree-grid-data-source';
-import { NbTreeGridSortService } from './data-source/tree-grid-sort.service';
-import { NbTreeGridFilterService } from './data-source/tree-grid-filter.service';
-import { NbTreeGridService } from './data-source/tree-grid.service';
-import { NbTreeGridDataService } from './data-source/tree-grid-data.service';
 import { NbFilterDirective, NbFilterInputDirective } from './tree-grid-filter';
 import { NbTreeGridRowToggleDirective } from './tree-grid-row-toggle.directive';
 import { NbTreeGridColumnDefDirective } from './tree-grid-column-def.directive';
@@ -65,6 +55,9 @@ const COMPONENTS = [
 
   NbTreeGridColumnDefDirective,
 
+  NbTreeGridNoDataRowDefDirective,
+  NbTreeGridNoDataCellDirective,
+
   // Sort directives
   NbSortDirective,
   NbSortHeaderComponent,
@@ -80,15 +73,7 @@ const COMPONENTS = [
 ];
 
 @NgModule({
-  imports: [ CommonModule, NbTableModule, NbIconModule ],
-  declarations: [ ...COMPONENTS ],
-  exports: [ NbTableModule, ...COMPONENTS ],
-  providers: [
-    NbTreeGridSortService,
-    NbTreeGridFilterService,
-    NbTreeGridService,
-    NbTreeGridDataService,
-    NbTreeGridDataSourceBuilder,
-  ],
+  imports: [NbTableModule, NbIconModule, ...COMPONENTS],
+  exports: [NbTableModule, ...COMPONENTS],
 })
 export class NbTreeGridModule {}

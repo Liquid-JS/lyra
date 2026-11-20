@@ -1,25 +1,25 @@
-/*
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { Directive, HostListener } from '@angular/core';
+import { Directive, inject, input } from '@angular/core';
 import { NbTreeGridCellDirective } from './tree-grid-cell.component';
 
 /**
- * When using custom row toggle, apply this directive on your toggle to toggle row on element click.
+ * A custom row toggle: a click on the element toggles the cell's row. Put it on a `<button>`, which Enter and Space
+ * click; it's in the Tab order in every browser, Safari included.
  */
 @Directive({
-    selector: '[nbTreeGridRowToggle]',
-    standalone: false
+  selector: '[nbTreeGridRowToggle]',
+  host: {
+    '[attr.tabindex]': 'tabindex()',
+    '(click)': 'toggleRow($event)',
+  },
 })
 export class NbTreeGridRowToggleDirective {
-  @HostListener('click', ['$event'])
-  toggleRow($event) {
+  private readonly cell = inject(NbTreeGridCellDirective);
+
+  /** The toggle's place in the Tab order; Safari leaves out a button without one. */
+  readonly tabindex = input<number | string>(0);
+
+  toggleRow($event: Event) {
     this.cell.toggleRow();
     $event.stopPropagation();
   }
-
-  constructor(private cell: NbTreeGridCellDirective) {}
 }

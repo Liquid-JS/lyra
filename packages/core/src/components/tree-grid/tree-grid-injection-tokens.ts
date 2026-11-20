@@ -1,9 +1,5 @@
-/*
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 import { InjectionToken } from '@angular/core';
 
-export const NB_TREE_GRID = new InjectionToken('NB_TREE_GRID');
+import type { NbTreeGridComponent } from './tree-grid.component';
+
+export const NB_TREE_GRID = new InjectionToken<NbTreeGridComponent<unknown>>('NB_TREE_GRID');

@@ -1,63 +1,49 @@
-import { Directive, Input, OnChanges } from '@angular/core';
-import { NbCdkColumnDef } from '../cdk/table/type-mappings';
-import { NB_SORT_HEADER_COLUMN_DEF, NbColumnDefDirective } from '../cdk/table/cell';
+import { Directive, Input, input, OnChanges } from '@angular/core';
+import { ɵNbCdkColumnDef as NbCdkColumnDef } from '@liquid-js/lyr-core/cdk-table';
+import { NB_SORT_HEADER_COLUMN_DEF, NbColumnDefDirective } from '@liquid-js/lyr-core/cdk-table';
+
+function parseViewportWidth(value?: number | string | null): number | undefined {
+  return !value && value !== 0 ? undefined : parseInt(value as string, 10);
+}
 
 /**
- * Column definition for the tree-grid.
- * Defines a set of cells available for a table column.
+ * Defines a column: its name, which row definitions list, and its header, data and footer cell definitions.
  */
 @Directive({
-    selector: '[nbTreeGridColumnDef]',
-    providers: [
-        { provide: NbCdkColumnDef, useExisting: NbTreeGridColumnDefDirective },
-        { provide: NB_SORT_HEADER_COLUMN_DEF, useExisting: NbTreeGridColumnDefDirective },
-    ],
-    standalone: false
+  selector: '[nbTreeGridColumnDef]',
+  providers: [
+    { provide: NbCdkColumnDef, useExisting: NbTreeGridColumnDefDirective },
+    // Cells inject NbColumnDefDirective after CDK 22's inject()-based constructors.
+    { provide: NbColumnDefDirective, useExisting: NbTreeGridColumnDefDirective },
+    { provide: NB_SORT_HEADER_COLUMN_DEF, useExisting: NbTreeGridColumnDefDirective },
+  ],
 })
 export class NbTreeGridColumnDefDirective extends NbColumnDefDirective implements OnChanges {
-  /**
-   * Column name
-   */
+  // The CDK table reads the name as a plain property of its base class, so it stays a decorated input.
   @Input('nbTreeGridColumnDef')
-  get name(): string {
+  override get name(): string {
     return this._name;
   }
-  set name(value: string) {
+  override set name(value: string) {
     this._setNameInput(value);
   }
 
-  private hideOnValue: number | null = null;
   /**
-   * Amount of pixels of viewport at which column should be hidden.
-   * type number
+   * The window width, in px, at or below which the column is hidden. Not together with `showOn`.
    */
-  @Input()
-  get hideOn(): number | null {
-    return this.hideOnValue;
-  }
-  set hideOn(value: number | null) {
-    this.hideOnValue = !value && value !== 0
-      ? null
-      : parseInt(value as unknown as string, 10);
-  }
+  readonly hideOn = input<number | undefined, number | string | null | undefined>(undefined, {
+    transform: parseViewportWidth,
+  });
 
-  private showOnValue: number | null = null;
   /**
-   * Amount of pixels of viewport at which column should be shown.
-   * type number
+   * The window width, in px, from which the column is shown; it's hidden below. Not together with `hideOn`.
    */
-  @Input()
-  get showOn(): number | null {
-    return this.showOnValue;
-  }
-  set showOn(value: number | null) {
-    this.showOnValue = !value && value !== 0
-      ? null
-      : parseInt(value as unknown as string, 10);
-  }
+  readonly showOn = input<number | undefined, number | string | null | undefined>(undefined, {
+    transform: parseViewportWidth,
+  });
 
   ngOnChanges() {
-    if (this.hideOn != null && this.showOn != null) {
+    if (this.hideOn() !== undefined && this.showOn() !== undefined) {
       throw new Error(`hideOn and showOn are mutually exclusive and can't be used simultaneously.`);
     }
   }
@@ -67,14 +53,16 @@ export class NbTreeGridColumnDefDirective extends NbColumnDefDirective implement
   }
 
   shouldShow(width: number): boolean {
-    if (this.hideOn == null && this.showOn == null) {
-      return true;
+    const hideOn = this.hideOn();
+    const showOn = this.showOn();
+    if (hideOn !== undefined) {
+      return width > hideOn;
     }
 
-    if (this.hideOn != null) {
-      return width > this.hideOn;
+    if (showOn !== undefined) {
+      return width >= showOn;
     }
 
-    return width >= this.showOn;
+    return true;
   }
 }

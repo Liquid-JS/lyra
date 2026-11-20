@@ -1,8 +1,7 @@
-import { Component, QueryList, Type, ViewChild, ViewChildren } from '@angular/core';
-import { ComponentFixture, fakeAsync, inject, TestBed, tick } from '@angular/core/testing';
+import { Component, Type, viewChild, viewChildren } from '@angular/core';
+import { ComponentFixture, inject, TestBed } from '@angular/core/testing';
 import { EMPTY } from 'rxjs';
 import { take } from 'rxjs/operators';
-import createSpy = jasmine.createSpy;
 import {
   NbThemeModule,
   NbTreeGridComponent,
@@ -13,7 +12,8 @@ import {
   NbTreeGridDataSourceBuilder,
   NbTreeGridPresentationNode,
   NbGetters,
-} from '@nebular/theme';
+  NB_WINDOW,
+} from '@liquid-js/lyr-core';
 
 interface TreeNode<T> {
   data: T;
@@ -30,52 +30,54 @@ interface CustomStructure {
 }
 
 @Component({
-    template: '',
-    standalone: false
+  template: '',
 })
 class BaseTreeGridTestComponent {
-  columns: string[];
-  dataSource: NbTreeGridDataSource<any>;
+  columns = new Array<string>();
+  dataSource?: NbTreeGridDataSource<any>;
 
-  @ViewChild(NbTreeGridComponent) treeGridComponent: NbTreeGridComponent<any>;
-  @ViewChildren(NbTreeGridRowComponent) rowComponents: QueryList<NbTreeGridRowComponent>;
+  readonly treeGridComponent = viewChild.required(NbTreeGridComponent);
+  readonly rowComponents = viewChildren(NbTreeGridRowComponent);
 }
 
 @Component({
-    template: `
+  template: `
     <table [nbTreeGrid]="dataSource">
       <tr nbTreeGridRow *nbTreeGridRowDef="let row; columns: columns"></tr>
 
-      <ng-container *ngFor="let column of columns" [nbTreeGridColumnDef]="column">
-        <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{ column }}</th>
-        <td nbTreeGridCell *nbTreeGridCellDef="let row">{{ row.data[column] }}</td>
-      </ng-container>
+      @for (column of columns; track column) {
+        <ng-container [nbTreeGridColumnDef]="column">
+          <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{ column }}</th>
+          <td nbTreeGridCell *nbTreeGridCellDef="let row">{{ row.data[column] }}</td>
+        </ng-container>
+      }
     </table>
   `,
-    standalone: false
+  imports: [NbTreeGridModule],
 })
 export class TreeGridBasicTestComponent extends BaseTreeGridTestComponent {}
 
 @Component({
-    template: `
+  template: `
     <table [nbTreeGrid]="dataSource">
       <tr nbTreeGridHeaderRow *nbTreeGridHeaderRowDef="columns"></tr>
       <tr nbTreeGridRow *nbTreeGridRowDef="let row; columns: columns"></tr>
 
-      <ng-container *ngFor="let column of columns" [nbTreeGridColumnDef]="column">
-        <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{ column }}</th>
-        <td nbTreeGridCell *nbTreeGridCellDef="let row">{{ row.data[column] }}</td>
-      </ng-container>
+      @for (column of columns; track column) {
+        <ng-container [nbTreeGridColumnDef]="column">
+          <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{ column }}</th>
+          <td nbTreeGridCell *nbTreeGridCellDef="let row">{{ row.data[column] }}</td>
+        </ng-container>
+      }
     </table>
   `,
-    standalone: false
+  imports: [NbTreeGridModule],
 })
 export class TreeGridWithHeaderTestComponent extends BaseTreeGridTestComponent {}
 
 function setupFixture(componentType: Type<any>, columns: string[], data?: TreeNode<any>[]): ComponentFixture<any> {
   TestBed.configureTestingModule({
-    imports: [NbThemeModule.forRoot(), NbTreeGridModule],
-    declarations: [componentType],
+    imports: [NbThemeModule.forRoot(), NbTreeGridModule, componentType],
   });
 
   const fixture = TestBed.createComponent(componentType);
@@ -103,13 +105,14 @@ const nestedExpandedRowData: TreeNode<any>[] = [
     children: [{ data: { a: 'a2', b: 'b2', c: 'c2' } }],
   },
 ];
+const customStructureChild: CustomStructure = { a: 'a2', b: 'b2', c: 'c2' };
 const customStructureData: CustomStructure[] = [
   {
     a: 'a1',
     b: 'b1',
     c: 'c1',
     expanded: true,
-    childNodes: [{ a: 'a2', b: 'b2', c: 'c2' }],
+    childNodes: [customStructureChild],
   },
 ];
 
@@ -120,7 +123,7 @@ describe('NbTreeGridComponent', () => {
       abcColumns,
       twoRowsData,
     );
-    expect(fixture.componentInstance.treeGridComponent.dataSource instanceof NbTreeGridDataSource).toEqual(true);
+    expect(fixture.componentInstance.treeGridComponent().dataSource instanceof NbTreeGridDataSource).toEqual(true);
   });
 
   it('should render rows', () => {
@@ -201,7 +204,8 @@ describe('NbTreeGridComponent', () => {
     expect(rows.length).toEqual(2);
   });
 
-  it('should remove collapsed rows', fakeAsync(() => {
+  it('should remove collapsed rows', async () => {
+    vi.useFakeTimers();
     const fixture: ComponentFixture<TreeGridWithHeaderTestComponent> = setupFixture(
       TreeGridBasicTestComponent,
       abcColumns,
@@ -210,12 +214,13 @@ describe('NbTreeGridComponent', () => {
     const row: HTMLElement = fixture.nativeElement.querySelector('.nb-tree-grid-row');
     row.click();
     fixture.detectChanges();
-    tick(NB_ROW_DOUBLE_CLICK_DELAY);
+    await vi.advanceTimersByTimeAsync(NB_ROW_DOUBLE_CLICK_DELAY);
     const rows = fixture.nativeElement.querySelectorAll('.nb-tree-grid-row');
     expect(rows.length).toEqual(1);
-  }));
+  });
 
-  it('should add expanded row children', fakeAsync(() => {
+  it('should add expanded row children', async () => {
+    vi.useFakeTimers();
     const fixture: ComponentFixture<TreeGridWithHeaderTestComponent> = setupFixture(
       TreeGridBasicTestComponent,
       abcColumns,
@@ -224,10 +229,10 @@ describe('NbTreeGridComponent', () => {
     const row: HTMLElement = fixture.nativeElement.querySelector('.nb-tree-grid-row');
     row.click();
     fixture.detectChanges();
-    tick(NB_ROW_DOUBLE_CLICK_DELAY);
+    await vi.advanceTimersByTimeAsync(NB_ROW_DOUBLE_CLICK_DELAY);
     const rows = fixture.nativeElement.querySelectorAll('.nb-tree-grid-row');
     expect(rows.length).toEqual(2);
-  }));
+  });
 
   describe('NbTreeGridDataSourceBuilder custom node getters', () => {
     const mockConnectionViewer = { viewChange: EMPTY };
@@ -243,60 +248,141 @@ describe('NbTreeGridComponent', () => {
         imports: [NbThemeModule.forRoot(), NbTreeGridModule],
       });
     });
-    beforeEach(inject([NbTreeGridDataSourceBuilder], (builder) => {
+    beforeEach(inject([NbTreeGridDataSourceBuilder], (builder: NbTreeGridDataSourceBuilder<CustomStructure>) => {
       dataSourceBuilder = builder;
     }));
 
-    it('should use custom data accessor if provided', fakeAsync(() => {
-      const dataGetterSpy = createSpy('dataGetter', getters.dataGetter).and.callThrough();
+    it('should use custom data accessor if provided', async () => {
+      vi.useFakeTimers();
+      const dataGetterSpy = vi.fn(getters.dataGetter);
       const spyGetters = { ...getters, dataGetter: dataGetterSpy };
 
       const dataSource = dataSourceBuilder.create(customStructureData, spyGetters);
       expect(dataGetterSpy).toHaveBeenCalledTimes(2);
 
-      let presentationNodes: NbTreeGridPresentationNode<CustomStructure>[] = [];
+      let presentationNodes = new Array<NbTreeGridPresentationNode<CustomStructure>>();
       dataSource
         .connect(mockConnectionViewer)
         .pipe(take(1))
         .subscribe((nodes) => (presentationNodes = nodes as NbTreeGridPresentationNode<CustomStructure>[]));
-      tick();
+      await vi.advanceTimersByTimeAsync(0);
 
       expect(presentationNodes[0].data).toEqual(customStructureData[0]);
-      expect(presentationNodes[1].data).toEqual(customStructureData[0].childNodes[0]);
-    }));
+      expect(presentationNodes[1].data).toEqual(customStructureChild);
+    });
 
-    it('should use custom children accessor if provided', fakeAsync(() => {
-      const childrenGetterSpy = createSpy('childrenGetter', getters.childrenGetter).and.callThrough();
+    it('should use custom children accessor if provided', async () => {
+      vi.useFakeTimers();
+      const childrenGetterSpy = vi.fn(getters.childrenGetter);
       const spyGetters = { ...getters, childrenGetter: childrenGetterSpy };
 
       const dataSource = dataSourceBuilder.create(customStructureData, spyGetters);
       expect(childrenGetterSpy).toHaveBeenCalledTimes(2);
 
-      let presentationNodes: NbTreeGridPresentationNode<CustomStructure>[] = [];
+      let presentationNodes = new Array<NbTreeGridPresentationNode<CustomStructure>>();
       dataSource
         .connect(mockConnectionViewer)
         .pipe(take(1))
         .subscribe((nodes) => (presentationNodes = nodes as NbTreeGridPresentationNode<CustomStructure>[]));
-      tick();
+      await vi.advanceTimersByTimeAsync(0);
 
-      expect(presentationNodes[0].data.childNodes[0]).toEqual(customStructureData[0].childNodes[0]);
-    }));
+      expect(presentationNodes[0].data.childNodes?.[0]).toEqual(customStructureChild);
+    });
 
-    it('should use custom expanded accessor if provided', fakeAsync(() => {
-      const expandedGetterSpy = createSpy('expandedGetter', getters.expandedGetter).and.callThrough();
+    it('should use custom expanded accessor if provided', async () => {
+      vi.useFakeTimers();
+      const expandedGetterSpy = vi.fn(getters.expandedGetter);
       const spyGetters = { ...getters, expandedGetter: expandedGetterSpy };
 
       const dataSource = dataSourceBuilder.create(customStructureData, spyGetters);
       expect(expandedGetterSpy).toHaveBeenCalledTimes(2);
 
-      let presentationNodes: NbTreeGridPresentationNode<CustomStructure>[] = [];
+      let presentationNodes = new Array<NbTreeGridPresentationNode<CustomStructure>>();
       dataSource
         .connect(mockConnectionViewer)
         .pipe(take(1))
         .subscribe((nodes) => (presentationNodes = nodes as NbTreeGridPresentationNode<CustomStructure>[]));
-      tick();
+      await vi.advanceTimersByTimeAsync(0);
 
       expect(presentationNodes[0].expanded).toEqual(true);
-    }));
+    });
+  });
+});
+
+@Component({
+  template: `
+    <table [nbTreeGrid]="data">
+      <tr nbTreeGridHeaderRow *nbTreeGridHeaderRowDef="columns"></tr>
+      <tr nbTreeGridRow *nbTreeGridRowDef="let row; columns: columns"></tr>
+
+      <ng-container nbTreeGridColumnDef="a">
+        <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>a</th>
+        <td nbTreeGridCell *nbTreeGridCellDef="let row">{{ row.data.a }}</td>
+      </ng-container>
+      <ng-container nbTreeGridColumnDef="b" [hideOn]="600">
+        <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>b</th>
+        <td nbTreeGridCell *nbTreeGridCellDef="let row">{{ row.data.b }}</td>
+      </ng-container>
+      <ng-container nbTreeGridColumnDef="c" [showOn]="1200">
+        <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>c</th>
+        <td nbTreeGridCell *nbTreeGridCellDef="let row">{{ row.data.c }}</td>
+      </ng-container>
+    </table>
+  `,
+  imports: [NbTreeGridModule],
+})
+class TreeGridResponsiveTestComponent {
+  readonly columns = ['a', 'b', 'c'];
+  readonly data = [{ data: { a: 'a1', b: 'b1', c: 'c1' } }];
+}
+
+describe('NbTreeGridComponent responsive columns', () => {
+  let width: number;
+
+  const render = () => {
+    TestBed.configureTestingModule({
+      imports: [NbThemeModule.forRoot(), TreeGridResponsiveTestComponent],
+      providers: [
+        {
+          provide: NB_WINDOW,
+          // The real window, with the width the test sets.
+          useFactory: () => new Proxy(window, {
+            get: (target, key) => {
+              if (key === 'innerWidth') {
+                return width;
+              }
+              const value = Reflect.get(target, key);
+              return typeof value === 'function' ? value.bind(target) : value;
+            },
+          }),
+        },
+      ],
+    });
+    const fixture = TestBed.createComponent(TreeGridResponsiveTestComponent);
+    fixture.detectChanges();
+    return fixture;
+  };
+  const headers = (fixture: ComponentFixture<TreeGridResponsiveTestComponent>) => Array.from(fixture.nativeElement.querySelectorAll('th'), (th: Element) => th.textContent.trim());
+  const cells = (fixture: ComponentFixture<TreeGridResponsiveTestComponent>) => fixture.nativeElement.querySelector('tr[nbTreeGridRow]').querySelectorAll('td').length;
+
+  it('should render only the columns that fit the window', () => {
+    width = 500;
+    const fixture = render();
+    expect(headers(fixture)).toEqual(['a']);
+    expect(cells(fixture)).toBe(1);
+  });
+
+  it('should show columns again when the window grows', async () => {
+    vi.useFakeTimers();
+    width = 500;
+    const fixture = render();
+
+    width = 1280;
+    window.dispatchEvent(new Event('resize'));
+    await vi.advanceTimersByTimeAsync(50);
+    fixture.detectChanges();
+
+    expect(headers(fixture)).toEqual(['a', 'b', 'c']);
+    expect(cells(fixture)).toBe(3);
   });
 });

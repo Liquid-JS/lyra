@@ -1,22 +1,16 @@
-/*
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-
-import { Injectable } from '@angular/core';
+import { Service } from '@angular/core';
 
 import { NbTreeGridPresentationNode } from './tree-grid.model';
 
 export interface NbToggleOptions {
+  /** Also expands or collapses every descendant. */
   deep?: boolean;
 }
 
-@Injectable()
+@Service()
 export class NbTreeGridService<T> {
   expand(data: NbTreeGridPresentationNode<T>[], row: T, options: NbToggleOptions = {}) {
-    const node: NbTreeGridPresentationNode<T> = this.find(data, row);
+    const node = this.findNode(data, row);
     node.expanded = true;
 
     if (options.deep && node.hasChildren()) {
@@ -25,7 +19,7 @@ export class NbTreeGridService<T> {
   }
 
   collapse(data: NbTreeGridPresentationNode<T>[], row: T, options: NbToggleOptions = {}) {
-    const node: NbTreeGridPresentationNode<T> = this.find(data, row);
+    const node = this.findNode(data, row);
     node.expanded = false;
 
     if (options.deep && node.hasChildren()) {
@@ -34,7 +28,7 @@ export class NbTreeGridService<T> {
   }
 
   toggle(data: NbTreeGridPresentationNode<T>[], row: T, options: NbToggleOptions = {}) {
-    const node: NbTreeGridPresentationNode<T> = this.find(data, row);
+    const node = this.findNode(data, row);
     if (node.expanded) {
       this.collapse(data, row, options);
     } else {
@@ -42,7 +36,15 @@ export class NbTreeGridService<T> {
     }
   }
 
-  private find(data: NbTreeGridPresentationNode<T>[], row: T): NbTreeGridPresentationNode<T> {
+  private findNode(data: NbTreeGridPresentationNode<T>[], row: T): NbTreeGridPresentationNode<T> {
+    const node = this.find(data, row);
+    if (!node) {
+      throw new Error('NbTreeGridService: the row is not in the tree grid data.');
+    }
+    return node;
+  }
+
+  private find(data: NbTreeGridPresentationNode<T>[], row: T): NbTreeGridPresentationNode<T> | undefined {
     const toCheck: NbTreeGridPresentationNode<T>[] = [...data];
 
     for (const node of toCheck) {

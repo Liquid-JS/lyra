@@ -1,66 +1,61 @@
-import { Injectable, IterableDiffer, IterableDiffers } from '@angular/core';
-import { merge, Observable, Subject } from 'rxjs';
+import { inject, IterableDiffer, IterableDiffers, Service, signal } from '@angular/core';
 
-
-@Injectable()
+@Service({ autoProvided: false })
 export class NbColumnsService {
-  private allColumns: string[];
-  private visibleColumns: string[];
-  private changesDiffer: IterableDiffer<any>;
-  private columnHide$: Subject<void> = new Subject<void>();
-  private columnShow$: Subject<void> = new Subject<void>();
+  private readonly differs = inject(IterableDiffers);
 
-  constructor(private differs: IterableDiffers) {}
+  private allColumns = new Array<string>();
+  private readonly visibleColumns = signal<string[]>([]);
+  private changesDiffer?: IterableDiffer<string>;
 
-  setColumns(columns: Iterable<string>): void {
-    if (!this.changesDiffer) {
-      this.changesDiffer = this.differs.find(columns || []).create();
+  setColumns(columns: Iterable<string>) {
+    let changesDiffer = this.changesDiffer;
+    if (!changesDiffer) {
+      changesDiffer = this.differs.find(columns || []).create<string>();
+      this.changesDiffer = changesDiffer;
     }
 
-    if (this.changesDiffer.diff(columns)) {
-      this.allColumns = Array.from(columns);
-      this.visibleColumns = Array.from(columns);
+    if (changesDiffer.diff(columns)) {
+      this.allColumns = Array.from(columns || []);
+      this.visibleColumns.set(Array.from(columns || []));
     }
   }
 
   getVisibleColumns(): string[] {
-    return this.visibleColumns;
+    return this.visibleColumns();
   }
 
-  hideColumn(column: string): void {
-    const toRemove = this.visibleColumns.indexOf(column);
-    if (toRemove > -1) {
-      this.visibleColumns.splice(toRemove, 1);
-      this.columnHide$.next();
+  hideColumn(column: string) {
+    const visible = this.visibleColumns();
+    if (visible.includes(column)) {
+      this.visibleColumns.set(visible.filter((visibleColumn) => visibleColumn !== column));
     }
   }
 
-  showColumn(column: string): void {
-    if (this.visibleColumns.includes(column)) {
+  showColumn(column: string) {
+    const visible = this.visibleColumns();
+    if (visible.includes(column)) {
       return;
     }
-    this.visibleColumns.splice(this.findInsertIndex(column), 0, column);
-    this.columnShow$.next();
+    const next = [...visible];
+    next.splice(this.findInsertIndex(column, visible), 0, column);
+    this.visibleColumns.set(next);
   }
 
-  onColumnsChange(): Observable<void> {
-    return merge(this.columnShow$, this.columnHide$);
-  }
-
-  private findInsertIndex(column: string): number {
+  private findInsertIndex(column: string, visibleColumns: string[]): number {
     const initialIndex = this.allColumns.indexOf(column);
 
-    if (initialIndex === 0 || !this.visibleColumns.length) {
+    if (initialIndex === 0 || !visibleColumns.length) {
       return 0;
     }
     if (initialIndex === this.allColumns.length - 1) {
-      return this.visibleColumns.length;
+      return visibleColumns.length;
     }
 
     const leftSiblingIndex = initialIndex - 1;
     for (let i = leftSiblingIndex; i >= 0; i--) {
       const leftSibling = this.allColumns[i];
-      const index = this.visibleColumns.indexOf(leftSibling);
+      const index = visibleColumns.indexOf(leftSibling);
       if (index !== -1) {
         return index + 1;
       }
@@ -69,7 +64,7 @@ export class NbColumnsService {
     const rightSiblingIndex = initialIndex + 1;
     for (let i = rightSiblingIndex; i < this.allColumns.length; i++) {
       const rightSibling = this.allColumns[i];
-      const index = this.visibleColumns.indexOf(rightSibling);
+      const index = visibleColumns.indexOf(rightSibling);
       if (index !== -1) {
         return index;
       }

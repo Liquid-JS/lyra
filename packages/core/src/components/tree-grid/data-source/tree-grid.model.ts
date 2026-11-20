@@ -1,42 +1,30 @@
-/*
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 export const NB_DEFAULT_ROW_LEVEL: number = 0;
 
-export type NbDataGetter<N, T> = (N) => T;
-export type NbChildrenGetter<N, T> = (N) => (T[] | undefined);
-export type NbExpandedGetter<N> = (N) => boolean;
+export type NbDataGetter<N, T> = (node: N) => T;
+/** Returns the child nodes of a node, in the same structure as the node. */
+export type NbChildrenGetter<N> = (node: N) => (N[] | undefined);
+export type NbExpandedGetter<N> = (node: N) => boolean;
 
+/** Reads nodes of a shape other than `{ data, children, expanded }`. */
 export interface NbGetters<N, T> {
   dataGetter?: NbDataGetter<N, T>;
-  childrenGetter?: NbChildrenGetter<N, T>;
+  childrenGetter?: NbChildrenGetter<N>;
   expandedGetter?: NbExpandedGetter<N>;
 }
 
 /**
- * Implicit context of cells and rows
+ * A row as the grid renders it, and the implicit context of its cells: the row's data, its child rows, whether it's
+ * open, and its nesting level, from 0.
  */
 export class NbTreeGridPresentationNode<T> {
   constructor(
-    /**
-     * Data object associated with row
-     */
     public readonly data: T,
     public children: NbTreeGridPresentationNode<T>[] | undefined,
-    /**
-     * Row expand state
-     */
     public expanded: boolean,
     public readonly level: number,
   ) {}
 
-  /**
-   * True if row has child rows
-   */
-  hasChildren(): boolean {
+  hasChildren(): this is { children: NbTreeGridPresentationNode<T>[] } {
     return !!this.children && !!this.children.length;
   }
 }

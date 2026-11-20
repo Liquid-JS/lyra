@@ -1,5 +1,25 @@
-import { Component } from '@angular/core';
-import { NbSortDirection, NbSortRequest, NbTreeGridDataSource, NbTreeGridDataSourceBuilder } from '@nebular/theme';
+import { Component, inject } from '@angular/core';
+import {
+  NbSortDirection,
+  NbSortRequest,
+  NbTreeGridDataSource,
+  NbTreeGridDataSourceBuilder,
+  NbCardComponent,
+  NbCardBodyComponent,
+  NbTreeGridComponent,
+  NbSortDirective,
+  NbSortHeaderComponent,
+  NbTreeGridHeaderRowDefDirective,
+  NbTreeGridRowDefDirective,
+  NbTreeGridHeaderCellDefDirective,
+  NbTreeGridCellDefDirective,
+  NbTreeGridHeaderRowComponent,
+  NbTreeGridRowComponent,
+  NbTreeGridColumnDefDirective,
+  NbTreeGridHeaderCellDirective,
+  NbTreeGridCellDirective,
+  NbTreeGridRowToggleComponent,
+} from '@liquid-js/lyr-core';
 
 interface TreeNode<T> {
   data: T;
@@ -9,72 +29,60 @@ interface TreeNode<T> {
 
 interface FSEntry {
   name: string;
-  size: string;
+  /** In bytes: a number, so sorting by size orders by size rather than by text. */
+  size: number;
   kind: string;
   items?: number;
 }
 
+const KB = 1024;
+const MB = 1024 * KB;
+
 @Component({
-    template: `
-    <nb-card>
-      <nb-card-body>
-
-        <table [nbTreeGrid]="dataSource" nbSort (sort)="changeSort($event)" equalColumnsWidth>
-
-          <tr nbTreeGridHeaderRow *nbTreeGridHeaderRowDef="allColumns"></tr>
-          <tr nbTreeGridRow *nbTreeGridRowDef="let row; columns: allColumns"></tr>
-
-          <ng-container [nbTreeGridColumnDef]="customColumn">
-            <th nbTreeGridHeaderCell [nbSortHeader]="getDirection(customColumn)" *nbTreeGridHeaderCellDef>
-              {{customColumn}}
-            </th>
-
-            <td nbTreeGridCell *nbTreeGridCellDef="let row">
-
-              <nb-tree-grid-row-toggle
-                [expanded]="row.expanded"
-                *ngIf="row.data.kind === 'dir'">
-              </nb-tree-grid-row-toggle>
-
-              {{row.data.name}}
-
-            </td>
-          </ng-container>
-
-          <ng-container *ngFor="let column of defaultColumns" [nbTreeGridColumnDef]="column">
-            <th nbTreeGridHeaderCell [nbSortHeader]="getDirection(column)" *nbTreeGridHeaderCellDef>
-              {{column}}
-            </th>
-
-            <td nbTreeGridCell *nbTreeGridCellDef="let row">{{row.data[column]}}</td>
-          </ng-container>
-
-        </table>
-
-      </nb-card-body>
-    </nb-card>
-  `,
-    styleUrls: ['./tree-grid-shared.scss'],
-    standalone: false
+  templateUrl: './tree-grid-sortable.component.html',
+  styleUrls: ['./tree-grid-shared.scss'],
+  imports: [
+    NbCardComponent,
+    NbCardBodyComponent,
+    NbTreeGridComponent,
+    NbSortDirective,
+    NbTreeGridHeaderRowDefDirective,
+    NbTreeGridHeaderRowComponent,
+    NbTreeGridRowDefDirective,
+    NbTreeGridRowComponent,
+    NbTreeGridColumnDefDirective,
+    NbTreeGridHeaderCellDefDirective,
+    NbTreeGridHeaderCellDirective,
+    NbSortHeaderComponent,
+    NbTreeGridCellDefDirective,
+    NbTreeGridCellDirective,
+    NbTreeGridRowToggleComponent,
+  ],
 })
 export class TreeGridSortableComponent {
+  private readonly dataSourceBuilder = inject<NbTreeGridDataSourceBuilder<any>>(NbTreeGridDataSourceBuilder);
+
   customColumn = 'name';
-  defaultColumns = [ 'size', 'kind', 'items' ];
-  allColumns = [ this.customColumn, ...this.defaultColumns ];
+  defaultColumns = ['size', 'kind', 'items'];
+  allColumns = [this.customColumn, ...this.defaultColumns];
 
   dataSource: NbTreeGridDataSource<any>;
 
-  sortColumn: string = '';
+  sortColumn = '';
   sortDirection: NbSortDirection = NbSortDirection.NONE;
 
-  constructor(private dataSourceBuilder: NbTreeGridDataSourceBuilder<any>) {
+  constructor() {
     this.dataSource = this.dataSourceBuilder.create(this.data);
   }
 
-  changeSort(sortRequest: NbSortRequest): void {
+  changeSort(sortRequest: NbSortRequest) {
     this.dataSource.sort(sortRequest);
     this.sortColumn = sortRequest.column;
     this.sortDirection = sortRequest.direction;
+  }
+
+  formatSize(size: number): string {
+    return size >= MB ? `${(size / MB).toFixed(1).replace(/\.0$/, '')} MB` : `${Math.round(size / KB)} KB`;
   }
 
   getDirection(column: string): NbSortDirection {
@@ -86,44 +94,42 @@ export class TreeGridSortableComponent {
 
   private data: TreeNode<FSEntry>[] = [
     {
-      data: { name: 'Projects', size: '1.8 MB', items: 5, kind: 'dir' },
+      data: { name: 'Projects', size: 1.8 * MB, items: 5, kind: 'dir' },
       children: [
-        { data: { name: 'project-1.doc', kind: 'doc', size: '240 KB' } },
-        { data: { name: 'project-2.doc', kind: 'doc', size: '290 KB' } },
+        { data: { name: 'project-1.doc', kind: 'doc', size: 240 * KB } },
+        { data: { name: 'project-2.doc', kind: 'doc', size: 290 * KB } },
         {
-          data: { name: 'project-3', kind: 'dir', size: '466 KB', items: 3 },
+          data: { name: 'project-3', kind: 'dir', size: 466 * KB, items: 3 },
           children: [
-            { data: { name: 'project-3A.doc', kind: 'doc', size: '200 KB' } },
-            { data: { name: 'project-3B.doc', kind: 'doc', size: '266 KB' } },
-            { data: { name: 'project-3C.doc', kind: 'doc', size: '0' } },
+            { data: { name: 'project-3A.doc', kind: 'doc', size: 200 * KB } },
+            { data: { name: 'project-3B.doc', kind: 'doc', size: 266 * KB } },
+            { data: { name: 'project-3C.doc', kind: 'doc', size: 0 } },
           ],
         },
-        { data: { name: 'project-4.docx', kind: 'docx', size: '900 KB' } },
+        { data: { name: 'project-4.docx', kind: 'docx', size: 900 * KB } },
       ],
     },
     {
-      data: { name: 'Reports', kind: 'dir', size: '400 KB', items: 2 },
+      data: { name: 'Reports', kind: 'dir', size: 400 * KB, items: 2 },
       children: [
         {
-          data: { name: 'Report 1', kind: 'dir', size: '100 KB', items: 1 },
-          children: [
-            { data: { name: 'report-1.doc', kind: 'doc', size: '100 KB' } },
-          ],
+          data: { name: 'Report 1', kind: 'dir', size: 100 * KB, items: 1 },
+          children: [{ data: { name: 'report-1.doc', kind: 'doc', size: 100 * KB } }],
         },
         {
-          data: { name: 'Report 2', kind: 'dir', size: '300 KB', items: 2 },
+          data: { name: 'Report 2', kind: 'dir', size: 300 * KB, items: 2 },
           children: [
-            { data: { name: 'report-2.doc', kind: 'doc', size: '290 KB' } },
-            { data: { name: 'report-2-note.txt', kind: 'txt', size: '10 KB' } },
+            { data: { name: 'report-2.doc', kind: 'doc', size: 290 * KB } },
+            { data: { name: 'report-2-note.txt', kind: 'txt', size: 10 * KB } },
           ],
         },
       ],
     },
     {
-      data: { name: 'Other', kind: 'dir', size: '109 MB', items: 2 },
+      data: { name: 'Other', kind: 'dir', size: 109 * MB, items: 2 },
       children: [
-        { data: { name: 'backup.bkp', kind: 'bkp', size: '107 MB' } },
-        { data: { name: 'secret-note.txt', kind: 'txt', size: '2 MB' } },
+        { data: { name: 'backup.bkp', kind: 'bkp', size: 107 * MB } },
+        { data: { name: 'secret-note.txt', kind: 'txt', size: 2 * MB } },
       ],
     },
   ];

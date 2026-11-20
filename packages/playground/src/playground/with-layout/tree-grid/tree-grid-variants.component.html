@@ -1,0 +1,43 @@
+<nb-card>
+  <nb-card-header>
+    <h6>Files</h6>
+    <nb-checkbox size="small"
+      [(checked)]="compact">Compact</nb-checkbox>
+    <nb-checkbox size="small"
+      [(checked)]="striped">Striped</nb-checkbox>
+  </nb-card-header>
+  <table [nbTreeGrid]="data"
+    [compact]="compact()"
+    [striped]="striped()">
+    <tr nbTreeGridHeaderRow
+      *nbTreeGridHeaderRowDef="columns"></tr>
+    <tr nbTreeGridRow
+      *nbTreeGridRowDef="let row; columns: columns"></tr>
+
+    <ng-container nbTreeGridColumnDef="name">
+      <th nbTreeGridHeaderCell
+        *nbTreeGridHeaderCellDef>Name</th>
+      <td nbTreeGridCell
+        *nbTreeGridCellDef="let row">
+        @if (row.data.kind === 'dir') {
+        <nb-tree-grid-row-toggle [expanded]="row.expanded" />
+        }
+        {{ row.data.name }}
+      </td>
+    </ng-container>
+
+    <ng-container nbTreeGridColumnDef="kind">
+      <th nbTreeGridHeaderCell
+        *nbTreeGridHeaderCellDef>Kind</th>
+      <td nbTreeGridCell
+        *nbTreeGridCellDef="let row">{{ row.data.kind }}</td>
+    </ng-container>
+
+    <ng-container nbTreeGridColumnDef="size">
+      <th nbTreeGridHeaderCell
+        *nbTreeGridHeaderCellDef>Size</th>
+      <td nbTreeGridCell
+        *nbTreeGridCellDef="let row">{{ row.data.size }}</td>
+    </ng-container>
+  </table>
+</nb-card>

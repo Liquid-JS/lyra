@@ -1,5 +1,25 @@
-import { Component } from '@angular/core';
-import { NbTreeGridDataSource, NbTreeGridDataSourceBuilder } from '@nebular/theme';
+import { Component, inject } from '@angular/core';
+import {
+  NbTreeGridDataSource,
+  NbTreeGridDataSourceBuilder,
+  NbCardComponent,
+  NbCardBodyComponent,
+  NbTreeGridComponent,
+  NbSortDirective,
+  NbSortHeaderComponent,
+  NbSortHeaderIconDirective,
+  NbTreeGridHeaderRowDefDirective,
+  NbTreeGridRowDefDirective,
+  NbTreeGridHeaderCellDefDirective,
+  NbTreeGridCellDefDirective,
+  NbTreeGridHeaderRowComponent,
+  NbTreeGridRowComponent,
+  NbTreeGridColumnDefDirective,
+  NbTreeGridHeaderCellDirective,
+  NbTreeGridCellDirective,
+  NbIconComponent,
+  NbTreeGridRowToggleDirective,
+} from '@liquid-js/lyr-core';
 
 interface TreeNode<T> {
   data: T;
@@ -15,59 +35,38 @@ interface FSEntry {
 }
 
 @Component({
-    template: `
-    <nb-card>
-      <nb-card-body>
-
-        <table [nbTreeGrid]="dataSource" [nbSort]="dataSource" equalColumnsWidth>
-
-          <tr nbTreeGridHeaderRow *nbTreeGridHeaderRowDef="allColumns"></tr>
-          <tr nbTreeGridRow *nbTreeGridRowDef="let row; columns: allColumns"></tr>
-
-          <ng-container [nbTreeGridColumnDef]="customColumn">
-
-            <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef nbSortHeader>
-              {{customColumn}}
-              <span *nbSortHeaderIcon="let asc = isAscending; let desc = isDescending">
-                <nb-icon *ngIf="asc" icon="chevron-down-outline" aria-label="sorted ascending"></nb-icon>
-                <nb-icon *ngIf="desc" icon="chevron-up-outline" aria-label="sorted descending"></nb-icon>
-              </span>
-            </th>
-
-            <td nbTreeGridCell *nbTreeGridCellDef="let row">
-              <button nbTreeGridRowToggle
-                      *ngIf="row.hasChildren()"
-                      [attr.aria-label]="row.expanded ? 'collapse' : 'expand'">
-                <nb-icon [icon]="row.expanded ? 'chevron-down-outline' : 'chevron-right-outline'"
-                         aria-hidden="true">
-                </nb-icon>
-              </button>
-              {{row.data.name}}
-            </td>
-
-          </ng-container>
-
-          <ng-container *ngFor="let column of defaultColumns" [nbTreeGridColumnDef]="column">
-            <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{column}}</th>
-            <td nbTreeGridCell *nbTreeGridCellDef="let row">{{row.data[column]}}</td>
-          </ng-container>
-
-        </table>
-
-      </nb-card-body>
-    </nb-card>
-  `,
-    styleUrls: ['./tree-grid-shared.scss', './tree-grid-custom-icons.component.scss'],
-    standalone: false
+  templateUrl: './tree-grid-custom-icons.component.html',
+  styleUrls: ['./tree-grid-shared.scss', './tree-grid-custom-icons.component.scss'],
+  imports: [
+    NbCardComponent,
+    NbCardBodyComponent,
+    NbTreeGridComponent,
+    NbSortDirective,
+    NbTreeGridHeaderRowDefDirective,
+    NbTreeGridHeaderRowComponent,
+    NbTreeGridRowDefDirective,
+    NbTreeGridRowComponent,
+    NbTreeGridColumnDefDirective,
+    NbTreeGridHeaderCellDefDirective,
+    NbTreeGridHeaderCellDirective,
+    NbSortHeaderComponent,
+    NbSortHeaderIconDirective,
+    NbIconComponent,
+    NbTreeGridCellDefDirective,
+    NbTreeGridCellDirective,
+    NbTreeGridRowToggleDirective,
+  ],
 })
 export class TreeGridCustomIconsComponent {
   customColumn = 'name';
-  defaultColumns = [ 'size', 'kind', 'items' ];
-  allColumns = [ this.customColumn, ...this.defaultColumns ];
+  defaultColumns = ['size', 'kind', 'items'];
+  allColumns = [this.customColumn, ...this.defaultColumns];
 
   dataSource: NbTreeGridDataSource<FSEntry>;
 
-  constructor(dataSourceBuilder: NbTreeGridDataSourceBuilder<FSEntry>) {
+  constructor() {
+    const dataSourceBuilder = inject<NbTreeGridDataSourceBuilder<FSEntry>>(NbTreeGridDataSourceBuilder);
+
     this.dataSource = dataSourceBuilder.create(this.data);
   }
 
@@ -93,9 +92,7 @@ export class TreeGridCustomIconsComponent {
       children: [
         {
           data: { name: 'Report 1', kind: 'dir', size: '100 KB', items: 1 },
-          children: [
-            { data: { name: 'report-1.doc', kind: 'doc', size: '100 KB' } },
-          ],
+          children: [{ data: { name: 'report-1.doc', kind: 'doc', size: '100 KB' } }],
         },
         {
           data: { name: 'Report 2', kind: 'dir', size: '300 KB', items: 2 },
