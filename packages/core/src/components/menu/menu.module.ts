@@ -1,37 +1,25 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
+import { NgModule, ModuleWithProviders, EnvironmentProviders, makeEnvironmentProviders } from '@angular/core';
 
-import { NgModule, ModuleWithProviders } from '@angular/core';
-
-import { NbSharedModule } from '../shared/shared.module';
 import { NbMenuComponent, NbMenuItemComponent } from './menu.component';
 import { NbMenuService, NbMenuInternalService } from './menu.service';
-import { NbIconModule } from '../icon/icon.module';
-import { NbBadgeModule } from '../badge/badge.module';
+import { NbIconModule } from '@liquid-js/lyr-core/icon';
+import { NbBadgeModule } from '@liquid-js/lyr-core/badge';
 
 const nbMenuComponents = [NbMenuComponent, NbMenuItemComponent];
 
-const NB_MENU_PROVIDERS = [NbMenuService, NbMenuInternalService];
+/**
+ * Provides the menu services, in place of `NbMenuModule.forRoot()`.
+ */
+export function provideNbMenu(): EnvironmentProviders {
+  return makeEnvironmentProviders([NbMenuService, NbMenuInternalService]);
+}
 
 @NgModule({
-  imports: [
-    NbSharedModule,
-    NbIconModule,
-    NbBadgeModule,
-  ],
-  declarations: [...nbMenuComponents],
+  imports: [NbIconModule, NbBadgeModule, ...nbMenuComponents],
   exports: [...nbMenuComponents],
 })
 export class NbMenuModule {
   static forRoot(): ModuleWithProviders<NbMenuModule> {
-    return {
-      ngModule: NbMenuModule,
-      providers: [
-        ...NB_MENU_PROVIDERS,
-      ],
-    };
+    return { ngModule: NbMenuModule, providers: [provideNbMenu()] };
   }
 }

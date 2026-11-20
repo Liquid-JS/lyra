@@ -1,17 +1,10 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { NbMenuItem } from '@nebular/theme';
+import { Component } from '@angular/core';
+import { NbMenuItem, NbCardComponent, NbMenuComponent } from '@liquid-js/lyr-core';
 
 @Component({
-    selector: 'nb-menu-showcase',
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    templateUrl: './menu-showcase.component.html',
-    standalone: false
+  selector: 'nb-menu-showcase',
+  templateUrl: './menu-showcase.component.html',
+  imports: [NbCardComponent, NbMenuComponent],
 })
 export class MenuShowcaseComponent {
 
@@ -26,7 +19,7 @@ export class MenuShowcaseComponent {
     },
     {
       title: 'Privacy Policy',
-      icon: { icon: 'checkmark-outline', pack: 'eva' },
+      icon: { icon: 'checkmark-outline', pack: 'icons' },
     },
     {
       title: 'Logout',

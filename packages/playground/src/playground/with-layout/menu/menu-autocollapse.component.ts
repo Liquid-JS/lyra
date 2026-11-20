@@ -1,17 +1,10 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { NbMenuItem } from '@nebular/theme';
+import { Component } from '@angular/core';
+import { NbMenuItem, NbCardComponent, NbMenuComponent } from '@liquid-js/lyr-core';
 
 @Component({
-    selector: 'npg-menu-autocollapse',
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    templateUrl: './menu-autocollapse.component.html',
-    standalone: false
+  selector: 'npg-menu-autocollapse',
+  templateUrl: './menu-autocollapse.component.html',
+  imports: [NbCardComponent, NbMenuComponent],
 })
 export class MenuAutoCollapseComponent {
   items: NbMenuItem[] = [

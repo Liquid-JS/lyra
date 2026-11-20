@@ -1,0 +1,45 @@
+<nb-layout>
+  <nb-sidebar state="compacted">
+    <nb-menu id="menu-sidebar"
+      tag="sidebarMenu"
+      [items]="sidebarMenuItems" />
+  </nb-sidebar>
+  <nb-layout-column>
+    <nb-card size="giant">
+      <nb-card-body>
+        <nb-menu id="menu-first"
+          tag="firstMenu"
+          [items]="firstMenuItems"
+          [autoCollapse]="true" />
+        <router-outlet />
+        <button nbButton
+          id="addBtn"
+          (click)="addMenuItem()">Add</button>
+        <button nbButton
+          id="homeBtn"
+          (click)="navigateHome()">Home</button>
+      </nb-card-body>
+    </nb-card>
+    <nb-card size="giant">
+      <nb-card-body>
+        <nb-menu id="menu-second"
+          tag="SecondMenu"
+          [items]="secondMenuItems" />
+        <router-outlet />
+        <button nbButton
+          id="addBtn"
+          (click)="addMenuItem()">Add</button>
+        <button nbButton
+          id="homeBtn"
+          (click)="navigateHome()">Home</button>
+      </nb-card-body>
+    </nb-card>
+    <nb-card size="giant">
+      <nb-card-body>
+        <nb-menu id="menu-third"
+          tag="thirdMenu"
+          [items]="thirdMenuItems" />
+      </nb-card-body>
+    </nb-card>
+  </nb-layout-column>
+</nb-layout>

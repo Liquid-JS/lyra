@@ -1,18 +1,11 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { NbMenuItem } from '@nebular/theme';
+import { Component } from '@angular/core';
+import { NbMenuItem, NbCardComponent, NbMenuComponent } from '@liquid-js/lyr-core';
 
 @Component({
-    selector: 'nb-menu-badge',
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    templateUrl: './menu-badge.component.html',
-    styleUrls: ['./menu-badge.component.scss'],
-    standalone: false
+  selector: 'nb-menu-badge',
+  templateUrl: './menu-badge.component.html',
+  styleUrls: ['./menu-badge.component.scss'],
+  imports: [NbCardComponent, NbMenuComponent],
 })
 export class MenuBadgeComponent {
 

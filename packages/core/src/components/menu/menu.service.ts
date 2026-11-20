@@ -1,128 +1,145 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { Injectable } from '@angular/core';
+import { inject, Service } from '@angular/core';
 import { Location } from '@angular/common';
 import { Params, QueryParamsHandling } from '@angular/router';
 import { Observable, BehaviorSubject, ReplaySubject, Subject } from 'rxjs';
 import { share } from 'rxjs/operators';
-import { isFragmentContain, isFragmentEqual, isUrlPathContain, isUrlPathEqual } from './url-matching-helpers';
-import { NbIconConfig } from '../icon/icon.component';
-import { NbBadge } from '../badge/badge.component';
+import {
+  isFragmentContain,
+  isFragmentEqual,
+  isQueryParamsMatch,
+  isUrlPathContain,
+  isUrlPathEqual,
+} from './url-matching-helpers';
+import { NbIconConfig } from '@liquid-js/lyr-core/icon';
+import { NbBadge } from '@liquid-js/lyr-core/badge';
 
 export interface NbMenuBag {
-  tag: string;
+  tag?: string;
   item: NbMenuItem;
 }
 
+/**
+ * Delivers menu service commands to the menus with a matching tag (or to all menus for a command without a tag).
+ * A command sent while no such menu exists waits for the first one, and is delivered only once,
+ * so a menu created later doesn't get the commands meant for an earlier one.
+ * */
+class NbMenuCommands<T extends { tag?: string }> {
+  protected readonly listeners = new Set<{ tag?: string; next: (command: T) => void }>();
+  protected pending = new Array<T>();
+
+  send(command: T) {
+    const listeners = Array.from(this.listeners).filter((listener) => this.matches(command, listener.tag));
+    if (listeners.length) {
+      listeners.forEach((listener) => listener.next(command));
+    } else {
+      this.pending.push(command);
+    }
+  }
+
+  listen(tag?: string): Observable<T> {
+    return new Observable<T>((subscriber) => {
+      const listener = { tag, next: (command: T) => subscriber.next(command) };
+      this.listeners.add(listener);
+
+      const ready = this.pending.filter((command) => this.matches(command, tag));
+      this.pending = this.pending.filter((command) => !ready.includes(command));
+      ready.forEach(listener.next);
+
+      return () => this.listeners.delete(listener);
+    });
+  }
+
+  protected matches(command: T, tag?: string): boolean {
+    return !command.tag || command.tag === tag;
+  }
+}
+
 const itemClick$ = new Subject<NbMenuBag>();
-const addItems$ = new ReplaySubject<{ tag: string; items: NbMenuItem[] }>(1);
-const navigateHome$ = new ReplaySubject<{ tag: string }>(1);
-const getSelectedItem$ = new ReplaySubject<{ tag: string; listener: BehaviorSubject<NbMenuBag> }>(1);
+const addItems$ = new NbMenuCommands<{ tag?: string; items: NbMenuItem[] }>();
+const navigateHome$ = new NbMenuCommands<{ tag?: string }>();
+const getSelectedItem$ = new NbMenuCommands<{
+  tag?: string;
+  listener: BehaviorSubject<{ tag?: string; item?: NbMenuItem } | undefined>;
+}>();
 const itemSelect$ = new ReplaySubject<NbMenuBag>(1);
 const itemHover$ = new ReplaySubject<NbMenuBag>(1);
 const submenuToggle$ = new ReplaySubject<NbMenuBag>(1);
-const collapseAll$ = new ReplaySubject<{ tag: string }>(1);
+const collapseAll$ = new NbMenuCommands<{ tag?: string }>();
 
 export type NbMenuBadgeConfig = Omit<NbBadge, 'position'>;
 
-// TODO: check if we need both URL and LINK
 /**
+ * An item of an `nb-menu`: a router `link`, a plain `url`, an action without either, a `group` heading, or a parent
+ * of `children`. The menu sets `parent`, `selected` and `expanded` on it.
  *
- *
- * Menu Item options example
  * @stacked-example(Menu Link Parameters, menu/menu-link-params.component)
- *
- *
  */
-export class NbMenuItem {
+export class NbMenuItem<D = unknown> {
+  title = '';
   /**
-   * Item Title
-   * @type {string}
-   */
-  title: string;
-  /**
-   * Item relative link (for routerLink)
-   * @type {string}
+   * Link for the router (`routerLink`).
    */
   link?: string;
   /**
-   * Item URL (absolute)
-   * @type {string}
+   * Plain `href`, e.g. for a page outside the app.
    */
   url?: string;
   /**
-   * Icon class name or icon config object
-   * @type {string | NbIconConfig}
+   * Icon name, or an icon config.
    */
   icon?: string | NbIconConfig;
   /**
-   * Expanded by default
-   * @type {boolean}
+   * Whether the submenu is open; the menu updates it as the user opens and closes submenus.
    */
   expanded?: boolean;
   /**
-   * Badge component
-   * @type {boolean}
+   * A badge shown after the title.
    */
   badge?: NbMenuBadgeConfig;
   /**
-   * Children items
-   * @type {List<NbMenuItem>}
+   * The items of the submenu.
    */
-  children?: NbMenuItem[];
+  children?: NbMenuItem<D>[];
   /**
-   * HTML Link target
-   * @type {string}
+   * The link's `target`; a link that opens elsewhere (e.g. `_blank`) doesn't take the selection.
    */
   target?: string;
   /**
-   * Hidden Item
-   * @type {boolean}
+   * Leaves the item out of the menu; a parent whose children are all hidden shows as a plain item.
    */
   hidden?: boolean;
   /**
-   * Item is selected when partly or fully equal to the current url
-   * @type {string}
+   * How the URL must match `link` for the item to be selected: wholly (`full`, the default), or as a prefix ending
+   * at a path segment (`prefix`). `queryParams` and `fragment` are matched the same way.
    */
   pathMatch?: 'full' | 'prefix' = 'full';
   /**
-   * Where this is a home item
-   * @type {boolean}
+   * The item `NbMenuService.navigateHome()` goes to.
    */
   home?: boolean;
   /**
-   * Whether the item is just a group (non-clickable)
-   * @type {boolean}
+   * A heading rather than a link: shown as plain text.
    */
   group?: boolean;
-  /** Whether the item skipLocationChange is true or false
-   *@type {boolean}
-   */
+  /** The `routerLink`'s `skipLocationChange`. */
   skipLocationChange?: boolean;
-  /** Map of query parameters
-   *@type {Params}
-   */
+  /** Query params of the `routerLink`; they also tell items with the same `link` apart when selecting from the URL. */
   queryParams?: Params;
   queryParamsHandling?: QueryParamsHandling;
-  parent?: NbMenuItem;
+  parent?: NbMenuItem<D>;
   selected?: boolean;
-  data?: any;
+  /** The app's own data of the item. */
+  data?: D;
   fragment?: string;
   preserveFragment?: boolean;
-  /** The name of a role in the ARIA specification
-   * @type {string}
-   */
+  /** ARIA role of the link; an item with neither `link` nor `url` is a `button` by default. */
   ariaRole?: string;
 
   /**
-   * @returns item parents in top-down order
+   * The item's parents, from the top down.
    */
-  static getParents(item: NbMenuItem): NbMenuItem[] {
-    const parents = [];
+  static getParents<D>(item: NbMenuItem<D>): NbMenuItem<D>[] {
+    const parents = new Array<NbMenuItem<D>>();
 
     let parent = item.parent;
     while (parent) {
@@ -133,57 +150,50 @@ export class NbMenuItem {
     return parents;
   }
 
-  static isParent(item: NbMenuItem, possibleChild: NbMenuItem): boolean {
+  static isParent<D>(item: NbMenuItem<D>, possibleChild: NbMenuItem<D>): boolean {
     return possibleChild.parent ? possibleChild.parent === item || this.isParent(item, possibleChild.parent) : false;
   }
 }
 
-// TODO: map select events to router change events
-// TODO: review the interface
 /**
+ * Listens to menu events and sends commands to menus. A `tag` addresses the menu with that tag; without one, a command
+ * goes to every menu. Events carry the tag of the menu they come from.
  *
- *
- * Menu Service. Allows you to listen to menu events, or to interact with a menu.
  * @stacked-example(Menu Service, menu/menu-service.component)
- *
- *
  */
-@Injectable()
+@Service()
 export class NbMenuService {
   /**
-   * Add items to the end of the menu items list
-   * @param {List<NbMenuItem>} items
-   * @param {string} tag
+   * Adds items to the end of the menu. A command sent before the menu exists waits for it.
    */
   addItems(items: NbMenuItem[], tag?: string) {
-    addItems$.next({ tag, items });
+    addItems$.send({ tag, items });
   }
 
   /**
-   * Collapses all menu items
-   * @param {string} tag
+   * Closes all submenus.
    */
   collapseAll(tag?: string) {
-    collapseAll$.next({ tag });
+    collapseAll$.send({ tag });
   }
 
   /**
-   * Navigate to the home menu item
-   * @param {string} tag
+   * Goes to the item marked `home`.
    */
   navigateHome(tag?: string) {
-    navigateHome$.next({ tag });
+    navigateHome$.send({ tag });
   }
 
   /**
-   * Returns currently selected item. Won't subscribe to the future events.
-   * @param {string} tag
-   * @returns {Observable<{tag: string; item: NbMenuItem}>}
+   * The selected item as it is now, not followed afterwards: the observable emits `undefined` until the menu answers,
+   * then once with the item (or none).
    */
-  getSelectedItem(tag?: string): Observable<NbMenuBag> {
-    const listener = new BehaviorSubject<NbMenuBag>(null);
+  getSelectedItem(tag?: string): Observable<{ tag?: string; item?: NbMenuItem } | undefined> {
+    const listener = new BehaviorSubject<{ tag?: string; item?: NbMenuItem } | undefined>(
+      undefined,
+    );
 
-    getSelectedItem$.next({ tag, listener });
+    getSelectedItem$.send({ tag, listener });
 
     return listener.asObservable();
   }
@@ -205,9 +215,9 @@ export class NbMenuService {
   }
 }
 
-@Injectable()
+@Service()
 export class NbMenuInternalService {
-  constructor(private location: Location) {}
+  private readonly location = inject(Location);
 
   prepareItems(items: NbMenuItem[]) {
     const defaultItem = new NbMenuItem();
@@ -217,14 +227,20 @@ export class NbMenuInternalService {
     });
   }
 
-  selectFromUrl(items: NbMenuItem[], tag: string, collapseOther: boolean = false) {
+  /**
+   * Selects the item matching the current URL. With `resetIfNoMatch`, a URL that matches no item clears the selection,
+   * so the item of the previous page doesn't stay selected.
+   */
+  selectFromUrl(items: NbMenuItem[], tag?: string, collapseOther: boolean = false, resetIfNoMatch: boolean = false) {
     const selectedItem = this.findItemByUrl(items);
     if (selectedItem) {
       this.selectItem(selectedItem, items, collapseOther, tag);
+    } else if (resetIfNoMatch) {
+      this.resetSelection(items);
     }
   }
 
-  selectItem(item: NbMenuItem, items: NbMenuItem[], collapseOther: boolean = false, tag: string) {
+  selectItem(item: NbMenuItem, items: NbMenuItem[], collapseOther: boolean = false, tag?: string) {
     const unselectedItems = this.resetSelection(items);
     const collapsedItems = collapseOther ? this.collapseItems(items) : [];
 
@@ -261,7 +277,7 @@ export class NbMenuInternalService {
     }
   }
 
-  collapseAll(items: NbMenuItem[], tag: string, except?: NbMenuItem) {
+  collapseAll(items: NbMenuItem[], tag?: string, except?: NbMenuItem) {
     const collapsedItems = this.collapseItems(items, except);
 
     for (const item of collapsedItems) {
@@ -269,20 +285,23 @@ export class NbMenuInternalService {
     }
   }
 
-  onAddItem(): Observable<{ tag: string; items: NbMenuItem[] }> {
-    return addItems$.pipe(share());
+  onAddItem(tag?: string): Observable<{ tag?: string; items: NbMenuItem[] }> {
+    return addItems$.listen(tag);
   }
 
-  onNavigateHome(): Observable<{ tag: string }> {
-    return navigateHome$.pipe(share());
+  onNavigateHome(tag?: string): Observable<{ tag?: string }> {
+    return navigateHome$.listen(tag);
   }
 
-  onCollapseAll(): Observable<{ tag: string }> {
-    return collapseAll$.pipe(share());
+  onCollapseAll(tag?: string): Observable<{ tag?: string }> {
+    return collapseAll$.listen(tag);
   }
 
-  onGetSelectedItem(): Observable<{ tag: string; listener: BehaviorSubject<NbMenuBag> }> {
-    return getSelectedItem$.pipe(share());
+  onGetSelectedItem(tag?: string): Observable<{
+    tag?: string;
+    listener: BehaviorSubject<{ tag?: string; item?: NbMenuItem } | undefined>;
+  }> {
+    return getSelectedItem$.listen(tag);
   }
 
   itemHover(item: NbMenuItem, tag?: string) {
@@ -302,12 +321,10 @@ export class NbMenuInternalService {
   }
 
   /**
-   * Unselect all given items deeply.
-   * @param items array of items to unselect.
-   * @returns items which selected value was changed.
+   * Unselects the items and their children, and returns the ones that were selected.
    */
   private resetSelection(items: NbMenuItem[]): NbMenuItem[] {
-    const unselectedItems = [];
+    const unselectedItems = new Array<NbMenuItem>();
 
     for (const item of items) {
       if (item.selected) {
@@ -324,16 +341,19 @@ export class NbMenuInternalService {
   }
 
   /**
-   * Collapse all given items deeply.
-   * @param items array of items to collapse.
-   * @param except menu item which shouldn't be collapsed, also disables collapsing for parents of this item.
-   * @returns items which expanded value was changed.
+   * Collapses the items and their children, and returns the ones that were expanded. `except` and its parents stay
+   * as they are.
    */
   private collapseItems(items: NbMenuItem[], except?: NbMenuItem): NbMenuItem[] {
-    const collapsedItems = [];
+    const collapsedItems = new Array<NbMenuItem>();
 
     for (const item of items) {
-      if (except && (item === except || NbMenuItem.isParent(item, except))) {
+      if (item === except) {
+        continue;
+      }
+      if (except && NbMenuItem.isParent(item, except)) {
+        // Keep the path to `except` open, but collapse its siblings further down.
+        collapsedItems.push(...this.collapseItems(item.children ?? [], except));
         continue;
       }
 
@@ -350,7 +370,7 @@ export class NbMenuInternalService {
     return collapsedItems;
   }
 
-  private applyDefaults(item, defaultItem) {
+  private applyDefaults(item: NbMenuItem, defaultItem: NbMenuItem) {
     const menuItem = { ...item };
     Object.assign(item, defaultItem, menuItem);
     item.children &&
@@ -368,12 +388,10 @@ export class NbMenuInternalService {
   }
 
   /**
-   * Find deepest item which link matches current URL path.
-   * @param items array of items to search in.
-   * @returns found item of undefined.
+   * The deepest item matching the current URL, children before their parent.
    */
   private findItemByUrl(items: NbMenuItem[]): NbMenuItem | undefined {
-    let selectedItem;
+    let selectedItem: NbMenuItem | undefined;
 
     items.some((item) => {
       if (item.children) {
@@ -391,11 +409,16 @@ export class NbMenuInternalService {
 
   private isSelectedInUrl(item: NbMenuItem): boolean {
     const exact: boolean = item.pathMatch === 'full';
-    const link: string = item.link;
+    const link = item.link;
 
-    const isSelectedInPath = exact
+    let isSelectedInPath = exact
       ? isUrlPathEqual(this.location.path(), link)
       : isUrlPathContain(this.location.path(), link);
+
+    // Items for the same path tell apart by their query params.
+    if (isSelectedInPath && item.queryParams) {
+      isSelectedInPath = isQueryParamsMatch(this.location.path(true), item.queryParams, exact);
+    }
 
     if (isSelectedInPath && item.fragment != null) {
       return exact

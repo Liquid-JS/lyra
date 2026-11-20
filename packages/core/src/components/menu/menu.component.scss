@@ -1,9 +1,3 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 @use '../../styles/theming' as *;
 
 :host ::ng-deep {
@@ -13,6 +7,11 @@
   .menu-item > .menu-items {
     list-style-type: none;
     overflow: hidden;
+  }
+
+  .menu-item > .menu-items.collapsed {
+    height: 0;
+    margin: 0;
   }
 
   .menu-item a {
@@ -27,11 +26,66 @@
     }
   }
 
+  // A parent with its own page: its link and the toggle of its submenu side by side.
+  .menu-item-row {
+    display: flex;
+    align-items: stretch;
+
+    > a {
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+  }
+
+  .menu-toggle {
+    display: flex;
+    align-items: center;
+    flex: none;
+    padding: 0 0.75rem;
+    border: none;
+    background: none;
+    font: inherit;
+    cursor: pointer;
+  }
+
   .menu-item nb-badge {
     position: static;
   }
 
+  // The chevron turns as the submenu opens and closes: down while it's open, else towards the item's end (up in a
+  // dropdown, which opens downwards). The theme gives it the transition.
+  .expand-state {
+    &:not(.expanded, .dropdown) {
+      transform: rotate(90deg);
+      @include nb-rtl(transform, rotate(-90deg));
+    }
+
+    &.dropdown.expanded {
+      transform: rotate(180deg);
+    }
+  }
+
   .menu-group span {
     display: flex;
+  }
+}
+
+// A horizontal menu has its top-level items in a row, with their children in a dropdown below them.
+:host(.horizontal) ::ng-deep > .menu-items {
+  display: flex;
+  flex-wrap: wrap;
+  overflow: visible;
+
+  > .menu-item {
+    position: relative;
+
+    > .menu-items {
+      position: absolute;
+      top: 100%;
+      inset-inline-start: 0;
+      z-index: 1;
+      width: max-content;
+      max-width: 100vw;
+    }
   }
 }

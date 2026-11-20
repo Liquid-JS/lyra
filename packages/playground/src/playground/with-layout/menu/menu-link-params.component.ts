@@ -1,17 +1,10 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { NbMenuItem } from '@nebular/theme';
+import { Component } from '@angular/core';
+import { NbMenuItem, NbCardComponent, NbMenuComponent } from '@liquid-js/lyr-core';
 
 @Component({
-    selector: 'nb-menu-link-params',
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    templateUrl: './menu-link-params.component.html',
-    standalone: false
+  selector: 'nb-menu-link-params',
+  templateUrl: './menu-link-params.component.html',
+  imports: [NbCardComponent, NbMenuComponent],
 })
 export class MenuLinkParamsComponent {
 
@@ -31,12 +24,12 @@ export class MenuLinkParamsComponent {
         {
           title: 'Menu item path match `prefix`',
           link: '/example/menu/menu-link-params.component',
-          queryParams: {someUrlParam: 'true'},
+          queryParams: { someUrlParam: 'true' },
           pathMatch: 'prefix',
         },
         {
           title: 'Will be opened in new window (target=`_blank`)',
-          url: 'https://github.com/akveo/nebular',
+          url: 'https://github.com/Liquid-JS/lyra',
           target: '_blank',
         },
         {

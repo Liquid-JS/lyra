@@ -1,0 +1,16 @@
+<ul class="menu-items">
+  @for (item of items(); track item) {
+  @if (!item.hidden) {
+  <li nbMenuItem
+    [menuItem]="item"
+    [badge]="item.badge"
+    [dropdown]="horizontal()"
+    [class.menu-group]="item.group"
+    (hoverItem)="onHoverItem($event)"
+    (toggleSubMenu)="onToggleSubMenu($event)"
+    (selectItem)="onSelectItem($event)"
+    (itemClick)="onItemClick($event)"
+    class="menu-item"></li>
+  }
+  }
+</ul>

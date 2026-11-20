@@ -1,49 +1,36 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { Component, OnInit, OnDestroy } from '@angular/core';
-import { takeUntil } from 'rxjs/operators';
-import { Subject } from 'rxjs';
-import { NbMenuService, NbMenuItem } from '@nebular/theme';
+import { Component, DestroyRef, OnInit, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import {
+  NbMenuService,
+  NbMenuItem,
+  NbLayoutComponent,
+  NbLayoutColumnComponent,
+  NbSidebarComponent,
+  NbMenuComponent,
+  NbCardComponent,
+  NbCardBodyComponent,
+  NbButtonComponent,
+} from '@liquid-js/lyr-core';
+import { RouterOutlet } from '@angular/router';
 
 @Component({
-    selector: 'nb-menu-test',
-    template: `
-    <nb-layout>
-      <nb-sidebar state="compacted">
-        <nb-menu id="menu-sidebar" tag="sidebarMenu" [items]="sidebarMenuItems"></nb-menu>
-      </nb-sidebar>
-      <nb-layout-column>
-        <nb-card size="giant">
-          <nb-card-body>
-            <nb-menu id="menu-first" tag="firstMenu" [items]="firstMenuItems" [autoCollapse]="true"></nb-menu>
-            <router-outlet></router-outlet>
-            <button nbButton id="addBtn" (click)="addMenuItem()">Add</button>
-            <button nbButton id="homeBtn" (click)="navigateHome()">Home</button>
-          </nb-card-body>
-        </nb-card>
-        <nb-card size="giant">
-          <nb-card-body>
-            <nb-menu id="menu-second" tag="SecondMenu" [items]="secondMenuItems"></nb-menu>
-            <router-outlet></router-outlet>
-            <button nbButton id="addBtn" (click)="addMenuItem()">Add</button>
-            <button nbButton id="homeBtn" (click)="navigateHome()">Home</button>
-          </nb-card-body>
-        </nb-card>
-        <nb-card size="giant">
-          <nb-card-body>
-            <nb-menu id="menu-third" tag="thirdMenu" [items]="thirdMenuItems"></nb-menu>
-          </nb-card-body>
-        </nb-card>
-      </nb-layout-column>
-    </nb-layout>
-  `,
-    standalone: false
+  selector: 'nb-menu-test',
+  templateUrl: './menu-test.component.html',
+  imports: [
+    NbButtonComponent,
+    NbLayoutComponent,
+    NbSidebarComponent,
+    NbMenuComponent,
+    NbLayoutColumnComponent,
+    NbCardComponent,
+    NbCardBodyComponent,
+    RouterOutlet,
+  ],
 })
-export class MenuTestComponent implements OnInit, OnDestroy {
+export class MenuTestComponent implements OnInit {
+  private readonly menuService = inject(NbMenuService);
+  private readonly destroyRef = inject(DestroyRef);
+
   sidebarMenuItems: NbMenuItem[] = [
     {
       title: 'Menu Items',
@@ -89,9 +76,9 @@ export class MenuTestComponent implements OnInit, OnDestroy {
               home: true,
             },
             {
-              title: '@nebular/theme',
+              title: '@liquid-js/lyr-core',
               target: '_blank',
-              url: 'https://github.com/akveo/ng2-admin',
+              url: 'https://github.com/Liquid-JS/lyra',
             },
           ],
         },
@@ -162,28 +149,24 @@ export class MenuTestComponent implements OnInit, OnDestroy {
     },
   ];
 
-  private destroy$ = new Subject<void>();
-
-  constructor(private menuService: NbMenuService) { }
-
   ngOnInit() {
     this.menuService
       .onItemClick()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((data: { tag: string; item: NbMenuItem }) => console.info(data));
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((data) => console.info(data));
 
     this.menuService
       .onItemSelect()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((data: { tag: string; item: NbMenuItem }) => console.info(data));
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((data) => console.info(data));
 
     // this.itemHoverSubscription = this.menuService.onItemHover()
     //   .subscribe((data: { tag: string, item: NbMenuItem }) => console.info(data));
 
     this.menuService
       .onSubmenuToggle()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((data: { tag: string; item: NbMenuItem }) => console.info(data));
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((data) => console.info(data));
 
     this.menuService.addItems(
       [
@@ -214,9 +197,9 @@ export class MenuTestComponent implements OnInit, OnDestroy {
                   home: true,
                 },
                 {
-                  title: '@nebular/theme',
+                  title: '@liquid-js/lyr-core',
                   target: '_blank',
-                  url: 'https://github.com/akveo/ng2-admin',
+                  url: 'https://github.com/Liquid-JS/lyra',
                 },
               ],
             },
@@ -225,11 +208,6 @@ export class MenuTestComponent implements OnInit, OnDestroy {
       ],
       'firstMenu',
     );
-  }
-
-  ngOnDestroy() {
-    this.destroy$.next();
-    this.destroy$.complete();
   }
 
   addMenuItem() {

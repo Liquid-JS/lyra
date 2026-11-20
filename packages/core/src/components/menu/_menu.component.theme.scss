@@ -1,9 +1,3 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 @use '../../styles/theming' as *;
 
 @mixin nb-menu-theme() {
@@ -33,10 +27,23 @@
       a {
         color: nb-theme(menu-text-color);
         border-radius: nb-theme(menu-item-border-radius);
+        @include nb-component-animation(background-color, color);
+      }
+
+      .menu-icon {
+        @include nb-component-animation(color);
+      }
+
+      // The chevron turns as the submenu opens and closes (see the component's styles).
+      .expand-state {
+        @include nb-component-animation(color, transform);
+
+        @media (prefers-reduced-motion: reduce) {
+          transition-duration: 0s;
+        }
       }
 
       a.active {
-        background-color: nb-theme(menu-item-active-background-color);
         color: nb-theme(menu-item-active-text-color);
 
         .menu-icon {
@@ -45,7 +52,6 @@
       }
 
       a:hover {
-        background-color: nb-theme(menu-item-hover-background-color);
         color: nb-theme(menu-item-hover-text-color);
         cursor: nb-theme(menu-item-hover-cursor);
 
@@ -54,16 +60,51 @@
         }
       }
 
+      // The backgrounds mark the items that lead somewhere; a parent, which opens its submenu, keeps the menu's.
+      a:where(:not(.menu-item-row > a, :has(> .expand-state))) {
+        &.active {
+          background-color: nb-theme(menu-item-active-background-color);
+        }
+
+        &:hover {
+          background-color: nb-theme(menu-item-hover-background-color);
+        }
+
+        &:focus-visible {
+          background-color: nb-theme(menu-item-focus-background-color);
+        }
+      }
+
       .menu-icon {
         color: nb-theme(menu-item-icon-color);
         font-size: nb-theme(menu-item-icon-width);
-        margin: nb-theme(menu-item-icon-margin);
+        margin-inline-end: nb-theme(menu-item-icon-end-margin);
         width: 1em;
         text-align: center;
       }
 
       .expand-state {
         color: nb-theme(menu-item-icon-color);
+      }
+
+      // The chevron of the selected item's parent takes the selected colour, as the design kit draws it.
+      a.active > .expand-state,
+      .menu-item-row:has(> a.active) > .menu-toggle > .expand-state {
+        color: nb-theme(menu-item-icon-active-color);
+      }
+
+      .menu-toggle {
+        border-radius: nb-theme(menu-item-border-radius);
+
+        &:hover .expand-state {
+          color: nb-theme(menu-item-icon-hover-color);
+        }
+
+        // Inside the button, as the menu clips what's outside its items.
+        &:focus-visible {
+          outline: none;
+          box-shadow: inset 0 0 0 nb-theme(outline-width) nb-theme(outline-color);
+        }
       }
     }
 
@@ -86,7 +127,8 @@
     .menu-item > .menu-items {
       background-color: nb-theme(menu-submenu-background-color);
       margin: nb-theme(menu-submenu-margin);
-      padding: nb-theme(menu-submenu-padding);
+      // Nested items are inset at the start only, so their backgrounds reach the menu's end edge.
+      padding-inline-start: nb-theme(menu-submenu-start-padding);
     }
 
     .menu-item > .menu-items > .menu-item {
@@ -94,14 +136,16 @@
       color: nb-theme(menu-submenu-text-color);
 
       a {
+        // The link rule above sets menu-text-color, so the submenu color has to be set on the link too.
+        color: nb-theme(menu-submenu-text-color);
         border-color: nb-theme(menu-submenu-item-border-color);
         border-style: nb-theme(menu-submenu-item-border-style);
         border-width: nb-theme(menu-submenu-item-border-width);
+        border-radius: nb-theme(menu-submenu-item-border-radius);
         padding: nb-theme(menu-submenu-item-padding);
       }
 
       a.active {
-        background-color: nb-theme(menu-submenu-item-active-background-color);
         border-color: nb-theme(menu-submenu-item-active-border-color);
         color: nb-theme(menu-submenu-item-active-text-color);
 
@@ -111,7 +155,6 @@
       }
 
       a:hover {
-        background-color: nb-theme(menu-submenu-item-hover-background-color);
         border-color: nb-theme(menu-submenu-item-hover-border-color);
         color: nb-theme(menu-submenu-item-hover-text-color);
 
@@ -120,8 +163,25 @@
         }
       }
 
+      a:where(:not(.menu-item-row > a, :has(> .expand-state))) {
+        &.active {
+          background-color: nb-theme(menu-submenu-item-active-background-color);
+        }
+
+        &:hover {
+          background-color: nb-theme(menu-submenu-item-hover-background-color);
+        }
+
+        &:focus-visible {
+          background-color: nb-theme(menu-submenu-item-focus-background-color);
+        }
+
+        &.active:hover {
+          background-color: nb-theme(menu-submenu-item-active-hover-background-color);
+        }
+      }
+
       a.active:hover {
-        background-color: nb-theme(menu-submenu-item-active-hover-background-color);
         border-color: nb-theme(menu-submenu-item-active-hover-border-color);
         color: nb-theme(menu-submenu-item-active-hover-text-color);
 
@@ -135,6 +195,57 @@
       &,
       & nb-icon.menu-icon {
         color: nb-theme(menu-group-text-color);
+      }
+    }
+  }
+
+  // A bar beside the selected item, or beside its parent while a collapsed submenu hides it. A horizontal menu marks
+  // its selected items by colour alone, in the row and in its dropdowns.
+  nb-menu:not(.horizontal) .menu-item:where(:not(:has(> .menu-items.expanded .active))) {
+    > a.active,
+    > .menu-item-row:has(> a.active) {
+      position: relative;
+
+      &::before {
+        content: '';
+        position: absolute;
+        inset-block: 0;
+        inset-inline-start: 0;
+        width: nb-theme(menu-item-active-indicator-width);
+        background-color: nb-theme(menu-item-active-indicator-color);
+        pointer-events: none;
+      }
+    }
+  }
+
+  nb-menu.horizontal > .menu-items {
+    > .menu-item {
+      border: none;
+
+      > .menu-items {
+        background-color: nb-theme(menu-dropdown-background-color);
+        border: nb-theme(menu-dropdown-border-width) nb-theme(menu-dropdown-border-style)
+          nb-theme(menu-dropdown-border-color);
+        border-radius: nb-theme(menu-dropdown-border-radius);
+        box-shadow: nb-theme(menu-dropdown-shadow);
+        min-width: max(100%, #{nb-theme(menu-dropdown-min-width)});
+        margin: 0;
+        padding: 0;
+
+        // On the items, as a collapsed dropdown has no height but keeps its own padding.
+        > .menu-item:first-child {
+          padding-top: nb-theme(menu-dropdown-padding);
+        }
+
+        > .menu-item:last-child {
+          padding-bottom: nb-theme(menu-dropdown-padding);
+        }
+
+        // Without height, a border and shadow would still show as a line.
+        &.collapsed {
+          border-width: 0;
+          box-shadow: none;
+        }
       }
     }
   }
