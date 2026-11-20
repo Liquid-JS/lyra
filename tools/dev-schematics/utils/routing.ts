@@ -1,105 +1,74 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 import * as ts from 'typescript';
 import { basename, dirname, join, normalize, NormalizedSep, Path } from '@angular-devkit/core';
 import { SchematicsException, Tree } from '@angular-devkit/schematics';
-import { parseSourceFile, getDecoratorMetadata, insertImport } from '@angular/cdk/schematics';
+import { parseSourceFile } from '@angular/cdk/schematics';
 import {
   addArrayElement,
   addObjectProperty,
-  applyInsertChange,
-  findDeclarationByIdentifier,
   importPath,
-  isBasePlaygroundModule,
+  isBasePlaygroundDir,
   isLayoutPath,
-  isRootPlaygroundModule,
+  isNodeExported,
+  isRootPlaygroundDir,
   LAYOUT_COMPONENT_CLASS,
-  LAYOUT_MODULE_CLASS,
-  LAYOUT_MODULE_PATH,
-  LAYOUT_ROUTING_MODULE_PATH,
+  LAYOUT_COMPONENT_IMPORT,
+  LAYOUT_ROUTES_PATH,
   NO_LAYOUT_COMPONENT_CLASS,
-  NO_LAYOUT_MODULE_CLASS,
-  NO_LAYOUT_MODULE_PATH,
-  NO_LAYOUT_ROUTING_MODULE_PATH,
-  PLAYGROUND_ROUTING_MODULE_PATH,
-} from '../utils';
+  NO_LAYOUT_COMPONENT_IMPORT,
+  NO_LAYOUT_ROUTES_PATH,
+  PLAYGROUND_ROUTES_PATH,
+} from '../utils/index.js';
 
-export function findRoutesArray(tree: Tree, modulePath: Path): ts.ArrayLiteralExpression {
-  const source = parseSourceFile(tree, modulePath);
+/**
+ * Returns the exported `Routes` constant of a routes file.
+ */
+export function findRoutesDeclaration(tree: Tree, routesPath: Path): ts.VariableDeclaration {
+  const source = parseSourceFile(tree, routesPath);
+  const declaration = source.statements
+    .filter((statement): statement is ts.VariableStatement => ts.isVariableStatement(statement))
+    .flatMap((statement) => statement.declarationList.declarations)
+    .find((node) => isNodeExported(node) && node.type?.getText() === 'Routes');
 
-  const decoratorNode = getDecoratorMetadata(source, 'NgModule', '@angular/core')[0] as ts.ObjectLiteralExpression;
-  if (decoratorNode == null) {
-    throw new SchematicsException(`Error in ${modulePath}. Can't find NgModule decorator.`);
-  }
-
-  try {
-    const imports = getImports(decoratorNode);
-    const routerModuleCall = getRouterModuleCall(imports);
-    const routesArgument = routerModuleCall.arguments[0];
-    if (routesArgument.kind === ts.SyntaxKind.ArrayLiteralExpression) {
-      return routesArgument as ts.ArrayLiteralExpression;
-    }
-    if (routesArgument.kind === ts.SyntaxKind.Identifier) {
-      const declaration = getRoutesVariableDeclaration(source, routesArgument as ts.Identifier);
-      return declaration.initializer as ts.ArrayLiteralExpression;
-    }
-
-    throw new SchematicsException(`Expecting RouterModule.forChild parameter to be an array or variable identifier.`);
-  } catch (e) {
-    throw new SchematicsException(`Error in ${modulePath}. ${e.message}`);
-  }
-}
-
-function getImports(moduleDecorator: ts.ObjectLiteralExpression): ts.PropertyAssignment {
-  const imports = moduleDecorator.properties
-    .filter((p) => p.kind === ts.SyntaxKind.PropertyAssignment)
-    .find((p: ts.PropertyAssignment) => p.name.getText() === 'imports') as ts.PropertyAssignment;
-
-  if (imports == null) {
-    throw new SchematicsException(`Can't find imports in module.`);
-  }
-  if (imports.initializer.kind !== ts.SyntaxKind.ArrayLiteralExpression) {
-    throw new SchematicsException(`'imports' property should be initialized with array.`);
-  }
-
-  return imports;
-}
-
-function getRouterModuleCall(importsNode: ts.PropertyAssignment): ts.CallExpression {
-  const routerModuleCall = (importsNode.initializer as ts.ArrayLiteralExpression).elements
-    .filter((el) => el.kind === ts.SyntaxKind.CallExpression)
-    .find((el: ts.CallExpression) => el.expression.getText() === 'RouterModule.forChild') as ts.CallExpression;
-  if (routerModuleCall == null) {
-    throw new SchematicsException(`Can't find RouterModule.forChild call in module imports.`);
-  }
-  if (routerModuleCall.arguments.length === 0) {
-    throw new SchematicsException(`RouterModule.forChild should be called with arguments.`);
-  }
-
-  return routerModuleCall;
-}
-
-function getRoutesVariableDeclaration(source: ts.SourceFile, identifier: ts.Identifier): ts.VariableDeclaration {
-  const declaration = findDeclarationByIdentifier(source, (identifier as ts.Identifier).getText());
   if (declaration == null) {
-    throw new SchematicsException(`Can't find declaration of '${identifier.getText()}'.`);
+    throw new SchematicsException(`Error in ${routesPath}. Can't find exported Routes constant.`);
   }
-  if (declaration.initializer == null) {
-    throw new SchematicsException(`Routes variable should be initialized during declaration.`);
-  }
-  if (declaration.initializer.kind !== ts.SyntaxKind.ArrayLiteralExpression) {
-    throw new SchematicsException(`Routes variable should be initialized with array.`);
+  if (declaration.initializer == null || !ts.isArrayLiteralExpression(declaration.initializer)) {
+    throw new SchematicsException(`Error in ${routesPath}. Routes should be initialized with array.`);
   }
 
   return declaration;
 }
 
-export function generateComponentRoute(path: string, component: string, ...routeFields: string[]): string {
-  return generatePathRoute(path, `component: ${component}`, ...routeFields);
+/**
+ * Returns the routes of a routes file. When the file wraps its routes in a single pathless route
+ * that only adds providers, returns that route's children, which is where routes get added.
+ */
+export function findRoutesArray(tree: Tree, routesPath: Path): ts.ArrayLiteralExpression {
+  const routes = findRoutesDeclaration(tree, routesPath).initializer as ts.ArrayLiteralExpression;
+  const [route, ...rest] = getRoutesFromArray(routes);
+  if (route && !rest.length && isProvidersRoute(route)) {
+    return getRouteChildren(route) as ts.ArrayLiteralExpression;
+  }
+  return routes;
+}
+
+function isProvidersRoute(route: ts.ObjectLiteralExpression): boolean {
+  const props = getRouteProps(route).map((prop) => prop.name.getText());
+  const isPathless = getRoutePath(route)?.initializer.getText() === `''`;
+  return isPathless && props.length === 3 && props.includes('providers') && props.includes('children');
+}
+
+/**
+ * A route that lazy loads the component from the file it's imported from.
+ */
+export function generateComponentRoute(
+  path: string,
+  component: string,
+  componentImport: string,
+  ...routeFields: string[]
+): string {
+  const loadComponent = `loadComponent: () => import('${componentImport}').then((m) => m.${component})`;
+  return generatePathRoute(path, loadComponent, ...routeFields);
 }
 
 export function generatePathRoute(path: string, ...routeFields: string[]): string {
@@ -114,32 +83,36 @@ export function generateRoute(...routeFields: string[]) {
 
 export type RoutePredicate = (route: ts.ObjectLiteralExpression) => boolean;
 
-export function generateLazyModuleImport(from: Path, to: Path, moduleClassName: string): string {
+/**
+ * Lazy loads the routes constant of the `to` routes file.
+ */
+export function generateLazyRoutesImport(tree: Tree, from: Path, to: Path): string {
   const path = normalize(importPath(from, to));
-  return `() => import('./${dirname(path)}/${basename(path)}').then(m => m.${moduleClassName})`;
+  const routesConst = findRoutesDeclaration(tree, to).name.getText();
+  return `() => import('./${dirname(path)}/${basename(path)}').then((m) => m.${routesConst})`;
 }
 
 /**
- * @param routingModulePath full path to routing module
- * @param targetFile full path to file containing component or module for the route
+ * @param routesPath full path to routes file
+ * @param targetFile full path to file containing component or routes for the route
  */
-export function addMissingChildRoutes(tree: Tree, routingModulePath: Path, targetFile: Path): void {
-  const routingModuleDir = dirname(routingModulePath);
-  if (isRootPlaygroundModule(routingModuleDir)) {
+export function addMissingChildRoutes(tree: Tree, routesPath: Path, targetFile: Path) {
+  const routesDir = dirname(routesPath);
+  if (isRootPlaygroundDir(routesDir)) {
     addRootRoute(tree, targetFile);
     return;
   }
 
-  if (isBasePlaygroundModule(routingModuleDir)) {
+  if (isBasePlaygroundDir(routesDir)) {
     addBaseRoute(tree, targetFile);
   }
 
-  addMissingPaths(tree, routingModulePath, targetFile);
+  addMissingPaths(tree, routesPath, targetFile);
 }
 
-function addMissingPaths(tree: Tree, routingModulePath: Path, targetFile: Path): void {
+function addMissingPaths(tree: Tree, routesPath: Path, targetFile: Path) {
   const targetDir = dirname(targetFile);
-  const relativePath = targetDir.replace(dirname(routingModulePath), '');
+  const relativePath = targetDir.replace(dirname(routesPath), '');
   const existingPathEnd = targetDir.indexOf(relativePath);
   let existingPath = normalize(targetDir.slice(0, existingPathEnd));
   const pathsToCheck = dirsToRoutePaths(relativePath);
@@ -147,14 +120,14 @@ function addMissingPaths(tree: Tree, routingModulePath: Path, targetFile: Path):
   for (let i = 0; i < pathsToCheck.length; i++) {
     const routePathToCheck = pathsToCheck[i];
     const fullPathToCheck = join(existingPath, routePathToCheck);
-    const pathPredicates = routePredicatesFromPath(routingModulePath, fullPathToCheck);
-    let routesArray = findRoutesArray(tree, routingModulePath);
+    const pathPredicates = routePredicatesFromPath(tree, routesPath, fullPathToCheck);
+    let routesArray = findRoutesArray(tree, routesPath);
 
     let route = findRouteWithPath(routesArray, pathPredicates);
     if (!route) {
-      const routesArrayToAddTo = getParentRouteChildren(routesArray, routingModulePath, fullPathToCheck);
-      addRoute(tree, routingModulePath, routesArrayToAddTo, generatePathRoute(routePathToCheck));
-      routesArray = findRoutesArray(tree, routingModulePath);
+      const routesArrayToAddTo = getParentRouteChildren(tree, routesArray, routesPath, fullPathToCheck);
+      addRoute(tree, routesPath, routesArrayToAddTo, generatePathRoute(routePathToCheck));
+      routesArray = findRoutesArray(tree, routesPath);
       route = findRouteWithPath(routesArray, pathPredicates) as ts.ObjectLiteralExpression;
     }
 
@@ -165,72 +138,63 @@ function addMissingPaths(tree: Tree, routingModulePath: Path, targetFile: Path):
 
     existingPath = fullPathToCheck;
     if (!getRouteChildren(route)) {
-      addObjectProperty(tree, parseSourceFile(tree, routingModulePath), route, 'children: []');
+      addObjectProperty(tree, parseSourceFile(tree, routesPath), route, 'children: []');
     }
   }
 }
 
 function getParentRouteChildren(
+  tree: Tree,
   routesArray: ts.ArrayLiteralExpression,
-  routingModulePath: Path,
+  routesPath: Path,
   targetDir: Path,
 ): ts.ArrayLiteralExpression {
-  const predicates = routePredicatesFromPath(routingModulePath, dirname(targetDir));
+  const predicates = routePredicatesFromPath(tree, routesPath, dirname(targetDir));
   const route = findRouteWithPath(routesArray, predicates) as ts.ObjectLiteralExpression;
   return getRouteChildren(route) as ts.ArrayLiteralExpression;
 }
 
-export function addRootRoute(tree: Tree, targetFile: Path): void {
-  const routesArray = findRoutesArray(tree, PLAYGROUND_ROUTING_MODULE_PATH);
-  if (findRouteWithPath(routesArray, [rootRoutePredicate(targetFile)])) {
+export function addRootRoute(tree: Tree, targetFile: Path) {
+  const routesArray = findRoutesArray(tree, PLAYGROUND_ROUTES_PATH);
+  if (findRouteWithPath(routesArray, [rootRoutePredicate(tree, targetFile)])) {
     return;
   }
 
-  const isLayout = isLayoutPath(targetFile);
-  const baseModulePath = isLayout ? LAYOUT_MODULE_PATH : NO_LAYOUT_MODULE_PATH;
-  const baseModuleClass = isLayout ? LAYOUT_MODULE_CLASS : NO_LAYOUT_MODULE_CLASS;
-  const lazyModuleImport = generateLazyModuleImport(PLAYGROUND_ROUTING_MODULE_PATH, baseModulePath, baseModuleClass);
-  const routeString = generatePathRoute('', `loadChildren: ${lazyModuleImport}`);
-  addRoute(tree, PLAYGROUND_ROUTING_MODULE_PATH, routesArray, routeString);
+  const lazyRoutesImport = generateLazyRoutesImport(tree, PLAYGROUND_ROUTES_PATH, getBaseRoutesPath(targetFile));
+  const routeString = generatePathRoute('', `loadChildren: ${lazyRoutesImport}`);
+  addRoute(tree, PLAYGROUND_ROUTES_PATH, routesArray, routeString);
 }
 
-export function addBaseRoute(tree: Tree, targetFile: Path): void {
+export function addBaseRoute(tree: Tree, targetFile: Path) {
   const isLayout = isLayoutPath(targetFile);
-  const baseModulePath = isLayout ? LAYOUT_ROUTING_MODULE_PATH : NO_LAYOUT_ROUTING_MODULE_PATH;
-  const routesArray = findRoutesArray(tree, baseModulePath);
+  const baseRoutesPath = getBaseRoutesPath(targetFile);
+  const routesArray = findRoutesArray(tree, baseRoutesPath);
   const baseRoute = findRouteWithPath(routesArray, [baseComponentPredicate(targetFile)]);
   if (baseRoute) {
     if (!getRouteChildren(baseRoute)) {
-      addObjectProperty(tree, parseSourceFile(tree, baseModulePath), baseRoute, 'children: []');
+      addObjectProperty(tree, parseSourceFile(tree, baseRoutesPath), baseRoute, 'children: []');
     }
     return;
   }
 
-  const baseModuleComponent = isLayout ? LAYOUT_COMPONENT_CLASS : NO_LAYOUT_COMPONENT_CLASS;
-  const routeString = generateComponentRoute('', baseModuleComponent, `children: []`);
-  addRoute(tree, baseModulePath, routesArray, routeString);
+  const baseComponent = isLayout ? LAYOUT_COMPONENT_CLASS : NO_LAYOUT_COMPONENT_CLASS;
+  const baseComponentImport = isLayout ? LAYOUT_COMPONENT_IMPORT : NO_LAYOUT_COMPONENT_IMPORT;
+  const routeString = generateComponentRoute('', baseComponent, baseComponentImport, `children: []`);
+  addRoute(tree, baseRoutesPath, routesArray, routeString);
 }
 
-export function addRoute(
-  tree: Tree,
-  routingModulePath: Path,
-  routes: ts.ArrayLiteralExpression,
-  route: string,
-  componentClass?: string,
-  fileImportPath?: string,
-): void {
-  const source = parseSourceFile(tree, routingModulePath);
+function getBaseRoutesPath(targetFile: Path): Path {
+  return isLayoutPath(targetFile) ? LAYOUT_ROUTES_PATH : NO_LAYOUT_ROUTES_PATH;
+}
+
+export function addRoute(tree: Tree, routesPath: Path, routes: ts.ArrayLiteralExpression, route: string) {
+  const source = parseSourceFile(tree, routesPath);
   const alreadyInRoutes = routes.getFullText().includes(route);
   if (alreadyInRoutes) {
     return;
   }
 
   addArrayElement(tree, source, routes, route);
-
-  if (componentClass && fileImportPath) {
-    const importChange = insertImport(source, source.fileName, componentClass, fileImportPath);
-    applyInsertChange(tree, normalize(source.fileName), importChange);
-  }
 }
 
 export function findRoute(
@@ -310,12 +274,27 @@ export function findRouteProp(route: ts.ObjectLiteralExpression, propName: strin
   return getRouteProps(route).find((prop) => prop.name.getText() === propName);
 }
 
-export function getRouteLazyModule(route: ts.ObjectLiteralExpression): ts.PropertyAssignment | undefined {
+export function getRouteLoadChildren(route: ts.ObjectLiteralExpression): ts.PropertyAssignment | undefined {
   return findRouteProp(route, 'loadChildren');
 }
 
 export function getRouteComponent(route: ts.ObjectLiteralExpression): ts.PropertyAssignment | undefined {
-  return findRouteProp(route, 'component');
+  return findRouteProp(route, 'component') ?? findRouteProp(route, 'loadComponent');
+}
+
+/**
+ * The class a route renders, from `component: X` or `loadComponent: () => import(...).then((m) => m.X)`.
+ */
+export function getRouteComponentClass(route: ts.ObjectLiteralExpression): string | undefined {
+  const component = getRouteComponent(route);
+  if (!component) {
+    return undefined;
+  }
+  const text = component.initializer.getText();
+  if (component.name.getText() === 'component') {
+    return text;
+  }
+  return /\.then\(\(?\w+\)?\s*=>\s*\w+\.(\w+)\)\s*$/.exec(text)?.[1];
 }
 
 export function getRoutePath(route: ts.ObjectLiteralExpression): ts.PropertyAssignment | undefined {
@@ -332,21 +311,22 @@ export function dirsToRoutePaths(dirPath: string): string[] {
 /**
  * Returns predicate bound to array of predicates which will check route and it's children to conform routing path
  * for a given file path.
- * @param routingModulePath full path to routing module
- * @param targetDirPath full path to directory containing component or module file for the route
+ * @param tree
+ * @param routesPath full path to routes file
+ * @param targetDirPath full path to directory containing component or routes file for the route
  */
-export function routePredicatesFromPath(routingModulePath: Path, targetDirPath: Path): RoutePredicate[] {
-  const routingModuleDir = dirname(routingModulePath);
-  if (isRootPlaygroundModule(routingModuleDir)) {
-    return [rootRoutePredicate(targetDirPath)];
+export function routePredicatesFromPath(tree: Tree, routesPath: Path, targetDirPath: Path): RoutePredicate[] {
+  const routesDir = dirname(routesPath);
+  if (isRootPlaygroundDir(routesDir)) {
+    return [rootRoutePredicate(tree, targetDirPath)];
   }
 
-  const predicates: RoutePredicate[] = [];
-  if (isBasePlaygroundModule(routingModuleDir)) {
+  const predicates = new Array<RoutePredicate>();
+  if (isBasePlaygroundDir(routesDir)) {
     predicates.push(baseComponentPredicate(targetDirPath));
   }
-  const relativeToRoutingModule = targetDirPath.replace(dirname(routingModulePath), '');
-  const routePaths = dirsToRoutePaths(relativeToRoutingModule);
+  const relativeToRoutesFile = targetDirPath.replace(routesDir, '');
+  const routePaths = dirsToRoutePaths(relativeToRoutesFile);
   for (const path of routePaths) {
     predicates.push((route: ts.ObjectLiteralExpression) => pathRoutePredicate(path, route));
   }
@@ -360,31 +340,35 @@ export function pathRoutePredicate(routePath: string, route: ts.ObjectLiteralExp
 }
 
 export function componentRoutePredicate(componentClass: string, route: ts.ObjectLiteralExpression): boolean {
-  const component = getRouteComponent(route);
-  return !!component && component.initializer.getText() === componentClass;
+  return getRouteComponentClass(route) === componentClass;
 }
 
-export function lazyModulePredicate(lazyModuleImport: string, route: ts.ObjectLiteralExpression): boolean {
-  const loadChildren = getRouteLazyModule(route);
-  return !!loadChildren && loadChildren.initializer.getText() === lazyModuleImport;
+export function lazyRoutesPredicate(lazyRoutesImport: string, route: ts.ObjectLiteralExpression): boolean {
+  const loadChildren = getRouteLoadChildren(route);
+  return !!loadChildren && normalizeCode(loadChildren.initializer.getText()) === normalizeCode(lazyRoutesImport);
 }
 
-export function baseComponentPredicate(modulePath: Path): RoutePredicate {
-  const rootComponentClass = isLayoutPath(modulePath) ? LAYOUT_COMPONENT_CLASS : NO_LAYOUT_COMPONENT_CLASS;
+/**
+ * Formatting-insensitive comparison of generated code: ignores whitespace and
+ * the optional parentheses around a single arrow function parameter.
+ */
+function normalizeCode(code: string): string {
+  return code.replace(/\s+/g, '').replace(/\((\w+)\)=>/g, '$1=>');
+}
+
+export function baseComponentPredicate(path: Path): RoutePredicate {
+  const rootComponentClass = isLayoutPath(path) ? LAYOUT_COMPONENT_CLASS : NO_LAYOUT_COMPONENT_CLASS;
   return (route: ts.ObjectLiteralExpression) => componentRoutePredicate(rootComponentClass, route);
 }
 
-export function rootRoutePredicate(modulePath: Path): RoutePredicate {
-  const isLayout = isLayoutPath(modulePath);
-  const baseModulePath = isLayout ? LAYOUT_MODULE_PATH : NO_LAYOUT_MODULE_PATH;
-  const baseModuleClass = isLayout ? LAYOUT_MODULE_CLASS : NO_LAYOUT_MODULE_CLASS;
-  const lazyModuleImport = generateLazyModuleImport(PLAYGROUND_ROUTING_MODULE_PATH, baseModulePath, baseModuleClass);
+export function rootRoutePredicate(tree: Tree, path: Path): RoutePredicate {
+  const lazyRoutesImport = generateLazyRoutesImport(tree, PLAYGROUND_ROUTES_PATH, getBaseRoutesPath(path));
 
-  return (route: ts.ObjectLiteralExpression) => lazyModulePredicate(lazyModuleImport, route);
+  return (route: ts.ObjectLiteralExpression) => lazyRoutesPredicate(lazyRoutesImport, route);
 }
 
 export function isLazyRoute(route: ts.ObjectLiteralExpression): boolean {
-  return !!getRouteLazyModule(route);
+  return !!getRouteLoadChildren(route);
 }
 
 export function isComponentRoute(route: ts.ObjectLiteralExpression): boolean {

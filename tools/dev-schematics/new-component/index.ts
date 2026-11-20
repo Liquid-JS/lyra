@@ -15,7 +15,7 @@ import { basename, dirname, normalize, Path, strings } from '@angular-devkit/cor
 // per file.
 export function newComponent(options: any): Rule {
   return (tree: Tree, context: SchematicContext) => {
-    options.path = '/src/framework/theme/components/';
+    options.path = '/packages/core/src/components/';
     options.prefix = 'nb';
     options.selector = options.selector || buildSelector(options);
 

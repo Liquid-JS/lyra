@@ -2,7 +2,7 @@
   "$schema": "../../node_modules/@angular-devkit/schematics/collection-schema.json",
   "schematics": {
     "new-component": {
-      "description": "A new Nebular component schematic.",
+      "description": "A new Lyra component schematic.",
       "factory": "./new-component/index#newComponent",
       "schema": "./new-component/schema.json"
     },
@@ -12,7 +12,7 @@
       "schema": "./playground/schema.json"
     },
     "playground-module": {
-      "description": "A schematic to add all playground components to a given module.",
+      "description": "A schematic to add routes for all playground components to their routes files.",
       "factory": "./playground-module/index#playgroundModule",
       "schema": "./playground-module/schema.json"
     },

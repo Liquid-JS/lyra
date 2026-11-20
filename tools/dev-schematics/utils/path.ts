@@ -1,11 +1,5 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 import { parse } from 'path';
-import { NormalizedSep, Path, relative, dirname, join, normalize, basename, PathFragment } from '@angular-devkit/core';
+import { NormalizedSep, Path, relative, dirname, join, normalize, basename } from '@angular-devkit/core';
 import { SchematicsException } from '@angular-devkit/schematics';
 
 export function removeExtension(filePath: Path): string {
@@ -41,12 +35,14 @@ export function importPath(from: Path, to: Path): string {
   return generateCurrentDirImport(join(relativePath, basename(to)));
 }
 
-export function lazyModuleImportToFilePath(lazyRoutePath: string): string {
-  const matches = /import\('(.+)'\)/m.exec(lazyRoutePath);
+/**
+ * Returns the file a lazy `import('./x/x.routes')` loads, relative to the importing file.
+ */
+export function lazyImportToFilePath(lazyImport: string): Path {
+  const matches = /import\('(.+)'\)/m.exec(lazyImport);
   if (matches) {
-    const path = matches[1];
-    return (path + '.ts') as PathFragment;
+    return normalize(matches[1] + '.ts');
   }
 
-  throw new SchematicsException(`Can't find lazy module import in ${lazyRoutePath}`);
+  throw new SchematicsException(`Can't find lazy import in ${lazyImport}`);
 }

@@ -1,13 +1,7 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-export * from './ast';
-export * from './formatting';
-export * from './playground';
-export * from './path';
-export * from './routing';
-export * from './change';
-export * from './strings';
+export * from './ast.js';
+export * from './formatting.js';
+export * from './playground.js';
+export * from './path.js';
+export * from './routing.js';
+export * from './change.js';
+export * from './strings.js';

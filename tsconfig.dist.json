@@ -1,0 +1,191 @@
+/* To learn more about Typescript configuration file: https://www.typescriptlang.org/docs/handbook/tsconfig-json.html. */
+/* To learn more about Angular compiler options: https://angular.dev/reference/configs/angular-compiler-options. */
+{
+  "compilerOptions": {
+    "paths": {
+      "@liquid-js/lyr-core": [
+        "./dist/core"
+      ],
+      "@liquid-js/lyr-core/base": [
+        "./dist/core/base"
+      ],
+      "@liquid-js/lyr-core/theme": [
+        "./dist/core/theme"
+      ],
+      "@liquid-js/lyr-core/cdk": [
+        "./dist/core/cdk"
+      ],
+      "@liquid-js/lyr-core/cdk-table": [
+        "./dist/core/cdk-table"
+      ],
+      "@liquid-js/lyr-core/accordion": [
+        "./dist/core/accordion"
+      ],
+      "@liquid-js/lyr-core/actions": [
+        "./dist/core/actions"
+      ],
+      "@liquid-js/lyr-core/alert": [
+        "./dist/core/alert"
+      ],
+      "@liquid-js/lyr-core/select": [
+        "./dist/core/select"
+      ],
+      "@liquid-js/lyr-core/badge": [
+        "./dist/core/badge"
+      ],
+      "@liquid-js/lyr-core/breadcrumbs": [
+        "./dist/core/breadcrumbs"
+      ],
+      "@liquid-js/lyr-core/button": [
+        "./dist/core/button"
+      ],
+      "@liquid-js/lyr-core/calendar": [
+        "./dist/core/calendar"
+      ],
+      "@liquid-js/lyr-core/calendar-kit": [
+        "./dist/core/calendar-kit"
+      ],
+      "@liquid-js/lyr-core/card": [
+        "./dist/core/card"
+      ],
+      "@liquid-js/lyr-core/chat": [
+        "./dist/core/chat"
+      ],
+      "@liquid-js/lyr-core/checkbox": [
+        "./dist/core/checkbox"
+      ],
+      "@liquid-js/lyr-core/context-menu": [
+        "./dist/core/context-menu"
+      ],
+      "@liquid-js/lyr-core/datepicker": [
+        "./dist/core/datepicker"
+      ],
+      "@liquid-js/lyr-core/dialog": [
+        "./dist/core/dialog"
+      ],
+      "@liquid-js/lyr-core/divider": [
+        "./dist/core/divider"
+      ],
+      "@liquid-js/lyr-core/file-drop": [
+        "./dist/core/file-drop"
+      ],
+      "@liquid-js/lyr-core/form-field": [
+        "./dist/core/form-field"
+      ],
+      "@liquid-js/lyr-core/icon": [
+        "./dist/core/icon"
+      ],
+      "@liquid-js/lyr-core/input": [
+        "./dist/core/input"
+      ],
+      "@liquid-js/lyr-core/input-group": [
+        "./dist/core/input-group"
+      ],
+      "@liquid-js/lyr-core/layout": [
+        "./dist/core/layout"
+      ],
+      "@liquid-js/lyr-core/list": [
+        "./dist/core/list"
+      ],
+      "@liquid-js/lyr-core/menu": [
+        "./dist/core/menu"
+      ],
+      "@liquid-js/lyr-core/page-indicator": [
+        "./dist/core/page-indicator"
+      ],
+      "@liquid-js/lyr-core/pagination": [
+        "./dist/core/pagination"
+      ],
+      "@liquid-js/lyr-core/popover": [
+        "./dist/core/popover"
+      ],
+      "@liquid-js/lyr-core/progress-bar": [
+        "./dist/core/progress-bar"
+      ],
+      "@liquid-js/lyr-core/radio": [
+        "./dist/core/radio"
+      ],
+      "@liquid-js/lyr-core/route-tabset": [
+        "./dist/core/route-tabset"
+      ],
+      "@liquid-js/lyr-core/search": [
+        "./dist/core/search"
+      ],
+      "@liquid-js/lyr-core/sidebar": [
+        "./dist/core/sidebar"
+      ],
+      "@liquid-js/lyr-core/skeleton": [
+        "./dist/core/skeleton"
+      ],
+      "@liquid-js/lyr-core/slider": [
+        "./dist/core/slider"
+      ],
+      "@liquid-js/lyr-core/spinner": [
+        "./dist/core/spinner"
+      ],
+      "@liquid-js/lyr-core/stepper": [
+        "./dist/core/stepper"
+      ],
+      "@liquid-js/lyr-core/table": [
+        "./dist/core/table"
+      ],
+      "@liquid-js/lyr-core/tabset": [
+        "./dist/core/tabset"
+      ],
+      "@liquid-js/lyr-core/theme-select": [
+        "./dist/core/theme-select"
+      ],
+      "@liquid-js/lyr-core/timepicker": [
+        "./dist/core/timepicker"
+      ],
+      "@liquid-js/lyr-core/toastr": [
+        "./dist/core/toastr"
+      ],
+      "@liquid-js/lyr-core/toc": [
+        "./dist/core/toc"
+      ],
+      "@liquid-js/lyr-core/toggle": [
+        "./dist/core/toggle"
+      ],
+      "@liquid-js/lyr-core/tooltip": [
+        "./dist/core/tooltip"
+      ],
+      "@liquid-js/lyr-core/tree-grid": [
+        "./dist/core/tree-grid"
+      ],
+      "@liquid-js/lyr-core/user": [
+        "./dist/core/user"
+      ],
+      "@liquid-js/lyr-core/validation": [
+        "./dist/core/validation"
+      ],
+      "@liquid-js/lyr-core/window": [
+        "./dist/core/window"
+      ],
+      "@liquid-js/lyr-icons": [
+        "./dist/icons"
+      ],
+      "@liquid-js/lyr-auth": [
+        "./dist/auth"
+      ],
+      "@liquid-js/lyr-security": [
+        "./dist/security"
+      ],
+      "@liquid-js/lyr-moment": [
+        "./dist/moment"
+      ],
+      "@liquid-js/lyr-date-fns": [
+        "./dist/date-fns"
+      ],
+      "@liquid-js/lyr-firebase-auth": [
+        "./dist/firebase-auth"
+      ],
+      "@liquid-js/lyr-extras": [
+        "./dist/extras"
+      ],
+      "@liquid-js/lyr-extras/*": [
+        "./dist/extras/*"
+      ]
+    }
+  }
+}

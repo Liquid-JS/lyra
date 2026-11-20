@@ -1,35 +1,28 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 import * as ts from 'typescript';
-import { dirname, join, normalize, Path, PathFragment } from '@angular-devkit/core';
-import { DirEntry, SchematicsException, Tree, Rule } from '@angular-devkit/schematics';
+import { dirname, join, normalize, Path } from '@angular-devkit/core';
+import { SchematicsException, Tree, Rule } from '@angular-devkit/schematics';
 import { parseSourceFile } from '@angular/cdk/schematics';
 import {
   addTrailingCommas,
   applyReplaceChange,
   findDeclarationByIdentifier,
   findRoutesArray,
-  getPlaygroundRootDir,
   getRouteChildren,
-  getRouteComponent,
-  getRouteLazyModule,
+  getRouteComponentClass,
+  getRouteLoadChildren,
   getRoutePath,
   getRoutesFromArray,
   isComponentRoute,
   isLazyRoute,
-  isRoutingModule,
-  lazyModuleImportToFilePath,
+  lazyImportToFilePath,
+  PLAYGROUND_ROUTES_PATH,
   removePropsQuotes,
   singleQuotes,
   splitClassName,
   trimQuotes,
-} from '../utils';
+} from '../utils/index.js';
 
-const COMPONENTS_LIST_FILE_PATH = normalize('/src/app/playground-components.ts');
+const COMPONENTS_LIST_FILE_PATH = normalize('/packages/playground/src/app/playground-components.ts');
 const COMPONENTS_VARIABLE_NAME = 'PLAYGROUND_COMPONENTS';
 
 interface ComponentLink {
@@ -44,10 +37,10 @@ export function playgroundComponents(): Rule {
   return generateComponentsList;
 }
 
-function generateComponentsList(tree: Tree): void {
+function generateComponentsList(tree: Tree) {
   const componentsListFile = parseSourceFile(tree, COMPONENTS_LIST_FILE_PATH);
   const componentsListArray = getComponentsListArray(componentsListFile);
-  const routes = removeRoutesWithoutPath(findRoutesInDir(tree, getPlaygroundRootDir(tree)));
+  const routes = removeRoutesWithoutPath(findRoutesInFile(tree, PLAYGROUND_ROUTES_PATH));
   updateComponentsFile(tree, componentsListFile, componentsListArray, routes);
 }
 
@@ -64,18 +57,13 @@ function getComponentsListArray(fileSource: ts.SourceFile): ts.ArrayLiteralExpre
   return initializer as ts.ArrayLiteralExpression;
 }
 
-function findRoutesInDir(tree: Tree, dir: DirEntry): ComponentLink[] {
-  const routingModuleFile = dir.subfiles.find(isRoutingModule);
-  if (routingModuleFile) {
-    const routingModulePath = join(dir.path, routingModuleFile);
-    const routes = getRoutesFromArray(findRoutesArray(tree, routingModulePath));
-    return parseRoutes(tree, dir, routes);
-  }
-  return [];
+function findRoutesInFile(tree: Tree, routesPath: Path): ComponentLink[] {
+  const routes = getRoutesFromArray(findRoutesArray(tree, routesPath));
+  return parseRoutes(tree, routesPath, routes);
 }
 
-function parseRoutes(tree: Tree, dir: DirEntry, routeEntries: ts.ObjectLiteralExpression[]): ComponentLink[] {
-  const foundRoutes: ComponentLink[] = [];
+function parseRoutes(tree: Tree, routesPath: Path, routeEntries: ts.ObjectLiteralExpression[]): ComponentLink[] {
+  const foundRoutes = new Array<ComponentLink>();
   const routesWithPath = routeEntries
     .filter((r) => r.properties.length > 0)
     .filter((r) => !!getRoutePath(r))
@@ -83,8 +71,8 @@ function parseRoutes(tree: Tree, dir: DirEntry, routeEntries: ts.ObjectLiteralEx
 
   for (const route of routesWithPath) {
     const component = getComponentRoute(route);
-    const routeChildren = getChildRoutes(tree, dir, route);
-    const lazyChildren = getLazyModuleRoutes(tree, dir, route);
+    const routeChildren = getChildRoutes(tree, routesPath, route);
+    const lazyChildren = getLazyRoutes(tree, routesPath, route);
     const children = routeChildren.concat(lazyChildren);
     const routePath = trimQuotes((getRoutePath(route) as ts.PropertyAssignment).initializer.getText());
     foundRoutes.push({ path: routePath, component, children });
@@ -94,36 +82,28 @@ function parseRoutes(tree: Tree, dir: DirEntry, routeEntries: ts.ObjectLiteralEx
 }
 
 function getComponentRoute(route: ts.ObjectLiteralExpression): string | undefined {
-  const componentProp = getRouteComponent(route);
-  if (componentProp) {
-    return componentProp.initializer.getText();
-  }
+  return getRouteComponentClass(route);
 }
 
-function getChildRoutes(tree: Tree, routingModuleDir: DirEntry, route: ts.ObjectLiteralExpression): ComponentLink[] {
+function getChildRoutes(tree: Tree, routesPath: Path, route: ts.ObjectLiteralExpression): ComponentLink[] {
   const childrenProp = getRouteChildren(route);
   if (childrenProp) {
-    return parseRoutes(tree, routingModuleDir, getRoutesFromArray(childrenProp));
+    return parseRoutes(tree, routesPath, getRoutesFromArray(childrenProp));
   }
   return [];
 }
 
-function getLazyModuleRoutes(
-  tree: Tree,
-  routingModuleDir: DirEntry,
-  route: ts.ObjectLiteralExpression,
-): ComponentLink[] {
-  const lazyModule = getRouteLazyModule(route);
-  if (lazyModule) {
-    const lazyModuleImport = lazyModule.initializer.getText();
-    const moduleDirPath = dirname(lazyModuleImportToFilePath(lazyModuleImport) as Path) as PathFragment;
-    return findRoutesInDir(tree, routingModuleDir.dir(moduleDirPath));
+function getLazyRoutes(tree: Tree, routesPath: Path, route: ts.ObjectLiteralExpression): ComponentLink[] {
+  const loadChildren = getRouteLoadChildren(route);
+  if (loadChildren) {
+    const lazyRoutesPath = join(dirname(routesPath), lazyImportToFilePath(loadChildren.initializer.getText()));
+    return findRoutesInFile(tree, lazyRoutesPath);
   }
   return [];
 }
 
 function removeRoutesWithoutPath(routes: ComponentLink[], startPath: string = ''): ComponentLink[] {
-  const routesWithPath: ComponentLink[] = [];
+  const routesWithPath = new Array<ComponentLink>();
 
   for (const { path, component, children } of routes) {
     const fullPath = path ? startPath + '/' + path : startPath;
@@ -132,7 +112,7 @@ function removeRoutesWithoutPath(routes: ComponentLink[], startPath: string = ''
       routeChildren = removeRoutesWithoutPath(children, fullPath);
     }
 
-    const toAdd: ComponentLink[] = [];
+    const toAdd = new Array<ComponentLink>();
     if (path) {
       const link = component ? fullPath : undefined;
       const name = component ? splitClassName(component) : undefined;

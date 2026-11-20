@@ -1,13 +1,22 @@
 # compiled output
 /dist
+/out-tsc
 /tmp
 /.ng_compiled
 /.ng_build
 .lib
-docs/assets/examples/*
+packages/docs/public/assets/examples/*
 
 # dependencies
 node_modules
+.pnp.*
+/.yarn/*
+!/.yarn/patches
+!/.yarn/plugins
+!/.yarn/releases
+!/.yarn/sdks
+!/.yarn/versions
+yarn-error.log
 
 # IDEs and editors
 /.idea
@@ -23,10 +32,15 @@ node_modules
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
+!.vscode/mcp.json
+.history/*
 
 # misc
 /.angular/cache
-/packages-smoke/.angular/cache
+.sass-cache/
+__screenshots__/
+/.angular/cache
+/smoke/.angular/cache
 /.sass-cache
 /connect.lock
 /coverage/*
@@ -34,17 +48,20 @@ node_modules
 npm-debug.log
 testem.log
 /typings
-/docs/framework
-/docs/docs.json
-/docs/output.json
-/docs/assets/examples
-/docs/dist
-/packages-smoke/dist
+/packages/docs/public/output.json
+/packages/docs/public/theme-values
+/packages/docs/public/assets/examples
+/smoke/dist
+/smoke/.lib
+/smoke/test-results
+/smoke/playwright-report
 .eslintcache
 
 # e2e
-/e2e/*.js
-/e2e/*.map
+/test-results
+/playwright-report
+/blob-report
+/playwright/.cache
 
 #System Files
 .DS_Store
@@ -53,3 +70,7 @@ debug.log
 local.log
 
 /tools/dev-schematics/dist
+/smoke/package-lock.json
+
+# Vitest browser-mode attachments (failure screenshots)
+.vitest/
