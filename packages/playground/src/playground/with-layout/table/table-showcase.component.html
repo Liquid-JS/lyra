@@ -1,0 +1,55 @@
+<nb-card>
+  <nb-card-header>
+    Users
+    <input nbInput
+      fieldSize="small"
+      type="search"
+      placeholder="Search names"
+      aria-label="Search names"
+      (input)="source.setFilter('name', $any($event.target).value)" />
+  </nb-card-header>
+  <table nbTable
+    [dataSource]="source"
+    [nbSort]="source">
+    <ng-container nbColumnDef="name">
+      <th nbHeaderCell
+        *nbHeaderCellDef
+        nbSortHeader>Name</th>
+      <td nbCell
+        *nbCellDef="let user; of: source">{{ user.name }}</td>
+    </ng-container>
+    <ng-container nbColumnDef="email">
+      <th nbHeaderCell
+        *nbHeaderCellDef
+        nbSortHeader>Email</th>
+      <td nbCell
+        *nbCellDef="let user; of: source">{{ user.email }}</td>
+    </ng-container>
+    <ng-container nbColumnDef="role">
+      <th nbHeaderCell
+        *nbHeaderCellDef
+        nbSortHeader>Role</th>
+      <td nbCell
+        *nbCellDef="let user; of: source">{{ user.role }}</td>
+    </ng-container>
+    <ng-container nbColumnDef="joined">
+      <th nbHeaderCell
+        *nbHeaderCellDef
+        nbSortHeader>Joined</th>
+      <td nbCell
+        *nbCellDef="let user; of: source">{{ user.joined | date: 'mediumDate' }}</td>
+    </ng-container>
+
+    <tr nbHeaderRow
+      *nbHeaderRowDef="columns"></tr>
+    <tr nbRow
+      *nbRowDef="let user; of: source; columns: columns"></tr>
+    <tr *nbNoDataRow>
+      <td nbNoDataCell>No users match</td>
+    </tr>
+  </table>
+  <nb-card-footer>
+    <nb-pagination [for]="source"
+      [pageSizeOptions]="[5, 10, 25]" />
+  </nb-card-footer>
+</nb-card>

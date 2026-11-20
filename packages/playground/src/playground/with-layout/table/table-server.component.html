@@ -1,0 +1,55 @@
+<nb-card [nbSpinner]="source.loading()">
+  <nb-card-header>
+    <nb-select placeholder="All cities"
+      size="small"
+      aria-label="City"
+      [selected]="city()"
+      (selectedChange)="selectCity($event)">
+      <nb-option value="">All cities</nb-option>
+      @for (name of cities; track name) {
+      <nb-option [value]="name">{{ name }}</nb-option>
+      }
+    </nb-select>
+    <input nbInput
+      fieldSize="small"
+      type="search"
+      placeholder="Search names"
+      aria-label="Search names"
+      (input)="source.setFilter('search', $any($event.target).value)" />
+  </nb-card-header>
+  <table nbTable
+    [dataSource]="source"
+    [nbSort]="source">
+    <ng-container nbColumnDef="name">
+      <th nbHeaderCell
+        *nbHeaderCellDef
+        nbSortHeader>Name</th>
+      <td nbCell
+        *nbCellDef="let user; of: source">{{ user.name }}</td>
+    </ng-container>
+    <ng-container nbColumnDef="city">
+      <th nbHeaderCell
+        *nbHeaderCellDef
+        nbSortHeader>City</th>
+      <td nbCell
+        *nbCellDef="let user; of: source">{{ user.city }}</td>
+    </ng-container>
+    <ng-container nbColumnDef="role">
+      <th nbHeaderCell
+        *nbHeaderCellDef>Role</th>
+      <td nbCell
+        *nbCellDef="let user; of: source">{{ user.role }}</td>
+    </ng-container>
+
+    <tr nbHeaderRow
+      *nbHeaderRowDef="columns"></tr>
+    <tr nbRow
+      *nbRowDef="let user; of: source; columns: columns"></tr>
+    <tr *nbNoDataRow>
+      <td nbNoDataCell>{{ source.loading() ? 'Loading…' : 'No users match' }}</td>
+    </tr>
+  </table>
+  <nb-card-footer>
+    <nb-pagination [for]="source" />
+  </nb-card-footer>
+</nb-card>

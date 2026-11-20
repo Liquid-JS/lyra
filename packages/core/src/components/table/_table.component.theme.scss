@@ -1,0 +1,181 @@
+@use '../../styles/theming' as *;
+
+@mixin nb-table-theme() {
+  .nb-table {
+    $border: nb-theme(table-cell-border-width) nb-theme(table-cell-border-style) nb-theme(table-cell-border-color);
+
+    .nb-header-cell,
+    .nb-cell,
+    .nb-footer-cell {
+      height: nb-theme(table-row-min-height);
+      padding: nb-theme(table-cell-padding);
+      border: $border;
+      text-align: start;
+    }
+
+    .nb-header-row {
+      background: nb-theme(table-header-background-color);
+      color: nb-theme(table-header-text-color);
+      font-family: nb-theme(table-header-text-font-family);
+      font-size: nb-theme(table-header-text-font-size);
+      font-weight: nb-theme(table-header-text-font-weight);
+      line-height: nb-theme(table-header-text-line-height);
+    }
+
+    .nb-footer-row {
+      background: nb-theme(table-footer-background-color);
+      color: nb-theme(table-footer-text-color);
+      font-family: nb-theme(table-footer-text-font-family);
+      font-size: nb-theme(table-footer-text-font-size);
+      font-weight: nb-theme(table-footer-text-font-weight);
+      line-height: nb-theme(table-footer-text-line-height);
+    }
+
+    .nb-row {
+      background: nb-theme(table-row-background-color);
+      color: nb-theme(table-row-text-color);
+      font-family: nb-theme(table-row-text-font-family);
+      font-size: nb-theme(table-row-text-font-size);
+      font-weight: nb-theme(table-row-text-font-weight);
+      line-height: nb-theme(table-row-text-line-height);
+
+      &:hover {
+        background: nb-theme(table-row-hover-background-color);
+      }
+    }
+
+    // A selected row, by its checkbox.
+    .nb-row:has(> .nb-select-cell input:checked) {
+      background: nb-theme(table-row-selected-background-color);
+    }
+
+    .nb-detail-row,
+    .nb-detail-row:hover {
+      background: nb-theme(table-detail-row-background-color);
+    }
+
+    // Not a row of data, so not highlighted under the pointer.
+    .nb-no-data-row,
+    .nb-no-data-row:hover {
+      background: nb-theme(table-row-background-color);
+    }
+
+    .nb-no-data-cell {
+      padding: nb-theme(table-no-data-padding);
+      color: nb-theme(table-no-data-text-color);
+      text-align: center;
+    }
+
+    nb-sort-icon nb-icon {
+      font-size: inherit;
+      vertical-align: middle;
+      color: currentColor;
+    }
+  }
+
+  .nb-table-compact {
+    .nb-header-cell,
+    .nb-cell,
+    .nb-footer-cell {
+      padding: nb-theme(table-compact-cell-padding);
+    }
+  }
+
+  // Even rows, as in the tree grid; not a selected one, which keeps its own background.
+  .nb-table .nb-row:not(.nb-detail-row):nth-child(2n):not(:hover):not(:has(> .nb-select-cell input:checked)) {
+    background-color: nb-theme(table-row-even-background-color);
+  }
+
+  .nb-table-striped .nb-row:not(.nb-detail-row):nth-child(2n):not(:hover) {
+    background-color: nb-theme(table-striped-row-background-color);
+  }
+
+  // On its own, the outer cells start their text as a list's items do, where a field's does; in a card, where the
+  // card's does: tables, lists and cards in a page line up.
+  .nb-table > tr > :is(.nb-header-cell, .nb-cell, .nb-footer-cell) {
+    &:first-child {
+      padding-inline-start: nb-theme(table-edge-padding);
+    }
+
+    &:last-child {
+      padding-inline-end: nb-theme(table-edge-padding);
+    }
+  }
+
+  nb-card > .nb-table > tr > :is(.nb-header-cell, .nb-cell, .nb-footer-cell) {
+    &:first-child {
+      padding-inline-start: nb-theme(table-card-edge-padding);
+    }
+
+    &:last-child {
+      padding-inline-end: nb-theme(table-card-edge-padding);
+    }
+  }
+
+  // On its own, a floating table has a shadow in place of its outer borders, over the page; in a card, it has
+  // the card's appearance.
+  .nb-table.appearance-floating:not(nb-card > .nb-table) {
+    box-shadow: nb-theme(table-floating-shadow);
+
+    > tr:first-child > * {
+      border-top-color: transparent;
+    }
+
+    > tr:last-child > * {
+      border-bottom-color: transparent;
+    }
+
+    > tr > :is(.nb-header-cell, .nb-cell, .nb-footer-cell) {
+      &:first-child {
+        border-inline-start-color: transparent;
+      }
+
+      &:last-child {
+        border-inline-end-color: transparent;
+      }
+    }
+  }
+
+  // A table placed directly in a card lines up with the card's header and footer, inside its border. Its borders
+  // are kept apart, so the cells at the card's corners can be rounded with it.
+  nb-card > .nb-table {
+    $divider: nb-theme(card-divider-width) nb-theme(card-divider-style) nb-theme(card-divider-color);
+    $inner-radius: max(0px, calc(#{nb-theme(card-border-radius)} - #{nb-theme(card-border-width)}));
+    border-collapse: separate;
+    border-spacing: 0;
+
+    // Named cells, to win over the cells' own border.
+    > tr > :is(.nb-header-cell, .nb-cell, .nb-footer-cell) {
+      border: none;
+      border-top: $divider;
+    }
+
+    &:first-child > tr:first-child > {
+      :first-child {
+        border-start-start-radius: $inner-radius;
+      }
+
+      :last-child {
+        border-start-end-radius: $inner-radius;
+      }
+    }
+
+    &:last-child > tr:last-child > {
+      :first-child {
+        border-end-start-radius: $inner-radius;
+      }
+
+      :last-child {
+        border-end-end-radius: $inner-radius;
+      }
+    }
+  }
+
+  // The first row has the card's edge or its header's divider above it.
+  nb-card > .nb-table:first-child,
+  nb-card > nb-card-header + .nb-table {
+    > tr:first-of-type > * {
+      border-top: none;
+    }
+  }
+}
