@@ -1,0 +1,12 @@
+// The default theme's card and window styles, which specs don't load otherwise.
+@use '@liquid-js/lyr-core/styles/all' as *;
+@use '../card/card.component.theme' as card;
+@use 'window.component.theme' as window;
+
+$nb-enabled-themes: (default);
+
+@include nb-install() {
+  @include nb-theme-base();
+  @include card.nb-card-theme();
+  @include window.nb-window-theme();
+}

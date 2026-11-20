@@ -1,28 +1,20 @@
-import { Component, TemplateRef, ViewChild } from '@angular/core';
-import { NbWindowService } from '@nebular/theme';
+import { Component, TemplateRef, inject, viewChild } from '@angular/core';
+import { NbWindowService, NbButtonComponent } from '@liquid-js/lyr-core';
 
 @Component({
-    template: `
-    <button (click)="openWindow()" nbButton>Open window</button>
-
-    <ng-template #contentTemplate let-data>
-      <p>Here is the text provided via config: "{{ data.text }}"</p>
-    </ng-template>
-  `,
-    styleUrls: ['./window.scss'],
-    standalone: false
+  templateUrl: './template-window.component.html',
+  styleUrls: ['./window.scss'],
+  imports: [NbButtonComponent],
 })
 export class TemplateWindowComponent {
+  private readonly windowService = inject(NbWindowService);
 
-  // TODO static must be false as of Angular 9.0.0
-  @ViewChild('contentTemplate') contentTemplate: TemplateRef<any>;
-
-  constructor(private windowService: NbWindowService) {}
+  readonly contentTemplate = viewChild.required<TemplateRef<any>>('contentTemplate');
 
   openWindow() {
-    this.windowService.open(
-      this.contentTemplate,
-      { title: 'Window content from template', context: { text: 'some text to pass into template' } },
-    );
+    this.windowService.open(this.contentTemplate(), {
+      title: 'Window content from template',
+      context: { text: 'some text to pass into template' },
+    });
   }
 }

@@ -1,30 +1,35 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { NbWindowControlButtonsConfig, NbWindowService } from '@nebular/theme';
+import { Component, inject } from '@angular/core';
+import {
+  NbWindowService,
+  NbWindowState,
+  NbCardComponent,
+  NbCardBodyComponent,
+  NbCheckboxComponent,
+  NbButtonComponent,
+} from '@liquid-js/lyr-core';
 
 import { FormComponent } from './components/form.component';
 
 @Component({
-    templateUrl: 'window-controls.component.html',
-    styleUrls: ['./window.scss', './window-controls.component.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  templateUrl: 'window-controls.component.html',
+  styleUrls: ['./window.scss', './window-controls.component.scss'],
+  imports: [NbCardComponent, NbCardBodyComponent, NbCheckboxComponent, NbButtonComponent],
 })
 export class WindowControlsComponent {
-  minimize = true;
-  maximize = true;
-  fullScreen = true;
-  close = true;
+  private readonly windowService = inject(NbWindowService);
 
-  constructor(private windowService: NbWindowService) {}
+  fullScreen = true;
+  docked = true;
+  minimized = true;
+  closeButton = true;
 
   openWindow() {
-    const buttonsConfig: NbWindowControlButtonsConfig = {
-      minimize: this.minimize,
-      maximize: this.maximize,
-      fullScreen: this.fullScreen,
-      close: this.close,
-    };
+    const states = [
+      this.fullScreen && NbWindowState.FULL_SCREEN,
+      this.docked && NbWindowState.DOCKED,
+      this.minimized && NbWindowState.MINIMIZED,
+    ].filter((state) => !!state);
 
-    this.windowService.open(FormComponent, { title: `Window`, buttons: buttonsConfig });
+    this.windowService.open(FormComponent, { title: `Window`, states, closeButton: this.closeButton });
   }
 }

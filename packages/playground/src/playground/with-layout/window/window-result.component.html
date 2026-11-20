@@ -1,0 +1,10 @@
+<button nbButton
+  status="primary"
+  (click)="openWindow()">Open window</button>
+<br />
+<h3 class="h5">Window visitors:</h3>
+<ul>
+  @for (visitor of visitors(); track visitor) {
+  <li>{{ visitor }}</li>
+  }
+</ul>

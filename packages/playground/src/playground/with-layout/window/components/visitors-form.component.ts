@@ -1,28 +1,20 @@
-/*
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { Component } from '@angular/core';
-import { FormBuilder, FormGroup } from '@angular/forms';
-import { NbWindowRef } from '@nebular/theme';
+import { Component, inject } from '@angular/core';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { NbWindowRef, NbInputDirective, NbButtonComponent } from '@liquid-js/lyr-core';
 
 @Component({
-    template: `
-    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="form">
-      <label for="name">Enter your name:</label>
-      <input nbInput id="name" type="text" formControlName="name" />
-
-      <button nbButton type="submit" status="success">Submit</button>
-    </form>
-  `,
-    standalone: false
+  templateUrl: './visitors-form.component.html',
+  imports: [FormsModule, ReactiveFormsModule, NbInputDirective, NbButtonComponent],
 })
 export class VisitorsFormComponent {
+  private readonly fb = inject(FormBuilder);
+  readonly windowRef = inject(NbWindowRef);
+
   form: FormGroup;
 
-  constructor(private fb: FormBuilder, public windowRef: NbWindowRef) {
+  constructor() {
+    const fb = this.fb;
+
     this.form = fb.group({
       name: null,
     });

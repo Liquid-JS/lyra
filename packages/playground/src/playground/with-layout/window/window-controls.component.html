@@ -1,11 +1,13 @@
 <nb-card>
   <nb-card-body>
-    <p class="subtitle config-title">Buttons config:</p>
-    <nb-checkbox [(checked)]="minimize">Minimize</nb-checkbox>
-    <nb-checkbox [(checked)]="maximize">Maximize</nb-checkbox>
-    <nb-checkbox [(checked)]="fullScreen">Full Screen</nb-checkbox>
-    <nb-checkbox [(checked)]="close">Close</nb-checkbox>
+    <p class="subtitle config-title">States it can be in:</p>
+    <nb-checkbox [(checked)]="fullScreen">Full screen</nb-checkbox>
+    <nb-checkbox [(checked)]="docked">Docked</nb-checkbox>
+    <nb-checkbox [(checked)]="minimized">Minimized</nb-checkbox>
+    <nb-checkbox [(checked)]="closeButton">Close button</nb-checkbox>
 
-    <button (click)="openWindow()" nbButton class="open-window">Open window</button>
+    <button (click)="openWindow()"
+      nbButton
+      class="open-window">Open window</button>
   </nb-card-body>
 </nb-card>

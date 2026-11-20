@@ -1,20 +1,13 @@
-import { Component } from '@angular/core';
-import { NbWindowRef } from '@nebular/theme';
+import { Component, inject } from '@angular/core';
+import { NbWindowRef, NbInputDirective } from '@liquid-js/lyr-core';
+import { FormsModule } from '@angular/forms';
 
 @Component({
-    template: `
-    <form class="form">
-      <label for="subject">Subject:</label>
-      <input nbInput id="subject" type="text">
-
-      <label class="text-label" for="text">Text:</label>
-      <textarea nbInput id="text"></textarea>
-    </form>
-  `,
-    standalone: false
+  templateUrl: './form.component.html',
+  imports: [FormsModule, NbInputDirective],
 })
 export class FormComponent {
-  constructor(public windowRef: NbWindowRef) {}
+  readonly windowRef = inject(NbWindowRef);
 
   close() {
     this.windowRef.close();

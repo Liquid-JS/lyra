@@ -1,140 +1,242 @@
 import {
+  DestroyRef,
+  afterNextRender,
+  AfterViewInit,
+  ChangeDetectionStrategy,
   Component,
+  computed,
+  effect,
   ElementRef,
-  HostBinding,
-  Inject,
+  inject,
+  Injector,
   OnDestroy,
   OnInit,
-  TemplateRef,
   Renderer2,
-  ViewChild,
-  Type,
-  AfterViewChecked,
+  TemplateRef,
+  viewChild,
 } from '@angular/core';
-import { NbFocusTrap, NbFocusTrapFactoryService } from '../cdk/a11y/focus-trap';
-import { NbComponentPortal, NbComponentType, NbTemplatePortal } from '../cdk/overlay/mapping';
-import { NbOverlayContainerComponent } from '../cdk/overlay/overlay-container';
+import { NbFocusTrap, NbFocusTrapFactoryService } from '@liquid-js/lyr-core/cdk';
+import { NbComponentPortal, NbComponentType, NbTemplatePortal } from '@liquid-js/lyr-core/cdk';
+import { NbOverlayContainerComponent } from '@liquid-js/lyr-core/cdk';
 import { NB_WINDOW_CONTENT, NbWindowConfig, NbWindowState, NB_WINDOW_CONTEXT } from './window.options';
 import { NbWindowRef } from './window-ref';
+import { NbCardComponent, NbCardHeaderComponent, NbCardBodyComponent } from '@liquid-js/lyr-core/card';
+import { NgTemplateOutlet } from '@angular/common';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { NbButtonComponent } from '@liquid-js/lyr-core/button';
+import { NbIconComponent } from '@liquid-js/lyr-core/icon';
+import {
+  injectNbTexts,
+  NbLocalize,
+  ɵanimatePane as animatePane,
+  ɵexpandDuration as expandDuration,
+} from '@liquid-js/lyr-core/base';
+
+/** @internal */
+declare const $localize: NbLocalize;
+
+let lastWindowId = 0;
 
 @Component({
-    selector: 'nb-window',
-    template: `
-    <nb-card>
-      <nb-card-header>
-        <div *ngIf="config.titleTemplate; else textTitleTemplate" cdkFocusInitial tabindex="-1">
-          <ng-container
-            *ngTemplateOutlet="config.titleTemplate; context: { $implicit: config.titleTemplateContext }"
-          ></ng-container>
-        </div>
-
-        <ng-template #textTitleTemplate>
-          <div cdkFocusInitial class="title" tabindex="-1">{{ config.title }}</div>
-        </ng-template>
-
-        <div class="buttons">
-          <ng-container *ngIf="showMinimize">
-            <button nbButton ghost (click)="minimize()">
-              <nb-icon icon="minus-outline" pack="nebular-essentials"></nb-icon>
-            </button>
-          </ng-container>
-
-          <ng-container *ngIf="showMaximize">
-            <button nbButton ghost *ngIf="isFullScreen" (click)="maximize()">
-              <nb-icon icon="collapse-outline" pack="nebular-essentials"></nb-icon>
-            </button>
-          </ng-container>
-
-          <ng-container *ngIf="showFullScreen">
-            <button nbButton ghost *ngIf="minimized || maximized" (click)="maximizeOrFullScreen()">
-              <nb-icon icon="expand-outline" pack="nebular-essentials"></nb-icon>
-            </button>
-          </ng-container>
-
-          <ng-container *ngIf="showClose">
-            <button nbButton ghost (click)="close()">
-              <nb-icon icon="close-outline" pack="nebular-essentials"></nb-icon>
-            </button>
-          </ng-container>
-        </div>
-      </nb-card-header>
-      <nb-card-body *ngIf="maximized || isFullScreen">
-        <nb-overlay-container></nb-overlay-container>
-      </nb-card-body>
-    </nb-card>
-  `,
-    styleUrls: ['./window.component.scss'],
-    standalone: false
+  selector: 'nb-window',
+  templateUrl: './window.component.html',
+  styleUrls: ['./window.component.scss'],
+  // Hosted content may not use signals, so it's checked on every change detection.
+  changeDetection: ChangeDetectionStrategy.Eager,
+  imports: [
+    NbCardComponent,
+    NbCardHeaderComponent,
+    NgTemplateOutlet,
+    NbButtonComponent,
+    NbIconComponent,
+    NbCardBodyComponent,
+    NbOverlayContainerComponent,
+  ],
+  host: {
+    // A dialog, as a dialog's container is, named by its title; modal while its backdrop covers the page.
+    role: 'dialog',
+    '[attr.aria-labelledby]': 'titleId',
+    '[attr.aria-modal]': 'isFullScreen() && config.hasBackdrop',
+    '[class.full-screen]': 'isFullScreen()',
+    '[class.docked]': 'docked()',
+    '[class.minimized]': 'minimized()',
+    // Above the other windows while it's the one used last; clicking or focusing it brings it there.
+    '[style.z-index]': 'windowRef.layer()',
+    '(pointerdown)': 'windowRef.toFront()',
+    '(focusin)': 'windowRef.toFront()',
+  },
 })
-export class NbWindowComponent implements OnInit, AfterViewChecked, OnDestroy {
-  @HostBinding('class.full-screen')
-  get isFullScreen() {
-    return this.windowRef.state === NbWindowState.FULL_SCREEN;
+export class NbWindowComponent implements OnInit, AfterViewInit, OnDestroy {
+  protected readonly texts = injectNbTexts('window', () => ({
+    minimize: $localize`:@@nb.window.minimize:Minimize`,
+    restore: $localize`:@@nb.window.restore:Restore`,
+    collapse: $localize`:@@nb.window.collapse:Collapse`,
+    expand: $localize`:@@nb.window.expand:Expand`,
+    close: $localize`:@@nb.window.close:Close`,
+  }));
+
+  readonly content = inject<TemplateRef<unknown> | NbComponentType>(NB_WINDOW_CONTENT);
+  readonly context = inject(NB_WINDOW_CONTEXT);
+  readonly windowRef = inject(NbWindowRef);
+  readonly config = inject(NbWindowConfig);
+  protected readonly focusTrapFactory = inject(NbFocusTrapFactoryService);
+  protected readonly injector = inject(Injector);
+  protected readonly elementRef = inject(ElementRef);
+  private readonly destroyRef = inject(DestroyRef);
+  protected readonly renderer = inject(Renderer2);
+
+  /** @internal The id of the window's title, which names it. */
+  readonly titleId = `nb-window-title-${lastWindowId++}`;
+
+  readonly isFullScreen = computed(() => this.windowRef.state === NbWindowState.FULL_SCREEN);
+
+  readonly docked = computed(() => this.windowRef.state === NbWindowState.DOCKED);
+
+  readonly minimized = computed(() => this.windowRef.state === NbWindowState.MINIMIZED);
+
+  /**
+   * A button to each other state the window can be in, of its `states`: Minimize, Collapse (to docked, Restore from
+   * minimized) and Expand (to full screen).
+   */
+  protected readonly stateButtons = computed(() => {
+    const state = this.windowRef.state;
+    const allowed = new Set(this.config.states);
+    const texts = this.texts();
+    const buttons = new Array<{ state: NbWindowState; label: string }>();
+    if (allowed.has(NbWindowState.MINIMIZED) && state !== NbWindowState.MINIMIZED) {
+      buttons.push({ state: NbWindowState.MINIMIZED, label: texts.minimize });
+    }
+    if (allowed.has(NbWindowState.DOCKED) && state !== NbWindowState.DOCKED) {
+      buttons.push({
+        state: NbWindowState.DOCKED,
+        label: state === NbWindowState.MINIMIZED ? texts.restore : texts.collapse,
+      });
+    }
+    if (allowed.has(NbWindowState.FULL_SCREEN) && state !== NbWindowState.FULL_SCREEN) {
+      buttons.push({ state: NbWindowState.FULL_SCREEN, label: texts.expand });
+    }
+    return buttons;
+  });
+
+  /** The icon of the button to a state: Restore from minimized and Collapse both go to docked. */
+  protected stateIcon(state: NbWindowState): string {
+    if (state === NbWindowState.MINIMIZED) {
+      return 'minus-outline';
+    }
+    if (state === NbWindowState.FULL_SCREEN) {
+      return 'expand-outline';
+    }
+    if (this.windowRef.state === NbWindowState.MINIMIZED) {
+      return 'chevron-up-outline';
+    }
+    return 'collapse-outline';
   }
 
-  @HostBinding('class.maximized')
-  get maximized() {
-    return this.windowRef.state === NbWindowState.MAXIMIZED;
-  }
+  readonly overlayContainer = viewChild.required(NbOverlayContainerComponent);
 
-  @HostBinding('class.minimized')
-  get minimized() {
-    return this.windowRef.state === NbWindowState.MINIMIZED;
-  }
-
-  get showMinimize(): boolean {
-    return this.config.buttons.minimize;
-  }
-
-  get showMaximize(): boolean {
-    return this.config.buttons.maximize;
-  }
-
-  get showFullScreen(): boolean {
-    return this.config.buttons.fullScreen;
-  }
-
-  get showClose(): boolean {
-    return this.config.buttons.close;
-  }
-
-  @ViewChild(NbOverlayContainerComponent) overlayContainer: NbOverlayContainerComponent;
-
-  protected focusTrap: NbFocusTrap;
-
-  constructor(
-    @Inject(NB_WINDOW_CONTENT) public content: TemplateRef<any> | NbComponentType,
-    @Inject(NB_WINDOW_CONTEXT) public context: Object,
-    public windowRef: NbWindowRef,
-    public config: NbWindowConfig,
-    protected focusTrapFactory: NbFocusTrapFactoryService,
-    protected elementRef: ElementRef,
-    protected renderer: Renderer2,
-  ) {}
+  protected focusTrap?: NbFocusTrap;
 
   ngOnInit() {
-    this.focusTrap = this.focusTrapFactory.create(this.elementRef.nativeElement);
-    this.focusTrap.blurPreviouslyFocusedElement();
-    this.focusTrap.focusInitialElement();
+    const focusTrap = this.focusTrapFactory.create(this.elementRef.nativeElement);
+    this.focusTrap = focusTrap;
+    focusTrap.blurPreviouslyFocusedElement();
+    // The title the window focuses renders after this; focusing it now left the focus on the page.
+    afterNextRender(() => focusTrap.focusInitialElement(), { injector: this.injector });
+    // Tab stays in the window only while it's modal, over the page with its backdrop; docked or minimized, it's one
+    // part of the page, which Tab moves on from.
+    effect(() => (focusTrap.enabled = this.isFullScreen() && this.config.hasBackdrop), { injector: this.injector });
 
     if (this.config.windowClass) {
       this.renderer.addClass(this.elementRef.nativeElement, this.config.windowClass);
     }
+
+    this.windowRef.stateChange
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(({ oldState, newState }) => this.animateStateChange(oldState, newState));
   }
 
-  ngAfterViewChecked() {
-    if (!this.overlayContainer || this.overlayContainer.isAttached) {
+  /** The card's height before the latest resize, which a change of state animates from. */
+  private cardHeight = 0;
+  private resizeObserver?: ResizeObserver;
+  /** Whether the next resize of the card is a change of state, to animate. */
+  private stateChanging = false;
+
+  /**
+   * Covers a change of state: a docked window shrinks to its header or grows back over the time its height takes,
+   * longer for a taller one; a window going full screen, or back, cross-fades, as it moves to the middle of the page.
+   * The height is animated when the card resizes, as the new state may render before the change is observed.
+   */
+  private animateStateChange(oldState: NbWindowState | undefined, newState: NbWindowState) {
+    const card = this.card();
+    if (!oldState || oldState === newState || !card || this.reducedMotion()) {
       return;
     }
+    if (oldState === NbWindowState.FULL_SCREEN || newState === NbWindowState.FULL_SCREEN) {
+      this.stateChanging = false;
+      afterNextRender(
+        () =>
+          card.animate([{ opacity: 0.4, transform: 'scale(0.98)' }, { opacity: 1, transform: 'none' }], {
+            duration: 150,
+            easing: 'ease-out',
+          }),
+        { injector: this.injector },
+      );
+      return;
+    }
+    this.stateChanging = true;
+  }
 
-    if (this.content instanceof TemplateRef) {
-      this.attachTemplate();
+  /** Watches the card's height: a change of state animates from the height before it, as the observer sees it. */
+  private observeCardHeight() {
+    const card = this.card();
+    if (!card || typeof ResizeObserver !== 'function') {
+      return;
+    }
+    this.cardHeight = card.getBoundingClientRect().height;
+    this.resizeObserver = new ResizeObserver(() => {
+      const to = card.getBoundingClientRect().height;
+      const from = this.cardHeight;
+      this.cardHeight = to;
+      if (this.stateChanging && to !== from) {
+        this.stateChanging = false;
+        card.animate(
+          [
+            { height: `${from}px`, overflow: 'hidden' },
+            { height: `${to}px`, overflow: 'hidden' },
+          ],
+          { duration: expandDuration(Math.abs(to - from)), easing: 'ease-in-out' },
+        );
+      }
+    });
+    this.resizeObserver.observe(card);
+  }
+
+  private card(): HTMLElement | undefined {
+    const card = (this.elementRef.nativeElement as HTMLElement).querySelector('nb-card');
+    return card instanceof HTMLElement && typeof card.animate === 'function' ? card : undefined;
+  }
+
+  private reducedMotion(): boolean {
+    return typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  }
+
+  ngAfterViewInit() {
+    // The card fades and grows in, as a dialog's pane does; the host's transform places a full-screen window.
+    const card = this.card();
+    if (card) {
+      void animatePane(card, true);
+    }
+    this.observeCardHeight();
+    const content = this.content;
+    if (content instanceof TemplateRef) {
+      this.attachTemplate(content);
     } else {
-      this.attachComponent();
+      this.attachComponent(content);
     }
   }
 
   ngOnDestroy() {
+    this.resizeObserver?.disconnect();
     if (this.focusTrap) {
       this.focusTrap.restoreFocus();
     }
@@ -142,44 +244,18 @@ export class NbWindowComponent implements OnInit, AfterViewChecked, OnDestroy {
     this.close();
   }
 
-  minimize() {
-    if (this.windowRef.state === NbWindowState.MINIMIZED) {
-      this.windowRef.toPreviousState();
-    } else {
-      this.windowRef.minimize();
-    }
-  }
-
-  maximize() {
-    this.windowRef.maximize();
-  }
-
-  fullScreen() {
-    this.windowRef.fullScreen();
-  }
-
-  maximizeOrFullScreen() {
-    if (this.windowRef.state === NbWindowState.MINIMIZED && this.showMaximize) {
-      this.maximize();
-    } else {
-      this.fullScreen();
-    }
-  }
-
   close() {
     this.windowRef.close();
   }
 
-  protected attachTemplate() {
-    this.overlayContainer.attachTemplatePortal(
-      new NbTemplatePortal(this.content as TemplateRef<any>, null, this.context),
-    );
+  protected attachTemplate(content: TemplateRef<unknown>) {
+    this.overlayContainer().attachTemplatePortal(new NbTemplatePortal(content, undefined, this.context));
   }
 
-  protected attachComponent() {
-    const portal = new NbComponentPortal(this.content as Type<any>, null, null);
-    const ref = this.overlayContainer.attachComponentPortal(portal, this.context);
-    this.windowRef.componentInstance = ref.instance;
+  protected attachComponent(content: NbComponentType) {
+    const portal = new NbComponentPortal(content, null, null);
+    const ref = this.overlayContainer().attachComponentPortal(portal, this.context);
+    this.windowRef.componentRef = ref;
 
     ref.changeDetectorRef.detectChanges();
   }

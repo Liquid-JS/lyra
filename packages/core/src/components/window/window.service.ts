@@ -1,33 +1,38 @@
-import {
-  ComponentRef,
-  Inject,
-  Injectable,
-  Injector,
-  TemplateRef,
-  ViewContainerRef,
-} from '@angular/core';
-import { filter } from 'rxjs/operators';
-import { NbComponentPortal, NbComponentType, NbOverlayPositionBuilder, NbOverlayRef } from '../cdk/overlay/mapping';
-import { NbOverlayService } from '../cdk/overlay/overlay-service';
-import { NbBlockScrollStrategyAdapter } from '../cdk/adapter/block-scroll-strategy-adapter';
+import { ComponentRef, EnvironmentInjector, Injector, TemplateRef, ViewContainerRef, inject, Service } from '@angular/core';
+import { fadeBackdrop, NbComponentPortal, NbComponentType, NbOverlayPositionBuilder, NbOverlayRef } from '@liquid-js/lyr-core/cdk';
+import { NbEscapeStack, NbOverlayService } from '@liquid-js/lyr-core/cdk';
+import { NbBlockScrollStrategyAdapter } from '@liquid-js/lyr-core/cdk';
 import {
   NB_WINDOW_CONFIG,
   NB_WINDOW_CONTENT,
   NB_WINDOW_CONTEXT,
+  NbWindowOpenConfig,
   NbWindowConfig,
   NbWindowState,
 } from './window.options';
 import { NbWindowRef } from './window-ref';
 import { NbWindowsContainerComponent } from './windows-container.component';
 import { NbWindowComponent } from './window.component';
-import { NB_DOCUMENT } from '../../theme.options';
+import { NB_DOCUMENT } from '@liquid-js/lyr-core/base';
 
 /**
- * The `NbWindowService` can be used to open windows.
+ * Opens windows: panels with a component or template that are full screen over the page, docked at its bottom or
+ * minimized to their header, and can be open side by side.
  *
  * @stacked-example(Showcase, window/window-showcase.component)
  *
  * ### Installation
+ *
+ * Add `provideNbWindow()` to the application providers:
+ * ```ts
+ * bootstrapApplication(AppComponent, {
+ *   providers: [provideNbWindow(config)],
+ * });
+ * ```
+ * In a lazy loaded route, add `provideNbWindow()` to the route's `providers` instead, so the route gets its own
+ * instance.
+ *
+ * With NgModules:
  *
  * Import `NbWindowModule` to your app module.
  * ```ts
@@ -40,7 +45,7 @@ import { NB_DOCUMENT } from '../../theme.options';
  * export class AppModule { }
  * ```
  *
- * If you are using it in a lazy loaded module than you have to install `NbWindowModule.forChild`:
+ * In a lazy loaded module, import `NbWindowModule.forChild()` instead:
  * ```ts
  * @NgModule({
  *   imports: [
@@ -53,16 +58,13 @@ import { NB_DOCUMENT } from '../../theme.options';
  *
  * ### Usage
  *
- * A new window can be opened by calling the `open` method with a component or template to be loaded
- * and an optional configuration.
- * `open` method will return `NbWindowRef` that can be used for the further manipulations.
+ * `open` takes a component or template, and an optional config, and returns the window's `NbWindowRef`.
  *
  * ```ts
  * const windowRef = this.windowService.open(MyComponent, { ... });
  * ```
  *
- * `NbWindowRef` gives you ability manipulate opened window.
- * Also, you can inject `NbWindowRef` inside provided component which rendered in window.
+ * `NbWindowRef` controls the open window; the component rendered in the window can inject it.
  *
  * ```ts
  * this.windowService.open(MyWindowComponent, { ... });
@@ -80,58 +82,77 @@ import { NB_DOCUMENT } from '../../theme.options';
  * }
  * ```
  *
- * Instead of component you can create window from TemplateRef. As usual you can access context provided via config
- * via `let-` variables. Also you can get reference to the `NbWindowRef` in context's `windowRef` property.
+ * A window can show a `TemplateRef` instead of a component. The config's `context` is the template's `$implicit`,
+ * and the `NbWindowRef` is its `windowRef`, for `let-` variables.
  *
  * @stacked-example(Window content from TemplateRef, window/template-window.component)
  *
- * You could pass the optional window return value to the `NbWindowRef.close` method.
- * The passed value would be emitted to the `NbWindowRef.onClose` listeners.
+ * The title can be a template too: `titleTemplate`, with `titleTemplateContext` as its context.
+ *
+ * @stacked-example(Title from TemplateRef, window/window-template-title.component)
+ *
+ * A result passed to `NbWindowRef.close` is emitted to the `NbWindowRef.onClose` subscribers.
  *
  * @stacked-example(Result, window/window-result.component)
  *
  * ### Configuration
  *
- * As mentioned above, `open` method of the `NbWindowService` may receive optional configuration options.
- * Also, you can modify default windows configuration through `NbWindowModule.forRoot({ ... })`.
- * You can read about all available options on [API tab](docs/components/window/api#nbwindowconfig).
+ * `open` takes a window's options; the app's defaults go to `provideNbWindow({ ... })` or
+ * `NbWindowModule.forRoot({ ... })`. The [API tab](components/modals-overlays/window/api#nbwindowconfig) lists them.
  *
  * @stacked-example(Configuration, window/windows-backdrop.component)
  *
- * You can configure which buttons are available in a window via the `buttons` property of the window config.
- * @stacked-example(Control buttons, window/window-controls.component)
+ * A window is full screen, over the page, docked at the bottom of the page, or minimized to its header there. `states`
+ * sets which of them it can be in, and it has a button to each other one: Minimize, Collapse (to docked, Restore from
+ * minimized) and Expand (to full screen). It opens in `initialState` when that's one of them, otherwise in the first,
+ * in that order; e.g. `states: ['docked', 'minimized']` keeps a window docked, like a chat. `closeButton: false` leaves
+ * out the close button.
+ * @stacked-example(States, window/window-controls.component)
  *
+ * @styles
+ *
+ * window-background-color:
+ * window-border-color:
+ * window-border-radius:
+ * window-shadow:
+ * overlay-backdrop-background-color:
  */
-@Injectable()
+@Service({ autoProvided: false })
 export class NbWindowService {
-  protected document: Document;
-  protected overlayRef: NbOverlayRef;
-  protected windowsContainerViewRef: ViewContainerRef;
-  protected openWindows: NbWindowRef[] = [];
+  protected readonly overlayService = inject(NbOverlayService);
+  protected readonly overlayPositionBuilder = inject(NbOverlayPositionBuilder);
+  protected readonly blockScrollStrategy = inject(NbBlockScrollStrategyAdapter);
+  protected readonly escapeStack = inject(NbEscapeStack);
+  protected readonly defaultWindowsConfig = inject<NbWindowConfig>(NB_WINDOW_CONFIG);
+  protected readonly environmentInjector = inject(EnvironmentInjector, { optional: true });
 
-  constructor(
-    protected overlayService: NbOverlayService,
-    protected overlayPositionBuilder: NbOverlayPositionBuilder,
-    protected blockScrollStrategy: NbBlockScrollStrategyAdapter,
-    @Inject(NB_WINDOW_CONFIG) protected readonly defaultWindowsConfig: NbWindowConfig,
-    @Inject(NB_DOCUMENT) document,
-  ) {
-    this.document = document;
-  }
+  protected readonly document: Document = inject(NB_DOCUMENT);
+  protected overlayRef?: NbOverlayRef;
+  protected windowsContainerViewRef?: ViewContainerRef;
+  protected openWindows = new Array<NbWindowRef>();
+  /** The layer of the window on top. */
+  protected topLayer = 0;
+  /** A click on the shared backdrop closes every open window, or none: the app's setting. */
+  protected readonly closeOnBackdropClick = new NbWindowConfig(this.defaultWindowsConfig ?? {}).closeOnBackdropClick;
 
   /**
-   * Opens new window.
-   * @param windowContent
-   * @param windowConfig
-   * */
-  open(windowContent: TemplateRef<any> | NbComponentType, windowConfig: Partial<NbWindowConfig> = {}): NbWindowRef {
+   * Opens a window with a component or template, on top of the open ones.
+   */
+  open<T = unknown>(
+    windowContent: TemplateRef<unknown> | NbComponentType<T>,
+    windowConfig: NbWindowOpenConfig = {},
+  ): NbWindowRef<T> {
     if (this.shouldCreateWindowsContainer()) {
       this.createWindowsContainer();
+    } else {
+      this.bringWindowsContainerToFront();
     }
 
     const config = new NbWindowConfig(this.defaultWindowsConfig, windowConfig);
-    const windowRef = new NbWindowRef(config);
-    windowRef.componentRef = this.appendWindow(windowContent, config, windowRef);
+    const windowRef = new NbWindowRef<T>(config);
+    // A new window opens on top.
+    windowRef.layer.set(++this.topLayer);
+    windowRef.windowComponentRef = this.appendWindow(windowContent, config, windowRef);
 
     this.openWindows.push(windowRef);
     this.subscribeToEvents(windowRef);
@@ -148,23 +169,66 @@ export class NbWindowService {
     return true;
   }
 
+  /**
+   * All windows share one overlay, shown with the first window. Overlays shown since then, e.g. a dialog,
+   * would cover a new window, so the windows overlay is moved above them.
+   * */
+  protected bringWindowsContainerToFront() {
+    const overlayRef = this.overlayRef;
+    if (!overlayRef) {
+      return;
+    }
+    const host = overlayRef.hostElement;
+
+    if (host.matches(':popover-open')) {
+      // Popovers stack in the top layer in the order they were shown.
+      const openPopovers = this.document.querySelectorAll(':popover-open');
+      if (openPopovers.length > 1) {
+        host.hidePopover();
+        host.showPopover();
+      }
+      return;
+    }
+
+    const overlayContainer = host.parentElement;
+    if (!overlayContainer || overlayContainer.lastElementChild === host) {
+      return;
+    }
+    const backdrop = overlayRef.backdropElement;
+    if (backdrop?.parentElement === overlayContainer) {
+      overlayContainer.appendChild(backdrop);
+    }
+    overlayContainer.appendChild(host);
+  }
+
   protected createWindowsContainer() {
     if (this.overlayRef) {
       this.overlayRef.dispose();
     }
 
-    this.overlayRef = this.overlayService.create({
+    const windowsOverlayRef = this.overlayService.create({
       scrollStrategy: this.overlayService.scrollStrategies.noop(),
-      positionStrategy: this.overlayPositionBuilder.global().bottom().right(),
+      positionStrategy: this.overlayPositionBuilder.global().bottom().end(),
       hasBackdrop: true,
     });
-    const windowsContainerPortal = new NbComponentPortal(NbWindowsContainerComponent, null, null);
-    const overlayRef = this.overlayRef.attach(windowsContainerPortal);
-    this.windowsContainerViewRef = overlayRef.instance.viewContainerRef;
+    this.overlayRef = windowsOverlayRef;
+    const windowsContainerPortal = new NbComponentPortal(
+      NbWindowsContainerComponent,
+      null,
+      this.environmentInjector ?? null,
+    );
+    const overlayRef = windowsOverlayRef.attach(windowsContainerPortal);
+    this.windowsContainerViewRef = overlayRef.instance.viewContainerRef();
+
+    windowsOverlayRef.backdropClick().subscribe(() => {
+      if (this.closeOnBackdropClick) {
+        [...this.openWindows].forEach((windowRef) => windowRef.close());
+      }
+    });
   }
 
   protected appendWindow(
-    content: TemplateRef<any> | NbComponentType,
+    content: TemplateRef<unknown> | NbComponentType,
     config: NbWindowConfig,
     windowRef: NbWindowRef,
   ): ComponentRef<NbWindowComponent> {
@@ -176,34 +240,45 @@ export class NbWindowService {
       { provide: NbWindowConfig, useValue: config },
       { provide: NbWindowRef, useValue: windowRef },
     ];
-    const parentInjector = config.viewContainerRef
-      ? config.viewContainerRef.injector
-      : this.windowsContainerViewRef.injector;
+    const container = this.windowsContainerViewRef;
+    if (!container) {
+      throw new Error('NbWindowService: the windows container is not created.');
+    }
+    const parentInjector = config.viewContainerRef ? config.viewContainerRef.injector : container.injector;
     const injector = Injector.create({ parent: parentInjector, providers });
 
-    const ref = this.windowsContainerViewRef.createComponent(NbWindowComponent, {
+    const ref = container.createComponent(NbWindowComponent, {
       injector,
-      index: this.windowsContainerViewRef.length,
+      index: container.length,
     });
     ref.changeDetectorRef.detectChanges();
     return ref;
   }
 
   protected subscribeToEvents(windowRef: NbWindowRef) {
-    if (windowRef.config.closeOnBackdropClick) {
-      this.overlayRef.backdropClick().subscribe(() => windowRef.close());
-    }
+    // Escape closes the window in front, not a minimized one; one that doesn't close on Escape keeps it from the
+    // windows behind it.
+    const escape = this.escapeStack.add(
+      () => {
+        if (windowRef.config.closeOnEsc) {
+          windowRef.close();
+        }
+      },
+      () => windowRef.state !== NbWindowState.MINIMIZED,
+    );
 
-    if (windowRef.config.closeOnEsc) {
-      this.overlayRef
-        .keydownEvents()
-        .pipe(filter((event: KeyboardEvent) => event.keyCode === 27))
-        .subscribe(() => windowRef.close());
-    }
+    // The window used, e.g. clicked or focused, comes above the others.
+    windowRef.frontRequests.subscribe(() => {
+      if (windowRef.layer() !== this.topLayer) {
+        windowRef.layer.set(++this.topLayer);
+      }
+      escape.raise();
+    });
 
     windowRef.stateChange.subscribe(() => this.checkAndUpdateOverlay());
 
     windowRef.onClose.subscribe(() => {
+      escape.remove();
       this.openWindows.splice(this.openWindows.indexOf(windowRef), 1);
       this.checkAndUpdateOverlay();
     });
@@ -217,10 +292,12 @@ export class NbWindowService {
       this.blockScrollStrategy.disable();
     }
 
-    if (fullScreenWindows.some((w) => w.config.hasBackdrop)) {
-      this.overlayRef.backdropElement.removeAttribute('hidden');
-    } else {
-      this.overlayRef.backdropElement.setAttribute('hidden', '');
+    // The windows overlay is created with a backdrop.
+    const backdrop = this.overlayRef?.backdropElement;
+    if (!backdrop) {
+      return;
     }
+    // Shown, with a fade, while a full-screen window wants it; out of the way otherwise.
+    fadeBackdrop(backdrop, fullScreenWindows.some((w) => w.config.hasBackdrop));
   }
 }

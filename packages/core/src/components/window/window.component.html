@@ -1,0 +1,52 @@
+<!-- A window is over the page: a shadow instead of a border. -->
+<nb-card appearance="floating">
+  <nb-card-header>
+    @if (config.titleTemplate) {
+    <div cdkFocusInitial
+      tabindex="-1"
+      [id]="titleId">
+      <ng-container *ngTemplateOutlet="config.titleTemplate; context: { $implicit: config.titleTemplateContext }" />
+    </div>
+    } @else {
+    <div cdkFocusInitial
+      class="title"
+      tabindex="-1"
+      [id]="titleId"><span dir="auto">{{ config.title }}</span></div>
+    }
+
+    <div class="buttons">
+      <!-- A button to each other state the window can be in; the last button lines up with the header's end. -->
+      @for (button of stateButtons(); track button.state; let last = $last) {
+      <button type="button"
+        nbButton
+        ghost
+        inline
+        size="medium"
+        [edge]="last && !config.closeButton ? 'end' : undefined"
+        [attr.aria-label]="button.label"
+        (click)="windowRef.state = button.state">
+        <nb-icon [icon]="stateIcon(button.state)"
+          pack="essentials" />
+      </button>
+      }
+
+      @if (config.closeButton) {
+      <button type="button"
+        nbButton
+        ghost
+        inline
+        size="medium"
+        edge="end"
+        [attr.aria-label]="texts().close"
+        (click)="close()">
+        <nb-icon icon="close-outline"
+          pack="essentials" />
+      </button>
+      }
+    </div>
+  </nb-card-header>
+  <!-- Hidden with CSS while minimized, so the window content (and its state) survives. -->
+  <nb-card-body>
+    <nb-overlay-container />
+  </nb-card-body>
+</nb-card>

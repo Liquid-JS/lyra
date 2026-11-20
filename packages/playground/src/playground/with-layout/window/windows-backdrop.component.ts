@@ -1,39 +1,26 @@
-import { Component, TemplateRef, ViewChild } from '@angular/core';
-import { NbWindowService } from '@nebular/theme';
+import { Component, TemplateRef, inject, viewChild } from '@angular/core';
+import { NbWindowService, NbButtonComponent } from '@liquid-js/lyr-core';
 
 @Component({
-    template: `
-    <button (click)="openWindowWithBackdrop()" nbButton>Open window with backdrop</button>
-    <button (click)="openWindowWithoutBackdrop()" nbButton>Open window without backdrop</button>
-
-    <ng-template #disabledEsc>
-      Disabled close on escape click.
-    </ng-template>
-    <ng-template #escClose>
-      Click escape to close.
-    </ng-template>
-  `,
-    styleUrls: ['./window.scss'],
-    standalone: false
+  templateUrl: './windows-backdrop.component.html',
+  styleUrls: ['./window.scss'],
+  imports: [NbButtonComponent],
 })
 export class WindowsBackdropComponent {
+  private readonly windowService = inject(NbWindowService);
 
-  @ViewChild('escClose', { read: TemplateRef }) escCloseTemplate: TemplateRef<HTMLElement>;
-  @ViewChild('disabledEsc', { read: TemplateRef }) disabledEscTemplate: TemplateRef<HTMLElement>;
-
-  constructor(private windowService: NbWindowService) {}
+  readonly escCloseTemplate = viewChild.required('escClose', { read: TemplateRef });
+  readonly disabledEscTemplate = viewChild.required('disabledEsc', { read: TemplateRef });
 
   openWindowWithBackdrop() {
-    this.windowService.open(
-      this.escCloseTemplate,
-      { title: 'Window with backdrop', hasBackdrop: true },
-    );
+    this.windowService.open(this.escCloseTemplate(), { title: 'Window with backdrop', hasBackdrop: true });
   }
 
   openWindowWithoutBackdrop() {
-    this.windowService.open(
-      this.disabledEscTemplate,
-      { title: 'Window without backdrop', hasBackdrop: false, closeOnEsc: false },
-    );
+    this.windowService.open(this.disabledEscTemplate(), {
+      title: 'Window without backdrop',
+      hasBackdrop: false,
+      closeOnEsc: false,
+    });
   }
 }

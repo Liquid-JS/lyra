@@ -1,33 +1,24 @@
-/*
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { Component } from '@angular/core';
-import { NbWindowService } from '@nebular/theme';
+import { Component, inject, signal } from '@angular/core';
+import { NbWindowService, NbButtonComponent } from '@liquid-js/lyr-core';
 import { VisitorsFormComponent } from './components/visitors-form.component';
 
 @Component({
-    template: `
-    <button nbButton status="primary" (click)="openWindow()">Open window</button>
-    <br />
-    <h3 class="h5">Window visitors:</h3>
-    <ul>
-      <li *ngFor="let visitor of visitors">{{ visitor }}</li>
-    </ul>
-  `,
-    styleUrls: ['./window.scss'],
-    standalone: false
+  templateUrl: './window-result.component.html',
+  styleUrls: ['./window.scss'],
+  imports: [NbButtonComponent],
 })
 export class WindowResultComponent {
-  visitors: string[] = [];
+  private readonly windowService = inject(NbWindowService);
 
-  constructor(private windowService: NbWindowService) {}
+  readonly visitors = signal<string[]>([]);
 
   openWindow() {
     const windowRef = this.windowService.open(VisitorsFormComponent, { title: `Window` });
 
-    windowRef.onClose.subscribe((visitor) => this.visitors.push(visitor));
+    windowRef.onClose.subscribe((visitor) => {
+      if (typeof visitor === 'string') {
+        this.visitors.update((visitors) => [...visitors, visitor]);
+      }
+    });
   }
 }

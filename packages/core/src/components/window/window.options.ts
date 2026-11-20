@@ -2,87 +2,100 @@ import { TemplateRef, InjectionToken, ViewContainerRef } from '@angular/core';
 // Do not remove (TS4023).
 // eslint-disable-next-line
 import { ComponentType } from '@angular/cdk/overlay';
-import { NbComponentType } from '../cdk/overlay/mapping';
+import { NbComponentType } from '@liquid-js/lyr-core/cdk';
 
 export enum NbWindowState {
+  /** Collapsed to its header, docked at the bottom of the page. */
   MINIMIZED = 'minimized',
-  MAXIMIZED = 'maximized',
+  /** Open, docked at the bottom of the page, beside the content. */
+  DOCKED = 'docked',
+  /** Open in the middle of the page, over the content. */
   FULL_SCREEN = 'full-screen',
 }
 
+/** The states in the order a window prefers them, e.g. to open in. */
+const NB_WINDOW_STATES = [NbWindowState.FULL_SCREEN, NbWindowState.DOCKED, NbWindowState.MINIMIZED];
+
 export interface NbWindowStateChange {
-  oldState: NbWindowState;
+  oldState?: NbWindowState;
   newState: NbWindowState;
 }
 
-export interface NbWindowControlButtonsConfig {
-  minimize: boolean;
-  maximize: boolean;
-  fullScreen: boolean;
-  close: boolean;
-}
-
-export const NB_WINDOW_DEFAULT_BUTTONS_CONFIG: NbWindowControlButtonsConfig = {
-  minimize: true,
-  maximize: true,
-  fullScreen: true,
-  close: true,
-};
+/**
+ * Window options as they're passed in, the others left as they are.
+ */
+export type NbPartialWindowConfig = Partial<NbWindowConfig>;
 
 /**
- * Window configuration options.
+ * A window's own options, as `NbWindowService.open()` takes them: all but the app's, e.g. `closeOnBackdropClick`, which
+ * concerns every window.
+ */
+export type NbWindowOpenConfig = Omit<NbPartialWindowConfig, 'closeOnBackdropClick'>;
+
+/**
+ * A window's options: the app's defaults from `provideNbWindow()`, which `NbWindowService.open()` takes overrides of.
  */
 export class NbWindowConfig {
   /**
-   * Window title.
+   * The title, which names the window for assistive technologies and takes the focus as it opens.
    */
-  title: string = '';
+  title = '';
 
   /**
-   * Window title as template. Use it instead of `title` property.
+   * A template in place of `title`, with `titleTemplateContext` as its `$implicit` context.
    */
-  titleTemplate?: TemplateRef<any>;
+  titleTemplate?: TemplateRef<unknown>;
 
   /**
-   * Title as template may receive data through `config.titleTemplateContext` property.
-   * Window title as Template. You can access context inside template as $implicit.
+   * The `$implicit` context of `titleTemplate`.
    */
-  titleTemplateContext?: Object = {};
+  titleTemplateContext?: object = {};
 
   /**
-   * Initial window state. Full screen by default.
+   * The states the window can be in, which its buttons move it between: `full-screen`, over the page; `docked`, open at
+   * the bottom of the page; and `minimized`, collapsed to its header there. All three by default; e.g. `['docked',
+   * 'minimized']` keeps a window docked, like a chat.
+   */
+  states: NbWindowState[] = [...NB_WINDOW_STATES];
+
+  /**
+   * The state the window opens in, when it's one of `states`; otherwise the first of them, in the order full screen,
+   * docked, minimized. Full screen by default.
    */
   initialState: NbWindowState = NbWindowState.FULL_SCREEN;
 
   /**
-   * If true than backdrop will be rendered behind window.
-   * By default set to true.
+   * Whether the window has a close button. True by default. `closeOnEsc` and `NbWindowRef.close()` still close it.
    */
-  hasBackdrop: boolean = true;
+  closeButton = true;
 
   /**
-   * If set to true mouse clicks on backdrop will close a window.
-   * Default is true.
+   * Whether a backdrop covers the page while the window is full screen; docked and minimized windows leave
+   * the page uncovered. Windows share one backdrop, shown while any of them that has one is full screen. True by
+   * default.
    */
-  closeOnBackdropClick: boolean = true;
+  hasBackdrop = true;
 
   /**
-   * If true then escape press will close a window.
-   * Default is true.
+   * Whether a click on the backdrop closes every open window (true, the default) or none (false). Windows share one
+   * backdrop, so it's the app's setting, in `provideNbWindow()` or `NbWindowModule.forRoot()`, not a window's own.
    */
-  closeOnEsc: boolean = true;
+  closeOnBackdropClick = true;
 
   /**
-   * Class to be applied to the window.
+   * Whether Escape closes the window, when it's the one in front; a minimized window is passed over. True by default.
    */
-  windowClass: string = '';
+  closeOnEsc = true;
 
   /**
-   * Both, template and component may receive data through `config.context` property.
-   * For components, this data will be set as component properties.
-   * For templates, you can access it inside template as $implicit.
+   * A class added to the window's element.
    */
-  context?: Object = {};
+  windowClass = '';
+
+  /**
+   * Data for the content: set as the component's properties, or the template's `$implicit`.
+   */
+  context?: object = {};
 
   /**
    * Where the attached component should live in Angular's *logical* component tree.
@@ -90,23 +103,19 @@ export class NbWindowConfig {
    * component instantiated inside of the window. This does not affect where the window
    * content will be rendered.
    */
-  viewContainerRef: ViewContainerRef = null;
+  viewContainerRef?: ViewContainerRef;
 
-  /**
-   * Windows control buttons can be hidden by setting according property to false.
-   */
-  buttons: Partial<NbWindowControlButtonsConfig> = {};
-
-  constructor(...configs: Partial<NbWindowConfig>[]) {
+  constructor(...configs: (NbPartialWindowConfig | undefined)[]) {
     Object.assign(this, ...configs);
-    this.applyDefaultButtonConfig();
-  }
-
-  protected applyDefaultButtonConfig() {
-    Object.assign(this, { buttons: { ...NB_WINDOW_DEFAULT_BUTTONS_CONFIG, ...this.buttons } });
+    if (!this.states.length) {
+      this.states = [...NB_WINDOW_STATES];
+    }
+    if (!this.states.includes(this.initialState)) {
+      this.initialState = NB_WINDOW_STATES.find((state) => this.states.includes(state)) ?? NbWindowState.FULL_SCREEN;
+    }
   }
 }
 
-export const NB_WINDOW_CONTENT = new InjectionToken<TemplateRef<any> | NbComponentType>('Nebular Window Content');
-export const NB_WINDOW_CONFIG = new InjectionToken<NbWindowConfig>('Nebular Window Config');
-export const NB_WINDOW_CONTEXT = new InjectionToken<Object>('Nebular Window Context');
+export const NB_WINDOW_CONTENT = new InjectionToken<TemplateRef<unknown> | NbComponentType>('Lyra Window Content');
+export const NB_WINDOW_CONFIG = new InjectionToken<NbWindowConfig>('Lyra Window Config');
+export const NB_WINDOW_CONTEXT = new InjectionToken<object>('Lyra Window Context');

@@ -1,0 +1,12 @@
+@use '../../styles/theming' as *;
+
+// A window's frame, with its own variables, as the date picker's and colour picker's overlays have; they follow a
+// floating card's.
+@mixin nb-window-theme() {
+  nb-window > nb-card.appearance-floating {
+    background-color: nb-theme(window-background-color);
+    border-color: nb-theme(window-border-color);
+    border-radius: nb-theme(window-border-radius);
+    box-shadow: nb-theme(window-shadow);
+  }
+}
