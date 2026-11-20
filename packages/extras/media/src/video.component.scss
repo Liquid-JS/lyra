@@ -1,0 +1,314 @@
+nb-video {
+  display: block;
+  aspect-ratio: 16 / 9;
+
+  > .frame {
+    position: relative;
+    // The controls drop what doesn't fit, by the frame's width, which is the screen's in full screen.
+    container-type: inline-size;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    border-radius: var(--border-radius);
+    background: #000;
+    color: var(--text-control-color);
+    font-family: var(--font-family-primary);
+
+    // The keyboard's focus, with the theme's ring, as Lyra's controls show it.
+    &:focus-visible {
+      outline: none;
+      box-shadow: 0 0 0 var(--outline-width) var(--outline-color);
+    }
+
+    &:fullscreen {
+      border-radius: 0;
+    }
+
+    // While it plays and the pointer rests, the controls and the pointer step aside, unless the keyboard is on a control
+    // or a menu is open.
+    &.idle:not(:has(:focus-visible, nb-select.open)) {
+      cursor: none;
+
+      > .controls {
+        opacity: 0;
+      }
+
+      > .cue {
+        bottom: 1.5rem;
+      }
+
+      &::after {
+        opacity: 0;
+      }
+    }
+
+    // A gradient the controls read on, when it has them.
+    &:not(.bare)::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgb(0 0 0 / 70%), transparent 35%);
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+  }
+
+  .media {
+    position: absolute;
+    inset: 0;
+
+    video,
+    iframe,
+    .still {
+      display: block;
+      width: 100%;
+      height: 100%;
+      border: 0;
+      object-fit: contain;
+    }
+
+    // The browser's own captions, which the player draws instead.
+    video::cue {
+      visibility: hidden;
+    }
+
+    // The paused frame, in Safari's full screen only.
+    .still:not(.shown) {
+      display: none;
+    }
+  }
+
+  // Captions, above the controls while they show.
+  .cue {
+    position: absolute;
+    inset-inline: 0;
+    bottom: 4rem;
+    z-index: 1;
+    display: flex;
+    justify-content: center;
+    padding-inline: 5%;
+    color: #fff;
+    font-size: 1.125rem;
+    line-height: 1.4;
+    text-align: center;
+    white-space: pre-line;
+    pointer-events: none;
+    transition: bottom 0.3s ease;
+
+    span {
+      padding: 0.1em 0.4em;
+      border-radius: 0.2em;
+      background: rgb(0 0 0 / 75%);
+      box-decoration-break: clone;
+    }
+  }
+
+  .frame.bare > .cue {
+    bottom: 1.5rem;
+  }
+
+  .frame:fullscreen > .cue {
+    bottom: 6rem;
+  }
+
+  .big-play {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    display: grid;
+    place-items: center;
+    width: 5rem;
+    height: 5rem;
+    margin: auto;
+    // The triangle points right in every language, and its weight is left of its box's middle.
+    padding: 0 0 0 0.25rem;
+    border: 0;
+    border-radius: 50%;
+    background: rgb(255 255 255 / 92%);
+    color: var(--color-primary-default);
+    font-size: 2.5rem;
+    cursor: pointer;
+    transition: transform 0.15s ease;
+
+    &:hover {
+      transform: scale(1.05);
+    }
+
+    // Its icon at the size above, which an icon doesn't take from what holds it.
+    nb-icon {
+      font-size: inherit;
+    }
+  }
+
+  .waiting {
+    z-index: 1;
+    background: none;
+    pointer-events: none;
+  }
+
+  .message {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 1rem;
+    text-align: center;
+
+    nb-icon {
+      flex-shrink: 0;
+      font-size: 1.5rem;
+    }
+  }
+
+  .controls {
+    position: absolute;
+    inset-block-end: 0;
+    inset-inline: 0;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.5rem 0.75rem;
+    transition: opacity 0.3s ease;
+    // Bigger icons in buttons of the same size, with less padding around them.
+    --button-small-icon-size: 1.5rem;
+    --button-small-icon-vertical-margin: -0.375rem;
+    --icon-button-ghost-small-padding: 0.5625rem 0.1875rem;
+
+    .position {
+      flex: 1;
+      min-width: 4rem;
+      margin-inline: 0.5rem;
+    }
+
+    .volume {
+      display: flex;
+      flex-shrink: 0;
+      align-items: center;
+
+      nb-slider {
+        width: 4.5rem;
+        margin-inline: 0.25rem 0.5rem;
+        transition:
+          width 0.2s ease,
+          padding 0.2s ease,
+          margin 0.2s ease,
+          opacity 0.2s ease;
+      }
+
+      // Closed, it takes no room at all, its padding included.
+      &:not(:hover, :has(:focus-visible)) nb-slider {
+        width: 0;
+        margin-inline: 0;
+        padding-inline: 0;
+        overflow: hidden;
+        opacity: 0;
+      }
+    }
+
+    .time,
+    .live {
+      font-size: var(--text-paragraph-2-font-size);
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    .live {
+      flex: 1;
+      margin-inline: 0.5rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    // As wide as their options, not as a form's fields.
+    .speed {
+      --select-small-width: 4.5rem;
+    }
+
+    .quality {
+      --select-small-width: 5.5rem;
+    }
+
+    [nbButton] {
+      flex-shrink: 0;
+    }
+  }
+
+  // On a whole screen, the controls are bigger.
+  .frame:fullscreen .controls {
+    gap: 0.5rem;
+    padding: 1rem 1.5rem;
+    --button-small-icon-size: 2rem;
+    --button-small-icon-vertical-margin: -0.625rem;
+    --icon-button-ghost-small-padding: 0.9375rem 0.3125rem;
+
+    .time,
+    .live {
+      font-size: 1rem;
+    }
+
+    .speed,
+    .quality {
+      --select-small-text-font-size: 1rem;
+      --select-small-text-line-height: 1.75rem;
+    }
+
+    .speed {
+      --select-small-width: 5.25rem;
+    }
+
+    .quality {
+      --select-small-width: 6.5rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .frame::after,
+    .controls,
+    .cue,
+    .volume nb-slider,
+    .big-play {
+      transition: none;
+    }
+  }
+
+  // Captions grow with the player.
+  @container (min-width: 60rem) {
+    .cue {
+      font-size: 1.625rem;
+    }
+  }
+
+  @container (min-width: 90rem) {
+    .cue {
+      font-size: 2.25rem;
+    }
+  }
+
+  // Narrow players keep play, the position and full screen.
+  @container (max-width: 30rem) {
+    .cue {
+      bottom: 3.25rem;
+      font-size: 0.875rem;
+    }
+
+    .controls {
+      .volume nb-slider,
+      .speed,
+      .quality,
+      .time {
+        display: none;
+      }
+    }
+
+    .big-play {
+      width: 3.5rem;
+      height: 3.5rem;
+      font-size: 1.75rem;
+    }
+  }
+}
