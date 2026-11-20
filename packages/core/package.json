@@ -1,111 +1,112 @@
 {
-  "name": "@liquid-js/lyr-core",
-  "version": "22.0.0",
-  "type": "module",
-  "description": "Lyra core: Angular UI components and theming (a maintained fork of Nebular)",
-  "author": "HitkoDev <development@hitko.si>",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Liquid-JS/lyra.git"
-  },
-  "bugs": {
-    "url": "https://github.com/Liquid-JS/lyra/issues"
-  },
-  "homepage": "https://github.com/Liquid-JS/lyra/tree/master/packages/core#readme",
-  "keywords": [
-    "angular",
-    "typescript",
-    "lyra",
-    "ui",
-    "components",
-    "theme"
-  ],
-  "scripts": {
-    "build": "run -T ng build core --configuration production",
-    "watch": "run -T ng build core --configuration development --watch",
-    "test": "run -T ng test core --no-watch",
-    "test:watch": "run -T ng test core",
-    "lint": "run -T ng lint core",
-    "lint:fix": "run -T ng lint core --fix",
-    "lint:styles": "run -T stylelint \"**/*.scss\"",
-    "lint:styles:fix": "run -T stylelint \"**/*.scss\" --fix"
-  },
-  "peerDependencies": {
-    "@angular/cdk": "^22.0.0",
-    "@angular/common": "^22.0.0",
-    "@angular/core": "^22.0.0",
-    "@angular/forms": "^22.0.0",
-    "@angular/localize": "^22.0.0",
-    "@angular/platform-browser": "^22.0.0",
-    "@angular/router": "^22.0.0",
-    "rxjs": "^6.5.3 || ^7.4.0",
-    "tslib": "^2.9.1"
-  },
-  "schematics": "./schematics/collection.json",
-  "sideEffects": false,
-  "exports": {
-    "./styles/core/mixins": {
-      "sass": "./styles/core/_mixins.scss"
+    "name": "@liquid-js/lyr-core",
+    "description": "Customizable Angular UI components and theming",
+    "bugs": {
+        "url": "https://github.com/Liquid-JS/lyra/issues"
     },
-    "./styles/core/variants": {
-      "sass": "./styles/core/_variants.scss"
+    "version": "22.0.0",
+    "license": "MIT",
+    "author": "HitkoDev <development@hitko.si>",
+    "type": "module",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/Liquid-JS/lyra.git"
     },
-    "./styles/global/typography/typography": {
-      "sass": "./styles/global/typography/_typography.scss"
+    "homepage": "https://github.com/Liquid-JS/lyra/tree/master/packages/core#readme",
+    "keywords": [
+        "angular",
+        "typescript",
+        "lyra",
+        "ui",
+        "components",
+        "theme"
+    ],
+    "scripts": {
+        "watch": "run -T ng build core --configuration development --watch",
+        "build": "run -T ng build core --configuration production",
+        "lint": "run -T ng lint core",
+        "lint:fix": "yarn lint --fix",
+        "lint:html": "run -T js-beautify --type html -r -f ./src/**/*.html --config ./js-beautify.json",
+        "lint:sass": "run -T stylelint \"src/**/*.scss\"",
+        "lint:sass:fix": "yarn lint:sass --fix",
+        "test": "run -T ng test core --no-watch",
+        "test:watch": "run -T ng test core"
     },
-    "./styles/global/breakpoints": {
-      "sass": "./styles/global/_breakpoints.scss"
+    "peerDependencies": {
+        "@angular/cdk": "^22.0.0",
+        "@angular/common": "^22.0.0",
+        "@angular/core": "^22.0.0",
+        "@angular/forms": "^22.0.0",
+        "@angular/localize": "^22.0.0",
+        "@angular/platform-browser": "^22.0.0",
+        "@angular/router": "^22.0.0",
+        "rxjs": "^6.5.3 || ^7.4.0",
+        "tslib": "^2.9.1"
     },
-    "./styles/prebuilt/corporate.css": {
-      "style": "./styles/prebuilt/corporate.css"
+    "peerDependenciesMeta": {
+        "@angular/localize": {
+            "optional": true
+        }
     },
-    "./styles/prebuilt/cosmic.css": {
-      "style": "./styles/prebuilt/cosmic.css"
-    },
-    "./styles/prebuilt/dark.css": {
-      "style": "./styles/prebuilt/dark.css"
-    },
-    "./styles/prebuilt/default.css": {
-      "style": "./styles/prebuilt/default.css"
-    },
-    "./styles/prebuilt/material-dark.css": {
-      "style": "./styles/prebuilt/material-dark.css"
-    },
-    "./styles/prebuilt/material-light.css": {
-      "style": "./styles/prebuilt/material-light.css"
-    },
-    "./styles/themes/corporate": {
-      "sass": "./styles/themes/_corporate.scss"
-    },
-    "./styles/themes/cosmic": {
-      "sass": "./styles/themes/_cosmic.scss"
-    },
-    "./styles/themes/dark": {
-      "sass": "./styles/themes/_dark.scss"
-    },
-    "./styles/themes/default": {
-      "sass": "./styles/themes/_default.scss"
-    },
-    "./styles/themes/mapping": {
-      "sass": "./styles/themes/_mapping.scss"
-    },
-    "./styles/all": {
-      "sass": "./styles/_all.scss"
-    },
-    "./styles/globals": {
-      "sass": "./styles/_globals.scss"
-    },
-    "./styles/themes": {
-      "sass": "./styles/_themes.scss"
-    },
-    "./styles/theming": {
-      "sass": "./styles/_theming.scss"
+    "schematics": "./schematics/collection.json",
+    "sideEffects": false,
+    "exports": {
+        "./styles/core/mixins": {
+            "sass": "./styles/core/_mixins.scss"
+        },
+        "./styles/core/variants": {
+            "sass": "./styles/core/_variants.scss"
+        },
+        "./styles/global/typography/typography": {
+            "sass": "./styles/global/typography/_typography.scss"
+        },
+        "./styles/global/breakpoints": {
+            "sass": "./styles/global/_breakpoints.scss"
+        },
+        "./styles/prebuilt/corporate.css": {
+            "style": "./styles/prebuilt/corporate.css"
+        },
+        "./styles/prebuilt/cosmic.css": {
+            "style": "./styles/prebuilt/cosmic.css"
+        },
+        "./styles/prebuilt/dark.css": {
+            "style": "./styles/prebuilt/dark.css"
+        },
+        "./styles/prebuilt/default.css": {
+            "style": "./styles/prebuilt/default.css"
+        },
+        "./styles/prebuilt/material-dark.css": {
+            "style": "./styles/prebuilt/material-dark.css"
+        },
+        "./styles/prebuilt/material-light.css": {
+            "style": "./styles/prebuilt/material-light.css"
+        },
+        "./styles/themes/corporate": {
+            "sass": "./styles/themes/_corporate.scss"
+        },
+        "./styles/themes/cosmic": {
+            "sass": "./styles/themes/_cosmic.scss"
+        },
+        "./styles/themes/dark": {
+            "sass": "./styles/themes/_dark.scss"
+        },
+        "./styles/themes/default": {
+            "sass": "./styles/themes/_default.scss"
+        },
+        "./styles/themes/mapping": {
+            "sass": "./styles/themes/_mapping.scss"
+        },
+        "./styles/all": {
+            "sass": "./styles/_all.scss"
+        },
+        "./styles/globals": {
+            "sass": "./styles/_globals.scss"
+        },
+        "./styles/themes": {
+            "sass": "./styles/_themes.scss"
+        },
+        "./styles/theming": {
+            "sass": "./styles/_theming.scss"
+        }
     }
-  },
-  "peerDependenciesMeta": {
-    "@angular/localize": {
-      "optional": true
-    }
-  }
 }

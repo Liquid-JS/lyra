@@ -1,61 +1,62 @@
 {
-  "name": "@liquid-js/lyr-auth",
-  "version": "22.0.0",
-  "type": "module",
-  "description": "Lyra auth module",
-  "author": "HitkoDev <development@hitko.si>",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Liquid-JS/lyra.git"
-  },
-  "bugs": {
-    "url": "https://github.com/Liquid-JS/lyra/issues"
-  },
-  "homepage": "https://github.com/Liquid-JS/lyra/tree/master/packages/auth#readme",
-  "keywords": [
-    "angular",
-    "typescript",
-    "lyra",
-    "ui",
-    "components",
-    "auth"
-  ],
-  "scripts": {
-    "build": "run -T ng build auth --configuration production",
-    "watch": "run -T ng build auth --configuration development --watch",
-    "test": "run -T ng test auth --no-watch",
-    "test:watch": "run -T ng test auth",
-    "lint": "run -T ng lint auth",
-    "lint:fix": "run -T ng lint auth --fix",
-    "lint:styles": "run -T stylelint \"**/*.scss\"",
-    "lint:styles:fix": "run -T stylelint \"**/*.scss\" --fix"
-  },
-  "peerDependencies": {
-    "@angular/common": "^22.0.0",
-    "@angular/core": "^22.0.0",
-    "@angular/forms": "^22.0.0",
-    "@angular/router": "^22.0.0",
-    "@liquid-js/lyr-core": "^22.0.0",
-    "rxjs": "^6.5.3 || ^7.4.0",
-    "tslib": "^2.9.1"
-  },
-  "sideEffects": false,
-  "exports": {
-    "./styles/prebuilt/corporate.css": {
-      "style": "./styles/prebuilt/corporate.css"
+    "name": "@liquid-js/lyr-auth",
+    "description": "Lyra authentication: login and registration pages, strategies, tokens and guards",
+    "bugs": {
+        "url": "https://github.com/Liquid-JS/lyra/issues"
     },
-    "./styles/prebuilt/cosmic.css": {
-      "style": "./styles/prebuilt/cosmic.css"
+    "version": "22.0.0",
+    "license": "MIT",
+    "author": "HitkoDev <development@hitko.si>",
+    "type": "module",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/Liquid-JS/lyra.git"
     },
-    "./styles/prebuilt/dark.css": {
-      "style": "./styles/prebuilt/dark.css"
+    "homepage": "https://github.com/Liquid-JS/lyra/tree/master/packages/auth#readme",
+    "keywords": [
+        "angular",
+        "typescript",
+        "lyra",
+        "ui",
+        "components",
+        "auth"
+    ],
+    "scripts": {
+        "watch": "run -T ng build auth --configuration development --watch",
+        "build": "run -T ng build auth --configuration production",
+        "lint": "run -T ng lint auth",
+        "lint:fix": "yarn lint --fix",
+        "lint:html": "run -T js-beautify --type html -r -f ./src/**/*.html --config ./js-beautify.json",
+        "lint:sass": "run -T stylelint \"src/**/*.scss\"",
+        "lint:sass:fix": "yarn lint:sass --fix",
+        "test": "run -T ng test auth --no-watch",
+        "test:watch": "run -T ng test auth"
     },
-    "./styles/prebuilt/default.css": {
-      "style": "./styles/prebuilt/default.css"
+    "peerDependencies": {
+        "@angular/common": "^22.0.0",
+        "@angular/core": "^22.0.0",
+        "@angular/forms": "^22.0.0",
+        "@angular/router": "^22.0.0",
+        "@liquid-js/lyr-core": "^22.0.0",
+        "rxjs": "^6.5.3 || ^7.4.0",
+        "tslib": "^2.9.1"
     },
-    "./styles/globals": {
-      "sass": "./styles/_globals.scss"
+    "sideEffects": false,
+    "exports": {
+        "./styles/prebuilt/corporate.css": {
+            "style": "./styles/prebuilt/corporate.css"
+        },
+        "./styles/prebuilt/cosmic.css": {
+            "style": "./styles/prebuilt/cosmic.css"
+        },
+        "./styles/prebuilt/dark.css": {
+            "style": "./styles/prebuilt/dark.css"
+        },
+        "./styles/prebuilt/default.css": {
+            "style": "./styles/prebuilt/default.css"
+        },
+        "./styles/globals": {
+            "sass": "./styles/_globals.scss"
+        }
     }
-  }
 }

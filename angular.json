@@ -1,784 +1,806 @@
 {
-  "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
-  "version": 1,
-  "newProjectRoot": "packages",
-  "projects": {
-    "core": {
-      "projectType": "library",
-      "root": "packages/core",
-      "sourceRoot": "packages/core/src",
-      "prefix": "nb",
-      "schematics": {
-        "@schematics/angular:component": {
-          "style": "scss",
-          "changeDetection": "OnPush"
-        }
-      },
-      "architect": {
-        "build": {
-          "builder": "@angular/build:ng-packagr",
-          "configurations": {
-            "production": {
-              "tsConfig": "packages/core/tsconfig.lib.prod.json"
-            },
-            "development": {
-              "tsConfig": "packages/core/tsconfig.lib.json"
-            }
-          },
-          "defaultConfiguration": "production"
-        },
-        "test": {
-          "builder": "@angular/build:unit-test",
-          "options": {
-            "buildTarget": "core:test-build",
-            "tsConfig": "packages/core/tsconfig.spec.json",
-            "runner": "vitest",
-            "runnerConfig": true,
-            "browsers": [
-              "chromium"
-            ],
-            "headless": true,
-            "browserViewport": "1024x768",
-            "setupFiles": [
-              "packages/test-setup.ts"
-            ]
-          }
-        },
-        "lint": {
-          "builder": "@angular-eslint/builder:lint",
-          "options": {
-            "lintFilePatterns": [
-              "packages/core/**/*.ts",
-              "packages/core/**/*.html"
-            ],
-            "eslintConfig": "packages/core/eslint.config.js"
-          }
-        },
-        "test-build": {
-          "builder": "@angular/build:application",
-          "options": {
-            "tsConfig": "packages/core/tsconfig.spec.json",
-            "polyfills": [],
-            "stylePreprocessorOptions": {
-              "includePaths": [
-                "node_modules/.lyra-styles"
-              ]
-            },
-            "aot": false
-          }
-        }
-      }
+    "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
+    "version": 1,
+    "cli": {
+        "packageManager": "yarn",
+        "schematicCollections": [
+            "angular-eslint"
+        ],
+        "analytics": false
     },
-    "icons": {
-      "projectType": "library",
-      "root": "packages/icons",
-      "sourceRoot": "packages/icons/src",
-      "prefix": "nb",
-      "schematics": {
+    "schematics": {
         "@schematics/angular:component": {
-          "style": "scss",
-          "changeDetection": "OnPush"
-        }
-      },
-      "architect": {
-        "build": {
-          "builder": "@angular/build:ng-packagr",
-          "configurations": {
-            "production": {
-              "tsConfig": "packages/icons/tsconfig.lib.prod.json"
-            },
-            "development": {
-              "tsConfig": "packages/icons/tsconfig.lib.json"
-            }
-          },
-          "defaultConfiguration": "production"
+            "viewEncapsulation": "Emulated",
+            "style": "scss",
+            "type": "component"
         },
-        "test": {
-          "builder": "@angular/build:unit-test",
-          "options": {
-            "buildTarget": "core:test-build",
-            "tsConfig": "packages/icons/tsconfig.spec.json",
-            "runner": "vitest",
-            "runnerConfig": true,
-            "browsers": [
-              "chromium"
-            ],
-            "headless": true,
-            "browserViewport": "1024x768",
-            "setupFiles": [
-              "packages/test-setup.ts"
-            ]
-          }
+        "@schematics/angular:service": {
+            "type": "service"
         },
-        "lint": {
-          "builder": "@angular-eslint/builder:lint",
-          "options": {
-            "lintFilePatterns": [
-              "packages/icons/**/*.ts",
-              "packages/icons/**/*.html"
-            ],
-            "eslintConfig": "packages/icons/eslint.config.js"
-          }
+        "@schematics/angular:directive": {
+            "type": "directive"
+        },
+        "@schematics/angular:guard": {
+            "typeSeparator": "."
+        },
+        "@schematics/angular:interceptor": {
+            "typeSeparator": "."
+        },
+        "@schematics/angular:module": {
+            "typeSeparator": "."
+        },
+        "@schematics/angular:pipe": {
+            "typeSeparator": "."
+        },
+        "@schematics/angular:resolver": {
+            "typeSeparator": "."
         }
-      }
     },
-    "auth": {
-      "projectType": "library",
-      "root": "packages/auth",
-      "sourceRoot": "packages/auth/src",
-      "prefix": "nb",
-      "schematics": {
-        "@schematics/angular:component": {
-          "style": "scss",
-          "changeDetection": "OnPush"
-        }
-      },
-      "architect": {
-        "build": {
-          "builder": "@angular/build:ng-packagr",
-          "configurations": {
-            "production": {
-              "tsConfig": "packages/auth/tsconfig.lib.prod.json"
-            },
-            "development": {
-              "tsConfig": "packages/auth/tsconfig.lib.json"
-            }
-          },
-          "defaultConfiguration": "production"
-        },
-        "test": {
-          "builder": "@angular/build:unit-test",
-          "options": {
-            "buildTarget": "core:test-build",
-            "tsConfig": "packages/auth/tsconfig.spec.json",
-            "runner": "vitest",
-            "runnerConfig": true,
-            "browsers": [
-              "chromium"
-            ],
-            "headless": true,
-            "browserViewport": "1024x768",
-            "setupFiles": [
-              "packages/test-setup.ts"
-            ]
-          }
-        },
-        "lint": {
-          "builder": "@angular-eslint/builder:lint",
-          "options": {
-            "lintFilePatterns": [
-              "packages/auth/**/*.ts",
-              "packages/auth/**/*.html"
-            ],
-            "eslintConfig": "packages/auth/eslint.config.js"
-          }
-        }
-      }
-    },
-    "security": {
-      "projectType": "library",
-      "root": "packages/security",
-      "sourceRoot": "packages/security/src",
-      "prefix": "nb",
-      "schematics": {
-        "@schematics/angular:component": {
-          "style": "scss",
-          "changeDetection": "OnPush"
-        }
-      },
-      "architect": {
-        "build": {
-          "builder": "@angular/build:ng-packagr",
-          "configurations": {
-            "production": {
-              "tsConfig": "packages/security/tsconfig.lib.prod.json"
-            },
-            "development": {
-              "tsConfig": "packages/security/tsconfig.lib.json"
-            }
-          },
-          "defaultConfiguration": "production"
-        },
-        "test": {
-          "builder": "@angular/build:unit-test",
-          "options": {
-            "buildTarget": "core:test-build",
-            "tsConfig": "packages/security/tsconfig.spec.json",
-            "runner": "vitest",
-            "runnerConfig": true,
-            "browsers": [
-              "chromium"
-            ],
-            "headless": true,
-            "browserViewport": "1024x768",
-            "setupFiles": [
-              "packages/test-setup.ts"
-            ]
-          }
-        },
-        "lint": {
-          "builder": "@angular-eslint/builder:lint",
-          "options": {
-            "lintFilePatterns": [
-              "packages/security/**/*.ts",
-              "packages/security/**/*.html"
-            ],
-            "eslintConfig": "packages/security/eslint.config.js"
-          }
-        }
-      }
-    },
-    "moment": {
-      "projectType": "library",
-      "root": "packages/moment",
-      "sourceRoot": "packages/moment/src",
-      "prefix": "nb",
-      "schematics": {
-        "@schematics/angular:component": {
-          "style": "scss",
-          "changeDetection": "OnPush"
-        }
-      },
-      "architect": {
-        "build": {
-          "builder": "@angular/build:ng-packagr",
-          "configurations": {
-            "production": {
-              "tsConfig": "packages/moment/tsconfig.lib.prod.json"
-            },
-            "development": {
-              "tsConfig": "packages/moment/tsconfig.lib.json"
-            }
-          },
-          "defaultConfiguration": "production"
-        },
-        "test": {
-          "builder": "@angular/build:unit-test",
-          "options": {
-            "buildTarget": "core:test-build",
-            "tsConfig": "packages/moment/tsconfig.spec.json",
-            "runner": "vitest",
-            "runnerConfig": true,
-            "browsers": [
-              "chromium"
-            ],
-            "headless": true,
-            "browserViewport": "1024x768",
-            "setupFiles": [
-              "packages/test-setup.ts"
-            ]
-          }
-        },
-        "lint": {
-          "builder": "@angular-eslint/builder:lint",
-          "options": {
-            "lintFilePatterns": [
-              "packages/moment/**/*.ts",
-              "packages/moment/**/*.html"
-            ],
-            "eslintConfig": "packages/moment/eslint.config.js"
-          }
-        }
-      }
-    },
-    "date-fns": {
-      "projectType": "library",
-      "root": "packages/date-fns",
-      "sourceRoot": "packages/date-fns/src",
-      "prefix": "nb",
-      "schematics": {
-        "@schematics/angular:component": {
-          "style": "scss",
-          "changeDetection": "OnPush"
-        }
-      },
-      "architect": {
-        "build": {
-          "builder": "@angular/build:ng-packagr",
-          "configurations": {
-            "production": {
-              "tsConfig": "packages/date-fns/tsconfig.lib.prod.json"
-            },
-            "development": {
-              "tsConfig": "packages/date-fns/tsconfig.lib.json"
-            }
-          },
-          "defaultConfiguration": "production"
-        },
-        "test": {
-          "builder": "@angular/build:unit-test",
-          "options": {
-            "buildTarget": "core:test-build",
-            "tsConfig": "packages/date-fns/tsconfig.spec.json",
-            "runner": "vitest",
-            "runnerConfig": true,
-            "browsers": [
-              "chromium"
-            ],
-            "headless": true,
-            "browserViewport": "1024x768",
-            "setupFiles": [
-              "packages/test-setup.ts"
-            ]
-          }
-        },
-        "lint": {
-          "builder": "@angular-eslint/builder:lint",
-          "options": {
-            "lintFilePatterns": [
-              "packages/date-fns/**/*.ts",
-              "packages/date-fns/**/*.html"
-            ],
-            "eslintConfig": "packages/date-fns/eslint.config.js"
-          }
-        }
-      }
-    },
-    "firebase-auth": {
-      "projectType": "library",
-      "root": "packages/firebase-auth",
-      "sourceRoot": "packages/firebase-auth/src",
-      "prefix": "nb",
-      "schematics": {
-        "@schematics/angular:component": {
-          "style": "scss",
-          "changeDetection": "OnPush"
-        }
-      },
-      "architect": {
-        "build": {
-          "builder": "@angular/build:ng-packagr",
-          "configurations": {
-            "production": {
-              "tsConfig": "packages/firebase-auth/tsconfig.lib.prod.json"
-            },
-            "development": {
-              "tsConfig": "packages/firebase-auth/tsconfig.lib.json"
-            }
-          },
-          "defaultConfiguration": "production"
-        },
-        "test": {
-          "builder": "@angular/build:unit-test",
-          "options": {
-            "buildTarget": "core:test-build",
-            "tsConfig": "packages/firebase-auth/tsconfig.spec.json",
-            "runner": "vitest",
-            "runnerConfig": true,
-            "browsers": [
-              "chromium"
-            ],
-            "headless": true,
-            "browserViewport": "1024x768",
-            "setupFiles": [
-              "packages/test-setup.ts"
-            ]
-          }
-        },
-        "lint": {
-          "builder": "@angular-eslint/builder:lint",
-          "options": {
-            "lintFilePatterns": [
-              "packages/firebase-auth/**/*.ts",
-              "packages/firebase-auth/**/*.html"
-            ],
-            "eslintConfig": "packages/firebase-auth/eslint.config.js"
-          }
-        }
-      }
-    },
-    "playground": {
-      "projectType": "application",
-      "root": "packages/playground",
-      "sourceRoot": "packages/playground/src",
-      "prefix": "npg",
-      "schematics": {
-        "@schematics/angular:component": {
-          "style": "scss",
-          "changeDetection": "OnPush"
-        }
-      },
-      "architect": {
-        "build": {
-          "builder": "@angular/build:application",
-          "options": {
-            "outputPath": {
-              "base": "dist/playground",
-              "browser": ""
-            },
-            "browser": "packages/playground/src/main.ts",
-            "index": "packages/playground/src/index.html",
-            "polyfills": [],
-            "tsConfig": "packages/playground/tsconfig.app.json",
-            "inlineStyleLanguage": "scss",
-            "allowedCommonJsDependencies": [
-              "extend",
-              "format",
-              "highlight.js"
-            ],
-            "assets": [
-              {
-                "glob": "**/*",
-                "input": "packages/playground/public"
-              },
-              {
-                "glob": "*.svg",
-                "input": "node_modules/nxt-flags/assets/flags",
-                "output": "assets/flags"
-              }
-            ],
-            "styles": [
-              {
-                "input": "packages/playground/src/playground/styles/styles.scss",
-                "bundleName": "playground-theme",
-                "inject": false
-              }
-            ],
-            "stylePreprocessorOptions": {
-              "includePaths": [
-                "node_modules/.lyra-styles"
-              ]
-            }
-          },
-          "configurations": {
-            "production": {
-              "budgets": [
-                {
-                  "type": "initial",
-                  "maximumWarning": "2MB",
-                  "maximumError": "10MB"
-                },
-                {
-                  "type": "anyComponentStyle",
-                  "maximumWarning": "48kB",
-                  "maximumError": "2MB"
+    "newProjectRoot": "packages",
+    "projects": {
+        "core": {
+            "projectType": "library",
+            "root": "packages/core",
+            "sourceRoot": "packages/core/src",
+            "prefix": "nb",
+            "schematics": {
+                "@schematics/angular:component": {
+                    "style": "scss",
+                    "changeDetection": "OnPush"
                 }
-              ],
-              "optimization": {
-                "scripts": true,
-                "styles": {
-                  "minify": true,
-                  "inlineCritical": true
-                },
-                "fonts": false
-              },
-              "outputHashing": "all"
             },
-            "production-wp": {
-              "budgets": [
-                {
-                  "type": "initial",
-                  "maximumWarning": "2MB",
-                  "maximumError": "10MB"
+            "architect": {
+                "build": {
+                    "builder": "@angular/build:ng-packagr",
+                    "configurations": {
+                        "production": {
+                            "tsConfig": "packages/core/tsconfig.lib.prod.json"
+                        },
+                        "development": {
+                            "tsConfig": "packages/core/tsconfig.lib.json"
+                        }
+                    },
+                    "defaultConfiguration": "production"
                 },
-                {
-                  "type": "anyComponentStyle",
-                  "maximumWarning": "48kB",
-                  "maximumError": "2MB"
+                "test": {
+                    "builder": "@angular/build:unit-test",
+                    "options": {
+                        "buildTarget": "core:test-build",
+                        "tsConfig": "packages/core/tsconfig.spec.json",
+                        "runner": "vitest",
+                        "runnerConfig": true,
+                        "browsers": [
+                            "chromium"
+                        ],
+                        "headless": true,
+                        "browserViewport": "1024x768",
+                        "setupFiles": [
+                            "packages/test-setup.ts"
+                        ]
+                    }
+                },
+                "lint": {
+                    "builder": "@angular-eslint/builder:lint",
+                    "options": {
+                        "lintFilePatterns": [
+                            "packages/core/**/*.ts",
+                            "packages/core/**/*.js",
+                            "packages/core/**/*.cjs",
+                            "packages/core/**/*.html"
+                        ],
+                        "eslintConfig": "packages/core/eslint.config.js"
+                    }
+                },
+                "test-build": {
+                    "builder": "@angular/build:application",
+                    "options": {
+                        "tsConfig": "packages/core/tsconfig.spec.json",
+                        "polyfills": [],
+                        "stylePreprocessorOptions": {
+                            "includePaths": [
+                                "node_modules/.lyra-styles"
+                            ]
+                        },
+                        "aot": false
+                    }
                 }
-              ],
-              "optimization": {
-                "scripts": true,
-                "styles": {
-                  "minify": true,
-                  "inlineCritical": true
-                },
-                "fonts": false
-              },
-              "outputHashing": "all",
-              "tsConfig": "packages/playground/tsconfig.wp.json"
-            },
-            "development": {
-              "optimization": false,
-              "extractLicenses": false,
-              "sourceMap": true,
-              "namedChunks": true
             }
-          },
-          "defaultConfiguration": "production"
         },
-        "serve": {
-          "builder": "@angular/build:dev-server",
-          "configurations": {
-            "production": {
-              "buildTarget": "playground:build:production"
-            },
-            "production-wp": {
-              "buildTarget": "playground:build:production-wp"
-            },
-            "development": {
-              "buildTarget": "playground:build:development"
-            }
-          },
-          "defaultConfiguration": "development"
-        },
-        "extract-i18n": {
-          "builder": "@angular/build:extract-i18n"
-        },
-        "lint": {
-          "builder": "@angular-eslint/builder:lint",
-          "options": {
-            "lintFilePatterns": [
-              "packages/playground/**/*.ts",
-              "packages/playground/**/*.html"
-            ],
-            "eslintConfig": "packages/playground/eslint.config.js"
-          }
-        }
-      }
-    },
-    "docs": {
-      "projectType": "application",
-      "root": "packages/docs",
-      "sourceRoot": "packages/docs/src",
-      "prefix": "ngd",
-      "schematics": {
-        "@schematics/angular:component": {
-          "style": "scss",
-          "changeDetection": "OnPush"
-        }
-      },
-      "architect": {
-        "build": {
-          "builder": "@angular/build:application",
-          "options": {
-            "outputPath": {
-              "base": "dist/docs",
-              "browser": ""
-            },
-            "browser": "packages/docs/src/main.ts",
-            "index": "packages/docs/src/index.html",
-            "polyfills": [],
-            "tsConfig": "packages/docs/tsconfig.app.json",
-            "inlineStyleLanguage": "scss",
-            "assets": [
-              {
-                "glob": "**/*",
-                "input": "packages/docs/public"
-              },
-              {
-                "glob": "*.svg",
-                "input": "node_modules/nxt-flags/assets/flags",
-                "output": "assets/flags"
-              },
-              {
-                "glob": "**/*",
-                "input": "packages/playground/public/assets/showcase",
-                "output": "assets/showcase"
-              }
-            ],
-            "styles": [
-              "packages/docs/src/app/@theme/styles/highlight-dracula.css",
-              "packages/docs/src/app/@theme/styles/styles.scss",
-              {
-                "input": "packages/playground/src/playground/styles/styles.scss",
-                "bundleName": "playground-theme",
-                "inject": false
-              }
-            ],
-            "allowedCommonJsDependencies": [
-              "extend",
-              "format",
-              "highlight.js"
-            ],
-            "stylePreprocessorOptions": {
-              "includePaths": [
-                "node_modules/.lyra-styles"
-              ]
-            }
-          },
-          "configurations": {
-            "production": {
-              "budgets": [
-                {
-                  "type": "initial",
-                  "maximumWarning": "3MB",
-                  "maximumError": "10MB"
-                },
-                {
-                  "type": "anyComponentStyle",
-                  "maximumWarning": "48kB",
-                  "maximumError": "2MB"
+        "icons": {
+            "projectType": "library",
+            "root": "packages/icons",
+            "sourceRoot": "packages/icons/src",
+            "prefix": "nb",
+            "schematics": {
+                "@schematics/angular:component": {
+                    "style": "scss",
+                    "changeDetection": "OnPush"
                 }
-              ],
-              "optimization": {
-                "scripts": true,
-                "styles": {
-                  "minify": true,
-                  "inlineCritical": true
-                },
-                "fonts": false
-              },
-              "outputHashing": "all",
-              "server": "packages/docs/src/main.server.ts",
-              "outputMode": "static",
-              "externalDependencies": [
-                "sharp",
-                "file-type",
-                "@xmldom/xmldom"
-              ]
             },
-            "production-wp": {
-              "budgets": [
-                {
-                  "type": "initial",
-                  "maximumWarning": "3MB",
-                  "maximumError": "10MB"
+            "architect": {
+                "build": {
+                    "builder": "@angular/build:ng-packagr",
+                    "configurations": {
+                        "production": {
+                            "tsConfig": "packages/icons/tsconfig.lib.prod.json"
+                        },
+                        "development": {
+                            "tsConfig": "packages/icons/tsconfig.lib.json"
+                        }
+                    },
+                    "defaultConfiguration": "production"
                 },
-                {
-                  "type": "anyComponentStyle",
-                  "maximumWarning": "48kB",
-                  "maximumError": "2MB"
+                "test": {
+                    "builder": "@angular/build:unit-test",
+                    "options": {
+                        "buildTarget": "core:test-build",
+                        "tsConfig": "packages/icons/tsconfig.spec.json",
+                        "runner": "vitest",
+                        "runnerConfig": true,
+                        "browsers": [
+                            "chromium"
+                        ],
+                        "headless": true,
+                        "browserViewport": "1024x768",
+                        "setupFiles": [
+                            "packages/test-setup.ts"
+                        ]
+                    }
+                },
+                "lint": {
+                    "builder": "@angular-eslint/builder:lint",
+                    "options": {
+                        "lintFilePatterns": [
+                            "packages/icons/**/*.ts",
+                            "packages/icons/**/*.js",
+                            "packages/icons/**/*.cjs",
+                            "packages/icons/**/*.html"
+                        ],
+                        "eslintConfig": "packages/icons/eslint.config.js"
+                    }
                 }
-              ],
-              "optimization": {
-                "scripts": true,
-                "styles": {
-                  "minify": true,
-                  "inlineCritical": true
-                },
-                "fonts": false
-              },
-              "outputHashing": "all",
-              "tsConfig": "packages/docs/tsconfig.wp.json",
-              "server": "packages/docs/src/main.server.ts",
-              "outputMode": "static",
-              "externalDependencies": [
-                "sharp",
-                "file-type",
-                "@xmldom/xmldom"
-              ]
-            },
-            "development": {
-              "optimization": false,
-              "extractLicenses": false,
-              "sourceMap": true,
-              "namedChunks": true,
-              "fileReplacements": [
-                {
-                  "replace": "packages/docs/src/environments/environment.ts",
-                  "with": "packages/docs/src/environments/environment.development.ts"
+            }
+        },
+        "auth": {
+            "projectType": "library",
+            "root": "packages/auth",
+            "sourceRoot": "packages/auth/src",
+            "prefix": "nb",
+            "schematics": {
+                "@schematics/angular:component": {
+                    "style": "scss",
+                    "changeDetection": "OnPush"
                 }
-              ]
-            }
-          },
-          "defaultConfiguration": "production"
-        },
-        "serve": {
-          "builder": "@angular/build:dev-server",
-          "configurations": {
-            "production": {
-              "buildTarget": "docs:build:production"
             },
-            "production-wp": {
-              "buildTarget": "docs:build:production-wp"
-            },
-            "development": {
-              "buildTarget": "docs:build:development"
+            "architect": {
+                "build": {
+                    "builder": "@angular/build:ng-packagr",
+                    "configurations": {
+                        "production": {
+                            "tsConfig": "packages/auth/tsconfig.lib.prod.json"
+                        },
+                        "development": {
+                            "tsConfig": "packages/auth/tsconfig.lib.json"
+                        }
+                    },
+                    "defaultConfiguration": "production"
+                },
+                "test": {
+                    "builder": "@angular/build:unit-test",
+                    "options": {
+                        "buildTarget": "core:test-build",
+                        "tsConfig": "packages/auth/tsconfig.spec.json",
+                        "runner": "vitest",
+                        "runnerConfig": true,
+                        "browsers": [
+                            "chromium"
+                        ],
+                        "headless": true,
+                        "browserViewport": "1024x768",
+                        "setupFiles": [
+                            "packages/test-setup.ts"
+                        ]
+                    }
+                },
+                "lint": {
+                    "builder": "@angular-eslint/builder:lint",
+                    "options": {
+                        "lintFilePatterns": [
+                            "packages/auth/**/*.ts",
+                            "packages/auth/**/*.js",
+                            "packages/auth/**/*.cjs",
+                            "packages/auth/**/*.html"
+                        ],
+                        "eslintConfig": "packages/auth/eslint.config.js"
+                    }
+                }
             }
-          },
-          "defaultConfiguration": "development"
         },
-        "extract-i18n": {
-          "builder": "@angular/build:extract-i18n"
-        },
-        "lint": {
-          "builder": "@angular-eslint/builder:lint",
-          "options": {
-            "lintFilePatterns": [
-              "packages/docs/**/*.ts",
-              "packages/docs/**/*.html"
-            ],
-            "eslintConfig": "packages/docs/eslint.config.js"
-          }
-        }
-      }
-    },
-    "extras": {
-      "projectType": "library",
-      "root": "packages/extras",
-      "sourceRoot": "packages/extras",
-      "prefix": "nb",
-      "schematics": {
-        "@schematics/angular:component": {
-          "style": "scss",
-          "changeDetection": "OnPush"
-        }
-      },
-      "architect": {
-        "build": {
-          "builder": "@angular/build:ng-packagr",
-          "configurations": {
-            "production": {
-              "tsConfig": "packages/extras/tsconfig.lib.prod.json"
+        "security": {
+            "projectType": "library",
+            "root": "packages/security",
+            "sourceRoot": "packages/security/src",
+            "prefix": "nb",
+            "schematics": {
+                "@schematics/angular:component": {
+                    "style": "scss",
+                    "changeDetection": "OnPush"
+                }
             },
-            "development": {
-              "tsConfig": "packages/extras/tsconfig.lib.json"
+            "architect": {
+                "build": {
+                    "builder": "@angular/build:ng-packagr",
+                    "configurations": {
+                        "production": {
+                            "tsConfig": "packages/security/tsconfig.lib.prod.json"
+                        },
+                        "development": {
+                            "tsConfig": "packages/security/tsconfig.lib.json"
+                        }
+                    },
+                    "defaultConfiguration": "production"
+                },
+                "test": {
+                    "builder": "@angular/build:unit-test",
+                    "options": {
+                        "buildTarget": "core:test-build",
+                        "tsConfig": "packages/security/tsconfig.spec.json",
+                        "runner": "vitest",
+                        "runnerConfig": true,
+                        "browsers": [
+                            "chromium"
+                        ],
+                        "headless": true,
+                        "browserViewport": "1024x768",
+                        "setupFiles": [
+                            "packages/test-setup.ts"
+                        ]
+                    }
+                },
+                "lint": {
+                    "builder": "@angular-eslint/builder:lint",
+                    "options": {
+                        "lintFilePatterns": [
+                            "packages/security/**/*.ts",
+                            "packages/security/**/*.js",
+                            "packages/security/**/*.cjs",
+                            "packages/security/**/*.html"
+                        ],
+                        "eslintConfig": "packages/security/eslint.config.js"
+                    }
+                }
             }
-          },
-          "defaultConfiguration": "production"
         },
-        "test": {
-          "builder": "@angular/build:unit-test",
-          "options": {
-            "buildTarget": "core:test-build",
-            "tsConfig": "packages/extras/tsconfig.spec.json",
-            "runner": "vitest",
-            "runnerConfig": true,
-            "browsers": [
-              "chromium"
-            ],
-            "headless": true,
-            "browserViewport": "1024x768",
-            "setupFiles": [
-              "packages/test-setup.ts"
-            ]
-          }
+        "moment": {
+            "projectType": "library",
+            "root": "packages/moment",
+            "sourceRoot": "packages/moment/src",
+            "prefix": "nb",
+            "schematics": {
+                "@schematics/angular:component": {
+                    "style": "scss",
+                    "changeDetection": "OnPush"
+                }
+            },
+            "architect": {
+                "build": {
+                    "builder": "@angular/build:ng-packagr",
+                    "configurations": {
+                        "production": {
+                            "tsConfig": "packages/moment/tsconfig.lib.prod.json"
+                        },
+                        "development": {
+                            "tsConfig": "packages/moment/tsconfig.lib.json"
+                        }
+                    },
+                    "defaultConfiguration": "production"
+                },
+                "test": {
+                    "builder": "@angular/build:unit-test",
+                    "options": {
+                        "buildTarget": "core:test-build",
+                        "tsConfig": "packages/moment/tsconfig.spec.json",
+                        "runner": "vitest",
+                        "runnerConfig": true,
+                        "browsers": [
+                            "chromium"
+                        ],
+                        "headless": true,
+                        "browserViewport": "1024x768",
+                        "setupFiles": [
+                            "packages/test-setup.ts"
+                        ]
+                    }
+                },
+                "lint": {
+                    "builder": "@angular-eslint/builder:lint",
+                    "options": {
+                        "lintFilePatterns": [
+                            "packages/moment/**/*.ts",
+                            "packages/moment/**/*.js",
+                            "packages/moment/**/*.cjs",
+                            "packages/moment/**/*.html"
+                        ],
+                        "eslintConfig": "packages/moment/eslint.config.js"
+                    }
+                }
+            }
         },
-        "lint": {
-          "builder": "@angular-eslint/builder:lint",
-          "options": {
-            "lintFilePatterns": [
-              "packages/extras/**/*.ts",
-              "packages/extras/**/*.html"
-            ],
-            "eslintConfig": "packages/extras/eslint.config.js"
-          }
+        "date-fns": {
+            "projectType": "library",
+            "root": "packages/date-fns",
+            "sourceRoot": "packages/date-fns/src",
+            "prefix": "nb",
+            "schematics": {
+                "@schematics/angular:component": {
+                    "style": "scss",
+                    "changeDetection": "OnPush"
+                }
+            },
+            "architect": {
+                "build": {
+                    "builder": "@angular/build:ng-packagr",
+                    "configurations": {
+                        "production": {
+                            "tsConfig": "packages/date-fns/tsconfig.lib.prod.json"
+                        },
+                        "development": {
+                            "tsConfig": "packages/date-fns/tsconfig.lib.json"
+                        }
+                    },
+                    "defaultConfiguration": "production"
+                },
+                "test": {
+                    "builder": "@angular/build:unit-test",
+                    "options": {
+                        "buildTarget": "core:test-build",
+                        "tsConfig": "packages/date-fns/tsconfig.spec.json",
+                        "runner": "vitest",
+                        "runnerConfig": true,
+                        "browsers": [
+                            "chromium"
+                        ],
+                        "headless": true,
+                        "browserViewport": "1024x768",
+                        "setupFiles": [
+                            "packages/test-setup.ts"
+                        ]
+                    }
+                },
+                "lint": {
+                    "builder": "@angular-eslint/builder:lint",
+                    "options": {
+                        "lintFilePatterns": [
+                            "packages/date-fns/**/*.ts",
+                            "packages/date-fns/**/*.js",
+                            "packages/date-fns/**/*.cjs",
+                            "packages/date-fns/**/*.html"
+                        ],
+                        "eslintConfig": "packages/date-fns/eslint.config.js"
+                    }
+                }
+            }
+        },
+        "firebase-auth": {
+            "projectType": "library",
+            "root": "packages/firebase-auth",
+            "sourceRoot": "packages/firebase-auth/src",
+            "prefix": "nb",
+            "schematics": {
+                "@schematics/angular:component": {
+                    "style": "scss",
+                    "changeDetection": "OnPush"
+                }
+            },
+            "architect": {
+                "build": {
+                    "builder": "@angular/build:ng-packagr",
+                    "configurations": {
+                        "production": {
+                            "tsConfig": "packages/firebase-auth/tsconfig.lib.prod.json"
+                        },
+                        "development": {
+                            "tsConfig": "packages/firebase-auth/tsconfig.lib.json"
+                        }
+                    },
+                    "defaultConfiguration": "production"
+                },
+                "test": {
+                    "builder": "@angular/build:unit-test",
+                    "options": {
+                        "buildTarget": "core:test-build",
+                        "tsConfig": "packages/firebase-auth/tsconfig.spec.json",
+                        "runner": "vitest",
+                        "runnerConfig": true,
+                        "browsers": [
+                            "chromium"
+                        ],
+                        "headless": true,
+                        "browserViewport": "1024x768",
+                        "setupFiles": [
+                            "packages/test-setup.ts"
+                        ]
+                    }
+                },
+                "lint": {
+                    "builder": "@angular-eslint/builder:lint",
+                    "options": {
+                        "lintFilePatterns": [
+                            "packages/firebase-auth/**/*.ts",
+                            "packages/firebase-auth/**/*.js",
+                            "packages/firebase-auth/**/*.cjs",
+                            "packages/firebase-auth/**/*.html"
+                        ],
+                        "eslintConfig": "packages/firebase-auth/eslint.config.js"
+                    }
+                }
+            }
+        },
+        "playground": {
+            "projectType": "application",
+            "root": "packages/playground",
+            "sourceRoot": "packages/playground/src",
+            "prefix": "npg",
+            "schematics": {
+                "@schematics/angular:component": {
+                    "style": "scss",
+                    "changeDetection": "OnPush"
+                }
+            },
+            "architect": {
+                "build": {
+                    "builder": "@angular/build:application",
+                    "options": {
+                        "outputPath": {
+                            "base": "dist/playground",
+                            "browser": ""
+                        },
+                        "browser": "packages/playground/src/main.ts",
+                        "index": "packages/playground/src/index.html",
+                        "polyfills": [],
+                        "tsConfig": "packages/playground/tsconfig.app.json",
+                        "inlineStyleLanguage": "scss",
+                        "allowedCommonJsDependencies": [
+                            "extend",
+                            "format",
+                            "highlight.js"
+                        ],
+                        "assets": [
+                            {
+                                "glob": "**/*",
+                                "input": "packages/playground/public"
+                            },
+                            {
+                                "glob": "*.svg",
+                                "input": "node_modules/nxt-flags/assets/flags",
+                                "output": "assets/flags"
+                            }
+                        ],
+                        "styles": [
+                            {
+                                "input": "packages/playground/src/playground/styles/styles.scss",
+                                "bundleName": "playground-theme",
+                                "inject": false
+                            }
+                        ],
+                        "stylePreprocessorOptions": {
+                            "includePaths": [
+                                "node_modules/.lyra-styles"
+                            ]
+                        }
+                    },
+                    "configurations": {
+                        "production": {
+                            "budgets": [
+                                {
+                                    "type": "initial",
+                                    "maximumWarning": "2MB",
+                                    "maximumError": "10MB"
+                                },
+                                {
+                                    "type": "anyComponentStyle",
+                                    "maximumWarning": "48kB",
+                                    "maximumError": "2MB"
+                                }
+                            ],
+                            "optimization": {
+                                "scripts": true,
+                                "styles": {
+                                    "minify": true,
+                                    "inlineCritical": true
+                                },
+                                "fonts": false
+                            },
+                            "outputHashing": "all"
+                        },
+                        "production-wp": {
+                            "budgets": [
+                                {
+                                    "type": "initial",
+                                    "maximumWarning": "2MB",
+                                    "maximumError": "10MB"
+                                },
+                                {
+                                    "type": "anyComponentStyle",
+                                    "maximumWarning": "48kB",
+                                    "maximumError": "2MB"
+                                }
+                            ],
+                            "optimization": {
+                                "scripts": true,
+                                "styles": {
+                                    "minify": true,
+                                    "inlineCritical": true
+                                },
+                                "fonts": false
+                            },
+                            "outputHashing": "all",
+                            "tsConfig": "packages/playground/tsconfig.wp.json"
+                        },
+                        "development": {
+                            "optimization": false,
+                            "extractLicenses": false,
+                            "sourceMap": true,
+                            "namedChunks": true
+                        }
+                    },
+                    "defaultConfiguration": "production"
+                },
+                "serve": {
+                    "builder": "@angular/build:dev-server",
+                    "configurations": {
+                        "production": {
+                            "buildTarget": "playground:build:production"
+                        },
+                        "production-wp": {
+                            "buildTarget": "playground:build:production-wp"
+                        },
+                        "development": {
+                            "buildTarget": "playground:build:development"
+                        }
+                    },
+                    "defaultConfiguration": "development"
+                },
+                "extract-i18n": {
+                    "builder": "@angular/build:extract-i18n"
+                },
+                "lint": {
+                    "builder": "@angular-eslint/builder:lint",
+                    "options": {
+                        "lintFilePatterns": [
+                            "packages/playground/**/*.ts",
+                            "packages/playground/**/*.js",
+                            "packages/playground/**/*.cjs",
+                            "packages/playground/**/*.html"
+                        ],
+                        "eslintConfig": "packages/playground/eslint.config.js"
+                    }
+                }
+            }
+        },
+        "docs": {
+            "projectType": "application",
+            "root": "packages/docs",
+            "sourceRoot": "packages/docs/src",
+            "prefix": "ngd",
+            "schematics": {
+                "@schematics/angular:component": {
+                    "style": "scss",
+                    "changeDetection": "OnPush"
+                }
+            },
+            "architect": {
+                "build": {
+                    "builder": "@angular/build:application",
+                    "options": {
+                        "outputPath": {
+                            "base": "dist/docs",
+                            "browser": ""
+                        },
+                        "browser": "packages/docs/src/main.ts",
+                        "index": "packages/docs/src/index.html",
+                        "polyfills": [],
+                        "tsConfig": "packages/docs/tsconfig.app.json",
+                        "inlineStyleLanguage": "scss",
+                        "assets": [
+                            {
+                                "glob": "**/*",
+                                "input": "packages/docs/public"
+                            },
+                            {
+                                "glob": "*.svg",
+                                "input": "node_modules/nxt-flags/assets/flags",
+                                "output": "assets/flags"
+                            },
+                            {
+                                "glob": "**/*",
+                                "input": "packages/playground/public/assets/showcase",
+                                "output": "assets/showcase"
+                            }
+                        ],
+                        "styles": [
+                            "packages/docs/src/app/@theme/styles/highlight-dracula.css",
+                            "packages/docs/src/app/@theme/styles/styles.scss",
+                            {
+                                "input": "packages/playground/src/playground/styles/styles.scss",
+                                "bundleName": "playground-theme",
+                                "inject": false
+                            }
+                        ],
+                        "allowedCommonJsDependencies": [
+                            "extend",
+                            "format",
+                            "highlight.js"
+                        ],
+                        "stylePreprocessorOptions": {
+                            "includePaths": [
+                                "node_modules/.lyra-styles"
+                            ]
+                        }
+                    },
+                    "configurations": {
+                        "production": {
+                            "budgets": [
+                                {
+                                    "type": "initial",
+                                    "maximumWarning": "3MB",
+                                    "maximumError": "10MB"
+                                },
+                                {
+                                    "type": "anyComponentStyle",
+                                    "maximumWarning": "48kB",
+                                    "maximumError": "2MB"
+                                }
+                            ],
+                            "optimization": {
+                                "scripts": true,
+                                "styles": {
+                                    "minify": true,
+                                    "inlineCritical": true
+                                },
+                                "fonts": false
+                            },
+                            "outputHashing": "all",
+                            "server": "packages/docs/src/main.server.ts",
+                            "outputMode": "static",
+                            "externalDependencies": [
+                                "sharp",
+                                "file-type",
+                                "@xmldom/xmldom"
+                            ]
+                        },
+                        "production-wp": {
+                            "budgets": [
+                                {
+                                    "type": "initial",
+                                    "maximumWarning": "3MB",
+                                    "maximumError": "10MB"
+                                },
+                                {
+                                    "type": "anyComponentStyle",
+                                    "maximumWarning": "48kB",
+                                    "maximumError": "2MB"
+                                }
+                            ],
+                            "optimization": {
+                                "scripts": true,
+                                "styles": {
+                                    "minify": true,
+                                    "inlineCritical": true
+                                },
+                                "fonts": false
+                            },
+                            "outputHashing": "all",
+                            "tsConfig": "packages/docs/tsconfig.wp.json",
+                            "server": "packages/docs/src/main.server.ts",
+                            "outputMode": "static",
+                            "externalDependencies": [
+                                "sharp",
+                                "file-type",
+                                "@xmldom/xmldom"
+                            ]
+                        },
+                        "development": {
+                            "optimization": false,
+                            "extractLicenses": false,
+                            "sourceMap": true,
+                            "namedChunks": true,
+                            "fileReplacements": [
+                                {
+                                    "replace": "packages/docs/src/environments/environment.ts",
+                                    "with": "packages/docs/src/environments/environment.development.ts"
+                                }
+                            ]
+                        }
+                    },
+                    "defaultConfiguration": "production"
+                },
+                "serve": {
+                    "builder": "@angular/build:dev-server",
+                    "configurations": {
+                        "production": {
+                            "buildTarget": "docs:build:production"
+                        },
+                        "production-wp": {
+                            "buildTarget": "docs:build:production-wp"
+                        },
+                        "development": {
+                            "buildTarget": "docs:build:development"
+                        }
+                    },
+                    "defaultConfiguration": "development"
+                },
+                "extract-i18n": {
+                    "builder": "@angular/build:extract-i18n"
+                },
+                "lint": {
+                    "builder": "@angular-eslint/builder:lint",
+                    "options": {
+                        "lintFilePatterns": [
+                            "packages/docs/**/*.ts",
+                            "packages/docs/**/*.js",
+                            "packages/docs/**/*.cjs",
+                            "packages/docs/**/*.html"
+                        ],
+                        "eslintConfig": "packages/docs/eslint.config.js"
+                    }
+                }
+            }
+        },
+        "extras": {
+            "projectType": "library",
+            "root": "packages/extras",
+            "sourceRoot": "packages/extras",
+            "prefix": "nb",
+            "schematics": {
+                "@schematics/angular:component": {
+                    "style": "scss",
+                    "changeDetection": "OnPush"
+                }
+            },
+            "architect": {
+                "build": {
+                    "builder": "@angular/build:ng-packagr",
+                    "configurations": {
+                        "production": {
+                            "tsConfig": "packages/extras/tsconfig.lib.prod.json"
+                        },
+                        "development": {
+                            "tsConfig": "packages/extras/tsconfig.lib.json"
+                        }
+                    },
+                    "defaultConfiguration": "production"
+                },
+                "test": {
+                    "builder": "@angular/build:unit-test",
+                    "options": {
+                        "buildTarget": "core:test-build",
+                        "tsConfig": "packages/extras/tsconfig.spec.json",
+                        "runner": "vitest",
+                        "runnerConfig": true,
+                        "browsers": [
+                            "chromium"
+                        ],
+                        "headless": true,
+                        "browserViewport": "1024x768",
+                        "setupFiles": [
+                            "packages/test-setup.ts"
+                        ]
+                    }
+                },
+                "lint": {
+                    "builder": "@angular-eslint/builder:lint",
+                    "options": {
+                        "lintFilePatterns": [
+                            "packages/extras/**/*.ts",
+                            "packages/extras/**/*.js",
+                            "packages/extras/**/*.cjs",
+                            "packages/extras/**/*.html"
+                        ],
+                        "eslintConfig": "packages/extras/eslint.config.js"
+                    }
+                }
+            }
         }
-      }
     }
-  },
-  "schematics": {
-    "@schematics/angular:directive": {
-      "type": "directive"
-    },
-    "@schematics/angular:service": {
-      "type": "service"
-    },
-    "@schematics/angular:guard": {
-      "typeSeparator": "."
-    },
-    "@schematics/angular:interceptor": {
-      "typeSeparator": "."
-    },
-    "@schematics/angular:module": {
-      "typeSeparator": "."
-    },
-    "@schematics/angular:pipe": {
-      "typeSeparator": "."
-    },
-    "@schematics/angular:resolver": {
-      "typeSeparator": "."
-    },
-    "@schematics/angular:component": {
-      "type": "component"
-    }
-  },
-  "cli": {
-    "packageManager": "yarn",
-    "analytics": false,
-    "schematicCollections": [
-      "angular-eslint"
-    ]
-  }
 }

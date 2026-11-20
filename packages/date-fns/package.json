@@ -1,41 +1,39 @@
 {
-  "name": "@liquid-js/lyr-date-fns",
-  "version": "22.0.0",
-  "type": "module",
-  "description": "date-fns date adapter for Lyra",
-  "author": "HitkoDev <development@hitko.si>",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Liquid-JS/lyra.git"
-  },
-  "bugs": {
-    "url": "https://github.com/Liquid-JS/lyra/issues"
-  },
-  "homepage": "https://github.com/Liquid-JS/lyra/tree/master/packages/date-fns#readme",
-  "keywords": [
-    "angular",
-    "typescript",
-    "lyra",
-    "ui",
-    "components",
-    "date-fns"
-  ],
-  "scripts": {
-    "build": "run -T ng build date-fns --configuration production",
-    "watch": "run -T ng build date-fns --configuration development --watch",
-    "test": "run -T ng test date-fns --no-watch",
-    "test:watch": "run -T ng test date-fns",
-    "lint": "run -T ng lint date-fns",
-    "lint:fix": "run -T ng lint date-fns --fix",
-    "lint:styles": "run -T stylelint \"**/*.scss\"",
-    "lint:styles:fix": "run -T stylelint \"**/*.scss\" --fix"
-  },
-  "peerDependencies": {
-    "@angular/core": "^22.0.0",
-    "@liquid-js/lyr-core": "^22.0.0",
-    "date-fns": "^4.4.0",
-    "tslib": "^2.9.1"
-  },
-  "sideEffects": false
+    "name": "@liquid-js/lyr-date-fns",
+    "description": "date-fns date adapter for Lyra",
+    "bugs": {
+        "url": "https://github.com/Liquid-JS/lyra/issues"
+    },
+    "version": "22.0.0",
+    "license": "MIT",
+    "author": "HitkoDev <development@hitko.si>",
+    "type": "module",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/Liquid-JS/lyra.git"
+    },
+    "homepage": "https://github.com/Liquid-JS/lyra/tree/master/packages/date-fns#readme",
+    "keywords": [
+        "angular",
+        "typescript",
+        "lyra",
+        "ui",
+        "components",
+        "date-fns"
+    ],
+    "scripts": {
+        "watch": "run -T ng build date-fns --configuration development --watch",
+        "build": "run -T ng build date-fns --configuration production",
+        "lint": "run -T ng lint date-fns",
+        "lint:fix": "yarn lint --fix",
+        "test": "run -T ng test date-fns --no-watch",
+        "test:watch": "run -T ng test date-fns"
+    },
+    "peerDependencies": {
+        "@angular/core": "^22.0.0",
+        "@liquid-js/lyr-core": "^22.0.0",
+        "date-fns": "^4.4.0",
+        "tslib": "^2.9.1"
+    },
+    "sideEffects": false
 }

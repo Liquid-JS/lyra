@@ -1,42 +1,40 @@
 {
-  "name": "@liquid-js/lyr-moment",
-  "version": "22.0.0",
-  "type": "module",
-  "description": "Moment.js date adapter for Lyra",
-  "author": "HitkoDev <development@hitko.si>",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Liquid-JS/lyra.git"
-  },
-  "bugs": {
-    "url": "https://github.com/Liquid-JS/lyra/issues"
-  },
-  "homepage": "https://github.com/Liquid-JS/lyra/tree/master/packages/moment#readme",
-  "keywords": [
-    "angular",
-    "typescript",
-    "lyra",
-    "ui",
-    "components",
-    "moment"
-  ],
-  "scripts": {
-    "build": "run -T ng build moment --configuration production",
-    "watch": "run -T ng build moment --configuration development --watch",
-    "test": "run -T ng test moment --no-watch",
-    "test:watch": "run -T ng test moment",
-    "lint": "run -T ng lint moment",
-    "lint:fix": "run -T ng lint moment --fix",
-    "lint:styles": "run -T stylelint \"**/*.scss\"",
-    "lint:styles:fix": "run -T stylelint \"**/*.scss\" --fix"
-  },
-  "peerDependencies": {
-    "@angular/common": "^22.0.0",
-    "@angular/core": "^22.0.0",
-    "@liquid-js/lyr-core": "^22.0.0",
-    "moment": "^2.22.2",
-    "tslib": "^2.9.1"
-  },
-  "sideEffects": false
+    "name": "@liquid-js/lyr-moment",
+    "description": "Moment.js date adapter for Lyra",
+    "bugs": {
+        "url": "https://github.com/Liquid-JS/lyra/issues"
+    },
+    "version": "22.0.0",
+    "license": "MIT",
+    "author": "HitkoDev <development@hitko.si>",
+    "type": "module",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/Liquid-JS/lyra.git"
+    },
+    "homepage": "https://github.com/Liquid-JS/lyra/tree/master/packages/moment#readme",
+    "keywords": [
+        "angular",
+        "typescript",
+        "lyra",
+        "ui",
+        "components",
+        "moment"
+    ],
+    "scripts": {
+        "watch": "run -T ng build moment --configuration development --watch",
+        "build": "run -T ng build moment --configuration production",
+        "lint": "run -T ng lint moment",
+        "lint:fix": "yarn lint --fix",
+        "test": "run -T ng test moment --no-watch",
+        "test:watch": "run -T ng test moment"
+    },
+    "peerDependencies": {
+        "@angular/common": "^22.0.0",
+        "@angular/core": "^22.0.0",
+        "@liquid-js/lyr-core": "^22.0.0",
+        "moment": "^2.22.2",
+        "tslib": "^2.9.1"
+    },
+    "sideEffects": false
 }

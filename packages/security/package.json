@@ -1,42 +1,40 @@
 {
-  "name": "@liquid-js/lyr-security",
-  "version": "22.0.0",
-  "type": "module",
-  "description": "Lyra security module (ACL)",
-  "author": "HitkoDev <development@hitko.si>",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Liquid-JS/lyra.git"
-  },
-  "bugs": {
-    "url": "https://github.com/Liquid-JS/lyra/issues"
-  },
-  "homepage": "https://github.com/Liquid-JS/lyra/tree/master/packages/security#readme",
-  "keywords": [
-    "angular",
-    "typescript",
-    "lyra",
-    "ui",
-    "components",
-    "security",
-    "acl"
-  ],
-  "scripts": {
-    "build": "run -T ng build security --configuration production",
-    "watch": "run -T ng build security --configuration development --watch",
-    "test": "run -T ng test security --no-watch",
-    "test:watch": "run -T ng test security",
-    "lint": "run -T ng lint security",
-    "lint:fix": "run -T ng lint security --fix",
-    "lint:styles": "run -T stylelint \"**/*.scss\"",
-    "lint:styles:fix": "run -T stylelint \"**/*.scss\" --fix"
-  },
-  "peerDependencies": {
-    "@angular/common": "^22.0.0",
-    "@angular/core": "^22.0.0",
-    "rxjs": "^6.5.3 || ^7.4.0",
-    "tslib": "^2.9.1"
-  },
-  "sideEffects": false
+    "name": "@liquid-js/lyr-security",
+    "description": "Lyra roles and permissions (ACL)",
+    "bugs": {
+        "url": "https://github.com/Liquid-JS/lyra/issues"
+    },
+    "version": "22.0.0",
+    "license": "MIT",
+    "author": "HitkoDev <development@hitko.si>",
+    "type": "module",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/Liquid-JS/lyra.git"
+    },
+    "homepage": "https://github.com/Liquid-JS/lyra/tree/master/packages/security#readme",
+    "keywords": [
+        "angular",
+        "typescript",
+        "lyra",
+        "ui",
+        "components",
+        "security",
+        "acl"
+    ],
+    "scripts": {
+        "watch": "run -T ng build security --configuration development --watch",
+        "build": "run -T ng build security --configuration production",
+        "lint": "run -T ng lint security",
+        "lint:fix": "yarn lint --fix",
+        "test": "run -T ng test security --no-watch",
+        "test:watch": "run -T ng test security"
+    },
+    "peerDependencies": {
+        "@angular/common": "^22.0.0",
+        "@angular/core": "^22.0.0",
+        "rxjs": "^6.5.3 || ^7.4.0",
+        "tslib": "^2.9.1"
+    },
+    "sideEffects": false
 }
