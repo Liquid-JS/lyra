@@ -1,3 +1,4 @@
+import { assert } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import {
   NbComponentSize,
@@ -5,14 +6,14 @@ import {
   NbThemeModule,
   NbUserComponent,
   NbUserModule,
-} from '@nebular/theme';
+} from '@liquid-js/lyr-core';
 
 const NAME_SELECTOR = '.user-name';
 const TITLE_SELECTOR = '.user-title';
 const INITIALS_SELECTOR = '.user-picture.initials';
 const PICTURE_SELECTOR = '.user-picture.image';
 const BADGE_SELECTOR = 'nb-badge';
-const COMPONENT_SIZES: NbComponentSize[] = [ 'tiny', 'small', 'medium', 'large', 'giant' ];
+const COMPONENT_SIZES: NbComponentSize[] = ['tiny', 'small', 'medium', 'large', 'giant'];
 
 describe('NbUserComponent', () => {
   let fixture: ComponentFixture<NbUserComponent>;
@@ -21,8 +22,8 @@ describe('NbUserComponent', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [ NbThemeModule.forRoot(), NbUserModule ],
-      providers: [ NbLayoutDirectionService ],
+      imports: [NbThemeModule.forRoot(), NbUserModule],
+      providers: [NbLayoutDirectionService],
     });
 
     fixture = TestBed.createComponent(NbUserComponent);
@@ -31,20 +32,36 @@ describe('NbUserComponent', () => {
     fixture.detectChanges();
   });
 
+  it('should leave out the container of the name and title with only the picture', () => {
+    fixture.componentRef.setInput('name', 'Jane Doe');
+    fixture.componentRef.setInput('title', 'Head of design');
+    fixture.detectChanges();
+    expect(userElement.querySelector('.info-container')).not.toBeNull();
+
+    fixture.componentRef.setInput('onlyPicture', true);
+    fixture.detectChanges();
+    expect(userElement.querySelector('.info-container')).toBeNull();
+  });
+
   it('should render name if set', () => {
     const name = 'SomeName';
-    userComponent.name = name;
+    fixture.componentRef.setInput('name', name);
     fixture.detectChanges();
 
     const nameElement = userElement.querySelector(NAME_SELECTOR);
+
+    assert(nameElement);
     expect(nameElement).not.toEqual(null);
     expect(nameElement.textContent).toEqual(name);
+    // The name takes its own direction, without changing how it's aligned.
+    expect(nameElement.hasAttribute('dir')).toBe(false);
+    expect(nameElement.querySelector('[dir="auto"]')?.textContent).toEqual(name);
   });
 
   it('should not render name if showName set to false', () => {
     const name = 'SomeName';
-    userComponent.name = name;
-    userComponent.showName = false;
+    fixture.componentRef.setInput('name', name);
+    fixture.componentRef.setInput('showName', false);
     fixture.detectChanges();
 
     const nameElement = userElement.querySelector(NAME_SELECTOR);
@@ -52,7 +69,7 @@ describe('NbUserComponent', () => {
   });
 
   it('should not render name if set to empty string', () => {
-    userComponent.name = '';
+    fixture.componentRef.setInput('name', '');
     fixture.detectChanges();
 
     const nameElement = userElement.querySelector(NAME_SELECTOR);
@@ -61,18 +78,22 @@ describe('NbUserComponent', () => {
 
   it('should render title if set', () => {
     const title = 'SomeTitle';
-    userComponent.title = title;
+    fixture.componentRef.setInput('title', title);
     fixture.detectChanges();
 
     const titleElement = userElement.querySelector(TITLE_SELECTOR);
+
+    assert(titleElement);
     expect(titleElement).not.toEqual(null);
     expect(titleElement.textContent).toEqual(title);
+    expect(titleElement.hasAttribute('dir')).toBe(false);
+    expect(titleElement.querySelector('[dir="auto"]')?.textContent).toEqual(title);
   });
 
   it('should not render title if showTitle set to false', () => {
     const title = 'SomeName';
-    userComponent.title = title;
-    userComponent.showTitle = false;
+    fixture.componentRef.setInput('title', title);
+    fixture.componentRef.setInput('showTitle', false);
     fixture.detectChanges();
 
     const titleElement = userElement.querySelector(TITLE_SELECTOR);
@@ -81,7 +102,7 @@ describe('NbUserComponent', () => {
 
   it('should not render title if set to empty string', () => {
     const title = '';
-    userComponent.title = title;
+    fixture.componentRef.setInput('title', title);
     fixture.detectChanges();
 
     const titleElement = userElement.querySelector(TITLE_SELECTOR);
@@ -90,17 +111,19 @@ describe('NbUserComponent', () => {
 
   it(`should show initials if picture isn't set`, () => {
     const name = 'Name Name';
-    userComponent.name = name;
+    fixture.componentRef.setInput('name', name);
     fixture.detectChanges();
 
     const initialsElement = userElement.querySelector(INITIALS_SELECTOR);
+
+    assert(initialsElement);
     expect(initialsElement.textContent.trim()).toEqual('NN');
   });
 
   it(`should not show initials if picture is set`, () => {
-    userComponent.name = 'Name';
-    userComponent.title = 'Title';
-    userComponent.picture = '/';
+    fixture.componentRef.setInput('name', 'Name');
+    fixture.componentRef.setInput('title', 'Title');
+    fixture.componentRef.setInput('picture', '/');
     fixture.detectChanges();
 
     expect(userElement.querySelector(INITIALS_SELECTOR)).toEqual(null);
@@ -108,7 +131,7 @@ describe('NbUserComponent', () => {
 
   it('should set color of initials if set color property is set', () => {
     const color = 'red';
-    userComponent.color = color;
+    fixture.componentRef.setInput('color', color);
     fixture.detectChanges();
 
     const initialsStyle = (userElement.querySelector(INITIALS_SELECTOR) as HTMLElement).style;
@@ -117,69 +140,67 @@ describe('NbUserComponent', () => {
 
   describe('onlyPicture', () => {
     it(`should not show title and name if onlyPicture is set to true`, () => {
-      userComponent.name = 'Name';
-      userComponent.title = 'Title';
-      userComponent.onlyPicture = true;
+      fixture.componentRef.setInput('name', 'Name');
+      fixture.componentRef.setInput('title', 'Title');
+      fixture.componentRef.setInput('onlyPicture', true);
       fixture.detectChanges();
 
       expect(userElement.querySelector(NAME_SELECTOR)).toEqual(null);
       expect(userElement.querySelector(TITLE_SELECTOR)).toEqual(null);
     });
 
-    it(`should set showName and showTitle to false if set to true`, () => {
-      userComponent.showName = true;
-      userComponent.showTitle = true;
-      userComponent.onlyPicture = true;
+    it(`should hide the name and title even if showName and showTitle are set`, () => {
+      fixture.componentRef.setInput('name', 'Name');
+      fixture.componentRef.setInput('title', 'Title');
+      fixture.componentRef.setInput('showName', true);
+      fixture.componentRef.setInput('showTitle', true);
+      fixture.componentRef.setInput('onlyPicture', true);
+      fixture.detectChanges();
 
-      expect(userComponent.showName).toEqual(false);
-      expect(userComponent.showTitle).toEqual(false);
-      expect(userComponent.onlyPicture).toEqual(true);
+      expect(userElement.querySelector(NAME_SELECTOR)).toEqual(null);
+      expect(userElement.querySelector(TITLE_SELECTOR)).toEqual(null);
     });
 
-    it(`should be false if showName is set to true`, () => {
-      userComponent.showName = true;
-      expect(userComponent.onlyPicture).toEqual(false);
-    });
+    it(`should show the name and title again when unset`, () => {
+      fixture.componentRef.setInput('name', 'Name');
+      fixture.componentRef.setInput('title', 'Title');
+      fixture.componentRef.setInput('onlyPicture', true);
+      fixture.detectChanges();
+      fixture.componentRef.setInput('onlyPicture', false);
+      fixture.detectChanges();
 
-    it(`should be false if showTitle is set to true`, () => {
-      userComponent.showTitle = true;
-      expect(userComponent.onlyPicture).toEqual(false);
-    });
-
-    it(`should be true if showName and showTitle is set to false`, () => {
-      userComponent.showName = false;
-      userComponent.showTitle = false;
-      expect(userComponent.onlyPicture).toEqual(true);
+      expect(userElement.querySelector(NAME_SELECTOR)).not.toEqual(null);
+      expect(userElement.querySelector(TITLE_SELECTOR)).not.toEqual(null);
     });
   });
 
   describe('getInitials', () => {
     it(`should return empty string if name isn't set`, () => {
-      userComponent.name = '';
+      fixture.componentRef.setInput('name', '');
       expect(userComponent.getInitials()).toEqual('');
     });
 
     it(`should return one letter for one word name`, () => {
-      userComponent.name = 'Name';
+      fixture.componentRef.setInput('name', 'Name');
       expect(userComponent.getInitials()).toEqual('N');
     });
 
     it(`should return two letters for two word name`, () => {
-      userComponent.name = 'Name Name';
+      fixture.componentRef.setInput('name', 'Name Name');
       expect(userComponent.getInitials()).toEqual('NN');
     });
 
     it(`should return two letters for two first words letters if name set to more then two words`, () => {
-      userComponent.name = 'Name Name Name';
+      fixture.componentRef.setInput('name', 'Name Name Name');
       expect(userComponent.getInitials()).toEqual('NN');
 
-      userComponent.name = 'Name Name Name Name Name Name Name Name Name';
+      fixture.componentRef.setInput('name', 'Name Name Name Name Name Name Name Name Name');
       expect(userComponent.getInitials()).toEqual('NN');
     });
   });
 
   it('should show badge with initials', () => {
-    userComponent.badgeText = 'badge text';
+    fixture.componentRef.setInput('badgeText', 'badge text');
     fixture.detectChanges();
 
     const badges = userElement.querySelectorAll(BADGE_SELECTOR);
@@ -187,8 +208,8 @@ describe('NbUserComponent', () => {
   });
 
   it('should show badge with picture', () => {
-    userComponent.badgeText = 'badge text';
-    userComponent.picture = '/';
+    fixture.componentRef.setInput('badgeText', 'badge text');
+    fixture.componentRef.setInput('picture', '/');
     fixture.detectChanges();
 
     const badges = userElement.querySelectorAll(BADGE_SELECTOR);
@@ -196,8 +217,8 @@ describe('NbUserComponent', () => {
   });
 
   it('should show badge with if showInitials is false', () => {
-    userComponent.badgeText = 'badge text';
-    userComponent.showInitials = false;
+    fixture.componentRef.setInput('badgeText', 'badge text');
+    fixture.componentRef.setInput('showInitials', false);
     fixture.detectChanges();
 
     const badges = userElement.querySelectorAll(BADGE_SELECTOR);
@@ -205,53 +226,93 @@ describe('NbUserComponent', () => {
   });
 
   it('should show picture if set', () => {
-    userComponent.picture = '/';
+    fixture.componentRef.setInput('picture', '/');
     fixture.detectChanges();
 
     expect(userElement.querySelector(PICTURE_SELECTOR)).not.toEqual(null);
   });
 
   it('should not set picture if falsy value was passed', () => {
-    userComponent.picture = '';
-    expect(userComponent.imageBackgroundStyle).toEqual(null);
-    userComponent.picture = null;
-    expect(userComponent.imageBackgroundStyle).toEqual(null);
-    userComponent.picture = undefined;
-    expect(userComponent.imageBackgroundStyle).toEqual(null);
+    for (const picture of ['', null, undefined]) {
+      fixture.componentRef.setInput('picture', picture);
+      fixture.detectChanges();
+
+      expect(userElement.querySelector(PICTURE_SELECTOR)).toEqual(null);
+    }
   });
 
-  it('should set picture string as background image', () => {
-    const pictureUrl = '/';
-    userComponent.picture = pictureUrl;
+  it('should show the picture as an image, named when the name is hidden', () => {
+    fixture.componentRef.setInput('picture', '/picture.png');
+    fixture.componentRef.setInput('name', 'Jane Doe');
     fixture.detectChanges();
 
-    const pictureStyle = (userElement.querySelector(PICTURE_SELECTOR) as HTMLElement).style;
-    expect(pictureStyle.backgroundImage).toEqual(`url("${pictureUrl}")`);
+    const image = userElement.querySelector('img.user-image') as HTMLImageElement;
+    expect(image.getAttribute('src')).toBe('/picture.png');
+    expect(image.getAttribute('alt')).toBe('');
+
+    fixture.componentRef.setInput('onlyPicture', true);
+    fixture.detectChanges();
+    expect(image.getAttribute('alt')).toBe('Jane Doe');
+  });
+
+  it('should show the initials when the picture fails to load, and try a new picture', () => {
+    fixture.componentRef.setInput('picture', '/missing.png');
+    fixture.componentRef.setInput('name', 'Jane Doe');
+    fixture.detectChanges();
+
+    userElement.querySelector('img.user-image')?.dispatchEvent(new Event('error'));
+    fixture.detectChanges();
+    expect(userElement.querySelector('img.user-image')).toBeNull();
+    expect(userElement.querySelector('.initials')?.textContent?.trim()).toBe('JD');
+
+    fixture.componentRef.setInput('picture', '/other.png');
+    fixture.detectChanges();
+    expect(userElement.querySelector('img.user-image')).not.toBeNull();
+  });
+
+  it('should colour the initials with a status', () => {
+    fixture.componentRef.setInput('status', 'primary');
+    fixture.detectChanges();
+    expect(userElement.classList).toContain('status-primary');
+  });
+
+  it('should take whole characters for the initials', () => {
+    fixture.componentRef.setInput('name', '🦊 Émile  zoë');
+    fixture.detectChanges();
+    expect(userElement.querySelector('.initials')?.textContent?.trim()).toBe('🦊É');
+
+    fixture.componentRef.setInput('name', 'e\u0301lise Martin');
+    fixture.detectChanges();
+    expect(userElement.querySelector('.initials')?.textContent?.trim()).toBe('E\u0301M');
   });
 
   it('should be medium sized by default', () => {
-    expect(userComponent.size).toEqual('medium');
+    expect(userComponent.size()).toEqual('medium');
   });
 
-  it(`only one size property should be true`, () => {
+  it(`should only have the class of the current size`, () => {
     const currentSize: NbComponentSize = 'tiny';
-    const otherSizes = COMPONENT_SIZES.filter(s => s !== currentSize);
+    const otherSizes = COMPONENT_SIZES.filter((s) => s !== currentSize);
 
-    userComponent.size = currentSize;
-    expect(userComponent[currentSize]).toEqual(true);
+    fixture.componentRef.setInput('size', currentSize);
+    fixture.detectChanges();
+
+    expect(userElement.classList).toContain(`size-${currentSize}`);
     for (const size of otherSizes) {
-      expect(userComponent[size]).toEqual(false);
+      expect(userElement.classList).not.toContain(`size-${size}`);
     }
   });
 
   it('should be round shaped by default', () => {
-    expect(userComponent.shape).toEqual('round');
+    expect(userComponent.shape()).toEqual('round');
   });
 
-  it(`only one shape property should be true`, () => {
-    userComponent.shape = 'semi-round';
-    expect(userComponent.semiRound).toEqual(true);
-    expect(userComponent.rectangle).toEqual(false);
-    expect(userComponent.round).toEqual(false);
+  it(`should only have the class of the current shape`, () => {
+    fixture.componentRef.setInput('shape', 'semi-round');
+    fixture.detectChanges();
+
+    expect(userElement.classList).toContain('shape-semi-round');
+    expect(userElement.classList).not.toContain('shape-rectangle');
+    expect(userElement.classList).not.toContain('shape-round');
   });
 });

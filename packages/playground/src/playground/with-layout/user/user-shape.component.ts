@@ -1,28 +1,8 @@
 import { Component } from '@angular/core';
+import { NbCardComponent, NbCardBodyComponent, NbUserComponent } from '@liquid-js/lyr-core';
 
 @Component({
-    template: `
-    <nb-card>
-      <nb-card-body>
-        <p>Rectangle</p>
-        <nb-user shape="rectangle" name="John Doe" title="Engineer"></nb-user>
-      </nb-card-body>
-    </nb-card>
-
-    <nb-card>
-      <nb-card-body>
-        <p>Semi-round</p>
-        <nb-user shape="semi-round" name="John Doe" title="Engineer"></nb-user>
-      </nb-card-body>
-    </nb-card>
-
-    <nb-card>
-      <nb-card-body>
-        <p>Round</p>
-        <nb-user shape="round" name="John Doe" title="Engineer"></nb-user>
-      </nb-card-body>
-    </nb-card>
-  `,
-    standalone: false
+  templateUrl: './user-shape.component.html',
+  imports: [NbCardComponent, NbCardBodyComponent, NbUserComponent],
 })
 export class NbUserShapeComponent {}

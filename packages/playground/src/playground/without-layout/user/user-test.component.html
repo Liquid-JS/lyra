@@ -1,0 +1,127 @@
+<nb-layout id="layout-fluid">
+  <nb-layout-header fixed>
+    <nb-user showInitials
+      size="medium"
+      name="Jane Doe"
+      title="Worker" />
+  </nb-layout-header>
+
+  <nb-layout-column>
+    <div class="test-row">
+      <nb-user inverse />
+    </div>
+    <div class="test-row">
+      <nb-user inverse
+        showInitials />
+    </div>
+    <div class="test-row">
+      <nb-user inverse
+        size="large"
+        name="Jane Doe" />
+    </div>
+    <div class="test-row">
+      <nb-user inverse
+        name="Jane Doe"
+        title="Worker" />
+    </div>
+    <div class="test-row">
+      <nb-user inverse
+        size="small"
+        name="Jane Doe"
+        title="Worker"
+        showTitle="false" />
+    </div>
+    <div class="test-row">
+      <nb-user inverse
+        onlyPicture
+        size="medium"
+        name="Jane Doe"
+        title="Worker" />
+    </div>
+    <div class="test-row">
+      <nb-user inverse
+        size="medium"
+        name="Jane Doe"
+        title="Worker" />
+    </div>
+    <div class="test-row">
+      <nb-user inverse
+        onlyPicture
+        size="medium"
+        name="Jane Doe"
+        title="Worker" />
+    </div>
+    <div class="test-row">
+      <nb-user inverse
+        size="large"
+        picture="http://lorempixel.com/400/200/animals/"
+        name="Jane Doe"
+        title="Worker" />
+    </div>
+    <div class="test-row">
+      <nb-user inverse
+        showInitials
+        size="medium"
+        name="Jane Doe"
+        title="Worker" />
+    </div>
+
+    <div class="test-row">
+      <nb-user inverse
+        size="large"
+        name="Jane Doe"
+        badgeText="29" />
+    </div>
+    <div class="test-row">
+      <nb-user inverse
+        name="Jane Doe"
+        title="Worker"
+        badgeText="29"
+        badgeStatus="info"
+        badgePosition="top left" />
+    </div>
+    <div class="test-row">
+      <nb-user inverse
+        size="small"
+        name="Jane Doe"
+        title="Worker"
+        showTitle="false"
+        badgeText="29"
+        badgeStatus="success"
+        badgePosition="bottom right" />
+    </div>
+    <div class="test-row">
+      <nb-user inverse
+        onlyPicture
+        size="medium"
+        name="Jane Doe"
+        title="Worker"
+        badgeText="29"
+        badgeStatus="warning"
+        badgePosition="bottom left" />
+    </div>
+    <div class="test-row">
+      <nb-user inverse
+        size="large"
+        picture="http://lorempixel.com/400/200/animals/"
+        name="Jane Doe"
+        title="Worker"
+        badgeText="29"
+        badgeStatus="danger"
+        badgePosition="top left" />
+    </div>
+    <div class="test-row"
+      id="base64-image">
+      <nb-user [picture]="'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGMwTvsPAAJoAZl4K0msAAAAAElFTkSuQmCC'" />
+    </div>
+    <div class="test-row">
+      <nb-user size="large"
+        picture="http://lorempixel.com/400/200/animals/"
+        name="Jane Doe"
+        title="Worker"
+        badgeText="29"
+        badgeStatus="danger"
+        badgePosition="top start" />
+    </div>
+  </nb-layout-column>
+</nb-layout>

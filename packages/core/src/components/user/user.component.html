@@ -1,16 +1,41 @@
 <div class="user-container">
-  <div *ngIf="imageBackgroundStyle" class="user-picture image" [style.background-image]="imageBackgroundStyle">
-    <nb-badge *ngIf="badgeText" [text]="badgeText" [status]="badgeStatus" [position]="badgePosition"></nb-badge>
+  @if (pictureShown()) {
+  <div class="user-picture image">
+    <!-- Named when the name isn't shown; a picture that fails to load gives way to the initials. -->
+    <img class="user-image"
+      [src]="picture()"
+      [attr.alt]="nameVisible() ? '' : displayName()"
+      (error)="pictureFailed.set(true)" />
+    @if (badgeText()) {
+    <nb-badge [text]="badgeText()"
+      [status]="badgeStatus()"
+      [position]="badgePosition()" />
+    }
   </div>
-  <div *ngIf="!imageBackgroundStyle" class="user-picture initials" [style.background-color]="color">
-    <ng-container *ngIf="showInitials">
-      {{ getInitials() }}
-    </ng-container>
-    <nb-badge *ngIf="badgeText" [text]="badgeText" [status]="badgeStatus" [position]="badgePosition"></nb-badge>
+  }
+  @if (!pictureShown()) {
+  <div class="user-picture initials"
+    [style.background-color]="color()">
+    @if (showInitials()) {
+    {{ getInitials() }}
+    }
+    @if (badgeText()) {
+    <nb-badge [text]="badgeText()"
+      [status]="badgeStatus()"
+      [position]="badgePosition()" />
+    }
   </div>
+  }
 
+  <!-- Only with something to show, so a picture on its own takes no room beside it. -->
+  @if ((nameVisible() && displayName()) || (titleVisible() && title())) {
   <div class="info-container">
-    <div *ngIf="showName && name" class="user-name">{{ name }}</div>
-    <div *ngIf="showTitle && title" class="user-title">{{ title }}</div>
+    @if (nameVisible() && displayName()) {
+    <div class="user-name"><span dir="auto">{{ displayName() }}</span></div>
+    }
+    @if (titleVisible() && title()) {
+    <div class="user-title"><span dir="auto">{{ title() }}</span></div>
+    }
   </div>
+  }
 </div>

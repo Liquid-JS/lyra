@@ -1,27 +1,27 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 @use '../../styles/theming' as *;
 
 :host {
   display: flex;
+  // Long names and titles are cut off with an ellipsis instead of widening the parent.
+  min-width: 0;
 
   .user-container {
     position: relative;
     display: flex;
     align-items: center;
+    min-width: 0;
   }
 
   .user-picture {
     position: relative;
     flex-shrink: 0;
 
-    &.image {
-      background-size: cover;
-      background-repeat: no-repeat;
+    &.image .user-image {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: inherit;
     }
 
     &.initials {
@@ -33,10 +33,14 @@
 
   .user-name,
   .user-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
     @include nb-rtl(text-align, right);
   }
 
   .info-container {
+    min-width: 0;
     @include nb-ltr(margin-left, 0.5rem);
     @include nb-rtl(margin-right, 0.5rem);
   }

@@ -1,27 +1,44 @@
+import { Component, input, computed, linkedSignal } from '@angular/core';
+
+import { injectNbDefaults } from '@liquid-js/lyr-core/base';
+import { ɵconvertToBoolProperty as convertToBoolProperty, NbBooleanInput } from '@liquid-js/lyr-core/base';
+import { NbComponentSize } from '@liquid-js/lyr-core/base';
+import { NbComponentShape } from '@liquid-js/lyr-core/base';
+import { NbComponentOrCustomStatus } from '@liquid-js/lyr-core/base';
+import { NbBadgePosition, NbBadgeComponent } from '@liquid-js/lyr-core/badge';
+import { injectNbTexts, NbLocalize } from '@liquid-js/lyr-core/base';
+
+/** @internal */
+declare const $localize: NbLocalize;
+
+/** A word's first character as a reader sees it, e.g. a whole emoji. */
+function firstGrapheme(word: string): string {
+  if (typeof Intl !== 'undefined' && 'Segmenter' in Intl) {
+    const [first] = new Intl.Segmenter(undefined, { granularity: 'grapheme' }).segment(word);
+    return first?.segment ?? '';
+  }
+  return Array.from(word)[0] ?? '';
+}
+
 /**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { Component, HostBinding, Input } from '@angular/core';
-import { DomSanitizer, SafeStyle } from '@angular/platform-browser';
-
-import { convertToBoolProperty, NbBooleanInput } from '../helpers';
-import { NbComponentSize } from '../component-size';
-import { NbComponentShape } from '../component-shape';
-import { NbComponentOrCustomStatus } from '../component-status';
-import { NbBadgePosition } from '../badge/badge.component';
-
-/**
- * Represents a component showing a user avatar (picture) with a user name on the right.
+ * A user's avatar with their name and title beside it.
  * @stacked-example(Showcase, user/user-showcase.component)
  *
- * ```ts
- *   <nb-user name="John Doe" title="Engineer"></nb-user>
+ * ```html
+ * <nb-user name="John Doe" title="Engineer"></nb-user>
  * ```
  *
  * ### Installation
+ *
+ * Import `NbUserComponent` into your standalone component:
+ * ```ts
+ * @Component({
+ *   imports: [NbUserComponent],
+ * })
+ * export class PageComponent { }
+ * ```
+ *
+ * With NgModules:
  *
  * Import `NbUserModule` to your feature module.
  * ```ts
@@ -35,18 +52,17 @@ import { NbBadgePosition } from '../badge/badge.component';
  * ```
  * ### Usage
  *
- * Available in multiple sizes:
+ * `size` sizes it:
  * @stacked-example(Multiple Sizes, user/user-sizes.component)
  *
- *
- * You can hide unnecessary captions (name, title or both):
+ * `showName`, `showTitle` and `onlyPicture` hide the captions:
  * @stacked-example(Hide captions in user component, user/user-hide-captions.component)
  *
- *
- * You can set custom avatar background-color, user image (as link or BASE64 string) and disable user initials:
+ * The avatar is `picture`, a URL or a data URL, or else the name's initials on a `color` or `status` background;
+ * `showInitials` turns the initials off:
  * @stacked-example(Avatar image settings, user/user-avatar-settings.component)
  *
- * Component shape could be controlled with `shape` input.
+ * `shape` sets the avatar's corners:
  * @stacked-example(Shapes, user/user-shape.component)
  *
  * @styles
@@ -55,6 +71,20 @@ import { NbBadgePosition } from '../badge/badge.component';
  * user-picture-box-border-color:
  * user-picture-box-border-width:
  * user-initials-text-color:
+ * user-initials-basic-background-color:
+ * user-initials-basic-text-color:
+ * user-initials-primary-background-color:
+ * user-initials-primary-text-color:
+ * user-initials-success-background-color:
+ * user-initials-success-text-color:
+ * user-initials-info-background-color:
+ * user-initials-info-text-color:
+ * user-initials-warning-background-color:
+ * user-initials-warning-text-color:
+ * user-initials-danger-background-color:
+ * user-initials-danger-text-color:
+ * user-initials-control-background-color:
+ * user-initials-control-text-color:
  * user-initials-text-font-family:
  * user-initials-text-font-weight:
  * user-name-text-color:
@@ -108,180 +138,110 @@ import { NbBadgePosition } from '../badge/badge.component';
  * user-giant-title-text-line-height:
  */
 @Component({
-    selector: 'nb-user',
-    styleUrls: ['./user.component.scss'],
-    templateUrl: './user.component.html',
-    standalone: false
+  selector: 'nb-user',
+  styleUrls: ['./user.component.scss'],
+  templateUrl: './user.component.html',
+  imports: [NbBadgeComponent],
+  host: {
+    '[class]': 'hostClasses()',
+  },
 })
 export class NbUserComponent {
+  // The app's defaults for this type, which the inputs below start from.
+  protected readonly nbDefaults = injectNbDefaults('user');
 
-  imageBackgroundStyle: SafeStyle;
+  protected readonly texts = injectNbTexts('user', () => ({
+    anonymous: $localize`:@@nb.user.anonymous:Anonymous`,
+  }));
 
-  /**
-   * Specifies a name to be shown on the right of a user picture
-   * @type string
-   */
-  @Input() name: string = 'Anonymous';
+  /** The name shown, "Anonymous" without one. */
+  protected readonly displayName = computed(() => this.name() ?? this.texts().anonymous);
 
-  /**
-   * Specifies a title to be shown under the **name**
-   * @type string
-   */
-  @Input() title: string;
+  /** The name, shown beside the avatar; "Anonymous" without one, which the initials follow too. */
+  readonly name = input<string>();
 
-  /**
-   * Absolute path to a user picture or base64 image.
-   * User name initials will be shown if no picture specified (JD for John Doe).
-   * @type string
-   */
-  @Input()
-  set picture(value: string) {
-    this.imageBackgroundStyle = value ? this.domSanitizer.bypassSecurityTrustStyle(`url(${value})`) : null;
-  }
+  /** A title under the name, e.g. a role. */
+  readonly title = input<string>();
 
   /**
-   * Color of the area shown when no picture specified
-   * @type string
+   * The picture's URL, or a data URL. Without one, or when it fails to load, the initials show (JD for John Doe).
+   * The picture names the user for assistive technologies only when the name isn't shown.
    */
-  @Input() color: string;
+  readonly picture = input<string>();
+
+  /** Whether the picture failed to load, so the initials show; a new picture tries again. */
+  protected readonly pictureFailed = linkedSignal({ source: this.picture, computation: () => false });
+
+  /** Whether the picture shows, rather than the initials. */
+  protected readonly pictureShown = computed(() => !!this.picture() && !this.pictureFailed());
+
+  /** A CSS colour for the initials' background; takes precedence over `status`. */
+  readonly color = input<string>();
 
   /**
-   * Size of the component.
-   * Possible values: `tiny`, `small`, `medium` (default), `large`, 'giant'.
+   * Colours the initials' area with a status: `basic`, `primary`, `success`, `info`, `warning`, `danger` or
+   * `control`. Unset by default, which shows the area's border; `color` takes precedence.
    */
-  @Input() size: NbComponentSize = 'medium';
+  readonly status = input<NbComponentOrCustomStatus>();
+
+  /** `tiny`, `small`, `medium` (default), `large` or `giant`. */
+  readonly sizeInput = input<NbComponentSize | undefined>(undefined, { alias: 'size' });
+  /** The size in use: the input's, the app's default, or 'medium'. */
+  readonly size = linkedSignal<NbComponentSize>(() => this.sizeInput() ?? this.nbDefaults().size ?? 'medium');
+
+  /** The avatar's shape: `rectangle`, `semi-round` or `round` (default). */
+  readonly shapeInput = input<NbComponentShape | undefined>(undefined, { alias: 'shape' });
+  /** The shape in use: the input's, the app's default, or 'round'. */
+  readonly shape = linkedSignal<NbComponentShape>(() => this.shapeInput() ?? this.nbDefaults().shape ?? 'round');
+
+  /** Shows the name. */
+  readonly showName = input<boolean, NbBooleanInput>(true, { transform: convertToBoolProperty });
+
+  /** Shows the title. */
+  readonly showTitle = input<boolean, NbBooleanInput>(true, { transform: convertToBoolProperty });
+
+  /** Shows the initials when there's no picture; without them, the background shows on its own. */
+  readonly showInitials = input<boolean, NbBooleanInput>(true, { transform: convertToBoolProperty });
+
+  /** Shows the avatar alone, without the name and the title. */
+  readonly onlyPicture = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
+
+  /** Text of a badge on the avatar; no badge without it. */
+  readonly badgeText = input<string>();
+
+  /** The badge's status: `basic` (default), `primary`, `info`, `success`, `warning`, `danger` or `control`. */
+  readonly badgeStatus = input<NbComponentOrCustomStatus>('basic');
 
   /**
-   * Shape of the picture box.
-   * Possible values: `rectangle`, `semi-round`, `round`.
+   * Where the badge sits on the avatar: `top left`, `top right` (default), `bottom left`, `bottom right`,
+   * `top start`, `top end`, `bottom start` or `bottom end`.
    */
-  @Input() shape: NbComponentShape = 'round';
+  readonly badgePosition = input<NbBadgePosition>();
+
+  protected readonly nameVisible = computed(() => this.showName() && !this.onlyPicture());
+
+  protected readonly titleVisible = computed(() => this.showTitle() && !this.onlyPicture());
 
   /**
-   * Whether to show a user name or not
+   * The first letters of the first two words of the name: whole characters, so an emoji or a letter with a combining
+   * mark stays whole.
    */
-  @Input()
-  get showName(): boolean {
-    return this._showName;
-  }
-  set showName(val: boolean) {
-    this._showName = convertToBoolProperty(val);
-  }
-  private _showName: boolean = true;
-  static ngAcceptInputType_showName: NbBooleanInput;
-
-  /**
-   * Whether to show a user title or not
-   * @type boolean
-   */
-  @Input()
-  get showTitle(): boolean {
-    return this._showTitle;
-  }
-  set showTitle(val: boolean) {
-    this._showTitle = convertToBoolProperty(val);
-  }
-  private _showTitle: boolean = true;
-  static ngAcceptInputType_showTitle: NbBooleanInput;
-
-  /**
-   * Whether to show a user initials (if no picture specified) or not
-   * @type boolean
-   */
-  @Input()
-  get showInitials(): boolean {
-    return this._showInitials;
-  }
-  set showInitials(val: boolean) {
-    this._showInitials = convertToBoolProperty(val);
-  }
-  private _showInitials: boolean = true;
-  static ngAcceptInputType_showInitials: NbBooleanInput;
-
-  /**
-   * Whether to show only a picture or also show the name and title
-   * @type boolean
-   */
-  @Input()
-  get onlyPicture(): boolean {
-    return !this.showName && !this.showTitle;
-  }
-  set onlyPicture(val: boolean) {
-    this.showName = this.showTitle = !convertToBoolProperty(val);
-  }
-  static ngAcceptInputType_onlyPicture: NbBooleanInput;
-
-  /**
-   * Badge text to display
-   * @type string
-   */
-  @Input() badgeText: string;
-
-  /**
-   * Badge status (adds specific styles):
-   * `primary`, `info`, `success`, `warning`, `danger`
-   * @param {string} val
-   */
-  @Input() badgeStatus: NbComponentOrCustomStatus = 'basic';
-
-  /**
-   * Badge position.
-   * Can be set to any class or to one of predefined positions:
-   * 'top left', 'top right', 'bottom left', 'bottom right',
-   * 'top start', 'top end', 'bottom start', 'bottom end'
-   * @type string
-   */
-  @Input() badgePosition: NbBadgePosition;
-
-  @HostBinding('class.size-tiny')
-  get tiny(): boolean {
-    return this.size === 'tiny';
-  }
-
-  @HostBinding('class.size-small')
-  get small(): boolean {
-    return this.size === 'small';
-  }
-
-  @HostBinding('class.size-medium')
-  get medium(): boolean {
-    return this.size === 'medium';
-  }
-
-  @HostBinding('class.size-large')
-  get large(): boolean {
-    return this.size === 'large';
-  }
-
-  @HostBinding('class.size-giant')
-  get giant(): boolean {
-    return this.size === 'giant';
-  }
-
-  @HostBinding('class.shape-rectangle')
-  get rectangle(): boolean {
-    return this.shape === 'rectangle';
-  }
-
-  @HostBinding('class.shape-semi-round')
-  get semiRound(): boolean {
-    return this.shape === 'semi-round';
-  }
-
-  @HostBinding('class.shape-round')
-  get round(): boolean {
-    return this.shape === 'round';
-  }
-
-  constructor(private domSanitizer: DomSanitizer) { }
-
   getInitials(): string {
-    if (this.name) {
-      const names = this.name.split(' ');
-
-      return names.map(n => n.charAt(0)).splice(0, 2).join('').toUpperCase();
-    }
-
-    return '';
+    const name = this.displayName();
+    return name
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((word) => firstGrapheme(word))
+      .join('')
+      .toLocaleUpperCase();
   }
+
+  protected readonly hostClasses = computed(() =>
+    [
+      this.size() && `size-${this.size()}`,
+      this.shape() && `shape-${this.shape()}`,
+      this.status() && `status-${this.status()}`,
+    ].filter(Boolean),
+  );
 }
