@@ -1,14 +1,7 @@
-/*
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { LOCALE_ID } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 
-import { NbDateService } from '@nebular/theme';
-import { NbMomentDateService } from '@nebular/moment';
+import { NbDateService } from '@liquid-js/lyr-core';
+import { NbMomentDateService } from '@liquid-js/lyr-moment';
 import moment from 'moment';
 
 type Moment = moment.Moment;
@@ -18,7 +11,7 @@ describe('moment-date-service', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({});
-    dateService = new NbMomentDateService(TestBed.inject(LOCALE_ID));
+    dateService = TestBed.runInInjectionContext(() => new NbMomentDateService());
   });
 
   it('should validate as correct if date string is valid according to the format', () => {
@@ -114,6 +107,11 @@ describe('moment-date-service', () => {
     expect(dateService.getMonthNameByIndex(5)).toBe('Jun');
   });
 
+  it('should get narrow month names, the first letter of the short ones', () => {
+    expect(dateService.getMonthNameByIndex(0, 'narrow')).toBe('J');
+    expect(dateService.getMonthNameByIndex(8, 'narrow')).toBe('S');
+  });
+
   it('should get day of week names', () => {
     expect(dateService.getDayOfWeekNames()).toEqual(['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']);
   });
@@ -142,8 +140,9 @@ describe('moment-date-service', () => {
   });
 
   it("should not format if date isn't passed", () => {
-    expect(() => dateService.format(undefined, 'DD.MM.YYYY')).not.toThrow();
-    expect(dateService.format(undefined, 'DD.MM.YYYY')).toEqual('');
+    const missingDate = undefined as unknown as Moment;
+    expect(() => dateService.format(missingDate, 'DD.MM.YYYY')).not.toThrow();
+    expect(dateService.format(missingDate, 'DD.MM.YYYY')).toEqual('');
   });
 
   it('should get year end', () => {
@@ -299,5 +298,12 @@ describe('moment-date-service', () => {
     expect(dateService.compareDates(moment().year(2018).month(6).date(16), moment().year(2018).month(6).date(16))).toBe(
       0,
     );
+  });
+
+  it('should format and parse months and years in its own tokens', () => {
+    const date = moment([2027, 4, 1]);
+    expect(dateService.format(date, dateService.getMonthFormat())).toBe('2027-05');
+    expect(dateService.format(date, dateService.getYearFormat())).toBe('2027');
+    expect(dateService.parse('2028-11', dateService.getMonthFormat()).isSame(moment([2028, 10, 1]), 'day')).toBe(true);
   });
 });

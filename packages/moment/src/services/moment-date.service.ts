@@ -1,37 +1,23 @@
-/*
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
+import { LOCALE_ID, inject, Service } from '@angular/core';
 
-import { Inject, Injectable, LOCALE_ID } from '@angular/core';
-import { TranslationWidth } from '@angular/common';
+import { NbDateNameWidth, NbDateService } from '@liquid-js/lyr-core';
 
-import { NbDateService } from '@nebular/theme';
+// moment is a CommonJS package whose only export is the moment function, so it has no named alternative.
+import moment, { type LongDateFormatKey, type Moment } from 'moment';
 
-import _moment from 'moment';
-// @ts-ignore
-import { default as _rollupMoment, LongDateFormatKey, Moment } from 'moment';
-
-const moment = _rollupMoment || _moment;
-
-
-@Injectable()
+@Service({ autoProvided: false })
 export class NbMomentDateService extends NbDateService<Moment> {
-  protected localeData: {
-    firstDayOfWeek: number,
-    defaultFormat: string,
-    months: { [key: string]: string[] },
-    days: { [key: string]: string[] },
-  };
+  protected localeData = this.readMomentLocaleData(inject(LOCALE_ID));
 
   protected readonly TIME_ONLY_FORMAT_KEY: LongDateFormatKey = 'LT';
-  constructor(@Inject(LOCALE_ID) locale: string) {
+  constructor() {
+    const locale = inject(LOCALE_ID);
+
     super();
     this.setLocale(locale);
   }
 
-  setLocale(locale: string) {
+  override setLocale(locale: string) {
     super.setLocale(locale);
     this.setMomentLocaleData(locale);
   }
@@ -65,11 +51,11 @@ export class NbMomentDateService extends NbDateService<Moment> {
   }
 
   addMinutes(date: Moment, minute: number): Moment {
-    return this.clone(date).add( { minute });
+    return this.clone(date).add({ minute });
   }
 
   addHours(date: Moment, hour: number): Moment {
-    return this.clone(date).add( { hour });
+    return this.clone(date).add({ hour });
   }
 
   clone(date: Moment): Moment {
@@ -110,7 +96,7 @@ export class NbMomentDateService extends NbDateService<Moment> {
     return this.clone(date).day();
   }
 
-  getDayOfWeekNames(style: TranslationWidth = TranslationWidth.Narrow): string[] {
+  getDayOfWeekNames(style: NbDateNameWidth = 'narrow'): string[] {
     return this.localeData.days[style];
   }
 
@@ -142,12 +128,12 @@ export class NbMomentDateService extends NbDateService<Moment> {
     return this.clone(date).endOf('month');
   }
 
-  getMonthName(date: Moment, style: TranslationWidth = TranslationWidth.Abbreviated): string {
+  getMonthName(date: Moment, style: NbDateNameWidth = 'abbreviated'): string {
     const month = this.getMonth(date);
     return this.getMonthNameByIndex(month, style);
   }
 
-  getMonthNameByIndex(month: number, style: TranslationWidth = TranslationWidth.Abbreviated): string {
+  getMonthNameByIndex(month: number, style: NbDateNameWidth = 'abbreviated'): string {
     return this.localeData.months[style][month];
   }
 
@@ -204,19 +190,35 @@ export class NbMomentDateService extends NbDateService<Moment> {
   }
 
   protected setMomentLocaleData(locale: string) {
-    const momentLocaleData = moment.localeData(locale);
+    this.localeData = this.readMomentLocaleData(locale);
+  }
 
-    this.localeData = {
+  /** The first day of the week, the default format, and the names of the months and days of `locale`, from moment. */
+  protected readMomentLocaleData(locale: string): {
+    firstDayOfWeek: number;
+    defaultFormat: string;
+    months: Record<NbDateNameWidth, string[]>;
+    days: Record<NbDateNameWidth, string[]>;
+  } {
+    const momentLocaleData = moment.localeData(locale);
+    const monthsShort = momentLocaleData.monthsShort();
+
+    return {
       firstDayOfWeek: momentLocaleData.firstDayOfWeek(),
       defaultFormat: momentLocaleData.longDateFormat('L'),
+      // Moment has two widths of month names and three of weekday names; the others take the nearest, and narrow month
+      // names are the first letter of the short ones, as CLDR's mostly are ("J", "F", "M"; "J" for "janv.").
       months: {
-        [TranslationWidth.Abbreviated]: momentLocaleData.monthsShort(),
-        [TranslationWidth.Wide]: momentLocaleData.months(),
+        narrow: monthsShort.map((name) => (Array.from(name)[0] ?? '').toLocaleUpperCase(locale)),
+        abbreviated: monthsShort,
+        short: monthsShort,
+        wide: momentLocaleData.months(),
       },
       days: {
-        [TranslationWidth.Wide]: momentLocaleData.weekdays(),
-        [TranslationWidth.Short]: momentLocaleData.weekdaysShort(),
-        [TranslationWidth.Narrow]: momentLocaleData.weekdaysMin(),
+        narrow: momentLocaleData.weekdaysMin(),
+        abbreviated: momentLocaleData.weekdaysShort(),
+        short: momentLocaleData.weekdaysShort(),
+        wide: momentLocaleData.weekdays(),
       },
     };
   }
@@ -227,6 +229,14 @@ export class NbMomentDateService extends NbDateService<Moment> {
 
   getDateFormat(): string {
     return 'YYYY-MM-DD';
+  }
+
+  override getMonthFormat(): string {
+    return 'YYYY-MM';
+  }
+
+  override getYearFormat(): string {
+    return 'YYYY';
   }
 
   getTwelveHoursFormat(): string {

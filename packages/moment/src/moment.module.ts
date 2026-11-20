@@ -1,17 +1,17 @@
-/*
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
+import { EnvironmentProviders, makeEnvironmentProviders, NgModule } from '@angular/core';
 
-import { NgModule } from '@angular/core';
-
-import { NbDateService } from '@nebular/theme';
+import { NbDateService } from '@liquid-js/lyr-core';
 import { NbMomentDateService } from './services/moment-date.service';
 
+/**
+ * Replaces the native date service with the moment one, in place of importing `NbMomentDateModule`.
+ */
+export function provideNbMomentDate(): EnvironmentProviders {
+  return makeEnvironmentProviders([{ provide: NbDateService, useClass: NbMomentDateService }]);
+}
 
 @NgModule({
-  providers: [{ provide: NbDateService, useClass: NbMomentDateService }],
+  providers: [provideNbMomentDate()],
 })
 export class NbMomentDateModule {
 }
