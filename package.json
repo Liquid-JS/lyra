@@ -57,7 +57,7 @@
         "docs:home-devices": "node scripts/docs/home-devices.ts",
         "docs:serve": "yarn docs:prepare && yarn workspace docs serve --port 4100",
         "docs:build": "yarn docs:prepare && yarn workspace docs build --configuration production-wp --base-href /lyra/ && node scripts/docs/postbuild.ts",
-        "docs:publish": "yarn docs:build && angular-cli-ghpages --dir=dist/docs --no-silent",
+        "docs:publish": "yarn docs:build && angular-cli-ghpages --dir=dist/docs --no-notfound --no-silent",
         "release": "lerna version --sync-workspace-lock",
         "publish": "node scripts/publish.ts"
     },
