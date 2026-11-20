@@ -1,0 +1,26 @@
+<nb-card>
+  <nb-card-header> Attribute </nb-card-header>
+  <nb-card-body>
+    <nb-radio-group disabled
+      name="disabled"
+      value="This is value 1">
+      @for (option of options; track option) {
+      <nb-radio [value]="option.value">
+        {{ option.label }}
+      </nb-radio>
+      }
+    </nb-radio-group>
+  </nb-card-body>
+</nb-card>
+<nb-card>
+  <nb-card-header> Reactive forms </nb-card-header>
+  <nb-card-body>
+    <nb-radio-group [formControl]="formControl">
+      @for (option of options; track option) {
+      <nb-radio [value]="option.value">
+        {{ option.label }}
+      </nb-radio>
+      }
+    </nb-radio-group>
+  </nb-card-body>
+</nb-card>

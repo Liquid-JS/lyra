@@ -1,15 +1,24 @@
-/*
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 import { Component } from '@angular/core';
+import {
+  NbCardComponent,
+  NbCardHeaderComponent,
+  NbCardBodyComponent,
+  NbRadioGroupComponent,
+  NbRadioComponent,
+} from '@liquid-js/lyr-core';
+import { FormsModule } from '@angular/forms';
 
 @Component({
-    selector: 'nb-radio-disabled',
-    templateUrl: './radio-disabled.component.html',
-    standalone: false
+  selector: 'nb-radio-disabled',
+  templateUrl: './radio-disabled.component.html',
+  imports: [
+    NbCardComponent,
+    NbCardHeaderComponent,
+    NbCardBodyComponent,
+    NbRadioGroupComponent,
+    FormsModule,
+    NbRadioComponent,
+  ],
 })
 export class RadioDisabledComponent {
   options = [
@@ -19,5 +28,5 @@ export class RadioDisabledComponent {
     { value: 'This is value 4', label: 'Option 4', disabled: true },
     { value: 'This is value 5', label: 'Option 5' },
   ];
-  option;
+  option?: string;
 }

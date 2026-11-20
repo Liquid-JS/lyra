@@ -1,26 +1,16 @@
 import { Component } from '@angular/core';
-import { NbComponentStatus } from '../../../framework/theme/components/component-status';
+import {
+  NbComponentStatus,
+  NbCardComponent,
+  NbCardBodyComponent,
+  NbRadioGroupComponent,
+  NbRadioComponent,
+} from '@liquid-js/lyr-core';
 
 @Component({
-    template: `
-    <nb-card>
-      <nb-card-body class="example-items-rows">
-        <nb-radio-group *ngFor="let status of statuses"
-                        [name]="status"
-                        [status]="status"
-                        [class.control-status-example]="status === 'control'">
-          <nb-radio *ngFor="let option of options"
-                    [checked]="option.checked"
-                    [disabled]="option.disabled"
-                    [value]="option.value">
-            {{ option.label }}
-          </nb-radio>
-        </nb-radio-group>
-      </nb-card-body>
-    </nb-card>
-  `,
-    styleUrls: ['./radio-statuses-group.component.scss'],
-    standalone: false
+  templateUrl: './radio-statuses.component.html',
+  styleUrls: ['./radio-statuses-group.component.scss'],
+  imports: [NbCardComponent, NbCardBodyComponent, NbRadioGroupComponent, NbRadioComponent],
 })
 export class RadioStatusesComponent {
   options = [

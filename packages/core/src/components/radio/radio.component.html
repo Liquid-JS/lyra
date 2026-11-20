@@ -1,0 +1,15 @@
+<label>
+  <input type="radio"
+    class="native-input visually-hidden"
+    tabindex="0"
+    [name]="resolvedName()"
+    [value]="value()"
+    [checked]="isChecked()"
+    [disabled]="isDisabled()"
+    (change)="onChange($event)"
+    (click)="onClick($event); focusOnClick($event)">
+  <span class="outer-circle"><span class="inner-circle"></span></span>
+  <span class="text">
+    <ng-content />
+  </span>
+</label>

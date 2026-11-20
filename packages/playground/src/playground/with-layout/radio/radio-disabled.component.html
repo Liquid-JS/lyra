@@ -3,12 +3,12 @@
   <nb-card-body>
 
     <nb-radio-group [(ngModel)]="option">
-      <nb-radio
-        *ngFor="let option of options"
-        [disabled]="option.disabled"
+      @for (option of options; track option) {
+      <nb-radio [disabled]="option.disabled"
         [value]="option.value">
         {{ option.label }}
       </nb-radio>
+      }
     </nb-radio-group>
 
   </nb-card-body>

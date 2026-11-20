@@ -1,33 +1,29 @@
-/*
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
+import { Component, computed, effect, inject, input, linkedSignal, output, untracked } from '@angular/core';
 
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  EventEmitter,
-  HostBinding,
-  Input,
-  Output,
-  ViewChild,
-  ElementRef,
-  Renderer2,
-} from '@angular/core';
-
-import { NbStatusService } from '../../services/status.service';
-import { convertToBoolProperty, NbBooleanInput } from '../helpers';
-import { NbComponentOrCustomStatus } from '../component-status';
+import { injectNbDefaults } from '@liquid-js/lyr-core/base';
+import { NbStatusService } from '@liquid-js/lyr-core/base';
+import { ɵconvertToBoolProperty as convertToBoolProperty, NbBooleanInput } from '@liquid-js/lyr-core/base';
+import { ɵfocusOnClick as focusOnClick } from '@liquid-js/lyr-core/base';
+import { NbComponentOrCustomStatus } from '@liquid-js/lyr-core/base';
+import { NbComponentSize } from '@liquid-js/lyr-core/base';
+import { NB_RADIO_GROUP } from './radio-group-token';
 
 /**
- * The `NbRadioComponent` provides the same functionality as native `<input type="radio">`
- * with Nebular styles and animations.
+ * A radio button, styled like the design system's; a native `<input type="radio">` underneath.
  *
  * @stacked-example(Showcase, radio/radio-showcase.component)
  *
  * ### Installation
+ *
+ * Import `NbRadioGroupComponent`, `NbRadioComponent` into your standalone component:
+ * ```ts
+ * @Component({
+ *   imports: [NbRadioGroupComponent, NbRadioComponent],
+ * })
+ * export class PageComponent { }
+ * ```
+ *
+ * With NgModules:
  *
  * Import `NbRadioModule` to your feature module.
  *
@@ -43,7 +39,7 @@ import { NbComponentOrCustomStatus } from '../component-status';
  *
  * ### Usage
  *
- * Radio buttons should be wrapped in `nb-radio-group` to provide form bindings.
+ * Radios go in an `nb-radio-group`, which holds the value and binds to forms:
  *
  * ```html
  * <nb-radio-group [(ngModel)]="selectedOption">
@@ -53,21 +49,42 @@ import { NbComponentOrCustomStatus } from '../component-status';
  * </nb-radio-group>
  * ```
  *
- * You can disable some radios in the group using a `disabled` attribute.
+ * `disabled` disables single radios in a group:
  *
  * @stacked-example(Disabled, radio/radio-disabled.component)
  *
- *
  * @styles
  *
- * radio-width:
- * radio-height:
+ * radio-tiny-width:
+ * radio-tiny-height:
+ * radio-small-width:
+ * radio-small-height:
+ * radio-medium-width:
+ * radio-medium-height:
+ * radio-label-padding:
+ * radio-large-width:
+ * radio-large-height:
+ * radio-giant-width:
+ * radio-giant-height:
  * radio-border-style:
  * radio-border-width:
  * radio-text-font-family:
- * radio-text-font-size:
- * radio-text-font-weight:
- * radio-text-line-height:
+ * radio-text-padding:
+ * radio-tiny-text-font-size:
+ * radio-tiny-text-font-weight:
+ * radio-tiny-text-line-height:
+ * radio-small-text-font-size:
+ * radio-small-text-font-weight:
+ * radio-small-text-line-height:
+ * radio-medium-text-font-size:
+ * radio-medium-text-font-weight:
+ * radio-medium-text-line-height:
+ * radio-large-text-font-size:
+ * radio-large-text-font-weight:
+ * radio-large-text-line-height:
+ * radio-giant-text-font-size:
+ * radio-giant-text-font-weight:
+ * radio-giant-text-line-height:
  * radio-outline-color:
  * radio-outline-width:
  * radio-basic-text-color:
@@ -78,12 +95,19 @@ import { NbComponentOrCustomStatus } from '../component-status';
  * radio-basic-inner-circle-color:
  * radio-basic-focus-border-color:
  * radio-basic-focus-inner-circle-color:
+ * radio-basic-focus-background-color:
+ * radio-basic-focus-checked-background-color:
+ * radio-basic-focus-checked-border-color:
  * radio-basic-hover-background-color:
  * radio-basic-hover-border-color:
  * radio-basic-hover-inner-circle-color:
  * radio-basic-hover-checked-background-color:
+ * radio-basic-hover-checked-border-color:
  * radio-basic-active-border-color:
  * radio-basic-active-inner-circle-color:
+ * radio-basic-active-background-color:
+ * radio-basic-active-checked-background-color:
+ * radio-basic-active-checked-border-color:
  * radio-basic-disabled-background-color:
  * radio-basic-disabled-border-color:
  * radio-basic-disabled-text-color:
@@ -98,12 +122,19 @@ import { NbComponentOrCustomStatus } from '../component-status';
  * radio-primary-inner-circle-color:
  * radio-primary-focus-border-color:
  * radio-primary-focus-inner-circle-color:
+ * radio-primary-focus-background-color:
+ * radio-primary-focus-checked-background-color:
+ * radio-primary-focus-checked-border-color:
  * radio-primary-hover-background-color:
  * radio-primary-hover-border-color:
  * radio-primary-hover-inner-circle-color:
  * radio-primary-hover-checked-background-color:
+ * radio-primary-hover-checked-border-color:
  * radio-primary-active-border-color:
  * radio-primary-active-inner-circle-color:
+ * radio-primary-active-background-color:
+ * radio-primary-active-checked-background-color:
+ * radio-primary-active-checked-border-color:
  * radio-primary-disabled-background-color:
  * radio-primary-disabled-border-color:
  * radio-primary-disabled-text-color:
@@ -118,12 +149,19 @@ import { NbComponentOrCustomStatus } from '../component-status';
  * radio-success-inner-circle-color:
  * radio-success-focus-border-color:
  * radio-success-focus-inner-circle-color:
+ * radio-success-focus-background-color:
+ * radio-success-focus-checked-background-color:
+ * radio-success-focus-checked-border-color:
  * radio-success-hover-background-color:
  * radio-success-hover-border-color:
  * radio-success-hover-inner-circle-color:
  * radio-success-hover-checked-background-color:
+ * radio-success-hover-checked-border-color:
  * radio-success-active-border-color:
  * radio-success-active-inner-circle-color:
+ * radio-success-active-background-color:
+ * radio-success-active-checked-background-color:
+ * radio-success-active-checked-border-color:
  * radio-success-disabled-background-color:
  * radio-success-disabled-border-color:
  * radio-success-disabled-text-color:
@@ -132,18 +170,26 @@ import { NbComponentOrCustomStatus } from '../component-status';
  * radio-success-disabled-checked-inner-circle-color:
  * radio-info-text-color:
  * radio-info-border-color:
+ * radio-label-end-padding:
  * radio-info-background-color:
  * radio-info-checked-background-color:
  * radio-info-checked-border-color:
  * radio-info-inner-circle-color:
  * radio-info-focus-border-color:
  * radio-info-focus-inner-circle-color:
+ * radio-info-focus-background-color:
+ * radio-info-focus-checked-background-color:
+ * radio-info-focus-checked-border-color:
  * radio-info-hover-background-color:
  * radio-info-hover-border-color:
  * radio-info-hover-inner-circle-color:
  * radio-info-hover-checked-background-color:
+ * radio-info-hover-checked-border-color:
  * radio-info-active-border-color:
  * radio-info-active-inner-circle-color:
+ * radio-info-active-background-color:
+ * radio-info-active-checked-background-color:
+ * radio-info-active-checked-border-color:
  * radio-info-disabled-background-color:
  * radio-info-disabled-border-color:
  * radio-info-disabled-text-color:
@@ -158,12 +204,19 @@ import { NbComponentOrCustomStatus } from '../component-status';
  * radio-warning-inner-circle-color:
  * radio-warning-focus-border-color:
  * radio-warning-focus-inner-circle-color:
+ * radio-warning-focus-background-color:
+ * radio-warning-focus-checked-background-color:
+ * radio-warning-focus-checked-border-color:
  * radio-warning-hover-background-color:
  * radio-warning-hover-border-color:
  * radio-warning-hover-inner-circle-color:
  * radio-warning-hover-checked-background-color:
+ * radio-warning-hover-checked-border-color:
  * radio-warning-active-border-color:
  * radio-warning-active-inner-circle-color:
+ * radio-warning-active-background-color:
+ * radio-warning-active-checked-background-color:
+ * radio-warning-active-checked-border-color:
  * radio-warning-disabled-background-color:
  * radio-warning-disabled-border-color:
  * radio-warning-disabled-text-color:
@@ -178,12 +231,19 @@ import { NbComponentOrCustomStatus } from '../component-status';
  * radio-danger-inner-circle-color:
  * radio-danger-focus-border-color:
  * radio-danger-focus-inner-circle-color:
+ * radio-danger-focus-background-color:
+ * radio-danger-focus-checked-background-color:
+ * radio-danger-focus-checked-border-color:
  * radio-danger-hover-background-color:
  * radio-danger-hover-border-color:
  * radio-danger-hover-inner-circle-color:
  * radio-danger-hover-checked-background-color:
+ * radio-danger-hover-checked-border-color:
  * radio-danger-active-border-color:
  * radio-danger-active-inner-circle-color:
+ * radio-danger-active-background-color:
+ * radio-danger-active-checked-background-color:
+ * radio-danger-active-checked-border-color:
  * radio-danger-disabled-background-color:
  * radio-danger-disabled-border-color:
  * radio-danger-disabled-text-color:
@@ -198,12 +258,19 @@ import { NbComponentOrCustomStatus } from '../component-status';
  * radio-control-inner-circle-color:
  * radio-control-focus-border-color:
  * radio-control-focus-inner-circle-color:
+ * radio-control-focus-background-color:
+ * radio-control-focus-checked-background-color:
+ * radio-control-focus-checked-border-color:
  * radio-control-hover-background-color:
  * radio-control-hover-border-color:
  * radio-control-hover-inner-circle-color:
  * radio-control-hover-checked-background-color:
+ * radio-control-hover-checked-border-color:
  * radio-control-active-border-color:
  * radio-control-active-inner-circle-color:
+ * radio-control-active-background-color:
+ * radio-control-active-checked-background-color:
+ * radio-control-active-checked-border-color:
  * radio-control-disabled-background-color:
  * radio-control-disabled-border-color:
  * radio-control-disabled-text-color:
@@ -212,170 +279,85 @@ import { NbComponentOrCustomStatus } from '../component-status';
  * radio-control-disabled-checked-inner-circle-color:
  * */
 @Component({
-    selector: 'nb-radio',
-    template: `
-    <label>
-      <input
-        #input
-        type="radio"
-        class="native-input visually-hidden"
-        [name]="name"
-        [value]="value"
-        [checked]="checked"
-        [disabled]="disabled"
-        (change)="onChange($event)"
-        (click)="onClick($event)">
-      <span class="outer-circle"></span>
-      <span class="inner-circle"></span>
-      <span class="text">
-        <ng-content></ng-content>
-      </span>
-    </label>
-  `,
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    styleUrls: ['./radio.component.scss'],
-    standalone: false
+  selector: 'nb-radio',
+  templateUrl: './radio.component.html',
+  styleUrls: ['./radio.component.scss'],
+  host: {
+    '[class]': 'hostClasses()',
+  },
 })
-export class NbRadioComponent {
+export class NbRadioComponent<T = unknown> {
+  // The app's defaults for this type, which the inputs below start from.
+  protected readonly nbDefaults = injectNbDefaults('radio');
 
-  @Input()
-  get name(): string {
-    return this._name;
-  }
-  set name(value: string) {
-    if (this._name !== value) {
-      this._name = value;
-    }
-  }
-  private _name: string;
+  protected readonly focusOnClick = focusOnClick;
+  protected readonly statusService = inject(NbStatusService);
+  protected readonly group = inject(NB_RADIO_GROUP, { optional: true });
 
-  @Input()
-  get checked(): boolean {
-    return this._checked;
-  }
-  set checked(value: boolean) {
-    const boolValue = convertToBoolProperty(value);
-    if (this._checked !== boolValue) {
-      this._checked = boolValue;
-    }
-  }
-  private _checked: boolean = false;
-  static ngAcceptInputType_checked: NbBooleanInput;
+  /** The native input's name; inside `nb-radio-group`, the group's name is used. */
+  readonly name = input<string>();
 
-  @Input()
-  get value(): any {
-    return this._value;
-  }
-  set value(value: any) {
-    if (this._value !== value) {
-      this._value = value;
-    }
-  }
-  private _value: any;
+  /**
+   * Whether the radio is checked. Inside `nb-radio-group`, the group's value decides; a checked radio sets the
+   * group's value when the group has none.
+   */
+  readonly checked = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
 
-  @Input()
-  get disabled(): boolean {
-    return this._disabled;
-  }
-  set disabled(disabled: boolean) {
-    const boolValue = convertToBoolProperty(disabled);
-    if (this._disabled !== boolValue) {
-      this._disabled = boolValue;
-    }
-  }
-  private _disabled: boolean = false;
-  static ngAcceptInputType_disabled: NbBooleanInput;
+  /** The value the group takes when the radio is checked. */
+  readonly value = input<T>();
 
-  @Input() status: NbComponentOrCustomStatus = 'basic';
+  /** Disables the radio. Inside `nb-radio-group`, the group's `disabled` takes precedence once it's set. */
+  readonly disabled = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
 
-  @Output() valueChange: EventEmitter<any> = new EventEmitter();
+  /** `basic` (default), `primary`, `success`, `warning`, `danger`, `info` or `control`; in a group, the group's. */
+  readonly status = input<NbComponentOrCustomStatus>('basic');
 
-  @Output() blur: EventEmitter<void> = new EventEmitter();
+  /** `tiny`, `small`, `medium` (default), `large` or `giant`; in a group, the group's. */
+  readonly sizeInput = input<NbComponentSize | undefined>(undefined, { alias: 'size' });
+  /** The size in use: the input's, the app's default, or 'medium'. */
+  readonly size = linkedSignal<NbComponentSize>(() => this.sizeInput() ?? this.nbDefaults().size ?? 'medium');
 
-  @ViewChild('input', { read: ElementRef }) input: ElementRef<HTMLInputElement>;
+  /**
+   * Emits whether the radio is checked as that changes, as a checkbox's `checkedChange` does: when the user checks it,
+   * and when checking another radio of its group unchecks it. For the value, listen to the group's `valueChange`.
+   */
+  readonly checkedChange = output<boolean>();
 
-  constructor(
-    protected cd: ChangeDetectorRef,
-    protected renderer: Renderer2,
-    protected statusService: NbStatusService,
-  ) {}
+  protected readonly checkedState = linkedSignal(() => this.checked());
 
-  @HostBinding('class.status-primary')
-  get isPrimary(): boolean {
-    return this.status === 'primary';
-  }
+  // The state the radio renders with: its own, or its group's.
+  readonly isChecked = computed(() => (this.group ? this.group.selectedValue() === this.value() : this.checkedState()));
+  readonly resolvedName = computed(() => (this.group ? this.group.resolvedName() : this.name()));
+  readonly isDisabled = computed(() => this.group?.isDisabled() ?? this.disabled());
+  readonly resolvedStatus = computed(() => (this.group ? this.group.resolvedStatus() : this.status()));
+  readonly resolvedSize = computed(() => (this.group ? this.group.size() : this.size()));
 
-  @HostBinding('class.status-success')
-  get isSuccess(): boolean {
-    return this.status === 'success';
-  }
+  protected readonly hostClasses = computed(() => [
+    this.statusService.getStatusClass(this.resolvedStatus()),
+    `size-${this.resolvedSize()}`,
+  ]);
 
-  @HostBinding('class.status-warning')
-  get isWarning(): boolean {
-    return this.status === 'warning';
-  }
-
-  @HostBinding('class.status-danger')
-  get isDanger(): boolean {
-    return this.status === 'danger';
-  }
-
-  @HostBinding('class.status-info')
-  get isInfo(): boolean {
-    return this.status === 'info';
-  }
-
-  @HostBinding('class.status-basic')
-  get isBasic(): boolean {
-    return this.status === 'basic';
-  }
-
-  @HostBinding('class.status-control')
-  get isControl(): boolean {
-    return this.status === 'control';
-  }
-
-  @HostBinding('class')
-  get additionalClasses(): string[] {
-    if (this.statusService.isCustomStatus(this.status)) {
-      return [this.statusService.getStatusClass(this.status)];
-    }
-    return [];
+  constructor() {
+    // Changes other than the `checked` input's, so `[(checked)]` follows the group too.
+    let last: boolean | undefined;
+    effect(() => {
+      const checked = this.isChecked();
+      untracked(() => {
+        if (last !== undefined && checked !== last && checked !== this.checked()) {
+          this.checkedChange.emit(checked);
+        }
+        last = checked;
+      });
+    });
   }
 
   onChange(event: Event) {
     event.stopPropagation();
-    this.checked = true;
-    this.valueChange.emit(this.value);
+    this.checkedState.set(true);
+    this.group?.select(this.value());
   }
 
   onClick(event: Event) {
     event.stopPropagation();
-  }
-
-  /*
-   * @docs-private
-   * We use this method when setting radio inputs from radio group component.
-   * Otherwise Angular won't detect changes in radio template as cached last rendered
-   * value didn't updated.
-   **/
-  _markForCheck() {
-    this.cd.markForCheck();
-  }
-
-  /*
-   * @docs-private
-   * Use this method when setting radio name from radio group component.
-   * In case option 'name' isn't set on nb-radio component we need to set name
-   * right away, so it won't overlap with options without names from other radio
-   * groups. Otherwise they all would have same name and will be considered as
-   * options from one group so only the last option will stay selected.
-   **/
-  _setName(name: string) {
-    this.name = name;
-
-    if (this.input) {
-      this.renderer.setProperty(this.input.nativeElement, 'name', name);
-    }
   }
 }

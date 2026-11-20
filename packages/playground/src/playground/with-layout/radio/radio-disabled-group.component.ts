@@ -1,34 +1,24 @@
 import { Component } from '@angular/core';
-import { FormControl } from '@angular/forms';
+import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import {
+  NbCardComponent,
+  NbCardHeaderComponent,
+  NbCardBodyComponent,
+  NbRadioGroupComponent,
+  NbRadioComponent,
+} from '@liquid-js/lyr-core';
 
 @Component({
-    template: `
-    <nb-card>
-      <nb-card-header>
-        Attribute
-      </nb-card-header>
-      <nb-card-body>
-        <nb-radio-group disabled name="disabled" value="This is value 1">
-          <nb-radio *ngFor="let option of options" [value]="option.value">
-            {{ option.label }}
-          </nb-radio>
-        </nb-radio-group>
-      </nb-card-body>
-    </nb-card>
-    <nb-card>
-      <nb-card-header>
-        Reactive forms
-      </nb-card-header>
-      <nb-card-body>
-        <nb-radio-group [formControl]="formControl">
-          <nb-radio *ngFor="let option of options" [value]="option.value">
-            {{ option.label }}
-          </nb-radio>
-        </nb-radio-group>
-      </nb-card-body>
-    </nb-card>
-  `,
-    standalone: false
+  templateUrl: './radio-disabled-group.component.html',
+  imports: [
+    NbCardComponent,
+    NbCardHeaderComponent,
+    NbCardBodyComponent,
+    NbRadioGroupComponent,
+    NbRadioComponent,
+    FormsModule,
+    ReactiveFormsModule,
+  ],
 })
 export class RadioDisabledGroupComponent {
   options = [
