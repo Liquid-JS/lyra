@@ -1,31 +1,32 @@
-/*
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { Component } from '@angular/core';
-import { NbDateService } from '@nebular/theme';
-
+import { Component, inject } from '@angular/core';
+import {
+  NbDateService,
+  NbCardComponent,
+  NbCardBodyComponent,
+  NbInputDirective,
+  NbDatepickerDirective,
+  NbDatepickerComponent,
+} from '@liquid-js/lyr-core';
 
 @Component({
-    selector: 'nb-datepicker-validation',
-    template: `
-    <nb-card size="large">
-      <nb-card-body>
-        <input nbInput placeholder="Pick Date" [nbDatepicker]="picker">
-        <nb-datepicker #picker [min]="min" [max]="max"></nb-datepicker>
-      </nb-card-body>
-    </nb-card>
-  `,
-    styleUrls: ['./datepicker-example.scss'],
-    standalone: false
+  selector: 'nb-datepicker-validation',
+  templateUrl: './datepicker-validation.component.html',
+  styleUrls: ['./datepicker-example.scss'],
+  imports: [
+    NbCardComponent,
+    NbCardBodyComponent,
+    NbInputDirective,
+    NbDatepickerDirective,
+    NbDatepickerComponent,
+  ],
 })
 export class DatepickerValidationComponent {
+  protected readonly dateService = inject<NbDateService<Date>>(NbDateService);
+
   min: Date;
   max: Date;
 
-  constructor(protected dateService: NbDateService<Date>) {
+  constructor() {
     this.min = this.dateService.addMonth(this.dateService.today(), -1);
     this.max = this.dateService.addMonth(this.dateService.today(), 1);
   }

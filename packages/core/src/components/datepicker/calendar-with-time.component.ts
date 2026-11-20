@@ -1,189 +1,148 @@
 import {
   AfterViewInit,
-  ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
-  Input,
-  OnInit,
-  ViewChild,
+  computed,
+  inject,
+  input,
+  linkedSignal,
+  viewChild,
 } from '@angular/core';
-import { NbCalendarComponent } from '../calendar/calendar.component';
-import { NbSelectedTimePayload } from '../timepicker/model';
-import { NbDateService } from '../calendar-kit/services/date.service';
-import { NbCalendarTimeModelService } from '../calendar-kit/services/calendar-time-model.service';
-import { NbCalendarSize } from '../calendar-kit/model';
-import { NbPortalOutletDirective } from '../cdk/overlay/mapping';
-import { NbTimePickerComponent } from '../timepicker/timepicker.component';
+import { NbCalendarComponent } from '@liquid-js/lyr-core/calendar';
+import { NbSelectedTimePayload } from '@liquid-js/lyr-core/timepicker';
+import { NbDateService } from '@liquid-js/lyr-core/calendar-kit';
+import { NbCalendarTimeModelService } from '@liquid-js/lyr-core/calendar-kit';
+import { NbCalendarSize } from '@liquid-js/lyr-core/calendar-kit';
+import { NbPortalOutletDirective } from '@liquid-js/lyr-core/cdk';
+import { NbTimePickerComponent } from '@liquid-js/lyr-core/timepicker';
+import { NbCardComponent, NbCardBodyComponent, NbCardFooterComponent } from '@liquid-js/lyr-core/card';
+import { NbBaseCalendarComponent } from '@liquid-js/lyr-core/calendar';
+import { NbCalendarActionsComponent } from '@liquid-js/lyr-core/calendar-kit';
+import { ɵconvertToOptionalBoolProperty as convertToOptionalBoolProperty, NbBooleanInput } from '@liquid-js/lyr-core/base';
 
+/**
+ * A calendar with a time picker beside it, which `nb-date-timepicker` opens: the date and time are edited together
+ * and emitted when the user applies them, or sets the current time.
+ */
 @Component({
-    selector: 'nb-calendar-with-time',
-    template: `
-    <nb-card class="calendar-with-time">
-      <nb-card-body class="picker-body">
-        <nb-base-calendar
-          [boundingMonth]="boundingMonth"
-          [startView]="startView"
-          [date]="date"
-          [min]="min"
-          [max]="max"
-          [filter]="filter"
-          [dayCellComponent]="dayCellComponent"
-          [monthCellComponent]="monthCellComponent"
-          [yearCellComponent]="yearCellComponent"
-          [size]="size"
-          [visibleDate]="visibleDate"
-          [showNavigation]="showNavigation"
-          [showWeekNumber]="showWeekNumber"
-          [weekNumberSymbol]="weekNumberSymbol"
-          [firstDayOfWeek]="firstDayOfWeek"
-          (dateChange)="onDateValueChange($event)"
-        >
-        </nb-base-calendar>
-        <div
-          class="timepicker-section"
-          [class.size-large]="isLarge()"
-          [class.timepicker-single-column-width]="singleColumn"
-          [class.timepicker-multiple-column-width]="!singleColumn"
-        >
-          <div class="picker-title">{{ title }}</div>
-          <nb-timepicker
-            (onSelectTime)="onTimeChange($event)"
-            [date]="date"
-            [twelveHoursFormat]="twelveHoursFormat"
-            [showAmPmLabel]="showAmPmLabel"
-            [withSeconds]="showSeconds()"
-            [showFooter]="false"
-            [singleColumn]="singleColumn"
-            [step]="step"
-          >
-          </nb-timepicker>
-          <ng-container nbPortalOutlet></ng-container>
-        </div>
-      </nb-card-body>
-      <nb-card-footer class="picker-footer">
-        <nb-calendar-actions
-          [applyButtonText]="applyButtonText"
-          [currentTimeButtonText]="currentTimeButtonText"
-          [showCurrentTimeButton]="showCurrentTimeButton"
-          (setCurrentTime)="saveCurrentTime()"
-          (saveValue)="saveValue()"
-        ></nb-calendar-actions>
-      </nb-card-footer>
-    </nb-card>
-  `,
-    styleUrls: ['./calendar-with-time-container.component.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  selector: 'nb-calendar-with-time',
+  templateUrl: './calendar-with-time.component.html',
+  styleUrls: ['./calendar-with-time-container.component.scss'],
+  imports: [
+    NbCardComponent,
+    NbCardBodyComponent,
+    NbBaseCalendarComponent,
+    NbTimePickerComponent,
+    NbPortalOutletDirective,
+    NbCardFooterComponent,
+    NbCalendarActionsComponent,
+  ],
 })
-export class NbCalendarWithTimeComponent<D> extends NbCalendarComponent<D> implements OnInit, AfterViewInit {
-  /**
-   * Defines selected date.
-   * */
-  @Input() visibleDate: D;
+export class NbCalendarWithTimeComponent<D> extends NbCalendarComponent<D> implements AfterViewInit {
+  protected readonly dateService = inject<NbDateService<D>>(NbDateService);
+  readonly cd = inject(ChangeDetectorRef);
+  protected readonly calendarTimeModelService = inject<NbCalendarTimeModelService<D>>(NbCalendarTimeModelService);
 
   /**
-   * Defines 12 hours format like '07:00 PM'.
-   * */
-  @Input() twelveHoursFormat: boolean;
+   * Shows times in the 12-hour format, e.g. 07:00 PM.
+   */
+  readonly twelveHoursFormat = input<boolean | undefined, NbBooleanInput>(undefined, {
+    transform: convertToOptionalBoolProperty,
+  });
 
   /**
-   * Defines should show am/pm label if twelveHoursFormat enabled.
-   * */
-  @Input() showAmPmLabel: boolean;
+   * Shows the AM/PM label with `twelveHoursFormat`.
+   */
+  readonly showAmPmLabel = input<boolean | undefined, NbBooleanInput>(undefined, {
+    transform: convertToOptionalBoolProperty,
+  });
 
   /**
-   * Show seconds in timepicker.
-   * Ignored when singleColumn is true.
-   * */
-  @Input() withSeconds: boolean;
+   * Adds a seconds column to the time picker; ignored with `singleColumn`.
+   */
+  readonly withSeconds = input<boolean | undefined, NbBooleanInput>(undefined, {
+    transform: convertToOptionalBoolProperty,
+  });
 
   /**
-   * Show timepicker values in one column with 60 minutes step by default.
-   * */
-  @Input() singleColumn: boolean;
+   * Lists whole times in one column, `step` minutes apart, instead of hour and minute columns.
+   */
+  readonly singleColumn = input<boolean | undefined, NbBooleanInput>(undefined, {
+    transform: convertToOptionalBoolProperty,
+  });
 
   /**
-   * Defines minutes step when we use fill time format.
-   * If set to 20, it will be: '12:00, 12:20: 12:40, 13:00...'
-   * */
-  @Input() step: number;
+   * Minutes between the times a `singleColumn` picker lists, e.g. 20 for 12:00, 12:20, 12:40; 60 by default.
+   */
+  readonly step = input<number>();
 
   /**
-   * Defines time format.
-   * */
-  @Input() timeFormat: string;
+   * The format the time picker shows times in.
+   */
+  readonly timeFormat = input<string>();
 
   /**
-   * Defines text over the timepicker.
-   * */
-  @Input() title: string;
+   * Text above the time picker.
+   */
+  readonly title = input<string>();
 
-  @Input() applyButtonText: string;
+  /** Text of the button that applies the value; "ok" by default. */
+  readonly applyButtonText = input<string>();
 
-  @Input() currentTimeButtonText: string;
+  /** Text of the button that sets the current time; "now" by default. */
+  readonly currentTimeButtonText = input<string>();
 
-  @Input() showCurrentTimeButton: boolean;
+  /** Shows the button that sets the current time. */
+  readonly showCurrentTimeButton = input<boolean | undefined, NbBooleanInput>(undefined, {
+    transform: convertToOptionalBoolProperty,
+  });
 
-  @ViewChild(NbPortalOutletDirective) portalOutlet: NbPortalOutletDirective;
-  @ViewChild(NbTimePickerComponent) timepicker: NbTimePickerComponent<D>;
+  readonly portalOutlet = viewChild.required(NbPortalOutletDirective);
+  readonly timepicker = viewChild.required<NbTimePickerComponent<D>>(NbTimePickerComponent);
 
-  constructor(
-    protected dateService: NbDateService<D>,
-    public cd: ChangeDetectorRef,
-    protected calendarTimeModelService: NbCalendarTimeModelService<D>,
-  ) {
-    super();
-  }
-
-  ngOnInit(): void {
-    if (!this.date) {
-      this.date = this.calendarTimeModelService.getResetTime();
-    }
-  }
+  /**
+   * The date and time being edited: `date`, or midnight today, until the user saves it.
+   */
+  readonly selectedDate = linkedSignal(() => this.date() ?? this.calendarTimeModelService.getResetTime());
 
   ngAfterViewInit() {
-    this.portalOutlet.attachTemplatePortal(this.timepicker.portal);
+    this.portalOutlet().attachTemplatePortal(this.timepicker().portal());
   }
 
-  onDateValueChange(date: D): void {
-    const hours = this.dateService.getHours(this.date);
-    const minutes = this.dateService.getMinutes(this.date);
-    const seconds = this.dateService.getSeconds(this.date);
-    const milliseconds = this.dateService.getMilliseconds(this.date);
+  onDateValueChange(date: D) {
+    const hours = this.dateService.getHours(this.selectedDate());
+    const minutes = this.dateService.getMinutes(this.selectedDate());
+    const seconds = this.dateService.getSeconds(this.selectedDate());
+    const milliseconds = this.dateService.getMilliseconds(this.selectedDate());
 
     let newDate = this.dateService.setHours(date, hours);
-    newDate = this.dateService.setMinutes(newDate, minutes);
     newDate = this.dateService.setMinutes(newDate, minutes);
     newDate = this.dateService.setSeconds(newDate, seconds);
     newDate = this.dateService.setMilliseconds(newDate, milliseconds);
 
-    this.date = newDate;
+    this.selectedDate.set(newDate);
   }
 
-  onTimeChange(selectedTime: NbSelectedTimePayload<D>): void {
-    let newDate = this.dateService.clone(this.date);
+  onTimeChange(selectedTime: NbSelectedTimePayload<D>) {
+    let newDate = this.dateService.clone(this.selectedDate());
 
     newDate = this.dateService.setHours(newDate, this.dateService.getHours(selectedTime.time));
     newDate = this.dateService.setMinutes(newDate, this.dateService.getMinutes(selectedTime.time));
     newDate = this.dateService.setSeconds(newDate, this.dateService.getSeconds(selectedTime.time));
     newDate = this.dateService.setMilliseconds(newDate, this.dateService.getMilliseconds(selectedTime.time));
 
-    this.date = newDate;
+    this.selectedDate.set(newDate);
   }
 
-  saveValue(): void {
-    this.dateChange.emit(this.date);
+  saveValue() {
+    this.dateChange.emit(this.selectedDate());
   }
 
-  saveCurrentTime(): void {
+  saveCurrentTime() {
     this.dateChange.emit(this.dateService.today());
   }
 
-  showSeconds(): boolean {
-    return this.withSeconds && !this.singleColumn;
-  }
+  readonly showSeconds = computed(() => this.withSeconds() && !this.singleColumn());
 
-  isLarge(): boolean {
-    return this.size === NbCalendarSize.LARGE;
-  }
+  readonly isLarge = computed(() => this.size() === NbCalendarSize.LARGE);
 }

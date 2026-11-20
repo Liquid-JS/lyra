@@ -1,0 +1,43 @@
+<nb-card class="calendar-with-time"
+  appearance="outline">
+  <nb-card-body class="picker-body">
+    <nb-base-calendar [boundingMonth]="boundingMonth()"
+      [startView]="startView()"
+      [date]="selectedDate()"
+      [min]="min()"
+      [max]="max()"
+      [filter]="filter()"
+      [dayCellComponent]="dayCellComponent()"
+      [monthCellComponent]="monthCellComponent()"
+      [yearCellComponent]="yearCellComponent()"
+      [size]="size()"
+      [visibleDate]="visibleDate()"
+      [showNavigation]="showNavigation()"
+      [showWeekNumber]="showWeekNumber()"
+      [weekNumberSymbol]="weekNumberSymbol()"
+      [firstDayOfWeek]="firstDayOfWeek()"
+      (dateChange)="onDateValueChange($event)" />
+    <div class="timepicker-section"
+      [class.size-large]="isLarge()"
+      [class.timepicker-single-column-width]="singleColumn()"
+      [class.timepicker-multiple-column-width]="!singleColumn()">
+      <div class="picker-title">{{ title() }}</div>
+      <nb-timepicker (onSelectTime)="onTimeChange($event)"
+        [date]="selectedDate()"
+        [twelveHoursFormat]="twelveHoursFormat()"
+        [showAmPmLabel]="showAmPmLabel()"
+        [withSeconds]="showSeconds()"
+        [showFooter]="false"
+        [singleColumn]="singleColumn()"
+        [step]="step()" />
+      <ng-container nbPortalOutlet />
+    </div>
+  </nb-card-body>
+  <nb-card-footer class="picker-footer">
+    <nb-calendar-actions [applyButtonText]="applyButtonText()"
+      [currentTimeButtonText]="currentTimeButtonText()"
+      [showCurrentTimeButton]="showCurrentTimeButton()"
+      (setCurrentTime)="saveCurrentTime()"
+      (saveValue)="saveValue()" />
+  </nb-card-footer>
+</nb-card>

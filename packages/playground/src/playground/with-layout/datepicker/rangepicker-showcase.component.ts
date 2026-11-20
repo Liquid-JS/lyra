@@ -1,24 +1,22 @@
-/*
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 import { Component } from '@angular/core';
-
+import {
+  NbCardComponent,
+  NbCardBodyComponent,
+  NbInputDirective,
+  NbDatepickerDirective,
+  NbRangepickerComponent,
+} from '@liquid-js/lyr-core';
 
 @Component({
-    selector: 'nb-rangepicker-showcase',
-    template: `
-    <nb-card size="large">
-      <nb-card-body>
-        <input nbInput placeholder="Pick Date Range" [nbDatepicker]="formpicker">
-        <nb-rangepicker #formpicker></nb-rangepicker>
-      </nb-card-body>
-    </nb-card>
-  `,
-    styleUrls: ['./datepicker-example.scss'],
-    standalone: false
+  selector: 'nb-rangepicker-showcase',
+  templateUrl: './rangepicker-showcase.component.html',
+  styleUrls: ['./datepicker-example.scss'],
+  imports: [
+    NbCardComponent,
+    NbCardBodyComponent,
+    NbInputDirective,
+    NbDatepickerDirective,
+    NbRangepickerComponent,
+  ],
 })
-export class RangepickerShowcaseComponent {
-}
+export class RangepickerShowcaseComponent {}

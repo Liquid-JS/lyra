@@ -1,9 +1,3 @@
-/*!
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 @use '../../styles/theming' as *;
 
 @mixin nb-datepicker-theme {
@@ -17,6 +11,11 @@
     background: nb-theme(datepicker-background-color);
     box-shadow: nb-theme(datepicker-shadow);
   }
+  // The actions line up with the days' edges, as the month and the arrows above them do.
+  nb-calendar-with-time .picker-footer {
+    padding-inline: nb-theme(calendar-picker-padding-start);
+  }
+
   nb-calendar-with-time {
     .nb-timepicker-container,
     nb-base-calendar nb-card {

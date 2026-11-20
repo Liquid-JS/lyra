@@ -1,13 +1,19 @@
 <nb-card size="large">
   <nb-card-body>
     <section>
-      <input nbInput placeholder="Pick Time" [nbDatepicker]="rangePicker" />
-      <nb-rangepicker [format]="format" [firstDayOfWeek]="firstDayOfWeek" #rangePicker></nb-rangepicker>
+      <input nbInput
+        placeholder="Pick Time"
+        [nbDatepicker]="rangePicker" />
+      <nb-rangepicker [format]="format()"
+        [firstDayOfWeek]="firstDayOfWeek()"
+        #rangePicker />
     </section>
 
     <section>
-      <button nbButton (click)="toggleFormat()">format — {{ format }}</button>
-      <button nbButton (click)="toggleFormatSwitching()">
+      <button nbButton
+        (click)="toggleFormat()">format — {{ format() }}</button>
+      <button nbButton
+        (click)="toggleFormatSwitching()">
         {{ formatToggleTimer ? 'Stop' : 'Start' }} auto format toggle
       </button>
     </section>
@@ -23,7 +29,8 @@
         <nb-option [value]="5">Friday</nb-option>
         <nb-option [value]="6">Saturday</nb-option>
       </nb-select>
-      <button nbButton (click)="toggleFirstDayOfWeekSwitching()">
+      <button nbButton
+        (click)="toggleFirstDayOfWeekSwitching()">
         {{ firstDayOfWeekToggleTimer ? 'Stop' : 'Start' }} auto firstDayOfWeek toggle
       </button>
     </section>

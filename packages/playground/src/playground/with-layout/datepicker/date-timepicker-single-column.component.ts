@@ -1,27 +1,23 @@
-/*
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { Component } from '@angular/core';
+import {
+  NbCardComponent,
+  NbCardBodyComponent,
+  NbInputDirective,
+  NbDatepickerDirective,
+  NbDateTimePickerComponent,
+} from '@liquid-js/lyr-core';
 
 @Component({
-    selector: 'nb-timepicker-showcase',
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    template: `
-    <nb-card size="large">
-      <nb-card-body>
-        <input nbInput placeholder="Pick Date" [nbDatepicker]="dateTimePicker">
-        <nb-date-timepicker
-          #dateTimePicker
-          singleColumn
-          [step]="10"></nb-date-timepicker>
-      </nb-card-body>
-    </nb-card>
-  `,
-    styleUrls: ['./datepicker-example.scss'],
-    standalone: false
+  selector: 'nb-date-timepicker-single-column',
+  templateUrl: './date-timepicker-single-column.component.html',
+  styleUrls: ['./datepicker-example.scss'],
+  imports: [
+    NbCardComponent,
+    NbCardBodyComponent,
+    NbInputDirective,
+    NbDatepickerDirective,
+    NbDateTimePickerComponent,
+  ],
 })
 export class DateTimepickerSingleColumnComponent {
 }

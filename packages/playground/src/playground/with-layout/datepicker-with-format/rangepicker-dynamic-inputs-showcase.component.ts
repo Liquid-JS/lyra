@@ -1,67 +1,76 @@
-/*
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
+import {
+  NbCardComponent,
+  NbCardBodyComponent,
+  NbInputDirective,
+  NbDatepickerDirective,
+  NbRangepickerComponent,
+  NbButtonComponent,
+  NbSelectComponent,
+  NbOptionComponent,
+} from '@liquid-js/lyr-core';
 
 @Component({
-    selector: 'npg-rangepicker-dynamic-inputs-showcase',
-    templateUrl: './rangepicker-dynamic-inputs-showcase.component.html',
-    styles: [
-        `
+  selector: 'npg-rangepicker-dynamic-inputs-showcase',
+  templateUrl: './rangepicker-dynamic-inputs-showcase.component.html',
+  styles: [
+    `
       section {
         margin-bottom: 2rem;
       }
 
       section > * + * {
-        margin-left: 1rem;
+        margin-inline-start: 1rem;
       }
     `,
-    ],
-    standalone: false
+  ],
+  imports: [
+    NbCardComponent,
+    NbCardBodyComponent,
+    NbInputDirective,
+    NbDatepickerDirective,
+    NbRangepickerComponent,
+    NbButtonComponent,
+    NbSelectComponent,
+    NbOptionComponent,
+  ],
 })
 export class RangepickerDynamicInputsShowcaseComponent {
   now = new Date();
 
-  format = 'dd/MM/yyyy HH:mm';
-  formatToggleTimer = null;
+  readonly format = signal('dd/MM/yyyy HH:mm');
+  formatToggleTimer?: ReturnType<typeof setInterval>;
 
   toggleFormatSwitching() {
-    if (this.formatToggleTimer == null) {
+    if (this.formatToggleTimer === undefined) {
       this.formatToggleTimer = setInterval(() => {
         this.toggleFormat();
       }, 1000);
     } else {
       clearInterval(this.formatToggleTimer);
-      this.formatToggleTimer = null;
+      this.formatToggleTimer = undefined;
     }
   }
 
   toggleFormat() {
-    this.format = this.format === 'dd/MM/yyyy HH:mm' ? 'HH:mm dd/MM/yyyy' : 'dd/MM/yyyy HH:mm';
+    this.format.set(this.format() === 'dd/MM/yyyy HH:mm' ? 'HH:mm dd/MM/yyyy' : 'dd/MM/yyyy HH:mm');
   }
 
-  firstDayOfWeek: number | undefined = undefined;
-  firstDayOfWeekToggleTimer = null;
+  readonly firstDayOfWeek = signal<number | undefined>(undefined);
+  firstDayOfWeekToggleTimer?: ReturnType<typeof setInterval>;
 
   toggleFirstDayOfWeekSwitching() {
-    if (this.firstDayOfWeekToggleTimer == null) {
+    if (this.firstDayOfWeekToggleTimer === undefined) {
       this.firstDayOfWeekToggleTimer = setInterval(() => {
         this.toggleFirstDayOfWeek();
       }, 1000);
     } else {
       clearInterval(this.firstDayOfWeekToggleTimer);
-      this.firstDayOfWeekToggleTimer = null;
+      this.firstDayOfWeekToggleTimer = undefined;
     }
   }
 
   toggleFirstDayOfWeek() {
-    this.firstDayOfWeek ??= 0;
-    this.firstDayOfWeek++;
-    if (this.firstDayOfWeek > 6) {
-      this.firstDayOfWeek = 0;
-    }
+    this.firstDayOfWeek.update((day) => ((day ?? 0) + 1) % 7);
   }
 }

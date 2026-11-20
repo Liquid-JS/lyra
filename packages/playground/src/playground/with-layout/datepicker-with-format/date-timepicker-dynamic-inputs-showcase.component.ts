@@ -1,139 +1,150 @@
-/*
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
+import {
+  NbCardComponent,
+  NbCardBodyComponent,
+  NbInputDirective,
+  NbDatepickerDirective,
+  NbDateTimePickerComponent,
+  NbButtonComponent,
+  NbSelectComponent,
+  NbOptionComponent,
+} from '@liquid-js/lyr-core';
+import { FormsModule } from '@angular/forms';
 
 @Component({
-    selector: 'npg-date-timepicker-dynamic-inputs-showcase',
-    templateUrl: './date-timepicker-dynamic-inputs-showcase.component.html',
-    styles: [
-        `
+  selector: 'npg-date-timepicker-dynamic-inputs-showcase',
+  templateUrl: './date-timepicker-dynamic-inputs-showcase.component.html',
+  styles: [
+    `
       section {
         margin-bottom: 2rem;
       }
 
       section > * + * {
-        margin-left: 1rem;
+        margin-inline-start: 1rem;
       }
     `,
-    ],
-    standalone: false
+  ],
+  imports: [
+    NbCardComponent,
+    NbCardBodyComponent,
+    NbInputDirective,
+    FormsModule,
+    NbDatepickerDirective,
+    NbDateTimePickerComponent,
+    NbButtonComponent,
+    NbSelectComponent,
+    NbOptionComponent,
+  ],
 })
 export class DateTimepickerDynamicInputsShowcaseComponent {
   now = new Date();
 
-  withSeconds = true;
-  secondsToggleTimer = null;
+  readonly withSeconds = signal(true);
+  secondsToggleTimer?: ReturnType<typeof setInterval>;
 
   toggleSecondsSwitching() {
-    if (this.secondsToggleTimer == null) {
+    if (this.secondsToggleTimer === undefined) {
       this.secondsToggleTimer = setInterval(() => {
         this.toggleWithSeconds();
       }, 1000);
     } else {
       clearInterval(this.secondsToggleTimer);
-      this.secondsToggleTimer = null;
+      this.secondsToggleTimer = undefined;
     }
   }
 
   toggleWithSeconds() {
-    this.withSeconds = !this.withSeconds;
+    this.withSeconds.set(!this.withSeconds());
   }
 
-  singleColumn = false;
-  singleColumnToggleTimer = null;
+  readonly singleColumn = signal(false);
+  singleColumnToggleTimer?: ReturnType<typeof setInterval>;
 
   toggleSingleColumnSwitching() {
-    if (this.singleColumnToggleTimer == null) {
+    if (this.singleColumnToggleTimer === undefined) {
       this.singleColumnToggleTimer = setInterval(() => {
         this.toggleSingleColumn();
       }, 1000);
     } else {
       clearInterval(this.singleColumnToggleTimer);
-      this.singleColumnToggleTimer = null;
+      this.singleColumnToggleTimer = undefined;
     }
   }
 
   toggleSingleColumn() {
-    this.singleColumn = !this.singleColumn;
+    this.singleColumn.set(!this.singleColumn());
   }
 
-  step = 45;
-  stepToggleTimer = null;
+  readonly step = signal(45);
+  stepToggleTimer?: ReturnType<typeof setInterval>;
 
   toggleStepSwitching() {
-    if (this.stepToggleTimer == null) {
+    if (this.stepToggleTimer === undefined) {
       this.stepToggleTimer = setInterval(() => {
         this.toggleStep();
       }, 1000);
     } else {
       clearInterval(this.stepToggleTimer);
-      this.stepToggleTimer = null;
+      this.stepToggleTimer = undefined;
     }
   }
 
   toggleStep() {
-    this.step = this.step === 45 ? 15 : 45;
+    this.step.set(this.step() === 45 ? 15 : 45);
   }
 
-  twelveHoursFormat = true;
-  twelveHoursFormatToggleTimer = null;
+  readonly twelveHoursFormat = signal(true);
+  twelveHoursFormatToggleTimer?: ReturnType<typeof setInterval>;
 
   toggleTwelveHoursFormatSwitching() {
-    if (this.twelveHoursFormatToggleTimer == null) {
+    if (this.twelveHoursFormatToggleTimer === undefined) {
       this.twelveHoursFormatToggleTimer = setInterval(() => {
         this.toggleTwelveHoursFormat();
       }, 1000);
     } else {
       clearInterval(this.twelveHoursFormatToggleTimer);
-      this.twelveHoursFormatToggleTimer = null;
+      this.twelveHoursFormatToggleTimer = undefined;
     }
   }
 
   toggleTwelveHoursFormat() {
-    this.twelveHoursFormat = !this.twelveHoursFormat;
+    this.twelveHoursFormat.set(!this.twelveHoursFormat());
   }
 
-  format = 'dd/MM/yyyy HH:mm';
-  formatToggleTimer = null;
+  readonly format = signal('dd/MM/yyyy HH:mm');
+  formatToggleTimer?: ReturnType<typeof setInterval>;
 
   toggleFormatSwitching() {
-    if (this.formatToggleTimer == null) {
+    if (this.formatToggleTimer === undefined) {
       this.formatToggleTimer = setInterval(() => {
         this.toggleFormat();
       }, 1000);
     } else {
       clearInterval(this.formatToggleTimer);
-      this.formatToggleTimer = null;
+      this.formatToggleTimer = undefined;
     }
   }
 
   toggleFormat() {
-    this.format = this.format === 'dd/MM/yyyy HH:mm' ? 'HH:mm dd/MM/yyyy' : 'dd/MM/yyyy HH:mm';
+    this.format.set(this.format() === 'dd/MM/yyyy HH:mm' ? 'HH:mm dd/MM/yyyy' : 'dd/MM/yyyy HH:mm');
   }
 
-  firstDayOfWeek: number | undefined = undefined;
-  firstDayOfWeekToggleTimer = null;
+  readonly firstDayOfWeek = signal<number | undefined>(undefined);
+  firstDayOfWeekToggleTimer?: ReturnType<typeof setInterval>;
 
   toggleFirstDayOfWeekSwitching() {
-    if (this.firstDayOfWeekToggleTimer == null) {
+    if (this.firstDayOfWeekToggleTimer === undefined) {
       this.firstDayOfWeekToggleTimer = setInterval(() => {
         this.toggleFirstDayOfWeek();
       }, 1000);
     } else {
       clearInterval(this.firstDayOfWeekToggleTimer);
-      this.firstDayOfWeekToggleTimer = null;
+      this.firstDayOfWeekToggleTimer = undefined;
     }
   }
 
   toggleFirstDayOfWeek() {
-    this.firstDayOfWeek ??= 0;
-    this.firstDayOfWeek++;
-    if (this.firstDayOfWeek > 6) {
-      this.firstDayOfWeek = 0;
-    }
+    this.firstDayOfWeek.update((day) => ((day ?? 0) + 1) % 7);
   }
 }

@@ -1,129 +1,158 @@
-/*
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 import {
   ChangeDetectorRef,
+  DestroyRef,
   Directive,
+  effect,
   ElementRef,
   forwardRef,
-  Inject,
+  inject,
   InjectionToken,
-  Input,
-  OnDestroy,
+  input,
+  OnChanges,
+  signal,
+  SimpleChanges,
   Type,
+  untracked,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   ControlValueAccessor,
   NG_VALIDATORS,
   NG_VALUE_ACCESSOR,
   ValidationErrors,
   Validator,
-  ValidatorFn,
-  Validators,
 } from '@angular/forms';
-import { fromEvent, merge, Observable, Subject, Subscription } from 'rxjs';
-import { distinctUntilChanged, filter, map, pairwise, startWith, take, takeUntil, tap } from 'rxjs/operators';
+import { fromEvent, merge, Observable, Subscription } from 'rxjs';
+import { distinctUntilChanged, filter, map, pairwise, startWith, take, tap } from 'rxjs/operators';
 
-import { NB_DOCUMENT } from '../../theme.options';
-import { NbDateService } from '../calendar-kit/services/date.service';
+import { NB_DOCUMENT } from '@liquid-js/lyr-core/base';
+import { NbDateService } from '@liquid-js/lyr-core/calendar-kit';
+import { injectNbValidationMessage } from '@liquid-js/lyr-core/validation';
+import { ɵnbValidationError as nbValidationError } from '@liquid-js/lyr-core/validation';
+
+function throwNoDatepickerAdapter(): never {
+  throw new Error('No datepickerAdapter provided for picker');
+}
 
 /**
- * The `NbDatepickerAdapter` instances provide way how to parse, format and validate
- * different date types.
- * */
+ * Reads, writes and checks the input's text for one kind of picker, e.g. dates or ranges. The directive picks the
+ * adapter whose `picker` the input's picker is an instance of.
+ */
 export abstract class NbDatepickerAdapter<D> {
   /**
-   * Picker component class.
-   * */
-  abstract picker: Type<any>;
+   * The picker component the adapter is for.
+   */
+  abstract picker: Type<unknown>;
 
   /**
-   * Parse date string according to the format.
-   * */
-  abstract parse(value: string, format: string): D;
+   * Whether `min` and `max` are compared with the time of day. Date-only pickers compare whole days, so a `min`
+   * of today at 10:00 still allows today.
+   */
+  readonly comparesTime: boolean = false;
 
   /**
-   * Format date according to the format.
-   * */
-  abstract format(value: D, format: string): string;
+   * Reads a value from the input's text, in the format given.
+   */
+  abstract parse(value: string, format?: string): D;
 
   /**
-   * Validates date string according to the passed format.
-   * */
-  abstract isValid(value: string, format: string): boolean;
+   * Writes a value as the input's text, in the format given.
+   */
+  abstract format(value?: D, format?: string): string;
+
+  /**
+   * Whether the text is a value `parse` reads, in the format given.
+   */
+  abstract isValid(value: string, format?: string): boolean;
 }
 
 /**
- * Validators config that will be used by form control to perform proper validation.
- * */
+ * The limits the directive validates the input against.
+ */
 export interface NbPickerValidatorConfig<D> {
   /**
-   * Minimum date available in picker.
-   * */
-  min: D;
+   * The earliest date allowed.
+   */
+  min?: D;
 
   /**
-   * Maximum date available in picker.
-   * */
-  max: D;
+   * The latest date allowed.
+   */
+  max?: D;
 
   /**
-   * Predicate that determines is value available for picking.
-   * */
-  filter: (D) => boolean;
+   * Whether a date is allowed.
+   */
+  filter?: (date: D) => boolean;
 }
 
+let nextDialogId = 0;
+
 /**
- * Datepicker is an control that can pick any values anyway.
- * It has to be bound to the datepicker directive through nbDatepicker input.
- * */
+ * What `input[nbDatepicker]` binds to: a picker of values of `T` made of dates `D`, such as a date, a range or a date
+ * with a time.
+ */
 export abstract class NbDatepicker<T, D = T> {
   /**
-   * HTML input element date format.
-   * */
-  abstract format: string;
+   * The format of the input's text.
+   */
+  abstract format?: string;
 
-  abstract get value(): T;
+  /** Whether the picker is open, for the input's `aria-expanded`. */
+  readonly expanded = signal(false);
 
-  abstract set value(value: T);
+  /** The id of the picker's dialog, which the input controls while it's open. */
+  readonly dialogId = `nb-datepicker-dialog-${nextDialogId++}`;
+
+  abstract get value(): T | undefined;
+
+  abstract set value(value: T | undefined);
 
   abstract get valueChange(): Observable<T>;
 
   abstract get init(): Observable<void>;
 
   /**
-   * Attaches datepicker to the native input element.
-   * */
-  abstract attach(hostRef: ElementRef);
+   * Attaches the picker to the input it opens from.
+   */
+  abstract attach(hostRef: ElementRef): void;
 
   /**
-   * Returns validator configuration based on the input properties.
-   * */
+   * The picker's `min`, `max` and `filter`, which the directive validates the input against.
+   */
   abstract getValidatorConfig(): NbPickerValidatorConfig<D>;
 
-  abstract show();
+  abstract show(): void;
 
-  abstract hide();
+  abstract hide(): void;
 
   abstract shouldHide(): boolean;
 
   abstract get isShown(): boolean;
+
+  /** Shows the picker and moves focus into it, for the keyboard. */
+  focusCalendar(): void {}
 
   abstract get blur(): Observable<void>;
 
   abstract get formatChanged$(): Observable<void>;
 }
 
-export const NB_DATE_ADAPTER = new InjectionToken<NbDatepickerAdapter<any>>('Datepicker Adapter');
-
-export const NB_DATE_SERVICE_OPTIONS = new InjectionToken('Date service options');
+export const NB_DATE_ADAPTER = new InjectionToken<NbDatepickerAdapter<unknown>[]>('Datepicker Adapter');
 
 /**
- * The `NbDatepickerDirective` is form control that gives you ability to select dates and ranges. The datepicker
- * is shown when input receives a `focus` event.
+ * Options of the date service. The datepicker reads `format`; date service packages add their own options.
+ */
+export interface NbDateServiceOptions {
+  format?: string;
+}
+
+export const NB_DATE_SERVICE_OPTIONS = new InjectionToken<NbDateServiceOptions>('Date service options');
+
+/**
+ * A form control that picks a date, a range or a date with a time in a calendar, which opens under the input when it
+ * is focused or clicked. The input's text is the value in the picker's `format`, and dates typed into it are read
+ * back.
  *
  * ```html
  * <input [nbDatepicker]="datepicker">
@@ -132,7 +161,27 @@ export const NB_DATE_SERVICE_OPTIONS = new InjectionToken('Date service options'
  *
  * @stacked-example(Showcase, datepicker/datepicker-showcase.component)
  *
+ * The picker is a dialog the input controls. Arrow Down moves the focus into its calendar, which works by keyboard,
+ * and Escape closes it and returns to the input.
+ *
  * ### Installation
+ *
+ * Import `NbDatepickerDirective`, `NbDatepickerComponent` into your standalone component:
+ * ```ts
+ * @Component({
+ *   imports: [NbDatepickerDirective, NbDatepickerComponent],
+ * })
+ * export class PageComponent { }
+ * ```
+ *
+ * and add `provideNbDatepicker()` to the application providers:
+ * ```ts
+ * bootstrapApplication(AppComponent, {
+ *   providers: [provideNbDatepicker()],
+ * });
+ * ```
+ *
+ * With NgModules:
  *
  * Import `NbDatepickerModule.forRoot()` to your root module.
  * ```ts
@@ -157,32 +206,42 @@ export const NB_DATE_SERVICE_OPTIONS = new InjectionToken('Date service options'
  * ```
  * ### Usage
  *
- * If you want to use range selection, you have to use `NbRangepickerComponent` instead:
+ * `NbRangepickerComponent` picks a range, typed as `start - end`:
  *
  * ```html
  * <input [nbDatepicker]="rangepicker">
  * <nb-rangepicker #rangepicker></nb-rangepicker>
  * ```
  *
- * Both range and date pickers support all parameters as calendar, so, check `NbCalendarComponent` for additional
- * info.
+ * Both pickers have the calendar's inputs; see `NbCalendarComponent`.
  *
  * @stacked-example(Range showcase, datepicker/rangepicker-showcase.component)
  *
- * Datepicker is the form control so it can be bound with angular forms through ngModel and form controls.
+ * The input binds to a form control or `ngModel`. The value has the type of the configured `NbDateService`: `Date`
+ * with the native and date-fns services, `Moment` with the moment service. Rangepickers use `NbCalendarRange` with
+ * that type.
  *
  * @stacked-example(Forms, datepicker/datepicker-forms.component)
  *
- * `NbDatepickerDirective` may be validated using `min` and `max` dates passed to the datepicker.
+ * The datepicker's `min`, `max` and `filter` limit the dates the calendar offers, and the date typed in the input:
+ * outside them the field has the `nbDatepickerMin`, `nbDatepickerMax` or `nbDatepickerFilter` error. While the text
+ * isn't a date, the value stays the last date and the field has the `nbDatepickerParse` error. The errors are
+ * `{ kind, message, …data }`, with the messages of `nb-validation-errors`, in reactive, template-driven and signal
+ * forms alike.
  *
  * @stacked-example(Validation, datepicker/datepicker-validation.component)
  *
- * Also `NbDatepickerDirective` may be filtered using `filter` predicate
- * that receives date object and has to return a boolean value.
+ * `filter` is a predicate that receives a date and returns whether it can be picked.
  *
  * @stacked-example(Filter, datepicker/datepicker-filter.component)
  *
- * If you need to pick a time along with the date, you can use nb-date-timepicker
+ * `pickerMode="month"` or `"year"` picks a month or a year, e.g. a card's expiry or a graduation year: the calendar
+ * starts on the months or the years, and the value is the first day of the one picked. Its text is in the date
+ * service's month or year format (`2026-03`, `2026`), or the datepicker's `format`, e.g. `MMM yyyy` with date-fns.
+ *
+ * @stacked-example(Month and year pickers, datepicker/datepicker-picker-mode.component)
+ *
+ * `nb-date-timepicker` picks a time along with the date; the value is applied with its OK button:
  *
  * ```html
  * <input nbInput placeholder="Pick Date" [nbDatepicker]="dateTimePicker">
@@ -190,11 +249,10 @@ export const NB_DATE_SERVICE_OPTIONS = new InjectionToken('Date service options'
  * ```
  * @stacked-example(Date timepicker, datepicker/date-timepicker-showcase.component)
  *
- * A single column picker with options value as time and minute, so users won’t be able to pick
- * hours and minutes individually.
+ * With `singleColumn` the times are one list, `step` minutes apart, instead of hour and minute columns:
  *
  * @stacked-example(Date timepicker single column, datepicker/date-timepicker-single-column.component)
-
+ *
  * The `NbDatepickerComponent` supports date formatting:
  *
  * ```html
@@ -202,19 +260,22 @@ export const NB_DATE_SERVICE_OPTIONS = new InjectionToken('Date service options'
  * <nb-datepicker #datepicker format="MM\dd\yyyy"></nb-datepicker>
  * ```
  * <span id="formatting-issue"></span>
- * ## Formatting Issue
+ * ## Formats
  *
- * By default, datepicker uses angulars `LOCALE_ID` token for localization and `DatePipe` for dates formatting.
- * And native `Date.parse(...)` for dates parsing. But native `Date.parse` function doesn't support formats.
- * To provide custom formatting you have to use one of the following packages:
+ * By default, datepicker uses Angular's `LOCALE_ID` for localization, and native dates: it shows dates with
+ * `DatePipe`, in its patterns (e.g. `MMM d, y`) or named formats (e.g. `mediumDate`), and reads typed dates back in
+ * the same format, with the locale's month and day names. Text that isn't in the format, e.g. `2027-03-19`, is read as
+ * `Date.parse` reads it. Formats with other parts, e.g. week numbers or quarters, and other date libraries need an
+ * adapter, from one of the following packages:
  *
- * - `@nebular/moment` - provides moment date adapter that uses moment for date objects. This means datepicker than
- * will operate only moment date objects. If you want to use it you have to install it: `npm i @nebular/moment`, and
- * import `NbMomentDateModule` from this package.
+ * - `@liquid-js/lyr-moment` - provides moment date adapter that uses moment for date objects. This means datepicker than
+ * will operate only moment date objects. If you want to use it you have to install it: `npm i @liquid-js/lyr-moment`, and
+ * import `NbMomentDateModule` from this package. moment is only published as CommonJS, so add it to the
+ * `allowedCommonJsDependencies` build option to silence the Angular CLI warning.
  *
- * - `@nebular/date-fns` - adapter for popular date-fns library. This way is preferred if you need only date formatting.
+ * - `@liquid-js/lyr-date-fns` - adapter for popular date-fns library. This way is preferred if you need only date formatting.
  * Because date-fns is treeshakable, tiny and operates native date objects. If you want to use it you have to
- * install it: `npm i @nebular/date-fns`, and import `NbDateFnsDateModule` from this package.
+ * install it: `npm i @liquid-js/lyr-date-fns date-fns`, and import `NbDateFnsDateModule` from this package.
  *
  * ### NbDateFnsDateModule
  *
@@ -236,7 +297,7 @@ export const NB_DATE_SERVICE_OPTIONS = new InjectionToken('Date service options'
  * })
  * ```
  * Further info on `date-fns` formatting tokens could be found at
- * [date-fns docs](https://date-fns.org/v2.0.0-alpha.27/docs/Unicode-Tokens).
+ * [date-fns docs](https://date-fns.org/docs/Unicode-Tokens).
  *
  * You can also use `parseOptions` and `formatOptions` to provide locale.
  * ```ts
@@ -260,9 +321,15 @@ export const NB_DATE_SERVICE_OPTIONS = new InjectionToken('Date service options'
  * datepicker-border-width:
  * datepicker-border-radius:
  * datepicker-shadow:
- * */
+ */
 @Directive({
   selector: 'input[nbDatepicker]',
+  host: {
+    'aria-haspopup': 'dialog',
+    '[attr.aria-expanded]': 'datepicker().expanded()',
+    '[attr.aria-controls]': 'datepicker().expanded() ? datepicker().dialogId : null',
+    '(keydown)': 'onKeydown($event)',
+  },
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
@@ -275,110 +342,146 @@ export const NB_DATE_SERVICE_OPTIONS = new InjectionToken('Date service options'
       multi: true,
     },
   ],
-  standalone: false,
 })
-export class NbDatepickerDirective<D> implements OnDestroy, ControlValueAccessor, Validator {
+export class NbDatepickerDirective<D> implements OnChanges, ControlValueAccessor, Validator {
+  protected readonly destroyRef = inject(DestroyRef);
+  protected readonly document = inject(NB_DOCUMENT);
+  protected readonly datepickerAdapters = inject(NB_DATE_ADAPTER);
+  protected readonly hostRef = inject(ElementRef);
+  protected readonly dateService = inject<NbDateService<D>>(NbDateService);
+  protected readonly changeDetector = inject(ChangeDetectorRef);
+  protected readonly message = injectNbValidationMessage();
+
   /**
-   * Provides datepicker component.
-   * */
-  // eslint-disable-next-line @angular-eslint/no-input-rename
-  @Input('nbDatepicker')
-  set setPicker(picker: NbDatepicker<D>) {
-    this.picker = picker;
-    this.setupPicker();
+   * The picker to open: an `nb-datepicker`, `nb-rangepicker` or `nb-date-timepicker`.
+   */
+  readonly datepicker = input.required<NbDatepicker<D>>({ alias: 'nbDatepicker' });
+
+  // Applied in ngOnChanges, as the picker was set up when the input was set, before forms write a value.
+  ngOnChanges({ datepicker }: SimpleChanges) {
+    if (datepicker) {
+      this.setupPicker();
+    }
   }
 
-  protected pickerInputsChangedSubscription: Subscription | undefined;
+  protected pickerInputsChangedSubscription?: Subscription;
 
   /**
-   * Datepicker adapter.
-   * */
-  protected datepickerAdapter: NbDatepickerAdapter<D>;
+   * The adapter for the picker's kind of value; throws without one.
+   */
+  protected get datepickerAdapter(): NbDatepickerAdapter<D> {
+    const datepickerAdapter = this.datepickerAdapters.find(({ picker }) => this.picker instanceof picker);
+    if (!datepickerAdapter || !(datepickerAdapter instanceof NbDatepickerAdapter)) {
+      throwNoDatepickerAdapter();
+    }
+    // The adapters are for different pickers; the one for this picker's class handles its values.
+    return datepickerAdapter as NbDatepickerAdapter<D>;
+  }
 
-  /**
-   * Datepicker instance.
-   * */
-  protected picker: NbDatepicker<D>;
-  protected destroy$ = new Subject<void>();
-  protected isDatepickerReady: boolean = false;
-  protected queue: D | undefined;
-  protected onChange: (D) => void = () => {};
+  protected get picker(): NbDatepicker<D> {
+    return this.datepicker();
+  }
+  protected isDatepickerReady = false;
+  protected queue?: D;
+  protected onChange: (value: D | null) => void = () => {};
   protected onTouched: () => void = () => {};
+  protected onValidatorChange: () => void = () => {};
 
   /**
-   * Form control validators will be called in validators context, so, we need to bind them.
-   * */
-  protected validator: ValidatorFn = Validators.compose(
-    [this.parseValidator, this.minValidator, this.maxValidator, this.filterValidator].map((fn) => fn.bind(this)),
-  );
+   * An arrow function, as forms call validators without `this`.
+   */
+  protected validator = (): ValidationErrors | null => {
+    // Merges the errors as `Validators.compose` does.
+    const errors: ValidationErrors = Object.assign(
+      {},
+      this.parseValidator(),
+      this.minValidator(),
+      this.maxValidator(),
+      this.filterValidator(),
+    );
+    return Object.keys(errors).length ? errors : null;
+  };
 
-  constructor(
-    @Inject(NB_DOCUMENT) protected document,
-    @Inject(NB_DATE_ADAPTER) protected datepickerAdapters: NbDatepickerAdapter<D>[],
-    protected hostRef: ElementRef,
-    protected dateService: NbDateService<D>,
-    protected changeDetector: ChangeDetectorRef,
-  ) {
+  constructor() {
     this.subscribeOnInputChange();
+    // New limits, e.g. a later `min`, can change whether the date passes.
+    effect(() => {
+      this.datepicker().getValidatorConfig();
+      untracked(() => this.onValidatorChange());
+    });
   }
 
-  /**
-   * Returns html input element.
-   * */
   get input(): HTMLInputElement {
     return this.hostRef.nativeElement;
   }
 
-  /**
-   * Returns host input value.
-   * */
   get inputValue(): string {
     return this.input.value;
   }
 
-  ngOnDestroy() {
-    this.destroy$.next();
-    this.destroy$.complete();
-  }
-
   /**
-   * Writes value in picker and html input element.
-   * */
-  writeValue(value: D) {
-    // An Invalid Date is truthy, so the date services and the calendar would take it for a real value.
-    if (value instanceof Date && isNaN(value.getTime())) {
-      value = null;
-    }
+   * Writes the form's value to the picker and the input, or queues it until the picker is ready. `null` and an
+   * Invalid Date clear them.
+   */
+  writeValue(value?: D | null) {
+    // Forms write null for an empty value. An Invalid Date is truthy, so the date services and the calendar would
+    // take it for a real value.
+    const date = value === null || (value instanceof Date && isNaN(value.getTime())) ? undefined : value;
 
     if (this.isDatepickerReady) {
-      this.writePicker(value);
-      this.writeInput(value);
+      this.writePicker(date);
+      this.writeInput(date);
     } else {
-      this.queue = value;
+      this.queue = date;
     }
   }
 
-  registerOnChange(fn: any): void {
+  registerOnChange(fn: (value: D | null) => void) {
     this.onChange = fn;
   }
 
-  registerOnTouched(fn: any): void {
+  registerOnTouched(fn: () => void) {
     this.onTouched = fn;
   }
 
-  setDisabledState(isDisabled: boolean): void {
+  registerOnValidatorChange(fn: () => void) {
+    this.onValidatorChange = fn;
+  }
+
+  setDisabledState(isDisabled: boolean) {
     this.input.disabled = isDisabled;
   }
 
   /**
-   * Form control validation based on picker validator config.
-   * */
+   * The parse, `min`, `max` and `filter` errors of the input's text, or `null`.
+   */
   validate(): ValidationErrors | null {
-    return this.validator(null);
+    // The validators read the input and the picker, not the control.
+    return this.validator();
   }
 
   /**
-   * Hides picker, focuses the input
+   * Arrow Down moves into the picker's calendar, opening it if needed, and Escape closes it.
+   * @internal
+   */
+  onKeydown(event: KeyboardEvent) {
+    const picker = this.picker;
+    if (!picker || event.ctrlKey || event.metaKey || event.shiftKey) {
+      return;
+    }
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      picker.focusCalendar();
+    } else if (event.key === 'Escape' && picker.isShown) {
+      // Only the picker closes, not e.g. a dialog around the input.
+      event.preventDefault();
+      event.stopPropagation();
+      picker.hide();
+    }
+  }
+
+  /**
+   * Focuses the input, then hides the picker: the input opens the picker on focus, unless it's open.
    */
   protected hidePicker() {
     this.input.focus();
@@ -386,66 +489,109 @@ export class NbDatepickerDirective<D> implements OnDestroy, ControlValueAccessor
   }
 
   /**
-   * Validates that we can parse value correctly.
-   * */
+   * The `nbDatepickerParse` error while the text isn't a date.
+   */
   protected parseValidator(): ValidationErrors | null {
-    /**
-     * Date services treat empty string as invalid date.
-     * That's why we're getting invalid formControl in case of empty input which is not required.
-     * */
+    // An empty input is valid, though the date services can't parse it; `required` is the form's business.
     if (this.inputValue === '') {
       return null;
     }
 
     const isValid = this.datepickerAdapter.isValid(this.inputValue, this.picker.format);
-    return isValid ? null : { nbDatepickerParse: { value: this.inputValue } };
+    return isValid
+      ? null
+      : { nbDatepickerParse: nbValidationError(this.message, 'nbDatepickerParse', { value: this.inputValue }) };
   }
 
   /**
-   * Validates passed value is greater than min.
+   * Dates to validate: the parsed date, or the start or end of a parsed range (rangepickers parse to
+   * `{ start, end }`, which the date services can't compare).
    * */
+  protected validatorDates(edge: 'start' | 'end' | 'both'): D[] {
+    // Text that isn't a date only has the parse error.
+    if (!this.datepickerAdapter.isValid(this.inputValue, this.picker.format)) {
+      return [];
+    }
+    const parsed = this.datepickerAdapter.parse(this.inputValue, this.picker.format) as unknown;
+    if (!parsed) {
+      return [];
+    }
+    if (typeof parsed === 'object' && ('start' in parsed || 'end' in parsed)) {
+      const range = parsed as { start?: D; end?: D };
+      const edges = edge === 'both' ? [range.start, range.end] : [range[edge]];
+      return edges.filter((date): date is D => !!date);
+    }
+    return [parsed as D];
+  }
+
+  /**
+   * The `nbDatepickerMin` error when the date, or a range's start, is before `min`; the same day passes unless the
+   * adapter compares times.
+   */
   protected minValidator(): ValidationErrors | null {
     const config = this.picker.getValidatorConfig();
-    const date = this.datepickerAdapter.parse(this.inputValue, this.picker.format);
-    return !config.min || !date || this.dateService.compareDates(config.min, date) <= 0
+    const [date] = this.validatorDates('start');
+    if (!config.min || !date) {
+      return null;
+    }
+    return this.dateService.compareDates(config.min, date) <= 0 || this.isSameDay(config.min, date)
       ? null
-      : { nbDatepickerMin: { min: config.min, actual: date } };
+      : {
+        nbDatepickerMin: nbValidationError(this.message, 'nbDatepickerMin', {
+          min: config.min,
+          actual: date,
+          minText: this.dateService.format(config.min, this.picker.format),
+        }),
+      };
   }
 
   /**
-   * Validates passed value is smaller than max.
-   * */
+   * The `nbDatepickerMax` error when the date, or a range's end, is after `max`; the same day passes unless the
+   * adapter compares times.
+   */
   protected maxValidator(): ValidationErrors | null {
     const config = this.picker.getValidatorConfig();
-    const date = this.datepickerAdapter.parse(this.inputValue, this.picker.format);
-    return !config.max || !date || this.dateService.compareDates(config.max, date) >= 0
+    const [date] = this.validatorDates('end');
+    if (!config.max || !date) {
+      return null;
+    }
+    return this.dateService.compareDates(config.max, date) >= 0 || this.isSameDay(config.max, date)
       ? null
-      : { nbDatepickerMax: { max: config.max, actual: date } };
+      : {
+        nbDatepickerMax: nbValidationError(this.message, 'nbDatepickerMax', {
+          max: config.max,
+          actual: date,
+          maxText: this.dateService.format(config.max, this.picker.format),
+        }),
+      };
+  }
+
+  protected isSameDay(boundary: D, date: D): boolean {
+    return !this.datepickerAdapter.comparesTime && this.dateService.isSameDaySafe(boundary, date);
   }
 
   /**
-   * Validates passed value satisfy the filter.
-   * */
+   * The `nbDatepickerFilter` error when the date, or either end of a range, fails `filter`.
+   */
   protected filterValidator(): ValidationErrors | null {
     const config = this.picker.getValidatorConfig();
-    const date = this.datepickerAdapter.parse(this.inputValue, this.picker.format);
-    return !config.filter || !date || config.filter(date) ? null : { nbDatepickerFilter: true };
+    const dates = this.validatorDates('both');
+    const dateFilter = config.filter;
+    return !dateFilter || dates.every((date) => dateFilter(date))
+      ? null
+      : { nbDatepickerFilter: nbValidationError(this.message, 'nbDatepickerFilter', {}) };
   }
 
   /**
-   * Chooses datepicker adapter based on passed picker component.
-   * */
-  protected chooseDatepickerAdapter() {
-    this.datepickerAdapter = this.datepickerAdapters.find(({ picker }) => this.picker instanceof picker);
-
-    if (this.noDatepickerAdapterProvided()) {
-      throw new Error('No datepickerAdapter provided for picker');
-    }
+   * Checks there's a datepicker adapter for the picker, and throws otherwise.
+   */
+  protected chooseDatepickerAdapter(): NbDatepickerAdapter<D> {
+    return this.datepickerAdapter;
   }
 
   /**
-   * Attaches picker to the host input element and subscribes on value changes.
-   * */
+   * Attaches the picker to the input, writes the text already in it, and follows the picker's value and format.
+   */
   protected setupPicker() {
     this.chooseDatepickerAdapter();
     this.picker.attach(this.hostRef);
@@ -461,25 +607,24 @@ export class NbDatepickerDirective<D> implements OnDestroy, ControlValueAccessor
         startWith(this.picker.format),
         distinctUntilChanged(),
         pairwise(),
-        takeUntil(this.destroy$),
+        takeUntilDestroyed(this.destroyRef),
       )
-      .subscribe(([prevFormat, nextFormat]) => {
+      .subscribe(([prevFormat]) => {
         if (this.inputValue) {
           const date = this.datepickerAdapter.parse(this.inputValue, prevFormat);
           this.writeInput(date);
         }
       });
 
-    // In case datepicker component placed after the input with datepicker directive,
-    // we can't read `this.picker.format` on first change detection run,
-    // since it's not bound yet, so we have to wait for datepicker component initialization.
+    // A picker placed after the input hasn't got its `format` on the first change detection, so a value written
+    // before then waits for the picker to initialise.
     if (!this.isDatepickerReady) {
       this.picker.init
         .pipe(
           take(1),
           tap(() => (this.isDatepickerReady = true)),
           filter(() => !!this.queue),
-          takeUntil(this.destroy$),
+          takeUntilDestroyed(this.destroyRef),
         )
         .subscribe(() => {
           this.writeValue(this.queue);
@@ -488,10 +633,11 @@ export class NbDatepickerDirective<D> implements OnDestroy, ControlValueAccessor
         });
     }
 
-    this.picker.valueChange.pipe(takeUntil(this.destroy$)).subscribe((value: D) => {
+    this.picker.valueChange.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((value: D) => {
       this.writePicker(value);
       this.writeInput(value);
       this.onChange(value);
+      this.onValidatorChange();
 
       if (this.picker.shouldHide()) {
         this.hidePicker();
@@ -504,49 +650,66 @@ export class NbDatepickerDirective<D> implements OnDestroy, ControlValueAccessor
         filter(() => !this.picker.isShown && this.document.activeElement !== this.input),
       ),
     )
-      .pipe(takeUntil(this.destroy$))
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => this.onTouched());
   }
 
-  protected writePicker(value: D) {
+  protected writePicker(value?: D) {
     this.picker.value = value;
   }
 
-  protected writeInput(value: D) {
+  protected writeInput(value?: D) {
+    // An Invalid Date parsed from partial input can't be formatted (date-fns throws); keep the text as typed.
+    if (this.hasInvalidDate(value)) {
+      return;
+    }
     this.hostRef.nativeElement.value = this.datepickerAdapter.format(value, this.picker.format);
   }
 
   /**
-   * Validates if no datepicker adapter provided.
-   * */
-  protected noDatepickerAdapterProvided(): boolean {
-    return !this.datepickerAdapter || !(this.datepickerAdapter instanceof NbDatepickerAdapter);
+   * Whether the value, or either end of a range value, is an Invalid Date.
+   */
+  protected hasInvalidDate(value: unknown): boolean {
+    const isInvalid = (date: unknown) => date instanceof Date && isNaN(date.getTime());
+    if (isInvalid(value)) {
+      return true;
+    }
+    const range = value as { start?: unknown; end?: unknown } | undefined;
+    return !!range && typeof range === 'object' && (isInvalid(range.start) || isInvalid(range.end));
   }
 
   protected subscribeOnInputChange() {
     fromEvent(this.input, 'input')
       .pipe(
         map(() => this.inputValue),
-        takeUntil(this.destroy$),
+        takeUntilDestroyed(this.destroyRef),
       )
       .subscribe((value: string) => this.handleInputChange(value));
   }
 
   /**
-   * Parses input value and write if it isn't null.
-   * */
+   * Gives the form the date in the input, or `null` when it's empty; while the text isn't a date, the value stays and
+   * the field has the parse error.
+   */
   protected handleInputChange(value: string) {
+    if (value !== '' && !this.datepickerAdapter.isValid(value, this.picker.format)) {
+      this.onValidatorChange();
+      return;
+    }
     const date = this.parseInputValue(value);
 
-    this.onChange(date);
+    // Forms hold null for an empty field.
+    this.onChange(date ?? null);
     this.writePicker(date);
+    // The checks read the text, which signal forms don't see change.
+    this.onValidatorChange();
   }
 
-  protected parseInputValue(value): D | null {
+  protected parseInputValue(value: string): D | undefined {
     if (this.datepickerAdapter.isValid(value, this.picker.format)) {
       return this.datepickerAdapter.parse(value, this.picker.format);
     }
 
-    return null;
+    return undefined;
   }
 }

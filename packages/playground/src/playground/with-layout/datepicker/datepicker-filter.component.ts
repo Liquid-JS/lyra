@@ -1,24 +1,24 @@
-/*
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 import { Component } from '@angular/core';
+import {
+  NbCardComponent,
+  NbCardBodyComponent,
+  NbInputDirective,
+  NbDatepickerDirective,
+  NbDatepickerComponent,
+} from '@liquid-js/lyr-core';
 
 @Component({
-    selector: 'nb-datepicker-filter',
-    template: `
-    <nb-card size="large">
-      <nb-card-body>
-        <input nbInput placeholder="Pick Date" [nbDatepicker]="dateTimePicker">
-        <nb-datepicker #dateTimePicker [filter]="filterFn"></nb-datepicker>
-      </nb-card-body>
-    </nb-card>
-  `,
-    styleUrls: ['./datepicker-example.scss'],
-    standalone: false
+  selector: 'nb-datepicker-filter',
+  templateUrl: './datepicker-filter.component.html',
+  styleUrls: ['./datepicker-example.scss'],
+  imports: [
+    NbCardComponent,
+    NbCardBodyComponent,
+    NbInputDirective,
+    NbDatepickerDirective,
+    NbDatepickerComponent,
+  ],
 })
 export class DatepickerFilterComponent {
-  filterFn = (date) => date.getDay() === 0;
+  filterFn = (date: Date) => date.getDay() === 0;
 }

@@ -1,28 +1,26 @@
-/*
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 import { Component } from '@angular/core';
-import { FormControl } from '@angular/forms';
-
+import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import {
+  NbCardComponent,
+  NbCardBodyComponent,
+  NbInputDirective,
+  NbDatepickerDirective,
+  NbDatepickerComponent,
+} from '@liquid-js/lyr-core';
 
 @Component({
-    selector: 'nb-datepicker-forms',
-    template: `
-    <nb-card size="large">
-      <nb-card-body class="two-inputs">
-        <input nbInput placeholder="Pick Date" [nbDatepicker]="formcontrol" [formControl]="formControl">
-        <nb-datepicker #formcontrol></nb-datepicker>
-
-        <input nbInput placeholder="Form Picker" [nbDatepicker]="ngmodel" [(ngModel)]="ngModelDate">
-        <nb-datepicker #ngmodel></nb-datepicker>
-      </nb-card-body>
-    </nb-card>
-  `,
-    styleUrls: ['./datepicker-example.scss'],
-    standalone: false
+  selector: 'nb-datepicker-forms',
+  templateUrl: './datepicker-forms.component.html',
+  styleUrls: ['./datepicker-example.scss'],
+  imports: [
+    NbCardComponent,
+    NbCardBodyComponent,
+    NbInputDirective,
+    NbDatepickerDirective,
+    FormsModule,
+    ReactiveFormsModule,
+    NbDatepickerComponent,
+  ],
 })
 export class DatepickerFormsComponent {
   formControl = new FormControl(new Date());

@@ -1,55 +1,51 @@
-/*
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
+import { Type, inject, Service } from '@angular/core';
 
-import { Injectable, Type } from '@angular/core';
-
-import { NbCalendarRange } from '../calendar/calendar-range.component';
+import { NbCalendarRange } from '@liquid-js/lyr-core/calendar';
 import { NbDatepickerComponent, NbRangepickerComponent } from './datepicker.component';
 import { NbDatepickerAdapter } from './datepicker.directive';
-import { NbDateService } from '../calendar-kit/services/date.service';
+import { NbDateService } from '@liquid-js/lyr-core/calendar-kit';
 import { NbDateTimePickerComponent } from './date-timepicker.component';
 
-@Injectable()
+/**
+ * The adapter of `nb-datepicker`: the date service's parsing and formatting.
+ */
+@Service({ autoProvided: false })
 export class NbDateAdapterService<D> extends NbDatepickerAdapter<D> {
+  protected readonly dateService = inject<NbDateService<D>>(NbDateService);
+
   picker: Type<NbDatepickerComponent<D>> = NbDatepickerComponent;
 
-  constructor(protected dateService: NbDateService<D>) {
-    super();
-  }
-
-  parse(date: string, format): D {
+  parse(date: string, format?: string): D {
     return this.dateService.parse(date, format);
   }
 
-  format(date: D, format: string): string {
-    return this.dateService.format(date, format);
+  format(date?: D, format?: string): string {
+    return date ? this.dateService.format(date, format) : '';
   }
 
-  isValid(date: string, format: string): boolean {
+  isValid(date: string, format?: string): boolean {
     return this.dateService.isValidDateString(date, format);
   }
 }
 
-@Injectable()
+/**
+ * The adapter of `nb-rangepicker`: a range is written as `start - end`, and read back from that.
+ */
+@Service({ autoProvided: false })
 export class NbRangeAdapterService<D> extends NbDatepickerAdapter<NbCalendarRange<D>> {
+  protected readonly dateService = inject<NbDateService<D>>(NbDateService);
+
   picker: Type<NbRangepickerComponent<D>> = NbRangepickerComponent;
 
-  constructor(protected dateService: NbDateService<D>) {
-    super();
-  }
-
-  parse(range: string, format): NbCalendarRange<D> {
-    const [start, end] = range.split('-').map((subDate) => subDate.trim());
+  parse(range: string, format?: string): NbCalendarRange<D> {
+    const [start, end] = this.split(range, format);
     return {
       start: this.dateService.parse(start, format),
       end: end ? this.dateService.parse(end, format) : undefined,
     };
   }
 
-  format(range: NbCalendarRange<D>, format: string): string {
+  format(range?: NbCalendarRange<D>, format?: string): string {
     if (!range) {
       return '';
     }
@@ -61,7 +57,7 @@ export class NbRangeAdapterService<D> extends NbDatepickerAdapter<NbCalendarRang
       return '';
     }
 
-    const end = this.dateService.format(range.end, format);
+    const end = range.end ? this.dateService.format(range.end, format) : '';
     const isEndValid = this.dateService.isValidDateString(end, format);
 
     if (isEndValid) {
@@ -71,31 +67,49 @@ export class NbRangeAdapterService<D> extends NbDatepickerAdapter<NbCalendarRang
     }
   }
 
-  isValid(range: string, format: string): boolean {
-    const [start, end] = range.split('-').map((subDate) => subDate.trim());
+  isValid(range: string, format?: string): boolean {
+    const [start, end] = this.split(range, format);
     return (
       !!end && this.dateService.isValidDateString(start, format) && this.dateService.isValidDateString(end, format)
     );
   }
+  /**
+   * Splits a range typed into the input into its start and end. `format()` joins them with ` - `; a bare `-` is
+   * accepted too, unless the date format itself contains dashes (such as `yyyy-MM-dd`).
+   */
+  protected split(range: string, format?: string): [string, string | undefined] {
+    const separator = /\s+-\s+/;
+    if (separator.test(range)) {
+      const [start, end] = range.split(separator);
+      return [start.trim(), end?.trim() || undefined];
+    }
+    if (!format?.includes('-')) {
+      const [start, end] = range.split('-');
+      return [start.trim(), end?.trim() || undefined];
+    }
+    return [range.trim(), undefined];
+  }
 }
 
-@Injectable()
+/**
+ * The adapter of `nb-date-timepicker`: as the date adapter, but `min` and `max` are compared with the time.
+ */
+@Service({ autoProvided: false })
 export class NbDateTimeAdapterService<D> extends NbDatepickerAdapter<D> {
+  protected readonly dateService = inject<NbDateService<D>>(NbDateService);
+
   picker: Type<NbDateTimePickerComponent<D>> = NbDateTimePickerComponent;
+  override readonly comparesTime = true;
 
-  constructor(protected dateService: NbDateService<D>) {
-    super();
-  }
-
-  parse(date: string, format: string): D {
+  parse(date: string, format?: string): D {
     return this.dateService.parse(date, format);
   }
 
-  format(date: any, format: string): string {
-    return this.dateService.format(date, format);
+  format(date?: D, format?: string): string {
+    return date ? this.dateService.format(date, format) : '';
   }
 
-  isValid(date: string, format: string): boolean {
+  isValid(date: string, format?: string): boolean {
     return this.dateService.isValidDateString(date, format);
   }
 }

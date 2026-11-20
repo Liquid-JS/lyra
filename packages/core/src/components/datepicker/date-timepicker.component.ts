@@ -1,189 +1,139 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  EventEmitter,
-  Inject,
-  Input,
-  OnInit,
-  Optional,
-  Output,
-  Type,
-} from '@angular/core';
-import { Observable } from 'rxjs';
+import { Component, ComponentRef, inject, input, Type } from '@angular/core';
+import { outputFromObservable, outputToObservable } from '@angular/core/rxjs-interop';
+import { EMPTY, Observable } from 'rxjs';
 
-import { convertToBoolProperty, NbBooleanInput } from '../helpers';
-import { NB_DOCUMENT } from '../../theme.options';
-import { NbPositionBuilderService } from '../cdk/overlay/overlay-position';
-import { NbTriggerStrategyBuilderService } from '../cdk/overlay/overlay-trigger';
-import { NbOverlayService } from '../cdk/overlay/overlay-service';
-import { NbCalendarTimeModelService } from '../calendar-kit/services/calendar-time-model.service';
-import { NbDateService } from '../calendar-kit/services/date.service';
+import { ɵconvertToBoolProperty as convertToBoolProperty, NbBooleanInput } from '@liquid-js/lyr-core/base';
+import { setComponentContext } from '@liquid-js/lyr-core/cdk';
+import { NbCalendarTimeModelService } from '@liquid-js/lyr-core/calendar-kit';
 import { NbCalendarWithTimeComponent } from './calendar-with-time.component';
 import { NbBasePickerComponent } from './datepicker.component';
-import { NB_DATE_SERVICE_OPTIONS } from './datepicker.directive';
 
 /**
- * The DateTimePicker component itself.
- * Provides a proxy to `NbCalendarWithTimeComponent` options as well as custom picker options.
+ * The calendar with a time picker an `input[nbDatepicker]` opens to pick a date and time, with `nb-calendar`'s
+ * options. The value is applied with the OK button, or set to now with the current time button.
  */
 @Component({
-    selector: 'nb-date-timepicker',
-    template: '',
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  selector: 'nb-date-timepicker',
+  template: '',
 })
 export class NbDateTimePickerComponent<D>
-  extends NbBasePickerComponent<D, D, NbCalendarWithTimeComponent<D>>
-  implements OnInit
-{
-  protected pickerClass: Type<NbCalendarWithTimeComponent<D>> = NbCalendarWithTimeComponent;
+  extends NbBasePickerComponent<D, D, NbCalendarWithTimeComponent<D>> {
+  protected readonly calendarWithTimeModelService = inject<NbCalendarTimeModelService<D>>(NbCalendarTimeModelService);
 
-  get value(): any {
-    return this.picker ? this.picker.date : undefined;
+  protected override get pickerClass(): Type<NbCalendarWithTimeComponent<D>> {
+    return NbCalendarWithTimeComponent;
   }
-  set value(date: any) {
-    if (!this.picker) {
+
+  override get value(): D | undefined {
+    return this.picker ? this.picker.selectedDate() : undefined;
+  }
+  override set value(date: D | undefined) {
+    const pickerRef = this.pickerRef;
+    if (!pickerRef) {
       this.queue = date;
       return;
     }
 
     if (date) {
-      this.visibleDate = date;
-      this.picker.visibleDate = date;
-      this.picker.date = date;
-      this.picker.cd.markForCheck();
+      this.visibleDate.set(date);
+      setComponentContext(pickerRef, { visibleDate: date, date });
     }
   }
 
   /**
-   * Defines minutes step when we use fill time format.
-   * If set to 20, it will be: '12:00, 12:20: 12:40, 13:00...'
-   * */
-  @Input() step: number;
+   * Minutes between the times a `singleColumn` picker lists, e.g. 20 for 12:00, 12:20, 12:40; 60 by default.
+   */
+  readonly step = input<number>();
 
-  @Input() title: string;
-  @Input() applyButtonText: string;
-  @Input() currentTimeButtonText: string;
-  @Input() showCurrentTimeButton = true;
-
-  /**
-   * Defines 12 hours format like '07:00 PM'.
-   * */
-  @Input()
-  get twelveHoursFormat(): boolean {
-    return this._twelveHoursFormat;
-  }
-  set twelveHoursFormat(value: boolean) {
-    this._twelveHoursFormat = convertToBoolProperty(value);
-  }
-  _twelveHoursFormat: boolean;
-  static ngAcceptInputType_twelveHoursFormat: NbBooleanInput;
+  /** Text above the time picker. */
+  readonly title = input<string>();
+  /** Text of the button that applies the value; "ok" by default. */
+  readonly applyButtonText = input<string>();
+  /** Text of the button that sets the current time; "now" by default. */
+  readonly currentTimeButtonText = input<string>();
+  /** Shows the button that sets the current time (default). */
+  readonly showCurrentTimeButton = input<boolean, NbBooleanInput>(true, { transform: convertToBoolProperty });
 
   /**
-   * Defines should show am/pm label if twelveHoursFormat enabled.
-   * */
-  @Input()
-  get showAmPmLabel(): boolean {
-    return this._showAmPmLabel;
-  }
-  set showAmPmLabel(value: boolean) {
-    this._showAmPmLabel = convertToBoolProperty(value);
-  }
-  protected _showAmPmLabel: boolean = true;
-  static ngAcceptInputType_showAmPmLabel: NbBooleanInput;
+   * Shows times in the 12-hour format, e.g. 07:00 PM.
+   */
+  readonly twelveHoursFormat = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
 
   /**
-   * Show seconds in timepicker.
-   * Ignored when singleColumn is true.
-   * */
-  @Input()
-  get withSeconds(): boolean {
-    return this._withSeconds;
-  }
-  set withSeconds(value: boolean) {
-    this._withSeconds = convertToBoolProperty(value);
-  }
-  _withSeconds: boolean;
-  static ngAcceptInputType_withSeconds: NbBooleanInput;
+   * Shows the AM/PM label with `twelveHoursFormat` (default).
+   */
+  readonly showAmPmLabel = input<boolean, NbBooleanInput>(true, { transform: convertToBoolProperty });
 
   /**
-   * Show timepicker values in one column with 60 minutes step by default.
-   * */
-  @Input()
-  get singleColumn(): boolean {
-    return this._singleColumn;
-  }
-  set singleColumn(value: boolean) {
-    this._singleColumn = convertToBoolProperty(value);
-  }
-  _singleColumn: boolean;
-  static ngAcceptInputType_singleColumn: NbBooleanInput;
+   * Adds a seconds column to the time picker; ignored with `singleColumn`.
+   */
+  readonly withSeconds = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
 
   /**
-   * Emits date with time when selected.
-   * */
-  @Output() get dateTimeChange(): EventEmitter<D> {
-    return this.valueChange as EventEmitter<D>;
+   * Lists whole times in one column, `step` minutes apart, instead of hour and minute columns.
+   */
+  readonly singleColumn = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
+
+  /**
+   * Emits the date with its time when the user applies it, or sets the current time.
+   */
+  readonly dateTimeChange = outputFromObservable(this.valueChange as Observable<D>);
+
+  /**
+   * The date format: the `format` input, or one built from the time inputs.
+   */
+  override get format(): string {
+    return this.formatInput() || this.buildTimeFormat();
   }
 
-  constructor(
-    @Inject(NB_DOCUMENT) document,
-    positionBuilder: NbPositionBuilderService,
-    triggerStrategyBuilder: NbTriggerStrategyBuilderService,
-    overlay: NbOverlayService,
-    dateService: NbDateService<D>,
-    @Optional() @Inject(NB_DATE_SERVICE_OPTIONS) dateServiceOptions,
-    protected calendarWithTimeModelService: NbCalendarTimeModelService<D>,
-  ) {
-    super(document, positionBuilder, triggerStrategyBuilder, overlay, dateService, dateServiceOptions);
-  }
-
-  ngOnInit() {
-    this.format = this.format || this.buildTimeFormat();
+  // The format is always set here, so the base check that one is set doesn't apply.
+  override ngOnInit() {
     this.init$.next();
   }
 
-  protected patchWithInputs() {
-    this.picker.singleColumn = this.singleColumn;
-    this.picker.twelveHoursFormat = this.twelveHoursFormat;
-    this.picker.showAmPmLabel = this.showAmPmLabel;
-    this.picker.withSeconds = this.withSeconds;
-    this.picker.step = this.step;
-    this.picker.title = this.title;
-    this.picker.applyButtonText = this.applyButtonText;
-    this.picker.currentTimeButtonText = this.currentTimeButtonText;
-    this.picker.showCurrentTimeButton = this.showCurrentTimeButton;
-
-    if (this.twelveHoursFormat) {
-      this.picker.timeFormat = this.dateService.getTwelveHoursFormat();
+  protected override patchWithInputs(pickerRef: ComponentRef<NbCalendarWithTimeComponent<D>>) {
+    let timeFormat: string;
+    if (this.twelveHoursFormat()) {
+      timeFormat = this.dateService.getTwelveHoursFormat();
     } else {
-      this.picker.timeFormat =
-        this.withSeconds && !this.singleColumn
+      timeFormat =
+        this.withSeconds() && !this.singleColumn()
           ? this.dateService.getTwentyFourHoursFormatWithSeconds()
           : this.dateService.getTwentyFourHoursFormat();
     }
-    super.patchWithInputs();
-
-    this.picker.cd.markForCheck();
+    setComponentContext(pickerRef, {
+      singleColumn: this.singleColumn(),
+      twelveHoursFormat: this.twelveHoursFormat(),
+      showAmPmLabel: this.showAmPmLabel(),
+      withSeconds: this.withSeconds(),
+      step: this.step(),
+      title: this.title(),
+      applyButtonText: this.applyButtonText(),
+      currentTimeButtonText: this.currentTimeButtonText(),
+      showCurrentTimeButton: this.showCurrentTimeButton(),
+      timeFormat,
+    });
+    super.patchWithInputs(pickerRef);
   }
 
-  protected get pickerValueChange(): Observable<any> {
-    return this.picker.dateChange;
+  protected override get pickerValueChange(): Observable<D> {
+    // It's subscribed to once the picker is created.
+    return this.picker ? outputToObservable(this.picker.dateChange) : EMPTY;
   }
 
-  protected writeQueue() {
+  protected override writeQueue() {
     if (this.queue) {
       const date = this.queue;
-      this.queue = null;
+      this.queue = undefined;
       this.value = date;
     }
   }
 
   protected buildTimeFormat(): string {
-    if (this.singleColumn) {
-      return this.calendarWithTimeModelService.buildDateFormat(this.twelveHoursFormat);
+    if (this.singleColumn()) {
+      return this.calendarWithTimeModelService.buildDateFormat(this.twelveHoursFormat());
     } else {
-      return this.calendarWithTimeModelService.buildDateFormat(this.twelveHoursFormat, this.withSeconds);
+      return this.calendarWithTimeModelService.buildDateFormat(this.twelveHoursFormat(), this.withSeconds());
     }
   }
 }

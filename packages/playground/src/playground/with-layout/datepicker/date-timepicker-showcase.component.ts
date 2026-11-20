@@ -1,25 +1,22 @@
-/*
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 import { Component } from '@angular/core';
+import {
+  NbCardComponent,
+  NbCardBodyComponent,
+  NbInputDirective,
+  NbDatepickerDirective,
+  NbDateTimePickerComponent,
+} from '@liquid-js/lyr-core';
 
 @Component({
-    selector: 'nb-date-timepicker-showcase',
-    template: `
-    <nb-card size="large">
-      <nb-card-body>
-        <input nbInput placeholder="Pick Date" [nbDatepicker]="dateTimePicker">
-        <nb-date-timepicker
-          withSeconds
-          #dateTimePicker></nb-date-timepicker>
-      </nb-card-body>
-    </nb-card>
-  `,
-    styleUrls: ['./datepicker-example.scss'],
-    standalone: false
+  selector: 'nb-date-timepicker-showcase',
+  templateUrl: './date-timepicker-showcase.component.html',
+  styleUrls: ['./datepicker-example.scss'],
+  imports: [
+    NbCardComponent,
+    NbCardBodyComponent,
+    NbInputDirective,
+    NbDatepickerDirective,
+    NbDateTimePickerComponent,
+  ],
 })
-export class DateTimepickerShowcaseComponent {
-}
+export class DateTimepickerShowcaseComponent {}
