@@ -1,0 +1,27 @@
+// The option list's look: its theme writes it on the list, and `nb-panel(option-list)` on any element.
+@use '../../styles/core/mixins' as *;
+@use '../../styles/core/theming/get-value' as *;
+
+/// The background, border, corners and shadow.
+@mixin surface() {
+  background-color: nb-theme(option-list-background-color);
+  border-color: nb-theme(option-list-border-color);
+  border-style: nb-theme(option-list-border-style);
+  border-width: nb-theme(option-list-border-width);
+  border-radius: nb-theme(option-list-border-radius);
+  box-shadow: nb-theme(option-list-shadow);
+}
+
+@mixin scrollbars() {
+  @include nb-scrollbars(
+    nb-theme(option-list-scrollbar-color),
+    nb-theme(option-list-scrollbar-background-color),
+    nb-theme(option-list-scrollbar-width)
+  );
+}
+
+/// The options' text colour and font.
+@mixin text() {
+  color: nb-theme(option-text-color);
+  font-family: nb-theme(option-text-font-family);
+}

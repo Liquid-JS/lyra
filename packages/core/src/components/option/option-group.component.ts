@@ -1,31 +1,17 @@
-/*
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
+import { Component, computed, ElementRef, inject, input, Signal, signal } from '@angular/core';
 
-import {
-  AfterContentInit,
-  ChangeDetectionStrategy,
-  Component,
-  ContentChildren,
-  HostBinding,
-  Input,
-  OnDestroy,
-  QueryList,
-} from '@angular/core';
-import { takeUntil } from 'rxjs/operators';
-import { from, Subject } from 'rxjs';
+import { ɵconvertToBoolProperty as convertToBoolProperty, NbBooleanInput } from '@liquid-js/lyr-core/base';
 
-import { convertToBoolProperty, NbBooleanInput } from '../helpers';
-import { NbOptionComponent } from './option.component';
+let lastOptionGroupId = 0;
 
 /**
- * NbOptionGroupComponent
+ * Groups the options of a select or autocomplete under a `title`; a `disabled` group disables its options. The group
+ * hides while a search leaves out all its options.
  *
  * @styles
  *
  * option-group-text-color:
+ * option-group-text-font-weight:
  * option-group-tiny-start-padding:
  * option-group-small-start-padding:
  * option-group-medium-start-padding:
@@ -33,75 +19,51 @@ import { NbOptionComponent } from './option.component';
  * option-group-giant-start-padding:
  **/
 @Component({
-    selector: 'nb-option-group',
-    styleUrls: ['./option-group.component.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    template: `
-    <span class="option-group-title">{{ title }}</span>
-    <ng-content select="nb-option, ng-container"></ng-content>
-  `,
-    standalone: false
+  selector: 'nb-option-group',
+  styleUrls: ['./option-group.component.scss'],
+  templateUrl: './option-group.component.html',
+  host: {
+    role: 'group',
+    // Hidden when a select's search leaves out all its options.
+    '[class.filtered]': 'allFiltered()',
+    '[attr.aria-labelledby]': 'titleId',
+    '[attr.disabled]': "disabled() ? '' : null",
+  },
 })
-export class NbOptionGroupComponent implements AfterContentInit, OnDestroy {
+export class NbOptionGroupComponent {
+  protected readonly elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
+  protected readonly titleId = `nb-option-group-title-${lastOptionGroupId++}`;
 
-  protected destroy$ = new Subject<void>();
+  readonly title = input<string>();
 
-  @Input() title: string;
+  /**
+   * Disables the options in the group.
+   */
+  readonly disabled = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
 
-  @Input()
-  get disabled(): boolean {
-    return this._disabled;
-  }
-  set disabled(value: boolean) {
-    this._disabled = convertToBoolProperty(value);
+  // Options register themselves; importing them here would be circular.
+  protected readonly options = signal(new Array<{ filtered: Signal<boolean> }>());
+  protected readonly allFiltered = computed(() => {
+    const options = this.options();
+    return options.length > 0 && options.every((option) => option.filtered());
+  });
 
-    if (this.options) {
-      this.updateOptionsDisabledState();
-    }
-  }
-  protected _disabled: boolean = false;
-  static ngAcceptInputType_disabled: NbBooleanInput;
-
-  @HostBinding('attr.disabled')
-  get disabledAttribute(): '' | null {
-    return this.disabled ? '' : null;
+  addOption(option: { filtered: Signal<boolean> }) {
+    this.options.update((options) => [...options, option]);
   }
 
-  @ContentChildren(NbOptionComponent, { descendants: true }) options: QueryList<NbOptionComponent<any>>;
-
-  ngAfterContentInit() {
-    if (this.options.length) {
-      this.asyncUpdateOptionsDisabledState();
-    }
-
-    this.options.changes
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(() => this.asyncUpdateOptionsDisabledState());
-  }
-
-  ngOnDestroy() {
-    this.destroy$.next();
-    this.destroy$.complete();
+  removeOption(option: { filtered: Signal<boolean> }) {
+    this.options.update((options) => options.filter((existing) => existing !== option));
   }
 
   /**
-   * Sets disabled state for each option to current group disabled state.
+   * Set by its select: whether nothing in the group is in view, e.g. the list is drilled into a nested option outside
+   * it, which hides it; or whether the list is drilled into a nested option in it, which hides only its title.
    */
-  protected updateOptionsDisabledState(): void {
-    this.options.forEach((option: NbOptionComponent) => option.setDisabledByGroupState(this.disabled));
-  }
-
-  /**
-   * Updates options disabled state after promise resolution.
-   * This way change detection will be triggered after options state updated.
-   * Use this method when updating options during change detection run (e.g. QueryList.changes, lifecycle hooks).
-   */
-  protected asyncUpdateOptionsDisabledState(): void {
-    // Wrap Promise into Observable with `takeUntil(this.destroy$)` to prevent update if component destroyed.
-    from(Promise.resolve())
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(() => this.updateOptionsDisabledState());
+  setNestedView(collapsed: boolean, drilledInto: boolean) {
+    const host = this.elementRef.nativeElement;
+    host.classList.toggle('nb-option-collapsed', collapsed);
+    host.querySelector(`#${this.titleId}`)?.classList.toggle('nb-option-collapsed', drilledInto);
+    host.setAttribute('role', drilledInto ? 'none' : 'group');
   }
 }
-
-

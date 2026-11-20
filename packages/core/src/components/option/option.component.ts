@@ -1,39 +1,33 @@
-/*
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
   Component,
+  computed,
+  DestroyRef,
   ElementRef,
-  EventEmitter,
-  HostBinding,
-  HostListener,
-  Inject,
-  Input,
-  OnDestroy,
-  Optional,
-  Output,
-  AfterViewInit,
-  NgZone,
-  Renderer2,
+  inject,
+  input,
+  output,
+  signal,
 } from '@angular/core';
 import { Observable, Subject } from 'rxjs';
 
 // Component class scoped counter for aria attributes.
-let lastOptionId: number = 0;
+let lastOptionId = 0;
 
-import { convertToBoolProperty, NbBooleanInput } from '../helpers';
-import { NbFocusableOption } from '../cdk/a11y/focus-key-manager';
-import { NbHighlightableOption } from '../cdk/a11y/descendant-key-manager';
+import { ɵconvertToBoolProperty as convertToBoolProperty, NbBooleanInput } from '@liquid-js/lyr-core/base';
+import { NbFocusableOption } from '@liquid-js/lyr-core/cdk';
+import { ɵNbHighlightableOption as NbHighlightableOption } from '@liquid-js/lyr-core/cdk';
 import { NB_SELECT_INJECTION_TOKEN } from '../select/select-injection-tokens';
-import { NbSelectComponent } from '../select/select.component';
+import { NB_OPTION_REVEAL_EVENT } from './option-reveal';
+import { NbCheckboxComponent } from '@liquid-js/lyr-core/checkbox';
+import { NbOptionGroupComponent } from './option-group.component';
+import { NbOptionNestedComponent } from './option-nested.component';
+import { setLevel } from './option-level';
+import { NB_OPTION_LIST_ITEM, NbOptionListItem } from './option-list-item';
+import { ɵenableTransitionsAfterRender as enableTransitionsAfterRender } from '@liquid-js/lyr-core/base';
 
 /**
- * NbOptionComponent
+ * An option of an `nb-select` or `nb-autocomplete`, with the `value` it selects; its content is its label. A
+ * `disabled` option can't be chosen.
  *
  * @styles
  *
@@ -60,102 +54,163 @@ import { NbSelectComponent } from '../select/select.component';
  * option-tiny-text-font-weight:
  * option-tiny-text-line-height:
  * option-tiny-padding:
+ * option-tiny-padding-inline:
  * option-small-text-font-size:
  * option-small-text-font-weight:
  * option-small-text-line-height:
  * option-small-padding:
+ * option-small-padding-inline:
  * option-medium-text-font-size:
  * option-medium-text-font-weight:
  * option-medium-text-line-height:
  * option-medium-padding:
+ * option-medium-padding-inline:
  * option-large-text-font-size:
  * option-large-text-font-weight:
  * option-large-text-line-height:
  * option-large-padding:
+ * option-large-padding-inline:
  * option-giant-text-font-size:
  * option-giant-text-font-weight:
  * option-giant-text-line-height:
  * option-giant-padding:
+ * option-giant-padding-inline:
  **/
 @Component({
-    selector: 'nb-option',
-    styleUrls: ['./option.component.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    template: `
-    <nb-checkbox *ngIf="withCheckbox" [checked]="selected" [disabled]="disabled" aria-hidden="true"> </nb-checkbox>
-    <ng-content></ng-content>
-  `,
-    standalone: false
+  selector: 'nb-option',
+  styleUrls: ['./option.component.scss'],
+  templateUrl: './option.component.html',
+  imports: [NbCheckboxComponent],
+  providers: [{ provide: NB_OPTION_LIST_ITEM, useExisting: NbOptionComponent }],
+  host: {
+    tabindex: '-1',
+    // A treeitem in a select with nested options, which sets it.
+    role: 'option',
+    '[attr.id]': 'id',
+    '[attr.aria-selected]': 'checkboxChecked()',
+    '[attr.aria-disabled]': 'disabled || null',
+    '[class.multiple]': 'multiple()',
+    '[class.selected]': 'selected()',
+    '[class.active]': 'active()',
+    '[class.filtered]': 'filtered()',
+    '[attr.disabled]': "disabled ? '' : null",
+    '(click)': 'onClick($event)',
+    '(keydown.space)': 'onClick($event)',
+    '(keydown.enter)': 'onClick($event)',
+  },
 })
-export class NbOptionComponent<T = any> implements OnDestroy, AfterViewInit, NbFocusableOption, NbHighlightableOption {
-  protected disabledByGroup = false;
-
+export class NbOptionComponent<T = unknown> implements NbFocusableOption, NbHighlightableOption, NbOptionListItem {
+  protected readonly elementRef = inject(ElementRef);
+  readonly group = inject(NbOptionGroupComponent, { optional: true });
   /**
-   * Option value that will be fired on selection.
-   * */
-  @Input() value: T;
-
-  @Input()
-  get disabled(): boolean {
-    return this._disabled || this.disabledByGroup;
-  }
-  set disabled(value: boolean) {
-    this._disabled = convertToBoolProperty(value);
-  }
-  protected _disabled: boolean = false;
-  static ngAcceptInputType_disabled: NbBooleanInput;
-
-  /**
-   * Fires value when option selection change.
-   * */
-  @Output() selectionChange: EventEmitter<NbOptionComponent<T>> = new EventEmitter();
-
-  /**
-   * Fires when option clicked
+   * The nested option this one is in.
    */
+  readonly parentNested = inject(NbOptionNestedComponent, { optional: true });
+  /**
+   * How deep it is in its select: 1 at the top, 2 in a nested option, and so on.
+   */
+  readonly depth: number = (this.parentNested?.depth ?? 0) + 1;
+  protected readonly parent = inject(NB_SELECT_INJECTION_TOKEN, { optional: true });
+
+  /**
+   * The value the select gets when the option is selected; an option without one clears the selection.
+   */
+  readonly value = input<T>();
+
+  /**
+   * Disables the option. An option in a disabled `nb-option-group` is disabled too.
+   */
+  readonly disabledInput = input<boolean, NbBooleanInput>(false, { alias: 'disabled', transform: convertToBoolProperty });
+
+  /**
+   * Emits the option as it's selected or deselected.
+   */
+  readonly selectionChange = output<NbOptionComponent<T>>();
+
+  // Emits on click, Enter and Space; the select listens to it.
   protected click$: Subject<NbOptionComponent<T>> = new Subject<NbOptionComponent<T>>();
   get click(): Observable<NbOptionComponent<T>> {
     return this.click$.asObservable();
   }
 
-  selected: boolean = false;
-  protected parent: NbSelectComponent;
-  protected alive: boolean = true;
+  protected readonly selectedState = signal(false);
 
   /**
-   * Component scoped id for aria attributes.
-   * */
-  @HostBinding('attr.id')
-  id: string = `nb-option-${lastOptionId++}`;
+   * Whether the option is selected.
+   */
+  readonly selected = this.selectedState.asReadonly();
 
-  constructor(
-    @Optional() @Inject(NB_SELECT_INJECTION_TOKEN) parent,
-    protected elementRef: ElementRef,
-    protected cd: ChangeDetectorRef,
-    protected zone: NgZone,
-    protected renderer: Renderer2,
-  ) {
-    this.parent = parent;
-  }
+  protected readonly activeState = signal(false);
+  protected readonly active = this.activeState.asReadonly();
 
-  ngOnDestroy() {
-    this.alive = false;
-  }
+  protected alive = true;
 
-  ngAfterViewInit() {
-    // TODO: #2254
-    this.zone.runOutsideAngular(() =>
-      setTimeout(() => {
-        this.renderer.addClass(this.elementRef.nativeElement, 'nb-transition');
-      }),
-    );
+  /**
+   * Unique id of the element, for ARIA references such as `aria-activedescendant`.
+   */
+  readonly id: string = `nb-option-${lastOptionId++}`;
+
+  /**
+   * In a multiple select, makes this the option that selects all others, or clears them when they're all selected.
+   * It acts on the options a search shows, and up to `maxSelections`.
+   */
+  readonly selectAll = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
+
+  /**
+   * Whether the option is disabled by itself or its group, as opposed to by its select's `maxSelections`.
+   */
+  readonly ownDisabled = computed(
+    () => this.disabledInput() || !!this.group?.disabled() || !!this.parentNested?.isDisabled(),
+  );
+
+  // Disabled by itself, by its group, or because its select has as many options selected as it allows.
+  protected readonly isDisabled = computed(() => this.ownDisabled() || !!this.parent?.isLimited(this));
+
+  // A select-all option shows whether all, some or none of the options are selected.
+  protected readonly checkboxChecked = computed(() =>
+    this.selectAll() ? this.parent?.selectAllState() === 'all' : this.selected(),
+  );
+  protected readonly checkboxIndeterminate = computed(() => this.selectAll() && this.parent?.selectAllState() === 'some');
+  // As big as the select's text.
+  protected readonly checkboxSize = computed(() => this.parent?.size() ?? 'medium');
+
+  /**
+   * Whether the option is in a multiple select.
+   */
+  readonly multiple = computed(() => !!this.parent?.multiple());
+
+  /**
+   * Whether the option shows a checkbox: in a multiple select, unless it clears the selection (`null` is a value in a
+   * `nullable` select).
+   */
+  readonly withCheckbox = computed(
+    () =>
+      this.multiple() &&
+      (this.selectAll() || !(this.parent ? this.parent.isEmptyValue(this.value()) : this.value() == null)),
+  );
+
+  constructor() {
+    enableTransitionsAfterRender(this.elementRef.nativeElement);
+
+    this.group?.addOption(this);
+    for (let nested = this.parentNested; nested; nested = nested.parentNested) {
+      nested.addOption(this);
+    }
+    inject(DestroyRef).onDestroy(() => {
+      this.alive = false;
+      this.group?.removeOption(this);
+      for (let nested = this.parentNested; nested; nested = nested.parentNested) {
+        nested.removeOption(this);
+      }
+    });
   }
 
   /**
-   * Determines should we render checkbox.
-   * */
-  get withCheckbox(): boolean {
-    return this.multiple && this.value != null;
+   * Whether the option is disabled: by itself, its group, a nested option it's in, or its select's `maxSelections`.
+   * A plain boolean, which the keyboard managers read.
+   */
+  get disabled(): boolean {
+    return this.isDisabled();
   }
 
   get content() {
@@ -163,42 +218,36 @@ export class NbOptionComponent<T = any> implements OnDestroy, AfterViewInit, NbF
   }
 
   get hidden() {
-    return this.elementRef.nativeElement.hidden;
+    return this.elementRef.nativeElement.hidden || this.filtered() || this.collapsed;
   }
 
-  // TODO: replace with isShowCheckbox property to control this behaviour outside, issues/1965
-  @HostBinding('class.multiple')
-  get multiple() {
-    // We check parent existing because parent can be NbSelectComponent or
-    // NbAutocomplete and `miltiple` property exists only in NbSelectComponent
-    return this.parent ? (this.parent as NbSelectComponent).multiple : false;
+  protected collapsed = false;
+  protected nestedView?: string;
+
+  /**
+   * Set by a select with nested options: whether the option is out of view (in a collapsed or drilled-past nested
+   * option), and how deep it is in the view, as an item of its tree.
+   */
+  setNestedView(collapsed: boolean, level: number) {
+    // A tree sets this on all its options as it changes, so only the ones that change touch the DOM.
+    if (this.nestedView === `${collapsed} ${level}`) {
+      return;
+    }
+    this.nestedView = `${collapsed} ${level}`;
+    this.collapsed = collapsed;
+    const host = this.elementRef.nativeElement;
+    host.setAttribute('role', 'treeitem');
+    host.classList.toggle('nb-option-collapsed', collapsed);
+    setLevel(host, level);
+    host.setAttribute('aria-level', String(level));
   }
 
-  @HostBinding('class.selected')
-  get selectedClass(): boolean {
-    return this.selected;
-  }
+  /**
+   * Whether a select's search left the option out.
+   */
+  readonly filtered = signal(false);
 
-  @HostBinding('attr.disabled')
-  get disabledAttribute(): '' | null {
-    return this.disabled ? '' : null;
-  }
-
-  @HostBinding('tabIndex')
-  get tabindex() {
-    return '-1';
-  }
-
-  @HostBinding('class.active')
-  get activeClass() {
-    return this._active;
-  }
-  protected _active: boolean = false;
-
-  @HostListener('click', ['$event'])
-  @HostListener('keydown.space', ['$event'])
-  @HostListener('keydown.enter', ['$event'])
-  onClick(event) {
+  onClick(event: Event) {
     this.click$.next(this);
 
     // Prevent scroll on space click, etc.
@@ -213,33 +262,17 @@ export class NbOptionComponent<T = any> implements OnDestroy, AfterViewInit, NbF
     this.setSelection(false);
   }
 
-  /**
-   * Sets disabled by group state and marks component for check.
-   */
-  setDisabledByGroupState(disabled: boolean): void {
-    // Check if the component still alive as the option group defer method call so the component may become destroyed.
-    if (this.disabledByGroup !== disabled && this.alive) {
-      this.disabledByGroup = disabled;
-      this.cd.markForCheck();
-    }
-  }
-
-  protected setSelection(selected: boolean): void {
-    /**
-     * In case of changing options in runtime the reference to the selected option will be kept in select component.
-     * This may lead to exceptions with detecting changes in destroyed component.
-     *
-     * Also Angular can call writeValue on destroyed view (select implements ControlValueAccessor).
-     * angular/angular#27803
-     * */
-    if (this.alive && this.selected !== selected) {
-      this.selected = selected;
+  protected setSelection(selected: boolean) {
+    // A select keeps a reference to a selected option that was replaced at runtime, and Angular can call writeValue on
+    // a destroyed view (angular/angular#27803), so a destroyed option ignores the change rather than throwing.
+    if (this.alive && this.selected() !== selected) {
+      this.selectedState.set(selected);
       this.selectionChange.emit(this);
-      this.cd.markForCheck();
     }
   }
 
-  focus(): void {
+  focus() {
+    this.reveal();
     this.elementRef.nativeElement.focus();
   }
 
@@ -247,14 +280,19 @@ export class NbOptionComponent<T = any> implements OnDestroy, AfterViewInit, NbF
     return this.content;
   }
 
-  setActiveStyles(): void {
-    this._active = true;
-    this.cd.markForCheck();
+  setActiveStyles() {
+    this.reveal();
+    this.activeState.set(true);
   }
 
-  setInactiveStyles(): void {
-    this._active = false;
-    this.cd.markForCheck();
+  // A long option list lays out only the options near its view; it shows and scrolls to this one on request.
+  protected reveal() {
+    this.parent?.revealNested(this);
+    this.elementRef.nativeElement.dispatchEvent(new CustomEvent(NB_OPTION_REVEAL_EVENT, { bubbles: true }));
+  }
+
+  setInactiveStyles() {
+    this.activeState.set(false);
   }
 
   getHostElement(): HTMLElement {

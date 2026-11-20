@@ -1,0 +1,8 @@
+@if (withCheckbox()) {
+<nb-checkbox [checked]="checkboxChecked()"
+  [size]="checkboxSize()"
+  [indeterminate]="checkboxIndeterminate()"
+  [disabled]="disabled"
+  aria-hidden="true" />
+}
+<ng-content />

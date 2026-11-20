@@ -1,0 +1,8 @@
+<ng-content select="[nbOptionListHeader]" />
+<ul class="option-list nb-option-list-pending"
+  [attr.role]="listRole()"
+  [attr.id]="listId()"
+  [attr.aria-multiselectable]="multiple() || null"
+  #list>
+  <ng-content />
+</ul>
