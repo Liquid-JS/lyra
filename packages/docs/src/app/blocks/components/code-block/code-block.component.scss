@@ -1,6 +1,12 @@
 @use "../../../@theme/styles/themes" as *;
 
 @include nb-install-component {
+    // A column, so a parent with a maximum height makes the code scroll inside the block, under the copy button.
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    min-height: 0;
+
     $code-lines-fg: #515877;
 
     // The docs theme's, or the same where another theme is shown, e.g. over a full-screen example.
@@ -8,12 +14,12 @@
 
     .container {
         display: flex;
-        position: relative;
+        min-height: 0;
         padding: 0;
         font-size: 1rem;
         border-radius: 0.5rem;
         background: $code-block-bg;
-        overflow-x: auto;
+        overflow: auto;
 
         .lines {
             display: flex;
@@ -28,7 +34,7 @@
         }
 
         pre {
-            // The code fills the block, so the copy button sits in its corner.
+            // The code fills the block's width, with its background.
             flex: 1 0 auto;
 
             // Bootstrap's reboot used to reset the top margin; without it the code sits a line below its numbers.
@@ -41,21 +47,20 @@
                 background: transparent;
                 color: #f8f8f2;
 
-                // As on a docs page, which also sets it, so it's the same anywhere.
-                padding: 2rem 2.5rem 2rem 0.5rem;
+                // As on a docs page, which also sets it, so it's the same anywhere; the end leaves room for the
+                // copy button.
+                padding: 2rem 3.5rem 2rem 0.5rem;
                 font-size: 0.875rem;
                 line-height: 1.25rem;
                 margin-bottom: 0;
             }
         }
+    }
 
-        // In the block's corner, over the code's end padding; it stays there while the code scrolls sideways.
-        .copy-button {
-            position: sticky;
-            align-self: flex-start;
-            inset-inline-end: 0.5rem;
-            margin: 0.5rem 0.5rem 0 0;
-            margin-inline-start: -2.5rem;
-        }
+    // Over the block's corner, outside the code that scrolls, so it stays there whichever way the code scrolls.
+    .copy-button {
+        position: absolute;
+        inset-block-start: 0.5rem;
+        inset-inline-end: 0.5rem;
     }
 }

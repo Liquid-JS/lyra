@@ -1,6 +1,5 @@
 import { Component, computed, inject, input, signal } from '@angular/core'
 import { toObservable, toSignal } from '@angular/core/rxjs-interop'
-import { NB_WINDOW, NbButtonComponent, NbIconComponent } from '@liquid-js/lyr-core'
 import { catchError, forkJoin, map, of, switchMap } from 'rxjs'
 
 import { NgdCodeLoaderService } from '../../../@theme/services'
@@ -33,17 +32,6 @@ const REPOSITORY = 'https://github.com/Liquid-JS/lyra/tree/master/packages/playg
       }
     </nav>
     <div class="code">
-      <button
-        nbButton
-        ghost
-        size="small"
-        type="button"
-        class="copy"
-        [attr.aria-label]="'Copy ' + name(shown())"
-        (click)="copy()">
-        <nb-icon [icon]="copied() ? 'checkmark-outline' : 'copy-outline'" />
-        {{ copied() ? 'Copied' : 'Copy' }}
-      </button>
       <ngd-code-block [path]="shown()" [code]="code()" />
     </div>
     @if (folder(); as folder) {
@@ -105,19 +93,11 @@ const REPOSITORY = 'https://github.com/Liquid-JS/lyra/tree/master/packages/playg
       }
     }
 
+    // The code scrolls inside its block, which keeps the copy button in the corner.
     .code {
-      position: relative;
+      display: flex;
+      flex-direction: column;
       max-height: 65vh;
-      overflow: auto;
-      border-radius: 0.5rem;
-    }
-
-    .copy {
-      position: absolute;
-      inset-block-start: 0.5rem;
-      inset-inline-end: 0.5rem;
-      z-index: 1;
-      color: #ffffff;
     }
 
     .source {
@@ -135,11 +115,10 @@ const REPOSITORY = 'https://github.com/Liquid-JS/lyra/tree/master/packages/playg
       }
     }
   `,
-    imports: [NbButtonComponent, NbIconComponent, NgdCodeBlockComponent]
+    imports: [NgdCodeBlockComponent]
 })
 export class NgdExampleCodeComponent {
     protected readonly codeLoader = inject(NgdCodeLoaderService)
-    protected readonly window = inject(NB_WINDOW)
 
     /** The screen's files, as paths under the playground's examples. */
     readonly files = input.required<string[]>()
@@ -177,18 +156,7 @@ export class NgdExampleCodeComponent {
         return `${REPOSITORY}/${first.startsWith('showcase/') ? 'without-layout' : 'with-layout'}/${folder}`
     })
 
-    /** Whether the shown file was just copied, which its button says for a moment. */
-    protected readonly copied = signal(false)
-    protected copyTimer?: ReturnType<typeof setTimeout>
-
     protected name(path: string) {
         return path.split('/').pop() ?? path
-    }
-
-    protected async copy() {
-        await this.window?.navigator.clipboard.writeText(this.code())
-        this.copied.set(true)
-        clearTimeout(this.copyTimer)
-        this.copyTimer = setTimeout(() => this.copied.set(false), 2000)
     }
 }

@@ -5,17 +5,17 @@
         }
     </div>
     <pre><code [nxtHighlight]="visible()" [language]="language()"></code></pre>
-    @if (copy()) {
-    <button nbButton
-        class="copy-button"
-        ghost
-        status="control"
-        size="small"
-        type="button"
-        [attr.aria-label]="copied() ? 'Copied' : 'Copy the code'"
-        [title]="copied() ? 'Copied' : 'Copy'"
-        (click)="copyCode()">
-        <nb-icon [icon]="copied() ? 'checkmark-outline' : 'copy-outline'" />
-    </button>
-    }
 </div>
+@if (copy()) {
+<button nbButton
+    class="copy-button"
+    ghost
+    status="control"
+    size="medium"
+    type="button"
+    [attr.aria-label]="copied() ? 'Copied' : 'Copy the code'"
+    [title]="copied() ? 'Copied' : 'Copy'"
+    (click)="copyCode()">
+    <nb-icon [icon]="copied() ? 'checkmark' : 'copy'" />
+</button>
+}
