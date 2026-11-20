@@ -1,102 +1,126 @@
-<nb-card *nbPortal [class.supports-scrollbar-theming]="!isFirefox()" class="nb-timepicker-container">
+<nb-card *nbPortal
+  appearance="outline"
+  [class.supports-scrollbar-theming]="!isFirefox()"
+  class="nb-timepicker-container">
   <nb-card-header class="column-header">
-    <ng-container *ngIf="singleColumn; else fullTimeHeadersBlock">
-      <div class="header-cell">Time</div>
-    </ng-container>
-    <ng-template #fullTimeHeadersBlock>
-      <div class="header-cell">{{ hoursText }}</div>
-      <div class="header-cell">{{ minutesText }}</div>
-      <div *ngIf="withSeconds" class="header-cell">{{ secondsText }}</div>
-      <div *ngIf="twelveHoursFormat" class="header-cell">
-        <ng-template [ngIf]="showAmPmLabel">{{ ampmText }}</ng-template>
-      </div>
-    </ng-template>
+    @if (singleColumn()) {
+    <div class="header-cell">{{ timeLabel() }}</div>
+    } @else {
+    <div class="header-cell">{{ hoursLabel() }}</div>
+    <div class="header-cell">{{ minutesLabel() }}</div>
+    @if (withSeconds()) {
+    <div class="header-cell">{{ secondsLabel() }}</div>
+    }
+    @if (twelveHoursFormat()) {
+    <div class="header-cell">
+      @if (showAmPmLabel()) {{{ ampmLabel() }}}
+    </div>
+    }
+    }
   </nb-card-header>
 
   <div class="picker-body">
-    <ng-container *ngIf="singleColumn; else fullTimeColumnBlock">
-      <nb-list class="values-list">
-        <nb-list-item
-          class="list-item"
-          [class.selected]="isSelectedFullTimeValue(item)"
-          *ngFor="let item of fullTimeOptions; trackBy: trackBySingleColumnValue.bind(this)"
-        >
-          <nb-timepicker-cell
-            [value]="getFullTimeString(item)"
-            [selected]="isSelectedFullTimeValue(item)"
-            (select)="selectFullTime(item)"
-          >
-          </nb-timepicker-cell>
-        </nb-list-item>
-      </nb-list>
-    </ng-container>
+    @if (singleColumn()) {
+    <nb-list class="values-list"
+      role="listbox"
+      [attr.aria-label]="timeLabel()"
+      (keydown)="onColumnKeydown($event)">
+      @for (item of fullTimeOptions(); track trackBySingleColumnValue($index, item)) {
+      <nb-list-item role="none"
+        class="list-item"
+        [class.selected]="isSelectedFullTimeValue(item)"
+        [class.disabled]="isDisabledFullTime(item)">
+        <nb-timepicker-cell [value]="getFullTimeString(item)"
+          [tabbable]="isSelectedFullTimeValue(item) || ($first && !hasSelectedFullTime())"
+          [selected]="isSelectedFullTimeValue(item)"
+          [disabled]="isDisabledFullTime(item)"
+          (select)="selectFullTime(item)" />
+      </nb-list-item>
+      }
+    </nb-list>
+    } @else {
+    <nb-list class="values-list"
+      role="listbox"
+      [attr.aria-label]="hoursLabel()"
+      (keydown)="onColumnKeydown($event)">
+      @for (item of hoursColumnOptions(); track trackByTimeValues($index, item)) {
+      <nb-list-item role="none"
+        class="list-item"
+        [class.selected]="isSelectedHour(item.value)"
+        [class.disabled]="isDisabledHour(item.value)">
+        <nb-timepicker-cell [value]="item.text"
+          [tabbable]="isSelectedHour(item.value) || ($first && !date())"
+          [selected]="isSelectedHour(item.value)"
+          [disabled]="isDisabledHour(item.value)"
+          (select)="setHour(item.value)" />
+      </nb-list-item>
+      }
+    </nb-list>
+    <nb-list class="values-list"
+      role="listbox"
+      [attr.aria-label]="minutesLabel()"
+      (keydown)="onColumnKeydown($event)">
+      @for (item of minutesColumnOptions(); track trackByTimeValues($index, item)) {
+      <nb-list-item role="none"
+        class="list-item"
+        [class.selected]="isSelectedMinute(item.value)"
+        [class.disabled]="isDisabledMinute(item.value)">
+        <nb-timepicker-cell [value]="item.text"
+          [tabbable]="isSelectedMinute(item.value) || ($first && !date())"
+          [selected]="isSelectedMinute(item.value)"
+          [disabled]="isDisabledMinute(item.value)"
+          (select)="setMinute(item.value)" />
+      </nb-list-item>
+      }
+    </nb-list>
+    @if (showSeconds()) {
+    <nb-list class="values-list"
+      role="listbox"
+      [attr.aria-label]="secondsLabel()"
+      (keydown)="onColumnKeydown($event)">
+      @for (item of secondsColumnOptions(); track trackByTimeValues($index, item)) {
+      <nb-list-item role="none"
+        class="list-item"
+        [class.selected]="isSelectedSecond(item.value)"
+        [class.disabled]="isDisabledSecond(item.value)">
+        <nb-timepicker-cell [value]="item.text"
+          [tabbable]="isSelectedSecond(item.value) || ($first && !date())"
+          [selected]="isSelectedSecond(item.value)"
+          [disabled]="isDisabledSecond(item.value)"
+          (select)="setSecond(item.value)" />
+      </nb-list-item>
+      }
+    </nb-list>
+    }
+    @if (twelveHoursFormat()) {
+    <nb-list class="values-list"
+      role="listbox"
+      [attr.aria-label]="ampmLabel()"
+      (keydown)="onColumnKeydown($event)">
+      @for (dayPeriod of dayPeriodColumnOptions; track trackByDayPeriod($index, dayPeriod)) {
+      <nb-list-item role="none"
+        class="list-item am-pm-item"
+        [class.selected]="isSelectedDayPeriod(dayPeriod)"
+        [class.disabled]="isDisabledDayPeriod(dayPeriod)">
+        <nb-timepicker-cell [value]="dayPeriod"
+          [tabbable]="isSelectedDayPeriod(dayPeriod) || ($first && !date())"
+          [selected]="isSelectedDayPeriod(dayPeriod)"
+          [disabled]="isDisabledDayPeriod(dayPeriod)"
+          (select)="changeDayPeriod(dayPeriod)" />
+      </nb-list-item>
+      }
+    </nb-list>
+    }
+    }
 
-    <ng-template #fullTimeColumnBlock>
-      <nb-list class="values-list">
-        <nb-list-item
-          class="list-item"
-          [class.selected]="isSelectedHour(item.value)"
-          *ngFor="let item of hoursColumnOptions; trackBy: trackByTimeValues"
-        >
-          <nb-timepicker-cell
-            [value]="item.text"
-            [selected]="isSelectedHour(item.value)"
-            (select)="setHour(item.value)"
-          >
-          </nb-timepicker-cell>
-        </nb-list-item>
-      </nb-list>
-      <nb-list class="values-list">
-        <nb-list-item
-          class="list-item"
-          [class.selected]="isSelectedMinute(item.value)"
-          *ngFor="let item of minutesColumnOptions; trackBy: trackByTimeValues"
-        >
-          <nb-timepicker-cell
-            [value]="item.text"
-            [selected]="isSelectedMinute(item.value)"
-            (select)="setMinute(item.value)"
-          >
-          </nb-timepicker-cell>
-        </nb-list-item>
-      </nb-list>
-      <nb-list *ngIf="showSeconds()" class="values-list">
-        <nb-list-item
-          class="list-item"
-          [class.selected]="isSelectedSecond(item.value)"
-          *ngFor="let item of secondsColumnOptions; trackBy: trackByTimeValues"
-        >
-          <nb-timepicker-cell
-            [value]="item.text"
-            [selected]="isSelectedSecond(item.value)"
-            (select)="setSecond(item.value)"
-          >
-          </nb-timepicker-cell>
-        </nb-list-item>
-      </nb-list>
-      <nb-list *ngIf="twelveHoursFormat" class="values-list">
-        <nb-list-item
-          class="list-item am-pm-item"
-          [class.selected]="isSelectedDayPeriod(dayPeriod)"
-          *ngFor="let dayPeriod of dayPeriodColumnOptions; trackBy: trackByDayPeriod"
-        >
-          <nb-timepicker-cell
-            [value]="dayPeriod"
-            [selected]="isSelectedDayPeriod(dayPeriod)"
-            (select)="changeDayPeriod(dayPeriod)"
-          >
-          </nb-timepicker-cell>
-        </nb-list-item>
-      </nb-list>
-    </ng-template>
   </div>
 
-  <nb-card-footer *ngIf="showFooter" class="actions-footer">
-    <nb-calendar-actions
-      [applyButtonText]="applyButtonText"
-      [currentTimeButtonText]="currentTimeButtonText"
+  @if (showFooter()) {
+  <nb-card-footer class="actions-footer">
+    <nb-calendar-actions [applyButtonText]="applyButtonText()"
+      [currentTimeButtonText]="currentTimeButtonText()"
       (setCurrentTime)="setCurrentTime()"
-      (saveValue)="saveValue()"
-    ></nb-calendar-actions>
+      (saveValue)="saveValue()" />
   </nb-card-footer>
+  }
 </nb-card>

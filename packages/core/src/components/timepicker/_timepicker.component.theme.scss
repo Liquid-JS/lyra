@@ -1,13 +1,16 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 @use '../../styles/theming' as *;
 
 @mixin nb-timepicker-theme() {
   $border: nb-theme(timepicker-border-width) nb-theme(timepicker-border-style) nb-theme(timepicker-border-color);
+
+  // The time picker's own popup, framed as the date picker's is; in a date-time picker, the calendar's card frames it.
+  .cdk-overlay-pane > nb-card.nb-timepicker-container {
+    border: $border;
+    border-radius: nb-theme(timepicker-border-radius);
+    background: nb-theme(timepicker-background-color);
+    box-shadow: nb-theme(timepicker-shadow);
+  }
+
   .nb-timepicker-container {
     width: nb-theme(timepicker-container-width);
     height: nb-theme(timepicker-container-height);
@@ -22,14 +25,26 @@
         color: nb-theme(timepicker-cell-hover-text-color);
       }
 
-      &:focus {
+      // The keyboard's cell, with the focus ring inside its row, which the scrolling list would cut outside it.
+      &:has(> nb-timepicker-cell:focus-visible) {
         background-color: nb-theme(timepicker-cell-focus-background-color);
         color: nb-theme(timepicker-cell-focus-text-color);
+        box-shadow: inset 0 0 0 nb-theme(outline-width) nb-theme(outline-color);
       }
 
       &.selected {
         background-color: nb-theme(timepicker-cell-active-background-color);
         color: nb-theme(timepicker-cell-active-text-color);
+      }
+
+      // Out of the timepicker's range.
+      &.disabled {
+        color: nb-theme(timepicker-cell-disabled-text-color);
+        cursor: default;
+
+        &:hover {
+          background-color: transparent;
+        }
       }
 
       color: nb-theme(timepicker-cell-text-color);
@@ -78,9 +93,9 @@
       border-bottom: $border;
     }
 
+    // The actions line up with the columns' edges, as a calendar's do with its days.
     .actions-footer {
-      @include nb-ltr(padding-left, 0.625rem);
-      @include nb-rtl(padding-right, 0.625rem);
+      padding-inline: nb-theme(calendar-picker-padding-start);
     }
   }
 }

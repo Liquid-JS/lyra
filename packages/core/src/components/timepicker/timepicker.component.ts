@@ -1,245 +1,255 @@
 import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
   Component,
+  computed,
   ElementRef,
-  EventEmitter,
-  Inject,
-  Input,
-  LOCALE_ID,
-  OnChanges,
-  OnInit,
-  Output,
-  SimpleChanges,
-  ViewChild,
+  inject,
+  input,
+  model,
+  output,
+  viewChild,
 } from '@angular/core';
 import { Observable, Subject } from 'rxjs';
 
-import { convertToBoolProperty, NbBooleanInput } from '../helpers';
-import { NbPortalDirective } from '../cdk/overlay/mapping';
-import { NbPlatform } from '../cdk/platform/platform-service';
-import { NbDateService, NbDayPeriod } from '../calendar-kit/services/date.service';
-import { range, rangeFromTo } from '../calendar-kit/helpers';
-import { NbCalendarTimeModelService } from '../calendar-kit/services/calendar-time-model.service';
+import { ɵconvertToBoolProperty as convertToBoolProperty, NbBooleanInput } from '@liquid-js/lyr-core/base';
+import { NbPortalDirective } from '@liquid-js/lyr-core/cdk';
+import { NbPlatform } from '@liquid-js/lyr-core/base';
+import { NbDateService, NbDayPeriod } from '@liquid-js/lyr-core/calendar-kit';
+import { ɵrange as range, ɵrangeFromTo as rangeFromTo } from '@liquid-js/lyr-core/calendar-kit';
+import { NbCalendarTimeModelService } from '@liquid-js/lyr-core/calendar-kit';
 import {
-  NB_DEFAULT_TIMEPICKER_LOCALIZATION_CONFIG,
   NB_TIME_PICKER_CONFIG,
   NbSelectedTimePayload,
   NbTimePickerConfig,
 } from './model';
+import { NbCardComponent, NbCardHeaderComponent, NbCardFooterComponent } from '@liquid-js/lyr-core/card';
+import { NbListComponent, NbListItemComponent } from '@liquid-js/lyr-core/list';
+import { NbTimePickerCellComponent } from './timepicker-cell.component';
+import { NbCalendarActionsComponent } from '@liquid-js/lyr-core/calendar-kit';
+import { injectNbTexts, NbLocalize } from '@liquid-js/lyr-core/base';
+
+/** @internal */
+declare const $localize: NbLocalize;
 
 interface NbTimePartOption {
   value: number;
   text: string;
 }
 
+/** @internal */
+const SECONDS_IN_DAY = 24 * 3600;
+
 /**
- * The TimePicker components itself.
- * Provides a proxy to `TimePicker` options as well as custom picker options.
+ * The time picker's popup: columns of hours, minutes, seconds and AM/PM, or a single column of times, with the
+ * format, limits and texts. An input with `nbTimepicker` opens it.
  */
 @Component({
-    selector: 'nb-timepicker',
-    templateUrl: './timepicker.component.html',
-    styleUrls: ['./timepicker.component.scss'],
-    exportAs: 'nbTimepicker',
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  selector: 'nb-timepicker',
+  templateUrl: './timepicker.component.html',
+  styleUrls: ['./timepicker.component.scss'],
+  exportAs: 'nbTimepicker',
+  imports: [
+    NbPortalDirective,
+    NbCardComponent,
+    NbCardHeaderComponent,
+    NbListComponent,
+    NbListItemComponent,
+    NbTimePickerCellComponent,
+    NbCardFooterComponent,
+    NbCalendarActionsComponent,
+  ],
 })
-export class NbTimePickerComponent<D> implements OnChanges {
+export class NbTimePickerComponent<D> {
+  // Without provideNbTimepicker(), the format follows the locale.
+  protected readonly config = inject<NbTimePickerConfig>(NB_TIME_PICKER_CONFIG, { optional: true });
+  protected readonly platformService = inject(NbPlatform);
+  protected readonly calendarTimeModelService = inject<NbCalendarTimeModelService<D>>(NbCalendarTimeModelService);
+  protected readonly dateService = inject<NbDateService<D>>(NbDateService);
+
+  protected readonly texts = injectNbTexts('timepicker', () => ({
+    hoursText: $localize`:@@nb.timepicker.hours:Hr`,
+    minutesText: $localize`:@@nb.timepicker.minutes:Min`,
+    secondsText: $localize`:@@nb.timepicker.seconds:Sec`,
+    ampmText: $localize`:@@nb.timepicker.ampm:Am/Pm`,
+    timeText: $localize`:@@nb.timepicker.time:Time`,
+    dialogText: $localize`:@@nb.timepicker.dialog:Choose a time`,
+  }));
+
+  /** The texts, the config's `localization` over the `timepicker` texts of `NbTextsService`. */
+  protected readonly localization = computed(() => ({ ...this.texts(), ...(this.config?.localization ?? {}) }));
+
   protected blur$: Subject<void> = new Subject<void>();
 
-  fullTimeOptions: D[];
-  hoursColumnOptions: NbTimePartOption[];
-  minutesColumnOptions: NbTimePartOption[];
-  secondsColumnOptions: NbTimePartOption[];
   readonly dayPeriodColumnOptions = [NbDayPeriod.AM, NbDayPeriod.PM];
-  hostRef: ElementRef;
-  isAM = true;
-
-  timepickerFormatChange$: Subject<void> = new Subject();
+  hostRef?: ElementRef;
 
   /**
-   * Emits when timepicker looses focus.
+   * Meant to emit when the time picker loses focus; nothing emits it at present.
    */
   get blur(): Observable<void> {
     return this.blur$.asObservable();
   }
 
   /**
-   * Defines time format string.
-   * */
-  @Input()
-  get timeFormat(): string {
-    return this._timeFormat;
-  }
-  set timeFormat(timeFormat: string) {
-    this._timeFormat = timeFormat;
-  }
-  protected _timeFormat: string;
-
-  computedTimeFormat: string = this.setupTimeFormat();
+   * The format times are shown and parsed in. By default the config's `format`, or else one built from
+   * `twelveHoursFormat` and `withSeconds`.
+   */
+  readonly timeFormat = input<string>();
 
   /**
-   * Defines 12 hours format .
-   * */
-  @Input()
-  get twelveHoursFormat(): boolean {
-    return this._twelveHoursFormat;
-  }
-  set twelveHoursFormat(value: boolean) {
-    this._twelveHoursFormat = convertToBoolProperty(value);
-  }
-  protected _twelveHoursFormat: boolean;
-  static ngAcceptInputType_twelveHoursFormat: NbBooleanInput;
+   * Shows 12-hour times with an AM/PM column. By default the `provideNbTimepicker()` config's, or else the locale's.
+   */
+  readonly twelveHoursFormat = input<boolean, NbBooleanInput>(
+    this.config ? !!this.config.twelveHoursFormat : this.dateService.getLocaleTimeFormat().includes('h'),
+    { transform: convertToBoolProperty },
+  );
 
   /**
-   * Defines should show am/pm label if twelveHoursFormat enabled.
-   * */
-  @Input()
-  get showAmPmLabel(): boolean {
-    return this._showAmPmLabel;
-  }
-  set showAmPmLabel(value: boolean) {
-    this._showAmPmLabel = convertToBoolProperty(value);
-  }
-  protected _showAmPmLabel: boolean = true;
-  static ngAcceptInputType_showAmPmLabel: NbBooleanInput;
+   * Whether the AM/PM column, in 12-hour format, has a header label.
+   */
+  readonly showAmPmLabel = input<boolean, NbBooleanInput>(true, { transform: convertToBoolProperty });
 
   /**
-   * Show seconds in timepicker.
-   * Ignored when singleColumn is true
-   * */
-  @Input()
-  get withSeconds(): boolean {
-    return this._withSeconds;
-  }
-  set withSeconds(value: boolean) {
-    this._withSeconds = convertToBoolProperty(value);
-  }
-  protected _withSeconds: boolean;
-  static ngAcceptInputType_withSeconds: NbBooleanInput;
+   * Adds a seconds column. Ignored with `singleColumn`.
+   */
+  readonly withSeconds = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
 
   /**
-   * Show timepicker values in one column with 60 minutes step by default.
-   * */
-  @Input()
-  get singleColumn(): boolean {
-    return this._singleColumn;
-  }
-  set singleColumn(value: boolean) {
-    this._singleColumn = convertToBoolProperty(value);
-  }
-  _singleColumn: boolean;
-  static ngAcceptInputType_singleColumn: NbBooleanInput;
+   * One column of whole times, every `step` minutes, instead of a column per part.
+   */
+  readonly singleColumn = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
 
   /**
-   * Defines minutes offset for options, when timepicker is in single column mode.
-   * By default it’s 60 minutes: '12:00, 13:00: 14:00, 15:00...'
-   * */
-  @Input()
-  set step(step: number) {
-    this._step = step;
-  }
-  get step(): number {
-    return this._step;
-  }
-  protected _step: number;
+   * The minutes between the times of a single column. By default 60: 12:00, 13:00, 14:00…
+   */
+  readonly step = input<number>();
 
   /**
-   * Date which will be rendered as selected.
-   * */
-  @Input()
-  set date(date: D) {
-    this._date = date;
-    this.isAM = this.dateService.getDayPeriod(this.date) === NbDayPeriod.AM;
-    this.buildColumnOptions();
-    this.cd.markForCheck();
-  }
-
-  get date(): D {
-    return this._date;
-  }
-
-  _date: D;
+   * The time shown as selected. The `nbTimepicker` directive sets it from the input.
+   */
+  readonly date = model<D>();
 
   /**
-   * In timepicker value should be always true
-   * In calendar-with-time.component  should set to false
+   * Whether the footer with the apply and current-time buttons shows; the calendar with time turns it off.
    * @docs-private
    */
-  @Input() showFooter: boolean = true;
-  @Input() applyButtonText: string;
-  @Input() hoursText: string;
-  @Input() minutesText: string;
-  @Input() secondsText: string;
-  @Input() ampmText: string;
-  @Input() currentTimeButtonText: string;
+  readonly showFooter = input<boolean, NbBooleanInput>(true, { transform: convertToBoolProperty });
+  readonly applyButtonText = input<string>();
+  readonly hoursText = input<string>();
+  readonly minutesText = input<string>();
+  readonly secondsText = input<string>();
+  readonly ampmText = input<string>();
+  readonly timeText = input<string>();
 
   /**
-   * Emits date when selected.
-   * */
-  @Output() onSelectTime: EventEmitter<NbSelectedTimePayload<D>> = new EventEmitter<NbSelectedTimePayload<D>>();
-  @ViewChild(NbPortalDirective, { static: true }) portal: NbPortalDirective;
+   * The earliest time to pick, as a time of day: earlier times are disabled in the list, and an earlier time in the
+   * input has the `nbTimepickerMin` error.
+   */
+  readonly min = input<D>();
 
-  constructor(
-    @Inject(NB_TIME_PICKER_CONFIG) protected config: NbTimePickerConfig,
-    protected platformService: NbPlatform,
-    @Inject(LOCALE_ID) locale: string,
-    public cd: ChangeDetectorRef,
-    protected calendarTimeModelService: NbCalendarTimeModelService<D>,
-    protected dateService: NbDateService<D>,
-  ) {
-    this.initFromConfig(this.config);
-  }
+  /**
+   * The latest time to pick, as a time of day: later times are disabled in the list, and a later time in the input has
+   * the `nbTimepickerMax` error.
+   */
+  readonly max = input<D>();
 
-  ngOnChanges({ step, twelveHoursFormat, withSeconds, singleColumn }: SimpleChanges): void {
-    const nextTimeFormat = this.setupTimeFormat();
-    if (nextTimeFormat !== this.computedTimeFormat) {
-      this.computedTimeFormat = nextTimeFormat;
-      this.timepickerFormatChange$.next();
-    }
+  /** The range of times to pick, in seconds of the day. */
+  protected readonly limits = computed(() => {
+    const min = this.min();
+    const max = this.max();
+    return {
+      min: min ? this.secondsOfDay(min) : 0,
+      max: max ? this.secondsOfDay(max) : SECONDS_IN_DAY - 1,
+    };
+  });
 
-    const isConfigChanged = step || twelveHoursFormat || withSeconds || singleColumn;
+  protected readonly hoursLabel = computed(() => this.hoursText() ?? this.localization().hoursText);
+  protected readonly minutesLabel = computed(() => this.minutesText() ?? this.localization().minutesText);
+  protected readonly secondsLabel = computed(() => this.secondsText() ?? this.localization().secondsText);
+  protected readonly ampmLabel = computed(() => this.ampmText() ?? this.localization().ampmText);
+  protected readonly timeLabel = computed(() => this.timeText() ?? this.localization().timeText);
+  /** Names the time picker's popup. */
+  readonly dialogLabel = computed(() => this.localization().dialogText);
+  readonly currentTimeButtonText = input<string>();
 
-    if (isConfigChanged || !this.fullTimeOptions) {
-      this.buildColumnOptions();
-    }
-  }
+  /**
+   * Emits every picked time. `save` is set when the apply or current-time button applies it; the directive then
+   * closes the picker.
+   */
+  readonly onSelectTime = output<NbSelectedTimePayload<D>>();
 
-  setHost(hostRef: ElementRef): void {
+  readonly portal = viewChild.required(NbPortalDirective);
+
+  /**
+   * The time format the timepicker formats and parses with: `timeFormat`, the config's format, or one built from
+   * the other inputs.
+   */
+  readonly computedTimeFormat = computed(() => this.timeFormat() || this.config?.format || this.buildTimeFormat());
+
+  readonly isAM = computed(() => {
+    const date = this.date();
+    return !!date && this.dateService.getDayPeriod(date) === NbDayPeriod.AM;
+  });
+
+  readonly showSeconds = computed(() => this.withSeconds() && !this.singleColumn());
+
+  readonly fullTimeOptions = computed<D[]>(() =>
+    this.singleColumn() ? this.calendarTimeModelService.getHoursRange(this.step()) : [],
+  );
+  readonly hoursColumnOptions = computed(() => this.generateHours());
+  /** Whether a time of the single column is the selected one; without one, Tab reaches its first. */
+  protected readonly hasSelectedFullTime = computed(() =>
+    this.fullTimeOptions().some((value) => this.isSelectedFullTimeValue(value)),
+  );
+  readonly minutesColumnOptions = computed(() => this.generateMinutesOrSeconds());
+  readonly secondsColumnOptions = computed(() => (this.showSeconds() ? this.generateMinutesOrSeconds() : []));
+
+  setHost(hostRef: ElementRef) {
     this.hostRef = hostRef;
   }
 
-  attach(hostRef: ElementRef): void {
+  attach(hostRef: ElementRef) {
     this.hostRef = hostRef;
   }
 
-  setCurrentTime(): void {
-    this.date = this.dateService.today();
+  setCurrentTime() {
+    const today = this.dateService.today();
+    this.date.set(today);
     this.onSelectTime.emit({
-      time: this.date,
+      time: today,
       save: true,
     });
   }
 
-  setHour(value: number): void {
-    this.updateValue(this.dateService.setHours(this.date, value));
+  setHour(value: number) {
+    const date = this.date();
+    if (date && !this.isDisabledHour(value)) {
+      this.updateValue(this.clamp(this.dateService.setHours(date, value)));
+    }
   }
 
-  setMinute(value: number): void {
-    this.updateValue(this.dateService.setMinutes(this.date, value));
+  setMinute(value: number) {
+    const date = this.date();
+    if (date && !this.isDisabledMinute(value)) {
+      this.updateValue(this.clamp(this.dateService.setMinutes(date, value)));
+    }
   }
 
-  setSecond(value: number): void {
-    this.updateValue(this.dateService.setSeconds(this.date, value));
+  setSecond(value: number) {
+    const date = this.date();
+    if (date && !this.isDisabledSecond(value)) {
+      this.updateValue(this.dateService.setSeconds(date, value));
+    }
   }
 
-  selectFullTime(value: D): void {
-    this.updateValue(value);
+  selectFullTime(value: D) {
+    if (!this.isDisabledFullTime(value)) {
+      this.updateValue(value);
+    }
   }
 
-  changeDayPeriod(dayPeriodToSet: NbDayPeriod): void {
-    if (this.dateService.getDayPeriod(this.date) === dayPeriodToSet) {
+  changeDayPeriod(dayPeriodToSet: NbDayPeriod) {
+    const date = this.date();
+    if (!date || this.dateService.getDayPeriod(date) === dayPeriodToSet || this.isDisabledDayPeriod(dayPeriodToSet)) {
       return;
     }
 
@@ -247,103 +257,185 @@ export class NbTimePickerComponent<D> implements OnChanges {
     // otherwise add hours because switching to PM from AM.
     const direction = dayPeriodToSet === NbDayPeriod.AM ? -1 : 1;
     const increment = direction * this.dateService.HOURS_IN_DAY_PERIOD;
-    this.updateValue(this.dateService.addHours(this.date, increment));
+    this.updateValue(this.clamp(this.dateService.addHours(date, increment)));
   }
 
-  updateValue(date: D): void {
+  /** Whether no time in an hour can be picked. */
+  isDisabledHour(hour: number): boolean {
+    return this.outside(hour * 3600, hour * 3600 + 3599);
+  }
+
+  /** Whether no time in a minute of the picked hour can be picked. */
+  isDisabledMinute(minute: number): boolean {
+    const date = this.date();
+    const start = (date ? this.dateService.getHours(date) * 3600 : 0) + minute * 60;
+    return this.outside(start, start + 59);
+  }
+
+  /** Whether a second of the picked hour and minute can't be picked. */
+  isDisabledSecond(second: number): boolean {
+    const date = this.date();
+    const start = date ? this.dateService.getHours(date) * 3600 + this.dateService.getMinutes(date) * 60 : 0;
+    return this.outside(start + second, start + second);
+  }
+
+  /** Whether no time before or after midday can be picked. */
+  isDisabledDayPeriod(dayPeriod: NbDayPeriod): boolean {
+    const half = (SECONDS_IN_DAY / 2);
+    return dayPeriod === NbDayPeriod.AM ? this.outside(0, half - 1) : this.outside(half, SECONDS_IN_DAY - 1);
+  }
+
+  /** Whether a time of the single column can't be picked. */
+  isDisabledFullTime(time: D): boolean {
+    const seconds = this.secondsOfDay(time);
+    return this.outside(seconds, seconds);
+  }
+
+  /** Whether a time is before `min`, after `max`, or neither, by its time of day. */
+  compareToLimits(time: D): -1 | 0 | 1 {
+    const seconds = this.secondsOfDay(time);
+    const { min, max } = this.limits();
+    return seconds < min ? -1 : seconds > max ? 1 : 0;
+  }
+
+  /** Whether all of a span of seconds of the day is out of range. */
+  protected outside(from: number, to: number): boolean {
+    const { min, max } = this.limits();
+    return to < min || from > max;
+  }
+
+  /** A time moved into range, e.g. after picking an hour whose earlier minutes are out of it. */
+  protected clamp(time: D): D {
+    const limit = this.compareToLimits(time) < 0 ? this.min() : this.compareToLimits(time) > 0 ? this.max() : undefined;
+    if (!limit) {
+      return time;
+    }
+    let clamped = this.dateService.setHours(time, this.dateService.getHours(limit));
+    clamped = this.dateService.setMinutes(clamped, this.dateService.getMinutes(limit));
+    return this.dateService.setSeconds(clamped, this.withSeconds() ? this.dateService.getSeconds(limit) : 0);
+  }
+
+  protected secondsOfDay(time: D): number {
+    const hours = this.dateService.getHours(time);
+    const minutes = this.dateService.getMinutes(time);
+    return hours * 3600 + minutes * 60 + this.dateService.getSeconds(time);
+  }
+
+  updateValue(date: D) {
     this.onSelectTime.emit({ time: date });
   }
 
-  saveValue(): void {
-    this.onSelectTime.emit({
-      time: this.date,
-      save: true,
-    });
+  saveValue() {
+    const date = this.date();
+    if (date) {
+      this.onSelectTime.emit({
+        time: date,
+        save: true,
+      });
+    }
   }
 
-  trackByTimeValues(index, item: NbTimePartOption): number {
+  trackByTimeValues(index: number, item: NbTimePartOption): number {
     return item.value;
   }
 
-  trackBySingleColumnValue(index, item: D) {
+  trackBySingleColumnValue(index: number, item: D) {
     return this.dateService.valueOf(item);
   }
 
-  trackByDayPeriod(index, item: NbDayPeriod): string {
+  trackByDayPeriod(index: number, item: NbDayPeriod): string {
     return item;
   }
 
-  showSeconds(): boolean {
-    return this.withSeconds && !this.singleColumn;
-  }
-
   isSelectedHour(val: number): boolean {
-    if (this.date) {
-      return this.dateService.getHours(this.date) === val;
+    const date = this.date();
+    if (date) {
+      return this.dateService.getHours(date) === val;
     }
 
     return false;
   }
 
   isSelectedMinute(val: number): boolean {
-    if (this.date) {
-      return this.dateService.getMinutes(this.date) === val;
+    const date = this.date();
+    if (date) {
+      return this.dateService.getMinutes(date) === val;
     }
 
     return false;
   }
 
   isSelectedSecond(val: number): boolean {
-    if (this.date) {
-      return this.dateService.getSeconds(this.date) === val;
+    const date = this.date();
+    if (date) {
+      return this.dateService.getSeconds(date) === val;
     }
 
     return false;
   }
 
   isSelectedDayPeriod(dayPeriod: NbDayPeriod): boolean {
-    if (this.date) {
-      return dayPeriod === this.dateService.getDayPeriod(this.date);
+    const date = this.date();
+    if (date) {
+      return dayPeriod === this.dateService.getDayPeriod(date);
     }
 
     return false;
   }
 
   getFullTimeString(item: D): string {
-    return this.dateService.format(item, this.computedTimeFormat).toUpperCase();
+    return this.dateService.format(item, this.computedTimeFormat()).toUpperCase();
   }
 
   isSelectedFullTimeValue(value: D): boolean {
-    if (this.date) {
-      return this.dateService.isSameHourAndMinute(value, this.date);
+    const date = this.date();
+    if (date) {
+      return this.dateService.isSameHourAndMinute(value, date);
     }
 
     return false;
   }
 
-  protected buildColumnOptions(): void {
-    this.fullTimeOptions = this.singleColumn ? this.calendarTimeModelService.getHoursRange(this.step) : [];
-
-    this.hoursColumnOptions = this.generateHours();
-    this.minutesColumnOptions = this.generateMinutesOrSeconds();
-    this.secondsColumnOptions = this.showSeconds() ? this.generateMinutesOrSeconds() : [];
+  /**
+   * The arrow keys, Home, End, Page Up and Page Down move focus in a column; Enter and Space pick the time there.
+   * @internal
+   */
+  protected onColumnKeydown(event: KeyboardEvent) {
+    if (event.altKey || event.ctrlKey || event.metaKey) {
+      return;
+    }
+    const options = [...(event.currentTarget as HTMLElement).querySelectorAll<HTMLElement>('[role="option"]')];
+    const current = options.findIndex((option) => option.contains(event.target as Node));
+    const last = options.length - 1;
+    const pageSize = 5;
+    const targets: Partial<Record<string, number>> = {
+      ArrowDown: current + 1,
+      ArrowUp: current - 1,
+      Home: 0,
+      End: last,
+      PageDown: current + pageSize,
+      PageUp: current - pageSize,
+    };
+    const target = targets[event.key];
+    if (target === undefined || current < 0) {
+      return;
+    }
+    event.preventDefault();
+    options[Math.max(0, Math.min(last, target))]?.focus();
   }
 
-  /**
-   * @docs-private
-   */
   isFirefox(): boolean {
     return this.platformService.FIREFOX;
   }
 
   protected generateHours(): NbTimePartOption[] {
-    if (!this.twelveHoursFormat) {
+    if (!this.twelveHoursFormat()) {
       return range(24, (v: number) => {
         return { value: v, text: this.calendarTimeModelService.paddToTwoSymbols(v) };
       });
     }
 
-    if (this.isAM) {
+    if (this.isAM()) {
       return range(12, (v: number) => {
         const text = v === 0 ? 12 : v;
         return { value: v, text: this.calendarTimeModelService.paddToTwoSymbols(text) };
@@ -362,44 +454,20 @@ export class NbTimePickerComponent<D> implements OnChanges {
     });
   }
 
-  protected setupTimeFormat(): string {
-    if (!this.timeFormat) {
-      return this.config.format || this.buildTimeFormat();
-    }
-
-    return this.timeFormat;
-  }
-
-  /**
-   * @docs-private
-   */
   buildTimeFormat(): string {
-    if (this.twelveHoursFormat) {
+    if (this.twelveHoursFormat()) {
       return `${
-        this.withSeconds && !this.singleColumn
+        this.withSeconds() && !this.singleColumn()
           ? this.dateService.getTwelveHoursFormatWithSeconds()
           : this.dateService.getTwelveHoursFormat()
       }`;
     } else {
       return `${
-        this.withSeconds && !this.singleColumn
+        this.withSeconds() && !this.singleColumn()
           ? this.dateService.getTwentyFourHoursFormatWithSeconds()
           : this.dateService.getTwentyFourHoursFormat()
       }`;
     }
   }
 
-  protected initFromConfig(config: NbTimePickerConfig) {
-    if (config) {
-      this.twelveHoursFormat = config.twelveHoursFormat;
-    } else {
-      this.twelveHoursFormat = this.dateService.getLocaleTimeFormat().includes('h');
-    }
-
-    const localeConfig = { ...NB_DEFAULT_TIMEPICKER_LOCALIZATION_CONFIG, ...(config?.localization ?? {}) };
-    this.hoursText = localeConfig.hoursText;
-    this.minutesText = localeConfig.minutesText;
-    this.secondsText = localeConfig.secondsText;
-    this.ampmText = localeConfig.ampmText;
-  }
 }

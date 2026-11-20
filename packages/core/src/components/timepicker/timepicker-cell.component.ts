@@ -1,82 +1,74 @@
 import {
-  AfterViewInit,
-  ChangeDetectionStrategy,
+  afterRenderEffect,
   Component,
   ElementRef,
-  EventEmitter,
-  HostListener,
-  Input,
+  inject,
+  input,
   NgZone,
-  OnDestroy,
-  Output,
-  ViewChild,
+  output,
+  untracked,
+  viewChild,
 } from '@angular/core';
-import { filter, take, takeUntil } from 'rxjs/operators';
-import { merge, Subject } from 'rxjs';
 import { NbSelectedTimeModel } from './model';
-import { NbPlatform } from '../cdk/platform/platform-service';
+import { NbPlatform } from '@liquid-js/lyr-core/base';
+import { ɵconvertToBoolProperty as convertToBoolProperty, NbBooleanInput } from '@liquid-js/lyr-core/base';
 
 @Component({
-    selector: 'nb-timepicker-cell',
-    template: `
-    <div #valueContainer>{{ value }}</div>
-  `,
-    styleUrls: ['./timepicker-cell.component.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  selector: 'nb-timepicker-cell',
+  template: `<div #valueContainer>{{ value() }}</div>`,
+  styleUrls: ['./timepicker-cell.component.scss'],
+  // An option of its column's listbox; the keyboard reaches its column's selected one, or else its first, with Tab.
+  host: {
+    role: 'option',
+    '[attr.aria-selected]': 'selected()',
+    '[attr.aria-disabled]': 'disabled() || null',
+    '[attr.tabindex]': 'tabbable() ? 0 : -1',
+    '(click)': 'onClick()',
+    '(keydown.enter)': 'pick($event)',
+    '(keydown.space)': 'pick($event)',
+  },
 })
-export class NbTimePickerCellComponent implements AfterViewInit, OnDestroy {
-  protected selectedChange$ = new Subject<boolean>();
-  protected unselected$ = this.selectedChange$.pipe(filter((selected) => !selected));
-  protected destroy$ = new Subject<void>();
-  _selected: boolean;
+export class NbTimePickerCellComponent {
+  protected readonly ngZone = inject(NgZone);
+  protected readonly platformService = inject(NbPlatform);
 
-  @Input() set selected(selected: boolean) {
-    if (selected) {
-      this._selected = selected;
-      this.scrollToElement();
-    }
-    this.selectedChange$.next(selected);
-  };
-  get selected(): boolean {
-    return this._selected;
+  readonly selected = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
+  /** Out of the timepicker's range: shown, but not picked. */
+  readonly disabled = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
+  readonly value = input.required<string>();
+  /** Whether Tab reaches it in its column. */
+  readonly tabbable = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
+  readonly select = output<NbSelectedTimeModel>();
+
+  readonly valueContainerElement = viewChild<ElementRef<HTMLElement>>('valueContainer');
+
+  constructor() {
+    // The timepicker renders in an overlay that may not be placed yet when the cell renders, so a selected cell
+    // scrolls into view after the render.
+    afterRenderEffect(() => {
+      if (this.selected()) {
+        untracked(() => this.scrollToElement());
+      }
+    });
   }
-  @Input() value: string;
-  @Output() select: EventEmitter<NbSelectedTimeModel> = new EventEmitter();
 
-  @ViewChild('valueContainer') valueContainerElement: ElementRef;
-
-  constructor(protected ngZone: NgZone,
-              protected platformService: NbPlatform) {
+  /** Enter and Space pick it, as a click does. */
+  protected pick(event: Event) {
+    event.preventDefault();
+    this.onClick();
   }
 
-  @HostListener('click')
   onClick() {
-    this.select.emit({ value: this.value });
-  }
-
-  ngAfterViewInit(): void {
-    if (this.selected) {
-      // Since we render timepicker in the overlay, at the moment this hook called,
-      // timepicker could be not fully rendered and placed. Because of it, we're waiting for Angular
-      // to finish change detection run and only then scroll to the selected cell.
-      this.ngZone.onStable
-      .pipe(
-        take(1),
-        takeUntil(merge(this.unselected$, this.destroy$)))
-      .subscribe(() => this.scrollToElement());
+    if (this.disabled()) {
+      return;
     }
+    this.select.emit({ value: this.value() });
   }
 
   protected scrollToElement() {
-    if (this.valueContainerElement && this.platformService.isBrowser) {
-      this.ngZone.runOutsideAngular(() =>
-        this.valueContainerElement.nativeElement.scrollIntoView({block: 'center'}));
+    const element = this.valueContainerElement()?.nativeElement;
+    if (element && this.platformService.isBrowser) {
+      this.ngZone.runOutsideAngular(() => element.scrollIntoView({ block: 'center' }));
     }
-  }
-
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
   }
 }

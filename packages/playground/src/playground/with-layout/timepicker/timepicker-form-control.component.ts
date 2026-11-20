@@ -1,28 +1,26 @@
-/*
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { FormControl } from '@angular/forms';
+import { Component } from '@angular/core';
+import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import {
+  NbCardComponent,
+  NbCardBodyComponent,
+  NbInputDirective,
+  NbTimePickerDirective,
+  NbTimePickerComponent,
+} from '@liquid-js/lyr-core';
 
 @Component({
-    selector: 'nb-timepicker-form-control',
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    template: `
-    <nb-card size="large">
-      <nb-card-body>
-        <input nbInput
-               type="text"
-               [formControl]="formControl"
-               [nbTimepicker]="timepicker"/>
-        <nb-timepicker #timepicker></nb-timepicker>
-      </nb-card-body>
-    </nb-card>
-  `,
-    styleUrls: ['./timepicker-example.scss'],
-    standalone: false
+  selector: 'nb-timepicker-form-control',
+  templateUrl: './timepicker-form-control.component.html',
+  styleUrls: ['./timepicker-example.scss'],
+  imports: [
+    NbCardComponent,
+    NbCardBodyComponent,
+    NbInputDirective,
+    FormsModule,
+    NbTimePickerDirective,
+    ReactiveFormsModule,
+    NbTimePickerComponent,
+  ],
 })
 export class TimepickerFormControlComponent {
   formControl = new FormControl(new Date());

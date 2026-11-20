@@ -1,26 +1,23 @@
-/*
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { Component } from '@angular/core';
+import {
+  NbCardComponent,
+  NbCardBodyComponent,
+  NbInputDirective,
+  NbTimePickerDirective,
+  NbTimePickerComponent,
+} from '@liquid-js/lyr-core';
 
 @Component({
-    selector: 'nb-timepicker-showcase',
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    template: `
-    <nb-card size="large">
-      <nb-card-body>
-        <input nbInput
-               type="text"
-               [nbTimepicker]="timepicker"/>
-        <nb-timepicker #timepicker></nb-timepicker>
-      </nb-card-body>
-    </nb-card>
-  `,
-    styleUrls: ['./timepicker-example.scss'],
-    standalone: false
+  selector: 'nb-timepicker-showcase',
+  templateUrl: './timepicker-showcase.component.html',
+  styleUrls: ['./timepicker-example.scss'],
+  imports: [
+    NbCardComponent,
+    NbCardBodyComponent,
+    NbInputDirective,
+    NbTimePickerDirective,
+    NbTimePickerComponent,
+  ],
 })
 export class TimepickerShowcaseComponent {
 }

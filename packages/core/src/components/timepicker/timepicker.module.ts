@@ -1,46 +1,39 @@
-/*
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
+import { ModuleWithProviders, NgModule, EnvironmentProviders, makeEnvironmentProviders } from '@angular/core';
 
-import { ModuleWithProviders, NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
-
-import { NbOverlayModule } from '../cdk/overlay/overlay.module';
-import { NbListModule } from '../list/list.module';
-import { NbCardModule } from '../card/card.module';
-import { NbCalendarKitModule } from '../calendar-kit/calendar-kit.module';
+import { NbOverlayModule } from '@liquid-js/lyr-core/cdk';
+import { NbListModule } from '@liquid-js/lyr-core/list';
+import { NbCardModule } from '@liquid-js/lyr-core/card';
+import { NbCalendarKitModule } from '@liquid-js/lyr-core/calendar-kit';
 import { NbTimePickerDirective } from './timepicker.directive';
 import { NbTimePickerComponent } from './timepicker.component';
 import { NbTimePickerCellComponent } from './timepicker-cell.component';
-import { NbCalendarTimeModelService } from '../calendar-kit/services/calendar-time-model.service';
 import { NB_TIME_PICKER_CONFIG, NbTimePickerConfig } from './model';
+
+/**
+ * Provides the timepicker config, in place of `NbTimepickerModule.forRoot()` or `forChild()`.
+ */
+export function provideNbTimepicker(config: NbTimePickerConfig = {}): EnvironmentProviders {
+  return makeEnvironmentProviders([{ provide: NB_TIME_PICKER_CONFIG, useValue: config }]);
+}
 
 @NgModule({
   imports: [
-    CommonModule,
     NbOverlayModule,
     NbListModule,
     NbCardModule,
     NbCalendarKitModule,
+    NbTimePickerComponent,
+    NbTimePickerCellComponent,
+    NbTimePickerDirective,
   ],
-  providers: [NbCalendarTimeModelService],
   exports: [NbTimePickerComponent, NbTimePickerCellComponent, NbTimePickerDirective],
-  declarations: [NbTimePickerComponent, NbTimePickerCellComponent, NbTimePickerDirective],
 })
 export class NbTimepickerModule {
   static forRoot(config: NbTimePickerConfig = {}): ModuleWithProviders<NbTimepickerModule> {
-    return {
-      ngModule: NbTimepickerModule,
-      providers: [{provide: NB_TIME_PICKER_CONFIG, useValue: config}],
-    };
+    return { ngModule: NbTimepickerModule, providers: [provideNbTimepicker(config)] };
   }
 
   static forChild(config: NbTimePickerConfig = {}): ModuleWithProviders<NbTimepickerModule> {
-    return {
-      ngModule: NbTimepickerModule,
-      providers: [{provide: NB_TIME_PICKER_CONFIG, useValue: config}],
-    };
+    return { ngModule: NbTimepickerModule, providers: [provideNbTimepicker(config)] };
   }
 }
