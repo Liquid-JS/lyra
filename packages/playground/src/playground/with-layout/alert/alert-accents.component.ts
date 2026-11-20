@@ -1,17 +1,11 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { Component } from '@angular/core';
+import { NbCardComponent, NbCardBodyComponent, NbAlertComponent } from '@liquid-js/lyr-core';
 
 @Component({
-    selector: 'nb-card-accents',
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    templateUrl: './alert-accents.component.html',
-    styleUrls: ['./alert-example.component.scss'],
-    standalone: false
+  selector: 'nb-alert-accents',
+  templateUrl: './alert-accents.component.html',
+  styleUrls: ['./alert-example.component.scss'],
+  imports: [NbCardComponent, NbCardBodyComponent, NbAlertComponent],
 })
 export class AlertAccentsComponent {
 }

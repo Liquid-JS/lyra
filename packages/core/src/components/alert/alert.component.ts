@@ -1,19 +1,19 @@
+import { Component, computed, input, linkedSignal, output } from '@angular/core';
+import { NbButtonComponent } from '@liquid-js/lyr-core/button';
+import { NbIconComponent } from '@liquid-js/lyr-core/icon';
+
+import { injectNbDefaults } from '@liquid-js/lyr-core/base';
+import { NbComponentSize } from '@liquid-js/lyr-core/base';
+import { NbComponentOrCustomStatus } from '@liquid-js/lyr-core/base';
+import { ɵconvertToBoolProperty as convertToBoolProperty, NbBooleanInput } from '@liquid-js/lyr-core/base';
+import { injectNbTexts, NbLocalize } from '@liquid-js/lyr-core/base';
+import type { NbAlertAppearance } from '@liquid-js/lyr-core/base';
+
+/** @internal */
+declare const $localize: NbLocalize;
+
 /**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-import { Component, Input, HostBinding, Output, EventEmitter } from '@angular/core';
-
-import { NbStatusService } from '../../services/status.service';
-import { NbComponentSize } from '../component-size';
-import { NbComponentOrCustomStatus, NbComponentStatus } from '../component-status';
-import { convertToBoolProperty, NbBooleanInput } from '../helpers';
-
-
-/**
- * Alert component.
+ * A message that stands out from the page, coloured by its status.
  *
  * Basic alert example:
  * @stacked-example(Showcase, alert/alert-showcase.component)
@@ -26,6 +26,16 @@ import { convertToBoolProperty, NbBooleanInput } from '../helpers';
  * </nb-alert>
  * ```
  * ### Installation
+ *
+ * Import `NbAlertComponent` into your standalone component:
+ * ```ts
+ * @Component({
+ *   imports: [NbAlertComponent],
+ * })
+ * export class PageComponent { }
+ * ```
+ *
+ * With NgModules:
  *
  * Import `NbAlertModule` to your feature module.
  * ```ts
@@ -49,11 +59,11 @@ import { convertToBoolProperty, NbBooleanInput } from '../helpers';
  * Colored alerts could be simply configured by providing a `status` property:
  * @stacked-example(Alert status, alert/alert-colors.component)
  *
- * It is also possible to assign an `accent` property for a slight alert highlight
- * as well as combine it with `status`:
+ * The `appearance` shows the status in other ways: `accent` with a coloured top border, for a slight highlight,
+ * set with `appearance="accent"` or the `accent` attribute:
  * @stacked-example(Alert accent, alert/alert-accents.component)
  *
- * And `outline` property:
+ * And `outline`, tinted with a border in the status' colour:
  * @stacked-example(Outline Alert, alert/alert-outline.component)
  *
  * @additional-example(Multiple Sizes, alert/alert-sizes.component)
@@ -75,7 +85,6 @@ import { convertToBoolProperty, NbBooleanInput } from '../helpers';
  * alert-tiny-height:
  * alert-small-height:
  * alert-medium-height:
- * alert-medium-padding:
  * alert-large-height:
  * alert-giant-height:
  * alert-basic-background-color:
@@ -107,212 +116,116 @@ import { convertToBoolProperty, NbBooleanInput } from '../helpers';
  * alert-outline-warning-color:
  * alert-outline-danger-color:
  * alert-outline-control-color:
+ * alert-outline-basic-background-color:
+ * alert-outline-primary-background-color:
+ * alert-outline-info-background-color:
+ * alert-outline-success-background-color:
+ * alert-outline-warning-background-color:
+ * alert-outline-danger-background-color:
+ * alert-outline-control-background-color:
+ * alert-outline-basic-text-color:
+ * alert-outline-primary-text-color:
+ * alert-outline-info-text-color:
+ * alert-outline-success-text-color:
+ * alert-outline-warning-text-color:
+ * alert-outline-danger-text-color:
+ * alert-outline-control-text-color:
  */
 @Component({
-    selector: 'nb-alert',
-    styleUrls: ['./alert.component.scss'],
-    template: `
-    <button *ngIf="closable" type="button" class="close" aria-label="Close" (click)="onClose()">
-      <span aria-hidden="true">&times;</span>
-    </button>
-    <ng-content></ng-content>
-  `,
-    standalone: false
+  selector: 'nb-alert',
+  styleUrls: ['./alert.component.scss'],
+  templateUrl: './alert.component.html',
+  imports: [NbButtonComponent, NbIconComponent],
+  host: {
+    '[class]': 'hostClasses()',
+    '[class.closable]': 'closable()',
+  },
 })
 export class NbAlertComponent {
+  // The app's defaults for this type, which the inputs below start from.
+  protected readonly nbDefaults = injectNbDefaults('alert');
+
+  protected readonly texts = injectNbTexts('alert', () => ({
+    close: $localize`:@@nb.alert.close:Close`,
+  }));
+
+  // The close button shows on the alert: light on a filled colour, as text on it is, and basic otherwise.
+  protected readonly closeStatus = computed<NbComponentOrCustomStatus>(() => {
+    const status = this.status();
+    return this.appearance() === 'filled' && status !== 'basic' && status !== 'control' ? 'control' : 'basic';
+  });
 
   /**
-   * Alert size, available sizes:
-   * `tiny`, `small`, `medium`, `large`, `giant`
-   * Unset by default.
+   * A fixed height: `tiny`, `small`, `medium`, `large` or `giant`. Unset by default, so the alert is as tall as its
+   * content.
    */
-  @Input() size: '' | NbComponentSize = '';
+  readonly size = input<'' | NbComponentSize>('');
 
   /**
-   * Alert status (adds specific styles):
-   * `basic` (default), `primary`, `success`, `info`, `warning`, `danger`, `control`.
+   * Alert status: `basic` (default), `primary`, `success`, `info`, `warning`, `danger`, `control` or a custom one.
    */
-  @Input() status: NbComponentOrCustomStatus = 'basic';
+  readonly status = input<NbComponentOrCustomStatus>('basic');
 
   /**
-   * Alert accent (color of the top border):
-   * `basic`, `primary`, `success`, `info`, `warning`, `danger`, `control`.
-   * Unset by default.
+   * How the alert shows its status: `filled`, `outline` or `accent`. Unset, it follows the app's default, or
+   * `filled`.
    */
-  @Input() accent: '' | NbComponentStatus = '';
+  readonly appearanceInput = input<NbAlertAppearance | undefined>(undefined, { alias: 'appearance' });
+  /** The appearance in use: the input's, the app's default, or 'filled'. */
+  readonly appearance = linkedSignal<NbAlertAppearance>(() => this.appearanceInput() ?? this.nbDefaults().appearance ?? 'filled');
 
   /**
-   * Alert outline (color of the border):
-   * `basic`, `primary`, `success`, `info`, `warning`, `danger`, `control`.
-   * Unset by default.
+   * Sets the `filled` appearance, over `appearance`.
    */
-  @Input() outline: '' | NbComponentStatus = '';
+  readonly filled = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
 
   /**
-   * Shows `close` icon
+   * Sets the `outline` appearance, tinted with a border in the status' colour, over `appearance` and the other
+   * boolean appearances.
    */
-  @Input()
-  @HostBinding('class.closable')
-  get closable(): boolean {
-    return this._closable;
-  }
-  set closable(value: boolean) {
-    this._closable = convertToBoolProperty(value);
-  }
-  protected _closable: boolean = false;
-  static ngAcceptInputType_closable: NbBooleanInput;
+  readonly outline = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
 
   /**
-   * Emits when chip is removed
-   * @type EventEmitter<any>
+   * Sets the `accent` appearance, a top border in the status' colour, over `appearance` and `filled`.
    */
-  @Output() close = new EventEmitter();
-
-  constructor(protected statusService: NbStatusService) {
-  }
+  readonly accent = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
 
   /**
-   * Emits the removed chip event
+   * Shows a close button, which emits `close`.
+   */
+  readonly closable = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty });
+
+  /**
+   * Emits when the close button is clicked. The alert stays until the app removes it.
+   */
+  readonly close = output();
+
+  /**
+   * The close button's click handler; emits `close`.
    */
   onClose() {
     this.close.emit();
   }
 
-  @HostBinding('class.size-tiny')
-  get tiny() {
-    return this.size === 'tiny';
-  }
-
-  @HostBinding('class.size-small')
-  get small() {
-    return this.size === 'small';
-  }
-
-  @HostBinding('class.size-medium')
-  get medium() {
-    return this.size === 'medium';
-  }
-
-  @HostBinding('class.size-large')
-  get large() {
-    return this.size === 'large';
-  }
-
-  @HostBinding('class.size-giant')
-  get giant() {
-    return this.size === 'giant';
-  }
-
-  @HostBinding('class.status-primary')
-  get primary() {
-    return this.status === 'primary';
-  }
-
-  @HostBinding('class.status-success')
-  get success() {
-    return this.status === 'success';
-  }
-
-  @HostBinding('class.status-info')
-  get info() {
-    return this.status === 'info';
-  }
-
-  @HostBinding('class.status-warning')
-  get warning() {
-    return this.status === 'warning';
-  }
-
-  @HostBinding('class.status-danger')
-  get danger() {
-    return this.status === 'danger';
-  }
-
-  @HostBinding('class.status-basic')
-  get basic() {
-    return this.status === 'basic';
-  }
-
-  @HostBinding('class.status-control')
-  get control() {
-    return this.status === 'control';
-  }
-
-  @HostBinding('class.accent-primary')
-  get primaryAccent() {
-    return this.accent === 'primary';
-  }
-
-  @HostBinding('class.accent-success')
-  get successAccent() {
-    return this.accent === 'success';
-  }
-
-  @HostBinding('class.accent-info')
-  get infoAccent() {
-    return this.accent === 'info';
-  }
-
-  @HostBinding('class.accent-warning')
-  get warningAccent() {
-    return this.accent === 'warning';
-  }
-
-  @HostBinding('class.accent-danger')
-  get dangerAccent() {
-    return this.accent === 'danger';
-  }
-
-  @HostBinding('class.accent-basic')
-  get basicAccent() {
-    return this.accent === 'basic';
-  }
-
-  @HostBinding('class.accent-control')
-  get controlAccent() {
-    return this.accent === 'control';
-  }
-
-  @HostBinding('class.outline-primary')
-  get primaryOutline() {
-    return this.outline === 'primary';
-  }
-
-  @HostBinding('class.outline-success')
-  get successOutline() {
-    return this.outline === 'success';
-  }
-
-  @HostBinding('class.outline-info')
-  get infoOutline() {
-    return this.outline === 'info';
-  }
-
-  @HostBinding('class.outline-warning')
-  get warningOutline() {
-    return this.outline === 'warning';
-  }
-
-  @HostBinding('class.outline-danger')
-  get dangerOutline() {
-    return this.outline === 'danger';
-  }
-
-  @HostBinding('class.outline-basic')
-  get basicOutline() {
-    return this.outline === 'basic';
-  }
-
-  @HostBinding('class.outline-control')
-  get controlOutline() {
-    return this.outline === 'control';
-  }
-
-  @HostBinding('class')
-  get additionalClasses(): string[] {
-    if (this.statusService.isCustomStatus(this.status)) {
-      return [this.statusService.getStatusClass(this.status)];
+  /** The appearance, from the boolean inputs first: outline, then accent, then filled. */
+  protected readonly resolvedAppearance = computed<NbAlertAppearance>(() => {
+    if (this.outline()) {
+      return 'outline';
     }
-    return [];
-  }
+    if (this.accent()) {
+      return 'accent';
+    }
+    if (this.filled()) {
+      return 'filled';
+    }
+    return this.appearance();
+  });
+
+  protected readonly hostClasses = computed(() =>
+    [
+      this.size() && `size-${this.size()}`,
+      this.status() && `status-${this.status()}`,
+      `appearance-${this.resolvedAppearance()}`,
+    ].filter(Boolean),
+  );
 }

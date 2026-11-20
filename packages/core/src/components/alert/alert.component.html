@@ -1,0 +1,15 @@
+@if (closable()) {
+<!-- Chrome, as a window's close button: ghost, light on a filled colour. -->
+<button type="button"
+  nbButton
+  ghost
+  size="small"
+  class="close"
+  [status]="closeStatus()"
+  [attr.aria-label]="texts().close"
+  (click)="onClose()">
+  <nb-icon icon="close-outline"
+    pack="essentials" />
+</button>
+}
+<ng-content />

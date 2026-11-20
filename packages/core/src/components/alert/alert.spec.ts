@@ -1,60 +1,59 @@
-/**
- * @license
- * Copyright Akveo. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { NbAlertComponent, NbAlertModule, NbThemeModule } from '@nebular/theme';
+import { NbAlertComponent, NbAlertModule, NbThemeModule } from '@liquid-js/lyr-core';
 
 describe('Component: NbAlert', () => {
 
-  let alert: NbAlertComponent;
   let fixture: ComponentFixture<NbAlertComponent>;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [ NbThemeModule.forRoot(), NbAlertModule ],
+      imports: [NbThemeModule.forRoot(), NbAlertModule],
     });
 
     fixture = TestBed.createComponent(NbAlertComponent);
-    alert = fixture.componentInstance;
   });
 
   it('should set class danger', () => {
-    alert.status = 'danger';
+    fixture.componentRef.setInput('status', 'danger');
     fixture.detectChanges();
     expect(
       fixture
         .debugElement.nativeElement.classList.contains('status-danger'))
-      .toBeTruthy()
+      .toBeTruthy();
   });
 
-  it('should set outline class', () => {
-    alert.outline = 'success';
+  it('should be filled by default', () => {
     fixture.detectChanges();
-    expect(
-      fixture
-        .debugElement.nativeElement.classList.contains('outline-success'))
-      .toBeTruthy()
+    expect(fixture.nativeElement.classList).toContain('appearance-filled');
   });
 
-  it('should set shape class', () => {
-    alert.accent = 'warning';
+  it('should set the appearance', () => {
+    fixture.componentRef.setInput('status', 'success');
+    fixture.componentRef.setInput('appearance', 'outline');
     fixture.detectChanges();
-    expect(
-      fixture
-        .debugElement.nativeElement.classList.contains('accent-warning'))
-      .toBeTruthy()
+    expect(fixture.nativeElement.classList).toContain('status-success');
+    expect(fixture.nativeElement.classList).toContain('appearance-outline');
+  });
+
+  it('should set the appearance with the boolean inputs first', () => {
+    fixture.componentRef.setInput('appearance', 'outline');
+    fixture.componentRef.setInput('accent', true);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.classList).toContain('appearance-accent');
+    expect(fixture.nativeElement.classList).not.toContain('appearance-outline');
+
+    fixture.componentRef.setInput('outline', true);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.classList).toContain('appearance-outline');
   });
 
   it('should set size class', () => {
-    alert.size = 'small';
+    fixture.componentRef.setInput('size', 'small');
     fixture.detectChanges();
     expect(
       fixture
         .debugElement.nativeElement.classList.contains('size-small'))
-      .toBeTruthy()
+      .toBeTruthy();
   });
 });
