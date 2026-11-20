@@ -1,0 +1,38 @@
+<nb-card>
+  <nb-card-body>
+    <form [formGroup]="form"
+      (ngSubmit)="save()">
+      <div class="field">
+        <label class="label"
+          id="color-brand-label">Brand color</label>
+        <nb-color-picker formControlName="brand"
+          aria-labelledby="color-brand-label"
+          outputFormat="hex"
+          alphaChannel="disabled"
+          nbValidation
+          #brand="nbValidation" />
+        <nb-validation-errors [for]="brand" />
+      </div>
+
+      <div class="field">
+        <label class="label"
+          id="color-accent-label">Accent color (optional)</label>
+        <nb-color-picker formControlName="accent"
+          aria-labelledby="color-accent-label"
+          outputFormat="rgba"
+          clearable
+          nbValidation
+          #accent="nbValidation" />
+        <nb-validation-errors [for]="accent" />
+      </div>
+
+      <button nbButton
+        status="primary"
+        type="submit">Save</button>
+    </form>
+
+    @if (saved(); as values) {
+    <p class="paragraph saved">Saved: <code>{{ values | json }}</code></p>
+    }
+  </nb-card-body>
+</nb-card>

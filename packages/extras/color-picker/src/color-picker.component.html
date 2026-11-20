@@ -1,0 +1,61 @@
+<nb-form-field>
+  <span nbPrefix
+    class="swatch"
+    aria-hidden="true">
+    <span [style.--nb-color-picker-swatch]="swatch()"></span>
+  </span>
+  <input #field
+    nbInput
+    autocomplete="off"
+    aria-haspopup="dialog"
+    [attr.aria-expanded]="open()"
+    [attr.aria-controls]="open() ? dialogId : null"
+    [fieldSize]="size()"
+    [status]="resolvedStatus()"
+    [shape]="shape()"
+    [fullWidth]="fullWidth()"
+    [ghost]="ghost()"
+    [placeholder]="placeholder()"
+    [attr.aria-label]="fieldLabelledBy() ? null : (ariaLabel() ?? texts().color)"
+    [attr.aria-labelledby]="fieldLabelledBy()"
+    [attr.aria-required]="validation?.ariaRequired()"
+    [attr.aria-invalid]="validation?.ariaInvalid()"
+    [attr.aria-describedby]="validation?.describedBy()"
+    [attr.disabled]="isDisabled() || null"
+    [readOnly]="readonly()"
+    [value]="text()"
+    (input)="onInput($event)"
+    (keydown)="onFieldKeydown($event)"
+    (blur)="onBlur()" />
+  @if (clearable() && value() && !isDisabled() && !readonly()) {
+  <button nbSuffix
+    nbButton
+    ghost
+    type="button"
+    [size]="size()"
+    [status]="buttonStatus()"
+    [attr.aria-label]="texts().clear"
+    (click)="clear($event)">
+    <nb-icon icon="close-outline"
+      pack="essentials" />
+  </button>
+  }
+</nb-form-field>
+
+<!-- The dialog, shown in the overlay while it's open. -->
+<ng-template #dialog>
+  <div [id]="dialogId"
+    (keydown)="onDialogKeydown($event)"
+    (keyup)="onDialogKeyup($event)">
+    <ng-container nxtColor
+      dialogDisplay="inline"
+      [nxtColor]="value() ?? ''"
+      [outputFormat]="outputFormat()"
+      [alphaChannel]="alphaChannel()"
+      [cmykEnabled]="cmyk()"
+      [presetColors]="presets()"
+      [presetLabel]="!!presets()?.length"
+      (nxtColorChange)="onColorChange($event)"
+      (cmykColorChange)="onCmykChange($event)" />
+  </div>
+</ng-template>
