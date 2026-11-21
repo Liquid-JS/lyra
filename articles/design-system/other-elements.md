@@ -16,10 +16,10 @@ the active theme, also when it [changes at run time](theme/customization/changin
 
 ## Style the elements
 
-The mixins come with the theme system, from your `themes.scss`. Include one in the rule for the element:
+The mixins come with Lyra's theming, which you use by its package name. Include one in the rule for the element:
 
 ```scss
-@use 'themes' as *;
+@use '@liquid-js/lyr-core/styles/theming' as *;
 
 // A third-party date range dialog: its panel, its buttons and its fields.
 .vendor-range-dialog {

@@ -1,4 +1,4 @@
-@use "../../../styles/themes" as *;
+@use "@liquid-js/lyr-core/styles/theming" as *;
 
 nb-layout-header ::ng-deep nav {
     gap: 1.5rem;

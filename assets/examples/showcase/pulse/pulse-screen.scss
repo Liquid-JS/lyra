@@ -1,5 +1,5 @@
 // What Pulse's screens share: a column of cards with room around it, and a few of its own shapes.
-@use "../../../styles/themes" as *;
+@use "@liquid-js/lyr-core/styles/theming" as *;
 
 :host {
     display: flex;

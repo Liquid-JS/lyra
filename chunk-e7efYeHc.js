@@ -1,0 +1,1 @@
+var e=[{path:`mask-showcase.component`,loadComponent:()=>import(`./chunk-ByIlyG2w.js`).then(o=>o.MaskShowcaseComponent)},{path:`mask-validation.component`,loadComponent:()=>import(`./chunk-FBfJMgAb.js`).then(o=>o.MaskValidationComponent)}];export{e as MASK_ROUTES};

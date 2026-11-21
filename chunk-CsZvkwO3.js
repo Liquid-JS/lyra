@@ -1,1 +1,0 @@
-var o=[{path:`theme-select-showcase.component`,loadComponent:()=>import(`./chunk-DpND_kQe.js`).then(e=>e.ThemeSelectShowcaseComponent)}];export{o as THEME_SELECT_ROUTES};

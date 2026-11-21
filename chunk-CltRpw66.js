@@ -1,0 +1,1 @@
+import{n as Lt}from"./chunk-B15_Y9gj.js";import{n as vt,t as qn}from"./chunk-DbQv7PiU.js";import{_s as s,gs as r$1}from"./main-CGKB66PN.js";function r(f){let t=this;t.compiler=a;function a(s$1){return Lt(s$1,s(r$1(r$1({},t.data(`settings`)),f),{extensions:t.data(`toMarkdownExtensions`)||[]}))}}var w=qn().use(vt).use(r).freeze();export{w as t};

@@ -1,4 +1,4 @@
-@use "../../../styles/themes" as *;
+@use "@liquid-js/lyr-core/styles/theming" as *;
 @use "relay-page" as *;
 
 // The site's sections set their own width, so bands reach the window's edges.

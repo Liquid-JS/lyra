@@ -1,4 +1,4 @@
-@use "../../styles/themes" as *;
+@use "@liquid-js/lyr-core/styles/theming" as *;
 
 // Icons aren't mirrored, so point the arrow the way the text reads.
 :host nb-icon {

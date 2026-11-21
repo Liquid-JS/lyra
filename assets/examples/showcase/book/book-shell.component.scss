@@ -1,4 +1,4 @@
-@use "../../../styles/themes" as *;
+@use "@liquid-js/lyr-core/styles/theming" as *;
 
 // The pages set their own width and spacing, so the home page's bands reach the window's edges.
 nb-layout {

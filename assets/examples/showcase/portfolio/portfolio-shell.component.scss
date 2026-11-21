@@ -1,4 +1,4 @@
-@use "../../../styles/themes" as *;
+@use "@liquid-js/lyr-core/styles/theming" as *;
 
 // The pages set their own margins, so a picture can reach the window's edge.
 nb-layout {
