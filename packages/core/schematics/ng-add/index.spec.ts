@@ -12,6 +12,7 @@ import { getWorkspace } from '@schematics/angular/utility/workspace'
 import { Schema as WorkspaceOptions } from '@schematics/angular/workspace/schema'
 import { Schema as ApplicationOptions, Style } from '@schematics/angular/application/schema'
 
+import { lyraVersionRange } from '../util/package.js'
 import { Schema as NgAddOptions } from './schema.js'
 
 const require = createRequire(import.meta.url)
@@ -85,6 +86,17 @@ async function getAppModuleContent(tree: UnitTestTree): Promise<string> {
     return tree.readContent(appModulePath)
 }
 
+describe('lyraVersionRange', () => {
+    it('should take the prereleases of the major line while core is a prerelease', () => {
+        expect(lyraVersionRange('22.0.0-alpha.1')).toBe('^22.0.0-0')
+        expect(lyraVersionRange('23.1.0-rc.0')).toBe('^23.0.0-0')
+    })
+
+    it('should take the major line of a release', () => {
+        expect(lyraVersionRange('22.3.1')).toBe('^22.0.0')
+    })
+})
+
 describe('ng-add', () => {
     let runner: SchematicTestRunner
     let appTree: Tree
@@ -131,9 +143,10 @@ describe('ng-add', () => {
             expect(dependencies['@liquid-js/lyr-core']).toBe(lyraVersion)
         })
 
-        it('should add @liquid-js/lyr-icons in package.json', async () => {
+        it('should add @liquid-js/lyr-icons in package.json, in the major line of the core version', async () => {
             let dependencies = getPackageDependencies(tree)
-            const iconsVersion = require('../../package.json').version
+            // A release only bumps the packages it changes, so the icons may not have core's version.
+            const iconsVersion = lyraVersionRange(require('../../package.json').version)
 
             expect(dependencies['@liquid-js/lyr-icons']).toBeDefined()
             expect(dependencies['@liquid-js/lyr-icons']).toBe(iconsVersion)

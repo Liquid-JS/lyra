@@ -6,7 +6,8 @@ import {
     addDevDependencyToPackageJson,
     getDevDependencyVersionFromPackageJson,
     getLyraPeerDependencyVersion,
-    getLyraVersion
+    getLyraVersion,
+    lyraVersionRange
 } from '../util/package.js'
 import { Schema } from './schema.js'
 // Imported from `util/package` directly, not from `util`: the other utilities use `@angular/cdk/schematics` and
@@ -24,7 +25,7 @@ function installMainPeerDependencies(tree: Tree) {
 
     addDependencyToPackageJson(tree, '@angular/cdk', angularCdkVersion, true)
     addDependencyToPackageJson(tree, '@liquid-js/lyr-core', lyraVersion)
-    addDependencyToPackageJson(tree, '@liquid-js/lyr-icons', lyraVersion)
+    addDependencyToPackageJson(tree, '@liquid-js/lyr-icons', lyraVersionRange(lyraVersion))
 
     addDevDependencyToPackageJson(tree, '@schematics/angular', angularCliVersion)
 }

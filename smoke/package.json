@@ -1,6 +1,6 @@
 {
     "name": "lyra-smoke",
-    "version": "21.0.0",
+    "version": "0.0.0",
     "type": "module",
     "private": true,
     "description": "Installs the built Lyra packages from .lib/ and verifies a consumer app builds, renders and server-side renders with them.",

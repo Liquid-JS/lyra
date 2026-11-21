@@ -79,7 +79,8 @@ for (const [name, values] of Object.entries(themeValues)) {
 }
 console.log(`Wrote ${Object.keys(themeValues).length} themes' values to ${themeValuesDir}`)
 
-const version = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')).version as string
+// Lyra's version is the release's, in lerna.json; packages a release didn't change keep an earlier one.
+const version = JSON.parse(readFileSync(join(root, 'lerna.json'), 'utf8')).version as string
 writeFileSync(join(docsSrc, 'version.ts'), `export const VERSION_NAME = '${version}'\n`)
 writeFileSync(
     join(docsPublic, 'versions.json'),
