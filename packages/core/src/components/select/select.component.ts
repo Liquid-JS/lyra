@@ -901,9 +901,12 @@ implements AfterViewInit, AfterContentChecked, OnDestroy, ControlValueAccessor, 
     readonly isHidden = computed(() => !this.isOpen())
 
     /**
-     * The selected options.
+     * The selected options. Selecting the same options again isn't a change, so writing the value a select already
+     * shows doesn't wake what depends on it.
      */
-    readonly selectionModel = signal<Array<NbOptionComponent<T>>>([])
+    readonly selectionModel = signal<Array<NbOptionComponent<T>>>([], {
+        equal: (a, b) => a.length === b.length && a.every((option, index) => option === b[index])
+    })
 
     /**
      * The selected value, or the values of the selected options in a multiple select.
@@ -1160,21 +1163,25 @@ implements AfterViewInit, AfterContentChecked, OnDestroy, ControlValueAccessor, 
         this.isDisabled.set(isDisabled)
     }
 
+    // Forms write values from wherever the app sets them, e.g. inside an effect, which mustn't come to depend on the
+    // select's own state.
     writeValue(value?: T | T[] | null) {
-        if (!this.alive) {
-            return
-        }
+        untracked(() => {
+            if (!this.alive) {
+                return
+            }
 
-        if (this.canSelectValue()) {
-            this.setSelection(value)
-            // Keep a value whose options aren't all rendered yet (options loaded later), so they're selected once they
-            // appear.
-            this.queued = this.selectionModel().length < this.countValues(value)
-            this.queue = this.queued ? value : undefined
-        } else {
-            this.queued = true
-            this.queue = value
-        }
+            if (this.canSelectValue()) {
+                this.setSelection(value)
+                // Keep a value whose options aren't all rendered yet (options loaded later), so they're selected once
+                // they appear.
+                this.queued = this.selectionModel().length < this.countValues(value)
+                this.queue = this.queued ? value : undefined
+            } else {
+                this.queued = true
+                this.queue = value
+            }
+        })
     }
 
     /**
