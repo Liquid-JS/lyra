@@ -59,9 +59,10 @@ export class NbDialogConfig<D = unknown> {
     viewContainerRef?: ViewContainerRef
 
     /**
-     * Closes the dialog on router navigation, e.g. when the browser's back button is pressed; `true` by default.
+     * Closes the dialog when a navigation leaves its page, e.g. with the browser's back button; `false` by default.
+     * A navigation that only changes the query or fragment, as apps do to keep state in the URL, leaves it open.
      */
-    closeOnNavigation = true
+    closeOnNavigation = false
 
     /**
      * Where the dialog appears: `center` (default), `top`, `bottom`, or a corner such as `bottom-start`;

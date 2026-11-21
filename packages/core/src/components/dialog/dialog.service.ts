@@ -1,5 +1,5 @@
 import { Injector, TemplateRef, Type, inject, Service } from '@angular/core'
-import { NavigationStart, Router } from '@angular/router'
+import { NavigationStart, Router, UrlTree } from '@angular/router'
 import { filter, takeUntil } from 'rxjs/operators'
 
 import { NbComponentPortal, NbOverlayRef, NbScrollStrategy, NbTemplatePortal, NbGlobalPositionStrategy, NbPositionBuilderService, NbEscapeStack, NbOverlayService, setComponentContext, NbGlobalPosition, NbPositionHelper } from '@liquid-js/lyr-core/cdk'
@@ -104,8 +104,9 @@ import { animateDialog } from './dialog-animation'
  * `closeOnEsc` - closes the dialog with Escape. Default is true.
  * @stacked-example(Escape hit, dialog/dialog-esc.component)
  *
- * `closeOnNavigation` - closes the dialog on router navigation, e.g. when the browser's back button is pressed.
- * Default is true.
+ * `closeOnNavigation` - closes the dialog when a navigation leaves its page, e.g. with the browser's back button. A
+ * navigation that only changes the query or fragment, as apps do to keep state in the URL, leaves it open. Default is
+ * false.
  *
  * `hasScroll` - lets the page scroll under the dialog. Default is false: the page can't scroll while a dialog is
  * open. Open the dialogs in a separate window and try to scroll.
@@ -298,10 +299,13 @@ export class NbDialogService {
             overlayRef.backdropClick().subscribe(() => dialogRef.close())
         }
 
-        if (config.closeOnNavigation && this.router) {
-            this.router.events
+        const router = this.router
+        if (config.closeOnNavigation && router) {
+            // The page a URL shows, without the query and fragment that apps change to keep state in the URL.
+            const page = (url: string) => router.serializeUrl(new UrlTree(router.parseUrl(url).root))
+            router.events
                 .pipe(
-                    filter((event) => event instanceof NavigationStart),
+                    filter((event) => event instanceof NavigationStart && page(event.url) !== page(router.url)),
                     takeUntil(dialogRef.onClose)
                 )
                 .subscribe(() => dialogRef.close())

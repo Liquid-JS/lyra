@@ -1,6 +1,7 @@
 import { assert } from 'vitest'
 import { ApplicationRef, Component, computed, input, NgModule, Service, signal } from '@angular/core'
 import { TestBed } from '@angular/core/testing'
+import { provideRouter, Router } from '@angular/router'
 
 import {
     NbOverlayContainerAdapter,
@@ -340,5 +341,63 @@ describe('dialog-service', () => {
 
             expect(style.marginRight).toBe('1rem')
         })
+    })
+})
+
+@Component({ template: '' })
+class NbTestPageComponent {}
+
+describe('dialog-service closeOnNavigation', () => {
+    let dialog: NbDialogService
+    let router: Router
+
+    // A closing dialog fades out before it reports that it has closed.
+    const navigate = async (url: string) => {
+        await router.navigateByUrl(url)
+        await new Promise((resolve) => setTimeout(resolve, 400))
+    }
+
+    // Opens a dialog on the first page and tells whether it has closed.
+    const open = async (closeOnNavigation?: boolean) => {
+        await router.navigateByUrl('/first')
+        let closed = false
+        dialog.open(NbTestDialogComponent, { autoFocus: false, ...closeOnNavigation === undefined ? {} : { closeOnNavigation } })
+            .onClose.subscribe(() => closed = true)
+        return () => closed
+    }
+
+    beforeEach(() => {
+        TestBed.configureTestingModule({
+            imports: [NbTestDialogModule, NbThemeModule.forRoot(), NbDialogModule.forRoot()],
+            providers: [
+                { provide: NbViewportRulerAdapter, useClass: NbViewportRulerMockAdapter },
+                provideRouter([
+                    { path: 'first', component: NbTestPageComponent },
+                    { path: 'second', component: NbTestPageComponent }
+                ])
+            ]
+        })
+        TestBed.inject(NbOverlayContainerAdapter).setContainer(TestBed.inject(NB_DOCUMENT).createElement('div'))
+        dialog = TestBed.inject(NbDialogService)
+        router = TestBed.inject(Router)
+    })
+
+    it('should stay open when a navigation leaves the page, by default', async () => {
+        const closed = await open()
+        await navigate('/second')
+        expect(closed()).toBe(false)
+    })
+
+    it('should close when a navigation leaves the page, with closeOnNavigation', async () => {
+        const closed = await open(true)
+        await navigate('/second')
+        expect(closed()).toBe(true)
+    })
+
+    it('should stay open when a navigation only changes the query or fragment, with closeOnNavigation', async () => {
+        const closed = await open(true)
+        await navigate('/first?config=1')
+        await navigate('/first?config=2#preview')
+        expect(closed()).toBe(false)
     })
 })
