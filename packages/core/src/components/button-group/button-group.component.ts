@@ -18,7 +18,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms'
 import { fromEvent, merge } from 'rxjs'
 import { filter, switchMap } from 'rxjs/operators'
-import { NB_DOCUMENT, injectNbDefaults, NbStatusService, ɵconvertToBoolProperty as convertToBoolProperty, NbBooleanInput, NbComponentSize, NbComponentShape, NbComponentOrCustomStatus, type NbButtonToggleAppearance } from '@liquid-js/lyr-core/base'
+import { NB_DOCUMENT, injectNbDefaults, NbStatusService, ɵconvertToBoolProperty as convertToBoolProperty, NbBooleanInput, NbComponentSize, NbComponentShape, NbComponentOrCustomStatus, type NbButtonToggleAppearance, ɵsameControlValue as sameControlValue } from '@liquid-js/lyr-core/base'
 import { NbButtonProperties } from '../button/base-button'
 import { NbButtonToggleDirective } from './button-toggle.directive'
 
@@ -294,8 +294,15 @@ implements ControlValueAccessor {
         this.onTouched = fn
     }
 
+    // Untracked, as forms write values from wherever the app sets them, e.g. an effect that mustn't come to depend
+    // on the control.
     writeValue(value: NbButtonGroupValue<T, M> | undefined) {
-        this.valueState.set(value ?? null)
+        untracked(() => {
+            const next = value ?? null
+            if (!sameControlValue(this.valueState(), next)) {
+                this.valueState.set(next)
+            }
+        })
     }
 
     setDisabledState(isDisabled: boolean) {

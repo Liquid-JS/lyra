@@ -6,7 +6,8 @@ import {
     inject,
     input,
     linkedSignal,
-    output
+    output,
+    untracked
 } from '@angular/core'
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms'
 
@@ -386,8 +387,10 @@ export class NbCheckboxComponent implements ControlValueAccessor {
         this.onTouched = fn
     }
 
+    // Untracked, as forms write values from wherever the app sets them, e.g. an effect that mustn't come to depend
+    // on the control.
     writeValue(value: boolean | null) {
-        this.isChecked.set(!!value)
+        untracked(() => this.isChecked.set(!!value))
     }
 
     setDisabledState(val: boolean) {

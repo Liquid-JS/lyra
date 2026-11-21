@@ -9,7 +9,8 @@ import {
     input,
     linkedSignal,
     output,
-    PLATFORM_ID
+    PLATFORM_ID,
+    untracked
 } from '@angular/core'
 import { isPlatformBrowser } from '@angular/common'
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
@@ -163,8 +164,10 @@ export class NbRadioGroupComponent<T = unknown> implements ControlValueAccessor 
         this.onTouched = fn
     }
 
+    // Untracked, as forms write values from wherever the app sets them, e.g. an effect that mustn't come to depend
+    // on the control.
     writeValue(value: T | null) {
-        this.valueState.set(value)
+        untracked(() => this.valueState.set(value))
     }
 
     setDisabledState(isDisabled: boolean) {

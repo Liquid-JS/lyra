@@ -577,8 +577,10 @@ export class NbTimePickerDirective<D> implements AfterViewInit, ControlValueAcce
         }
     }
 
+    // Untracked, as forms write values from wherever the app sets them, e.g. an effect that mustn't come to depend
+    // on the control.
     writeValue(value?: D | null) {
-        this.updateValue(value)
+        untracked(() => this.updateValue(value))
     }
 
     registerOnValidatorChange(fn: () => void) {

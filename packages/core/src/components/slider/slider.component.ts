@@ -23,7 +23,7 @@ import {
     Validator
 } from '@angular/forms'
 
-import { NbStatusService, injectNbTexts, NbLocalize, NbComponentOrCustomStatus, injectNbDefaults, NbComponentSize, ɵconvertToBoolProperty as convertToBoolProperty, NbBooleanInput } from '@liquid-js/lyr-core/base'
+import { NbStatusService, injectNbTexts, NbLocalize, NbComponentOrCustomStatus, injectNbDefaults, NbComponentSize, ɵconvertToBoolProperty as convertToBoolProperty, NbBooleanInput, ɵsameControlValue as sameControlValue } from '@liquid-js/lyr-core/base'
 import { NbValidationDirective, injectNbValidationMessage, ɵnbValidationError as nbValidationError } from '@liquid-js/lyr-core/validation'
 import { NbSliderScale, NbSliderTransform } from './slider-scale'
 
@@ -391,8 +391,15 @@ export class NbSliderComponent implements ControlValueAccessor, Validator {
         return this.formatValue()?.(value) ?? this.numberFormat.format(value)
     }
 
+    // Untracked, as forms write values from wherever the app sets them, e.g. an effect that mustn't come to depend
+    // on the control.
     writeValue(value?: NbSliderValue) {
-        this.value.set(value ?? null)
+        untracked(() => {
+            const next = value ?? null
+            if (!sameControlValue(this.value(), next)) {
+                this.value.set(next)
+            }
+        })
     }
 
     registerOnChange(fn: (value: NbSliderValue) => void) {

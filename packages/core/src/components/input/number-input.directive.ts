@@ -92,9 +92,13 @@ export class NbNumberInputDirective implements ControlValueAccessor, Validator {
         })
     }
 
+    // Untracked, as forms write values from wherever the app sets them, e.g. an effect that mustn't come to depend
+    // on the control.
     writeValue(value: unknown) {
-        this.value = typeof value === 'number' && !isNaN(value) ? value : null
-        this.render()
+        untracked(() => {
+            this.value = typeof value === 'number' && !isNaN(value) ? value : null
+            this.render()
+        })
     }
 
     registerOnChange(fn: (value: number | null) => void) {

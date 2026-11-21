@@ -12,18 +12,18 @@ import {
     input,
     linkedSignal,
     model,
+    numberAttribute,
     output,
     signal,
     untracked,
-    viewChildren,
-    numberAttribute
+    viewChildren
 } from '@angular/core'
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms'
 import { outputToObservable, takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop'
 import { EMPTY, fromEvent, merge } from 'rxjs'
 import { filter, map, switchMap } from 'rxjs/operators'
 
-import { injectNbDefaults, NbLayoutDirectionService, NbStatusService, ɵisComposing as isComposing, ɵconvertToBoolProperty as convertToBoolProperty, NbBooleanInput, NbComponentSize, ɵenableTransitionsAfterRender as enableTransitionsAfterRender } from '@liquid-js/lyr-core/base'
+import { injectNbDefaults, NbLayoutDirectionService, NbStatusService, ɵisComposing as isComposing, ɵconvertToBoolProperty as convertToBoolProperty, NbBooleanInput, NbComponentSize, ɵenableTransitionsAfterRender as enableTransitionsAfterRender, ɵsameControlValue as sameControlValue } from '@liquid-js/lyr-core/base'
 import { NbFocusMonitor, ɵNbActiveDescendantKeyManager as NbActiveDescendantKeyManager, ɵNbActiveDescendantKeyManagerFactoryService as NbActiveDescendantKeyManagerFactoryService } from '@liquid-js/lyr-core/cdk'
 import { COMMA, ENTER, SEMICOLON, SPACE, TAB } from '@angular/cdk/keycodes'
 import { NbValidationDirective } from '@liquid-js/lyr-core/validation'
@@ -356,8 +356,15 @@ export class NbTagListComponent implements ControlValueAccessor {
         }
     }
 
+    // Untracked, as forms write values from wherever the app sets them, e.g. an effect that mustn't come to depend
+    // on the control.
     writeValue(value?: string[] | null) {
-        this.value.set(value ?? [])
+        untracked(() => {
+            const next = value ?? []
+            if (!sameControlValue(this.value(), next)) {
+                this.value.set(next)
+            }
+        })
     }
 
     registerOnChange(fn: (value: string[]) => void) {

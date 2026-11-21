@@ -12,7 +12,8 @@ import {
     linkedSignal,
     OnDestroy,
     Renderer2,
-    signal
+    signal,
+    untracked
 } from '@angular/core'
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop'
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms'
@@ -232,10 +233,14 @@ export class NbAutocompleteDirective<T> implements NbAutocompleteRef, OnDestroy,
         }
     }
 
+    // Untracked, as forms write values from wherever the app sets them, e.g. an effect that mustn't come to depend
+    // on the control.
     writeValue(value: T) {
-        this.writtenValue = value
-        this.hasWrittenValue = true
-        this.handleInputValueUpdate(value)
+        untracked(() => {
+            this.writtenValue = value
+            this.hasWrittenValue = true
+            this.handleInputValueUpdate(value)
+        })
     }
 
     registerOnChange(fn: (value?: T | string) => void) {

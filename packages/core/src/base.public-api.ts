@@ -34,7 +34,7 @@ export type { NbBooleanInput } from './components/helpers'
 // Used by other entry points of the package, not part of its API.
 export { type NbCollectionViewer as ɵNbCollectionViewer } from './components/cdk/collections/collection-viewer'
 export { isComposing as ɵisComposing } from './components/cdk/keycodes/keycodes'
-export { type NbClassInput as ɵNbClassInput, type NbNullableInput as ɵNbNullableInput, convertToBoolProperty as ɵconvertToBoolProperty, convertToOptionalBoolProperty as ɵconvertToOptionalBoolProperty } from './components/helpers'
+export { type NbClassInput as ɵNbClassInput, type NbNullableInput as ɵNbNullableInput, convertToBoolProperty as ɵconvertToBoolProperty, convertToOptionalBoolProperty as ɵconvertToOptionalBoolProperty, sameControlValue as ɵsameControlValue } from './components/helpers'
 export { animateExpand as ɵanimateExpand, expandDuration as ɵexpandDuration } from './components/shared/expand-animation'
 export { animatePane as ɵanimatePane } from './components/shared/pane-animation'
 export { focusOnClick as ɵfocusOnClick } from './components/shared/focus'

@@ -14,11 +14,12 @@ import {
     output,
     signal,
     TemplateRef,
+    untracked,
     viewChild
 } from '@angular/core'
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms'
 
-import { injectNbDefaults, NbStatusService, NbComponentShape, NbComponentSize, NbComponentOrCustomStatus, ɵconvertToBoolProperty as convertToBoolProperty, NbBooleanInput, ɵenableTransitionsAfterRender as enableTransitionsAfterRender, injectNbTexts, NbLocalize, nbFormatList } from '@liquid-js/lyr-core/base'
+import { injectNbDefaults, NbStatusService, NbComponentShape, NbComponentSize, NbComponentOrCustomStatus, ɵconvertToBoolProperty as convertToBoolProperty, NbBooleanInput, ɵenableTransitionsAfterRender as enableTransitionsAfterRender, injectNbTexts, NbLocalize, nbFormatList, ɵsameControlValue as sameControlValue } from '@liquid-js/lyr-core/base'
 import { NbIconComponent } from '@liquid-js/lyr-core/icon'
 import { NbValidationDirective } from '@liquid-js/lyr-core/validation'
 
@@ -368,9 +369,16 @@ export class NbFileDropComponent implements ControlValueAccessor {
         }
     }
 
+    // Untracked, as forms write values from wherever the app sets them, e.g. an effect that mustn't come to depend
+    // on the control.
     writeValue(value: unknown) {
-        this.files.set(value == null ? [] : Array.isArray(value) ? [...value] : [value])
-        this.revokeUnused()
+        untracked(() => {
+            const files = value == null ? [] : Array.isArray(value) ? [...value] : [value]
+            if (!sameControlValue(this.files(), files)) {
+                this.files.set(files)
+            }
+            this.revokeUnused()
+        })
     }
 
     registerOnChange(fn: (value: unknown) => void) {

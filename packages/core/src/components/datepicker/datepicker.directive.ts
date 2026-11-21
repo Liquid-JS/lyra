@@ -415,17 +415,21 @@ export class NbDatepickerDirective<D> implements OnChanges, ControlValueAccessor
      * Writes the form's value to the picker and the input, or queues it until the picker is ready. `null` and an
      * Invalid Date clear them.
      */
+    // Untracked, as forms write values from wherever the app sets them, e.g. an effect that mustn't come to depend
+    // on the control.
     writeValue(value?: D | null) {
-    // Forms write null for an empty value. An Invalid Date is truthy, so the date services and the calendar would
-    // take it for a real value.
-        const date = value === null || (value instanceof Date && isNaN(value.getTime())) ? undefined : value
+        untracked(() => {
+            // Forms write null for an empty value. An Invalid Date is truthy, so the date services and the calendar
+            // would take it for a real value.
+            const date = value === null || (value instanceof Date && isNaN(value.getTime())) ? undefined : value
 
-        if (this.isDatepickerReady) {
-            this.writePicker(date)
-            this.writeInput(date)
-        } else {
-            this.queue = date
-        }
+            if (this.isDatepickerReady) {
+                this.writePicker(date)
+                this.writeInput(date)
+            } else {
+                this.queue = date
+            }
+        })
     }
 
     registerOnChange(fn: (value: D | null) => void) {

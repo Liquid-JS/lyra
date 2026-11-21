@@ -20,3 +20,25 @@ export function convertToBoolProperty(val: NbBooleanInput): boolean {
 export function convertToOptionalBoolProperty(val: NbBooleanInput): boolean | undefined {
     return val === undefined ? undefined : convertToBoolProperty(val)
 }
+
+/**
+ * Whether a value written to a control is the one it holds: the same value, or arrays or plain objects, such as a
+ * range, with the same items. Writing it again then changes nothing.
+ */
+export function sameControlValue(a: unknown, b: unknown): boolean {
+    if (Object.is(a, b)) {
+        return true
+    }
+    if (Array.isArray(a) && Array.isArray(b)) {
+        return a.length === b.length && a.every((item, index) => Object.is(item, b[index]))
+    }
+    if (isPlainObject(a) && isPlainObject(b)) {
+        const keys = Object.keys(a)
+        return keys.length === Object.keys(b).length && keys.every((key) => Object.is(a[key], b[key]))
+    }
+    return false
+}
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+    return typeof value === 'object' && value !== null && Object.getPrototypeOf(value) === Object.prototype
+}
