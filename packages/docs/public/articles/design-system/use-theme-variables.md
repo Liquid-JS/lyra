@@ -7,10 +7,12 @@ The `nb-theme` Sass function gives a theme variable as its CSS custom property: 
 
 ## Import Theme
 
-In your `*.component.scss`, use the `themes.scss` created in [Enable Customizable Theme](theme/customization/enable-customizable-theme):
+In your `*.component.scss`, use Lyra's theming by its package name, which works from any folder. The themes your
+`themes.scss` registers in [Enable Customizable Theme](theme/customization/enable-customizable-theme) aren't needed here:
+`nb-theme()` only names the variable, and each theme sets its values.
 
 ```scss
-@use '../../../themes' as *;
+@use '@liquid-js/lyr-core/styles/theming' as *;
 ```
 
 ---
@@ -18,7 +20,7 @@ In your `*.component.scss`, use the `themes.scss` created in [Enable Customizabl
 ## Access Variable
 
 ```scss
-@use '../../../themes' as *;
+@use '@liquid-js/lyr-core/styles/theming' as *;
 
 :host {
   background: nb-theme(background-basic-color-1);
@@ -36,7 +38,7 @@ The styles read [CSS custom properties](theme/customization/css-custom-propertie
 with nothing more to do. `nb-install-component` puts its content in the component's `:host`:
 
 ```scss
-@use '../../../themes' as *;
+@use '@liquid-js/lyr-core/styles/theming' as *;
 
 @include nb-install-component {
   background: nb-theme(background-basic-color-1);

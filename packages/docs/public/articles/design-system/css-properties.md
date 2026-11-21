@@ -25,7 +25,7 @@ are written once, for all of them, and each theme's own values after.
 `nb-theme()` gives a variable's `var()`:
 
 ```scss
-@use '../../../themes' as *;
+@use '@liquid-js/lyr-core/styles/theming' as *;
 
 .summary {
   background-color: nb-theme(background-basic-color-2);
