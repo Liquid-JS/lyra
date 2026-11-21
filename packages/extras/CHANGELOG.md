@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [22.0.0-alpha.1](https://github.com/Liquid-JS/lyra/compare/v22.0.0-alpha.0...v22.0.0-alpha.1) (2026-11-21)
+
+### Bug Fixes
+
+* **extras:** write form values untracked in the phone input, mask, colour picker and markdown editor ([04f53bc](https://github.com/Liquid-JS/lyra/commit/04f53bc78a1a1dfce096c32e97df5aacca28b656))
+
 # 22.0.0-alpha.0 (2026-11-21)
 
 ### Features

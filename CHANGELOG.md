@@ -3,6 +3,15 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [22.0.0-alpha.1](https://github.com/Liquid-JS/lyra/compare/v22.0.0-alpha.0...v22.0.0-alpha.1) (2026-11-21)
+
+### Bug Fixes
+
+* **core:** keep nb-select's writeValue from waking the effect that calls it ([7c0ca7a](https://github.com/Liquid-JS/lyra/commit/7c0ca7aa4020f1aed9f219153fa7c0d51b0e1a08))
+* **core:** render nbNumberInput on the server, whose DOM has no validity ([b7ea80e](https://github.com/Liquid-JS/lyra/commit/b7ea80ede5fe66253223aed0b2df98acd3354422))
+* **core:** write form values untracked and skip values a control already holds ([f1f7839](https://github.com/Liquid-JS/lyra/commit/f1f78390c1c60d9887e0a9df0b892d4e8e0c7158))
+* **extras:** write form values untracked in the phone input, mask, colour picker and markdown editor ([04f53bc](https://github.com/Liquid-JS/lyra/commit/04f53bc78a1a1dfce096c32e97df5aacca28b656))
+
 # 22.0.0-alpha.0 (2026-11-21)
 
 ### Bug Fixes
