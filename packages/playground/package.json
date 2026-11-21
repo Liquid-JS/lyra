@@ -35,7 +35,7 @@
         "@liquid-js/qr-code-styling": "^5.7.0-3",
         "@liquid-js/qrcode-generator": "^1.1.7",
         "@liquid-js/underflow": "^4.0.0-14",
-        "@videojs/hlsjs-video": "10.5.0",
+        "@videojs/hlsjs-video": "^10.6.0",
         "chart.js": "^4.6.1",
         "date-fns": "^4.4.0",
         "dompurify": "^3.4.18",
