@@ -405,7 +405,10 @@ export class NgdExampleComponent implements OnInit, AfterViewInit {
                 }
             })
         const navigations = this.router.events.pipe(filter((event) => event instanceof NavigationEnd))
-        navigations.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => this.page.set(this.getId()))
+        navigations.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
+            this.page.set(this.getId())
+            this.keepNamedTheme()
+        })
         const window = this.window
         merge(navigations, window ? fromEvent(window, 'resize') : observableOf(), observableOf(null))
             .pipe(debounceTime(300), takeUntilDestroyed(this.destroyRef))
@@ -419,6 +422,17 @@ export class NgdExampleComponent implements OnInit, AfterViewInit {
                 }
                 this.replaceControls()
             })
+    }
+
+    // The example's own links drop the link's query, so the page shown puts the theme it names back, and reloading it
+    // shows that theme rather than the one being edited.
+    private keepNamedTheme() {
+        const theme = this.namedTheme()
+        const url = this.router.parseUrl(this.location.path(true))
+        if (theme && url.queryParamMap.get('theme') !== theme) {
+            url.queryParams = { ...url.queryParams, theme }
+            this.location.replaceState(this.router.serializeUrl(url), '', this.location.getState())
+        }
     }
 
     private replaceControls() {
