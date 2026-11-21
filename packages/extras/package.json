@@ -4,7 +4,7 @@
     "bugs": {
         "url": "https://github.com/Liquid-JS/lyra/issues"
     },
-    "version": "22.0.0-alpha.1",
+    "version": "22.0.0-alpha.2",
     "license": "MIT",
     "author": "HitkoDev <development@hitko.si>",
     "type": "module",
