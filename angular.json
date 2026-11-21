@@ -636,7 +636,8 @@
                             "includePaths": [
                                 "node_modules/.lyra-styles"
                             ]
-                        }
+                        },
+                        "serviceWorker": "packages/docs/ngsw-config.json"
                     },
                     "configurations": {
                         "production": {

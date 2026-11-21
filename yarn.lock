@@ -459,6 +459,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@angular/service-worker@npm:^22.3.0":
+  version: 22.3.0
+  resolution: "@angular/service-worker@npm:22.3.0"
+  dependencies:
+    tslib: "npm:^2.3.0"
+  peerDependencies:
+    "@angular/core": 22.3.0
+    rxjs: ^6.5.3 || ^7.4.0
+  bin:
+    ngsw-config: ngsw-config.js
+  checksum: 10/8b55123f8c97fff3305b45f66a3935a1f7022fff951fd039c5680dff8a1d696aecef44318cbe2aa2087a14c85a6387250f3c60286cb3915c26909f2859982a62
+  languageName: node
+  linkType: hard
+
 "@angular/ssr@npm:^22.3.0":
   version: 22.3.0
   resolution: "@angular/ssr@npm:22.3.0"
@@ -5991,6 +6005,7 @@ __metadata:
     "@angular/localize": "npm:^22.3.0"
     "@angular/platform-browser": "npm:^22.3.0"
     "@angular/router": "npm:^22.3.0"
+    "@angular/service-worker": "npm:^22.3.0"
     "@angular/ssr": "npm:^22.3.0"
     "@liquid-js/lyr-auth": "workspace:*"
     "@liquid-js/lyr-core": "workspace:*"
@@ -7964,6 +7979,7 @@ __metadata:
     "@angular/platform-browser": "npm:^22.3.0"
     "@angular/platform-server": "npm:^22.3.0"
     "@angular/router": "npm:^22.3.0"
+    "@angular/service-worker": "npm:^22.3.0"
     "@angular/ssr": "npm:^22.3.0"
     "@commitlint/cli": "npm:^21.2.4"
     "@commitlint/config-conventional": "npm:^21.2.4"

@@ -1,7 +1,8 @@
-import { ApplicationConfig, provideZonelessChangeDetection } from '@angular/core'
+import { ApplicationConfig, isDevMode, provideZonelessChangeDetection } from '@angular/core'
 import { provideClientHydration, REMOVE_STYLES_ON_COMPONENT_DESTROY, withEventReplay } from '@angular/platform-browser'
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http'
 import { provideRouter } from '@angular/router'
+import { provideServiceWorker } from '@angular/service-worker'
 import {
     provideNbDialog,
     provideNbMenu,
@@ -27,6 +28,12 @@ export const appConfig: ApplicationConfig = {
         // A prerendered page carries on in the browser where it left off, and replays what was clicked before it did.
         provideClientHydration(withEventReplay()),
         provideRouter(routes),
+        // Installable and readable offline once a build is published; registered once the app has settled, so it
+        // doesn't compete with the first page's own requests.
+        provideServiceWorker('ngsw-worker.js', {
+            enabled: !isDevMode(),
+            registrationStrategy: 'registerWhenStable:30000'
+        }),
         // The theme editor's saved themes.
         themeEditorState.providers,
         provideNbTheme(),
