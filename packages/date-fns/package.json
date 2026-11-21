@@ -31,7 +31,7 @@
     },
     "peerDependencies": {
         "@angular/core": "^22.0.0",
-        "@liquid-js/lyr-core": "^22.0.0",
+        "@liquid-js/lyr-core": "^22.0.0-alpha.0",
         "date-fns": "^4.4.0",
         "tslib": "^2.9.1"
     },

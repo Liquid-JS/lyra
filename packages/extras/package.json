@@ -42,7 +42,7 @@
         "@angular/core": "^22.0.0",
         "@angular/forms": "^22.0.0",
         "@angular/platform-browser": "^22.0.0",
-        "@liquid-js/lyr-core": "^22.0.0",
+        "@liquid-js/lyr-core": "^22.0.0-alpha.0",
         "@liquid-js/qr-code-styling": "^5.7.0-3",
         "@liquid-js/qrcode-generator": "^1.1.7",
         "@liquid-js/underflow": "^4.0.0-14",
