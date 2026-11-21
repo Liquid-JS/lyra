@@ -90,7 +90,7 @@
         "@liquid-js/lyr-core": "workspace:*",
         "@liquid-js/qr-code-styling": "^5.7.0-3",
         "@liquid-js/qrcode-generator": "^1.1.7",
-        "@liquid-js/underflow": "^4.0.0-14",
+        "@liquid-js/underflow": "^4.0.0",
         "@playwright/test": "^1.65.1",
         "@schematics/angular": "^22.3.0",
         "@stylistic/eslint-plugin": "^6.0.1",
@@ -159,7 +159,7 @@
         "vite": "^8.3.8",
         "vitest": "^5.1.1"
     },
-    "packageManager": "yarn@4.18.1",
+    "packageManager": "yarn@4.19.0",
     "engines": {
         "node": ">=24.0.0"
     },

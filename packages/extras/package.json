@@ -45,7 +45,7 @@
         "@liquid-js/lyr-core": "^22.0.0-alpha.0",
         "@liquid-js/qr-code-styling": "^5.7.0-3",
         "@liquid-js/qrcode-generator": "^1.1.7",
-        "@liquid-js/underflow": "^4.0.0-14",
+        "@liquid-js/underflow": "^4.0.0",
         "@videojs/core": "^10.5.0",
         "@videojs/media": "^10.5.0",
         "@videojs/store": "^10.5.0",

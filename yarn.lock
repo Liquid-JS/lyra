@@ -2510,7 +2510,7 @@ __metadata:
     "@angular/core": ^22.0.0
     "@angular/forms": ^22.0.0
     "@angular/router": ^22.0.0
-    "@liquid-js/lyr-core": ^22.0.0
+    "@liquid-js/lyr-core": ^22.0.0-alpha.0
     rxjs: ^6.5.3 || ^7.4.0
     tslib: ^2.9.1
   languageName: unknown
@@ -2540,7 +2540,7 @@ __metadata:
   resolution: "@liquid-js/lyr-date-fns@workspace:packages/date-fns"
   peerDependencies:
     "@angular/core": ^22.0.0
-    "@liquid-js/lyr-core": ^22.0.0
+    "@liquid-js/lyr-core": ^22.0.0-alpha.0
     date-fns: ^4.4.0
     tslib: ^2.9.1
   languageName: unknown
@@ -2554,10 +2554,10 @@ __metadata:
     "@angular/core": ^22.0.0
     "@angular/forms": ^22.0.0
     "@angular/platform-browser": ^22.0.0
-    "@liquid-js/lyr-core": ^22.0.0
+    "@liquid-js/lyr-core": ^22.0.0-alpha.0
     "@liquid-js/qr-code-styling": ^5.7.0-3
     "@liquid-js/qrcode-generator": ^1.1.7
-    "@liquid-js/underflow": ^4.0.0-14
+    "@liquid-js/underflow": ^4.0.0
     "@videojs/core": ^10.5.0
     "@videojs/media": ^10.5.0
     "@videojs/store": ^10.5.0
@@ -2625,7 +2625,7 @@ __metadata:
     "@angular/core": ^22.0.0
     "@angular/fire": ^22.0.0-rc.1
     "@angular/router": ^22.0.0
-    "@liquid-js/lyr-auth": ^22.0.0
+    "@liquid-js/lyr-auth": ^22.0.0-alpha.0
     firebase: ^13.4.0
     rxjs: ^6.5.3 || ^7.4.0
     tslib: ^2.9.1
@@ -2638,7 +2638,7 @@ __metadata:
   peerDependencies:
     "@angular/common": ^22.0.0
     "@angular/core": ^22.0.0
-    "@liquid-js/lyr-core": ^22.0.0
+    "@liquid-js/lyr-core": ^22.0.0-alpha.0
     tslib: ^2.9.1
   languageName: unknown
   linkType: soft
@@ -2649,7 +2649,7 @@ __metadata:
   peerDependencies:
     "@angular/common": ^22.0.0
     "@angular/core": ^22.0.0
-    "@liquid-js/lyr-core": ^22.0.0
+    "@liquid-js/lyr-core": ^22.0.0-alpha.0
     moment: ^2.22.2
     tslib: ^2.9.1
   languageName: unknown
@@ -2701,9 +2701,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@liquid-js/underflow@npm:^4.0.0-14":
-  version: 4.0.0-14
-  resolution: "@liquid-js/underflow@npm:4.0.0-14"
+"@liquid-js/underflow@npm:^4.0.0":
+  version: 4.0.0
+  resolution: "@liquid-js/underflow@npm:4.0.0"
   dependencies:
     entities: "npm:^9.0.0"
   peerDependencies:
@@ -2720,7 +2720,7 @@ __metadata:
   peerDependenciesMeta:
     highlight.js:
       optional: true
-  checksum: 10/9a527b6fffa5c65b80a2acaefee77ec116ab6881309054b6861ba1917e441b158ff024ee48cc21cca52914a53ddff0dca542aefb5a2d4e51b5508d1ec46d2911
+  checksum: 10/e65fbd42c7e0707064cb28673860e8e05463af43b9ef2b365b64075ed1dd7e2a29fdded01b918da2f8862d63f4d9eb54038828b42060e3540f7901aa093e9f2d
   languageName: node
   linkType: hard
 
@@ -6015,7 +6015,7 @@ __metadata:
     "@liquid-js/lyr-security": "workspace:*"
     "@liquid-js/qr-code-styling": "npm:^5.7.0-3"
     "@liquid-js/qrcode-generator": "npm:^1.1.7"
-    "@liquid-js/underflow": "npm:^4.0.0-14"
+    "@liquid-js/underflow": "npm:^4.0.0"
     chart.js: "npm:^4.6.1"
     date-fns: "npm:^4.4.0"
     dompurify: "npm:^3.4.18"
@@ -7990,7 +7990,7 @@ __metadata:
     "@liquid-js/lyr-core": "workspace:*"
     "@liquid-js/qr-code-styling": "npm:^5.7.0-3"
     "@liquid-js/qrcode-generator": "npm:^1.1.7"
-    "@liquid-js/underflow": "npm:^4.0.0-14"
+    "@liquid-js/underflow": "npm:^4.0.0"
     "@playwright/test": "npm:^1.65.1"
     "@schematics/angular": "npm:^22.3.0"
     "@stylistic/eslint-plugin": "npm:^6.0.1"
@@ -9544,7 +9544,7 @@ __metadata:
     "@liquid-js/lyr-security": "workspace:*"
     "@liquid-js/qr-code-styling": "npm:^5.7.0-3"
     "@liquid-js/qrcode-generator": "npm:^1.1.7"
-    "@liquid-js/underflow": "npm:^4.0.0-14"
+    "@liquid-js/underflow": "npm:^4.0.0"
     "@videojs/hlsjs-video": "npm:^10.6.0"
     chart.js: "npm:^4.6.1"
     date-fns: "npm:^4.4.0"
