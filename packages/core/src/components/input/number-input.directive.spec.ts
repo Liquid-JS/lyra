@@ -133,6 +133,16 @@ describe('NbNumberInputDirective', () => {
         host.control.enable()
         expect(input.disabled).toBe(false)
     })
+
+    // The server's DOM, which renders pages before they reach the browser, has no validity.
+    it('should show and validate the value without the input’s validity', () => {
+        Object.defineProperty(input, 'validity', { value: undefined })
+
+        host.control.setValue(2)
+
+        expect(input.value).toBe('200')
+        expect(host.control.errors?.['max']).toBeTruthy()
+    })
 })
 
 @Component({

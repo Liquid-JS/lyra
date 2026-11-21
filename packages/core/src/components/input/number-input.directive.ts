@@ -6,6 +6,8 @@ import { injectNbValidationMessage, ɵnbValidationError as nbValidationError } f
 // Clears floating point noise, e.g. 0.07 * 100 = 7.000000000000001.
 const round = (value: number) => Number(value.toPrecision(12))
 
+// Text the browser couldn't read as a number, e.g. `1e`. The server's DOM has no validity, and nothing is typed there.
+const isBadInput = (element: HTMLInputElement) => !!(element.validity as ValidityState | undefined)?.badInput
 const optionalNumber = (value: unknown) => (value == null || value === '' ? undefined : numberAttribute(value))
 
 /**
@@ -119,7 +121,7 @@ export class NbNumberInputDirective implements ControlValueAccessor, Validator {
 
     validate(control: AbstractControl): ValidationErrors | null {
     // The browser leaves the value empty for text that isn't a number, e.g. `1e`.
-        if (this.elementRef.nativeElement.validity.badInput) {
+        if (isBadInput(this.elementRef.nativeElement)) {
             return { nbNumberInputParse: nbValidationError(this.message, 'nbNumberInputParse', {}) }
         }
         if (typeof control.value !== 'number') {
@@ -140,7 +142,7 @@ export class NbNumberInputDirective implements ControlValueAccessor, Validator {
     protected onInput() {
         const element = this.elementRef.nativeElement
         // While the text isn't a number, the value stays and the field has the parse error.
-        if (element.validity.badInput) {
+        if (isBadInput(element)) {
             this.onValidatorChange()
             return
         }
@@ -155,7 +157,7 @@ export class NbNumberInputDirective implements ControlValueAccessor, Validator {
         const element = this.elementRef.nativeElement
         const shown = this.value === null ? null : round(this.value * this.scale())
         // Leaves text that already shows the value, e.g. `0.50` while it's typed, and clears text that isn't a number.
-        const current = element.validity.badInput ? NaN : element.value === '' ? null : element.valueAsNumber
+        const current = isBadInput(element) ? NaN : element.value === '' ? null : element.valueAsNumber
         if (current !== shown) {
             element.value = shown === null ? '' : String(shown)
         }
