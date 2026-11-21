@@ -1,0 +1,1 @@
+var t=[{path:`theme-editor-preview.component`,loadComponent:()=>import(`./chunk-BuWAXPup.js`).then(e=>e.ThemeEditorPreviewComponent)},{path:`theme-editor-states.component`,loadComponent:()=>import(`./chunk-BRyolzlC.js`).then(e=>e.ThemeEditorStatesComponent)}];export{t as THEME_EDITOR_ROUTES};

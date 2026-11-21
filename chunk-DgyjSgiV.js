@@ -1,1 +1,0 @@
-var n=[{path:`calendar-kit-full-calendar.component`,loadComponent:()=>import(`./chunk-SRv3miRU.js`).then(e=>e.CalendarKitFullCalendarShowcaseComponent)}];export{n as CALENDAR_KIT_ROUTES};

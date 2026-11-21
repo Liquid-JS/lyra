@@ -1,1 +1,0 @@
-var o=[{path:`skeleton-showcase.component`,loadComponent:()=>import(`./chunk-Bwx3LSP4.js`).then(e=>e.SkeletonShowcaseComponent)}];export{o as SKELETON_ROUTES};

@@ -1,0 +1,1 @@
+var o=[{path:`breadcrumbs-showcase.component`,loadComponent:()=>import(`./chunk-C_8Szo2i.js`).then(e=>e.BreadcrumbsShowcaseComponent)},{path:`breadcrumbs-separator.component`,loadComponent:()=>import(`./chunk-CdTi_UNp.js`).then(e=>e.BreadcrumbsSeparatorComponent)}];export{o as BREADCRUMBS_ROUTES};

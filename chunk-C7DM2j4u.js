@@ -1,1 +1,0 @@
-import{i as E}from"./chunk-C4v16TQV.js";import{Fo as pe,Ti as Je,_s as r,vs as s}from"./main-OGJU6WSE.js";var m=class e{constructor(){this.files=Je(E);this.next=1e3}add(...a){this.files.update(t=>[...a.map(d=>s(r({},d),{id:this.next++})),...t])}static{this.ɵfac=function(t){return new(t||e)}}static{this.ɵprov=pe({token:e,factory:e.ɵfac,providedIn:`root`})}};export{m as t};

@@ -1,0 +1,1 @@
+import{li as FC,wi as J_,xa as X_}from"./main-QBQSWJ7B.js";var m=class t{static{this.ɵfac=function(o){return new(o||t)}}static{this.ɵcmp=(function(){return FC({type:t,selectors:[[`nb-input-group`]],hostAttrs:[`role`,`group`],ngContentSelectors:[`*`],decls:1,vars:0,template:function(r,s){r&1&&(J_(),X_(0))},encapsulation:2})})()}};export{m as t};
