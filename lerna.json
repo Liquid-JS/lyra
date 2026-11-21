@@ -3,12 +3,11 @@
     "packages": [
         "packages/*"
     ],
-    "version": "22.0.0",
+    "version": "21.0.0",
     "npmClient": "yarn",
     "command": {
         "version": {
-            "conventionalCommits": true,
-            "message": "chore(release): publish %s"
+            "conventionalCommits": true
         }
     }
 }

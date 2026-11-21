@@ -1,7 +1,7 @@
 {
     "name": "lyra",
     "description": "Lyra: customizable Angular UI components and theming",
-    "version": "22.0.0",
+    "version": "21.0.0",
     "private": true,
     "repository": {
         "type": "git",
