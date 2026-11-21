@@ -1,1 +1,0 @@
-var o=[{path:`theme-select-showcase.component`,loadComponent:()=>import(`./chunk-DpVPtTJ2.js`).then(e=>e.ThemeSelectShowcaseComponent)}];export{o as THEME_SELECT_ROUTES};

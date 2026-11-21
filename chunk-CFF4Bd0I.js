@@ -1,1 +1,0 @@
-var e=[{path:`overlay-showcase.component`,loadComponent:()=>import(`./chunk-CYcQiKJK.js`).then(o=>o.OverlayShowcaseComponent)},{path:`overlay-host.component`,loadComponent:()=>import(`./chunk-BvjfC70O.js`).then(o=>o.OverlayHostComponent)}];export{e as OVERLAY_ROUTES};

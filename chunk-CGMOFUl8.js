@@ -1,0 +1,1 @@
+import{i as gd,n as dd,r as fd,s as ud}from"./chunk-CJ-l3ttd.js";import"./main-OGJU6WSE.js";var p=[{path:``,providers:[gd(...dd,...ud,...fd)],children:[{path:`chart-showcase.component`,loadComponent:()=>import(`./chunk-D64Kl5g2.js`).then(n=>n.ChartShowcaseComponent)}]}];export{p as CHART_ROUTES};

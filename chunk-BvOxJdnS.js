@@ -1,0 +1,1 @@
+var e=[{path:`scroll-window.component`,loadComponent:()=>import(`./chunk-Cw-p4JtJ.js`).then(o=>o.ScrollWindowComponent)}];export{e as SCROLL_ROUTES};
