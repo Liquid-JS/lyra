@@ -323,13 +323,17 @@ export class NbPhoneInputComponent implements OnInit, ControlValueAccessor, Vali
     protected onTouched: () => void = () => {}
     protected onValidatorChange: () => void = () => {}
 
+    // Untracked, as forms write values from wherever the app sets them, e.g. an effect that mustn't come to depend
+    // on the control.
     writeValue(value?: string | null) {
-        const text = value ?? ''
-        const number = this.parse(text)
-        this.pickCountry(number?.country)
-        this.text.set(number ? this.display(number) : text)
-        this.value = value ?? null
-        this.setParseError(false)
+        untracked(() => {
+            const text = value ?? ''
+            const number = this.parse(text)
+            this.pickCountry(number?.country)
+            this.text.set(number ? this.display(number) : text)
+            this.value = value ?? null
+            this.setParseError(false)
+        })
     }
 
     registerOnChange(fn: (value: string | null) => void) {

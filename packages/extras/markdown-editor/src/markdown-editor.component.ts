@@ -402,18 +402,22 @@ export class NbMarkdownEditorComponent implements ControlValueAccessor {
         })
     }
 
+    // Untracked, as forms write values from wherever the app sets them, e.g. an effect that mustn't come to depend
+    // on the control.
     writeValue(value?: string | null) {
-        const markdown = value ?? ''
-        this.value.set(markdown)
-        const editor = this.editor()
-        if (editor && editor.getMarkdown() !== markdown) {
-            this.writing = true
-            try {
-                editor.setMarkdown(markdown, false, false)
-            } finally {
-                this.writing = false
+        untracked(() => {
+            const markdown = value ?? ''
+            this.value.set(markdown)
+            const editor = this.editor()
+            if (editor && editor.getMarkdown() !== markdown) {
+                this.writing = true
+                try {
+                    editor.setMarkdown(markdown, false, false)
+                } finally {
+                    this.writing = false
+                }
             }
-        }
+        })
     }
 
     registerOnChange(fn: (value: string) => void) {

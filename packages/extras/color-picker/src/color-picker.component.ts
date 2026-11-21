@@ -360,10 +360,14 @@ export class NbColorPickerComponent implements ControlValueAccessor, Validator, 
         this.overlayHandler.destroy()
     }
 
+    // Untracked, as forms write values from wherever the app sets them, e.g. an effect that mustn't come to depend
+    // on the control.
     writeValue(value?: string | null) {
-        this.value.set(value || null)
-        this.setParseError(false)
-        this.show(value || '')
+        untracked(() => {
+            this.value.set(value || null)
+            this.setParseError(false)
+            this.show(value || '')
+        })
     }
 
     registerOnChange(fn: (value: string | null) => void) {

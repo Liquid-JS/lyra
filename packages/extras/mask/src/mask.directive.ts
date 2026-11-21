@@ -158,11 +158,15 @@ export class NbMaskDirective implements ControlValueAccessor, Validator {
         inject(DestroyRef).onDestroy(() => this.maskInput?.destroy())
     }
 
+    // Untracked, as forms write values from wherever the app sets them, e.g. an effect that mustn't come to depend
+    // on the control.
     writeValue(value?: string | number | null) {
-        const text = String(value ?? '')
-        this.value = text
-        this.show(text)
-        this.setParseError(false)
+        untracked(() => {
+            const text = String(value ?? '')
+            this.value = text
+            this.show(text)
+            this.setParseError(false)
+        })
     }
 
     registerOnChange(fn: (value: string) => void) {
