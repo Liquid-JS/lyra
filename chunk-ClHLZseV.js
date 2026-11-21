@@ -1,0 +1,1 @@
+var o=[{path:`video-showcase.component`,loadComponent:()=>import(`./chunk-BCMOW185.js`).then(e=>e.VideoShowcaseComponent)},{path:`video-stream.component`,loadComponent:()=>import(`./chunk-DTSheaBg.js`).then(e=>e.VideoStreamComponent)},{path:`audio-showcase.component`,loadComponent:()=>import(`./chunk-Be-5qqF3.js`).then(e=>e.AudioShowcaseComponent)}];export{o as MEDIA_ROUTES};

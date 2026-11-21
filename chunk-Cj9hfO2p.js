@@ -1,0 +1,1 @@
+var o=[{path:`user-test.component`,loadComponent:()=>import(`./chunk-Dbvi73GJ.js`).then(e=>e.UserTestComponent)}];export{o as USER_ROUTES};

@@ -1,1 +1,0 @@
-var e=[{path:`toc-showcase.component`,loadComponent:()=>import(`./chunk-C9kjlOf4.js`).then(o=>o.TocShowcaseComponent)}];export{e as TOC_ROUTES};

@@ -1,1 +1,0 @@
-var o=[{path:`divider-showcase.component`,loadComponent:()=>import(`./chunk-DYNiSAWc.js`).then(e=>e.DividerShowcaseComponent)}];export{o as DIVIDER_ROUTES};

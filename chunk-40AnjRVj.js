@@ -1,1 +1,0 @@
-var t=[{path:``,loadComponent:()=>import(`./chunk-C41l_O59.js`).then(o=>o.NbAuthComponent),children:[{path:`login`,loadComponent:()=>import(`./chunk-CeOH1yjB.js`).then(o=>o.LoginComponent)}]}];export{t as AUTH_ROUTES};
