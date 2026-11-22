@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [22.0.0-alpha.3](https://github.com/Liquid-JS/lyra/compare/v22.0.0-alpha.2...v22.0.0-alpha.3) (2026-11-22)
+
+### Bug Fixes
+
+* **core:** keep a chat form's text clear of its send button while it leaves with an animation ([0545ffc](https://github.com/Liquid-JS/lyra/commit/0545ffca0f328025ca999cf6233be161cde9c096))
+* **core:** keep a form field's padding for its addons while it leaves with an animation ([9ef8f76](https://github.com/Liquid-JS/lyra/commit/9ef8f7668ddb9098910b04fa3c65465b5339a637))
+* **core:** keep dialogs open through navigation by default, and only close on leaving the page ([ab74077](https://github.com/Liquid-JS/lyra/commit/ab740771ff293de6e02160b86d042a04b02cea16))
+* **core:** open and close a menu submenu that appears or goes while its item shows ([18ca79e](https://github.com/Liquid-JS/lyra/commit/18ca79e3ccf2a9a4d5d9bfb4b2ac9aed63493984))
+* **core:** open and close accordion items smoothly when their content or the page changes ([f9f166b](https://github.com/Liquid-JS/lyra/commit/f9f166bac21ae5b69470e9e14485162e31bff36d))
+* **core:** render a dialog's content as it opens, rather than a frame later ([14f4928](https://github.com/Liquid-JS/lyra/commit/14f4928041e6a57656c98aafd9038eee696b0846))
+* **core:** show a file drop preview at its own size, centred, rather than stretched across ([d49732e](https://github.com/Liquid-JS/lyra/commit/d49732ef9fa0264b1bffd338f6cb7acfc56776e1))
+* versions ([3b2b961](https://github.com/Liquid-JS/lyra/commit/3b2b961ba1570ec5ba7f879317d653e9e9f0e399))
+
+### Features
+
+* **core:** add highlightParents to nb-menu and collapsible to menu items ([74c1109](https://github.com/Liquid-JS/lyra/commit/74c1109543070efae8231f556320fe65d7985996))
+* **core:** create accordion item content on first expand with nbAccordionItemBodyContent ([4997bbd](https://github.com/Liquid-JS/lyra/commit/4997bbdf0d01235b14e5e793022fa91ee15cc023))
+
 # [22.0.0-alpha.2](https://github.com/Liquid-JS/lyra/compare/v22.0.0-alpha.1...v22.0.0-alpha.2) (2026-11-21)
 
 ### Bug Fixes

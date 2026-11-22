@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [22.0.0-alpha.3](https://github.com/Liquid-JS/lyra/compare/v22.0.0-alpha.2...v22.0.0-alpha.3) (2026-11-22)
+
+### Bug Fixes
+
+* **core:** keep dialogs open through navigation by default, and only close on leaving the page ([ab74077](https://github.com/Liquid-JS/lyra/commit/ab740771ff293de6e02160b86d042a04b02cea16))
+* versions ([3b2b961](https://github.com/Liquid-JS/lyra/commit/3b2b961ba1570ec5ba7f879317d653e9e9f0e399))
+
 # [22.0.0-alpha.2](https://github.com/Liquid-JS/lyra/compare/v22.0.0-alpha.1...v22.0.0-alpha.2) (2026-11-21)
 
 **Note:** Version bump only for package docs
