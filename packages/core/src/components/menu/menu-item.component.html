@@ -150,6 +150,8 @@
 <ul [class.collapsed]="!isExpanded()"
     [class.expanded]="isExpanded()"
     [attr.inert]="isExpanded() ? null : ''"
+    (animate.enter)="submenuEnter($event)"
+    (animate.leave)="submenuLeave($event)"
     #submenu
     class="menu-items">
     @for (item of menuItem().children; track item) {

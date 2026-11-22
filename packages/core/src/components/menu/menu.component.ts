@@ -1,6 +1,7 @@
 import {
     AfterViewChecked,
     AfterViewInit,
+    AnimationCallbackEvent,
     ChangeDetectionStrategy,
     ChangeDetectorRef,
     Component,
@@ -69,6 +70,10 @@ export class NbMenuItemComponent implements DoCheck, AfterViewInit, AfterViewChe
 
     private readonly submenu = viewChild<ElementRef<HTMLElement>>('submenu')
     private rendered?: { submenu: HTMLElement, state: NbToggleStates }
+    // Whether the item has rendered, and the submenu it rendered with: one that appears later opens, unlike that one,
+    // which Angular reports entering after the item has rendered.
+    private itemRendered = false
+    private firstSubmenu?: HTMLElement
 
     ngDoCheck() {
         this.toggleState = this.isExpanded() ? NbToggleStates.Expanded : NbToggleStates.Collapsed
@@ -85,6 +90,8 @@ export class NbMenuItemComponent implements DoCheck, AfterViewInit, AfterViewChe
     }
 
     ngAfterViewInit() {
+        this.itemRendered = true
+        this.firstSubmenu = this.submenu()?.nativeElement
         this.menuService
             .onSubmenuToggle()
             .pipe(
@@ -97,6 +104,28 @@ export class NbMenuItemComponent implements DoCheck, AfterViewInit, AfterViewChe
 
     onToggleSubMenu(item: NbMenuItem) {
         this.toggleSubMenu.emit(item)
+    }
+
+    /** A submenu that appears open, as the item gets children, opens. */
+    protected submenuEnter(event: AnimationCallbackEvent) {
+        const submenu = event.target as HTMLElement
+        if (this.itemRendered && submenu !== this.firstSubmenu && submenu.classList.contains('expanded')) {
+            animateExpand(submenu, true, { easing: 'ease-in-out' })
+        }
+        event.animationComplete()
+    }
+
+    /** A submenu that goes while it shows, as the item loses its children, closes first. */
+    protected submenuLeave(event: AnimationCallbackEvent) {
+        const submenu = event.target as HTMLElement
+        const animation = submenu.classList.contains('expanded')
+            ? animateExpand(submenu, false, { easing: 'ease-in-out' })
+            : undefined
+        if (animation) {
+            animation.finished.then(() => event.animationComplete(), () => event.animationComplete())
+        } else {
+            event.animationComplete()
+        }
     }
 
     /** Going to a parent's own page opens its submenu, so its pages show. */

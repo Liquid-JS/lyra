@@ -17,16 +17,16 @@ export function expandDuration(distance: number): number {
  * turns back without a jump. Content that changes size while it opens, e.g. its own parts opening or images loading, is
  * followed to the end the animation was going to have, rather than reached with a jump once it ends. `keep` is held on
  * every frame, e.g. the visibility a collapsed element only gets at the end. Without a `duration`, it takes
- * {@link expandDuration} of the distance.
+ * {@link expandDuration} of the distance. Returns the animation, or nothing where there's none, as with reduced motion.
  */
 export function animateExpand(
     element: HTMLElement,
     expanded: boolean,
     options: KeyframeAnimationOptions = {},
     keep: Keyframe = {}
-) {
+): Animation | undefined {
     if (typeof element.animate !== 'function' || matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        return
+        return undefined
     }
 
     const previous = running.get(element)
@@ -44,10 +44,10 @@ export function animateExpand(
         from = element.scrollHeight
         element.style.height = height
     }
-    run(element, from, expanded ? element.scrollHeight : 0, options, keep)
+    return run(element, from, expanded ? element.scrollHeight : 0, options, keep)
 }
 
-function run(element: HTMLElement, from: number, to: number, options: KeyframeAnimationOptions, keep: Keyframe, elapsed?: number) {
+function run(element: HTMLElement, from: number, to: number, options: KeyframeAnimationOptions, keep: Keyframe, elapsed?: number): Animation {
     const animation = element.animate(
         [
             { ...keep, height: `${from}px` },
@@ -99,4 +99,5 @@ function run(element: HTMLElement, from: number, to: number, options: KeyframeAn
             running.delete(element)
         }
     }
+    return animation
 }

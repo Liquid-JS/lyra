@@ -79,8 +79,9 @@ export class SpyLocationPathParameter extends SpyLocation {
     }
 }
 
-function createTestBed(routes: Routes = []) {
+function createTestBed(routes: Routes = [], animationsEnabled = false) {
     TestBed.configureTestingModule({
+        animationsEnabled,
         imports: [
             NbThemeModule.forRoot(),
             NbMenuModule.forRoot(),
@@ -219,6 +220,36 @@ describe('NbMenuItem', () => {
         menuService.collapseAll('menu')
         fixture.detectChanges()
         expect(childList().classList).toContain('expanded')
+    })
+
+    it('should open a submenu that appears under a shown item, and close one that goes, but not one that renders with it', async () => {
+        createTestBed([], true)
+        const fixture = TestBed.createComponent(SingleMenuTestComponent)
+        const guide = { title: 'Guide', link: '/guide', collapsible: false } as NbMenuItem
+        const usage = {
+            title: 'Usage', link: '/usage', collapsible: false, children: [{ title: 'Options', link: '/usage', fragment: 'options' }]
+        } as NbMenuItem
+        fixture.componentInstance.items.set([guide, usage])
+        fixture.detectChanges()
+        const submenu = (title: string) => (Array.from(fixture.nativeElement.querySelectorAll('nb-menu > ul > .menu-item')) as HTMLElement[])
+            .find((item) => item.querySelector(':scope > a')?.textContent?.includes(title))
+            ?.querySelector<HTMLElement>(':scope > ul.menu-items')
+        expect(submenu('Usage')?.getAnimations()).toEqual([])
+
+        // The current page moves from Usage to Guide: Guide's sections open, and Usage's close before they go.
+        guide.children = [{ title: 'Install', link: '/guide', fragment: 'install' } as NbMenuItem]
+        delete usage.children
+        fixture.componentInstance.items.set([guide, usage])
+        fixture.detectChanges()
+
+        expect(submenu('Guide')?.getAnimations()).toHaveLength(1)
+        const leaving = submenu('Usage')
+        expect(leaving?.getAnimations()).toHaveLength(1)
+
+        await leaving?.getAnimations()[0].finished
+        await new Promise((resolve) => setTimeout(resolve))
+        fixture.detectChanges()
+        expect(submenu('Usage')).toBeFalsy()
     })
 
     it('should show the parents of the selected item as selected, or with highlightParents off only while they hide it', () => {
