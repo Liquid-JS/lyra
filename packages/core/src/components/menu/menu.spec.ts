@@ -34,7 +34,7 @@ import { NbMenuInternalService } from './menu.service'
 export class NoopComponent {}
 
 @Component({
-    template: '<nb-menu [items]="items()" [tag]="menuTag()" />',
+    template: '<nb-menu [items]="items()" [tag]="menuTag()" [highlightParents]="highlightParents()" />',
     imports: [NbMenuModule, RouterModule]
 })
 export class SingleMenuTestComponent {
@@ -42,6 +42,7 @@ export class SingleMenuTestComponent {
 
     readonly items = signal(new Array<NbMenuItem>())
     readonly menuTag = signal<string | undefined>(undefined)
+    readonly highlightParents = signal(true)
     readonly menuComponent = viewChild.required(NbMenuComponent)
 }
 
@@ -201,6 +202,45 @@ describe('NbMenuItem', () => {
         ])
         const parentItem = fixture.nativeElement.querySelector('.menu-item')
         expect(parentItem.querySelector('ul.menu-items')).not.toBeNull()
+    })
+
+    it('should always show the children of an item that is not collapsible, without a toggle', () => {
+        const { fixture, menuService } = createSingleMenuComponent([
+            { title: 'Guide', link: '/guide', collapsible: false, children: [{ title: 'Install', link: '/guide', fragment: 'install' }] }
+        ])
+        const item = fixture.nativeElement.querySelector('.menu-item') as HTMLElement
+        const childList = () => item.querySelector(':scope > ul.menu-items') as HTMLElement
+
+        expect(item.querySelector(':scope > a')?.getAttribute('href')).toBe('/guide')
+        expect(item.querySelector('.menu-toggle, :scope > a > .expand-state')).toBeNull()
+        expect(childList().classList).toContain('expanded')
+        expect(childList().hasAttribute('inert')).toBe(false)
+
+        menuService.collapseAll('menu')
+        fixture.detectChanges()
+        expect(childList().classList).toContain('expanded')
+    })
+
+    it('should show the parents of the selected item as selected, or with highlightParents off only while they hide it', () => {
+        createTestBed()
+        const fixture = TestBed.createComponent(SingleMenuTestComponent)
+        fixture.componentInstance.items.set([
+            { title: 'Section', expanded: true, selected: true, children: [{ title: 'Page', selected: true }] } as NbMenuItem
+        ])
+        fixture.componentInstance.highlightParents.set(false)
+        fixture.detectChanges()
+        const section = () => fixture.nativeElement.querySelector('.menu-item > a') as HTMLElement
+        const page = () => fixture.nativeElement.querySelector('.menu-item .menu-item > a') as HTMLElement
+        expect([section().classList.contains('active'), page().classList.contains('active')]).toEqual([false, true])
+
+        section().click()
+        fixture.detectChanges()
+        expect(section().classList.contains('active')).toBe(true)
+
+        fixture.componentInstance.highlightParents.set(true)
+        section().click()
+        fixture.detectChanges()
+        expect([section().classList.contains('active'), page().classList.contains('active')]).toEqual([true, true])
     })
 
     it('should render a parent whose children are all hidden as a plain item', () => {

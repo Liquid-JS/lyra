@@ -7,7 +7,7 @@
     <span dir="auto">{{ menuItem().title }}</span>
 </span>
 }
-@if (menuItem().link && !menuItem().url && !hasVisibleChildren() && !menuItem().group) {
+@if (menuItem().link && !menuItem().url && !hasToggle() && !menuItem().group) {
 <a [routerLink]="menuItem().link"
     tabindex="0"
     [queryParams]="menuItem().queryParams"
@@ -18,7 +18,7 @@
     [attr.target]="menuItem().target"
     [attr.title]="menuItem().title"
     [attr.role]="menuItem().ariaRole"
-    [class.active]="menuItem().selected"
+    [class.active]="isActive()"
     [attr.aria-current]="menuItem().selected ? 'page' : null"
     (mouseenter)="onHoverItem(menuItem())"
     (click)="onItemClick(menuItem())">
@@ -32,13 +32,13 @@
     }
 </a>
 }
-@if (menuItem().url && !hasVisibleChildren() && !menuItem().link && !menuItem().group) {
+@if (menuItem().url && !hasToggle() && !menuItem().link && !menuItem().group) {
 <a [attr.href]="menuItem().url"
     tabindex="0"
     [attr.target]="menuItem().target"
     [attr.title]="menuItem().title"
     [attr.role]="menuItem().ariaRole"
-    [class.active]="menuItem().selected"
+    [class.active]="isActive()"
     [attr.aria-current]="menuItem().selected ? 'page' : null"
     (mouseenter)="onHoverItem(menuItem())"
     (click)="onItemClick(menuItem()); opensInPlace(menuItem()) && onSelectItem(menuItem())">
@@ -52,13 +52,13 @@
     }
 </a>
 }
-@if (!hasVisibleChildren() && !menuItem().link && !menuItem().url && !menuItem().group) {
+@if (!hasToggle() && !menuItem().link && !menuItem().url && !menuItem().group) {
 <!-- An action rather than a link: Enter and Space choose it, as they would a button. -->
 <a [attr.target]="menuItem().target"
     tabindex="0"
     [attr.title]="menuItem().title"
     [attr.role]="menuItem().ariaRole || 'button'"
-    [class.active]="menuItem().selected"
+    [class.active]="isActive()"
     (mouseenter)="onHoverItem(menuItem())"
     (click)="$event.preventDefault(); onItemClick(menuItem())"
     (keydown.enter)="$event.preventDefault(); onItemClick(menuItem())"
@@ -73,7 +73,7 @@
     }
 </a>
 }
-@if (hasVisibleChildren() && (menuItem().link || menuItem().url)) {
+@if (hasToggle() && (menuItem().link || menuItem().url)) {
 <!-- A parent with its own page: the title goes there, and the chevron opens and closes the submenu. -->
 <div class="menu-item-row">
     @if (menuItem().link) {
@@ -87,7 +87,7 @@
         [attr.target]="menuItem().target"
         [attr.title]="menuItem().title"
         [attr.role]="menuItem().ariaRole"
-        [class.active]="menuItem().selected"
+        [class.active]="isActive()"
         [attr.aria-current]="menuItem().selected ? 'page' : null"
         (mouseenter)="onHoverItem(menuItem())"
         (click)="onItemClick(menuItem()); openSubMenu(menuItem())">
@@ -99,7 +99,7 @@
         [attr.target]="menuItem().target"
         [attr.title]="menuItem().title"
         [attr.role]="menuItem().ariaRole"
-        [class.active]="menuItem().selected"
+        [class.active]="isActive()"
         [attr.aria-current]="menuItem().selected ? 'page' : null"
         (mouseenter)="onHoverItem(menuItem())"
         (click)="onItemClick(menuItem()); opensInPlace(menuItem()) && onSelectItem(menuItem()); openSubMenu(menuItem())">
@@ -120,7 +120,7 @@
     </button>
 </div>
 }
-@if (hasVisibleChildren() && !menuItem().link && !menuItem().url) {
+@if (hasToggle() && !menuItem().link && !menuItem().url) {
 <!-- A parent without a page of its own only opens and closes its items: a button, not a link. -->
 <a (click)="onToggleSubMenu(menuItem())"
     (keydown.enter)="$event.preventDefault(); onToggleSubMenu(menuItem())"
@@ -129,7 +129,7 @@
     [attr.title]="menuItem().title"
     [attr.aria-expanded]="menuItem().expanded ?? false"
     [attr.role]="menuItem().ariaRole || 'button'"
-    [class.active]="menuItem().selected"
+    [class.active]="isActive()"
     (mouseenter)="onHoverItem(menuItem())">
     @if (menuItem().icon) {
     <nb-icon class="menu-icon"
@@ -147,9 +147,9 @@
 </a>
 }
 @if (hasVisibleChildren()) {
-<ul [class.collapsed]="!(menuItem().children && menuItem().expanded)"
-    [class.expanded]="menuItem().expanded"
-    [attr.inert]="menuItem().expanded ? null : ''"
+<ul [class.collapsed]="!isExpanded()"
+    [class.expanded]="isExpanded()"
+    [attr.inert]="isExpanded() ? null : ''"
     #submenu
     class="menu-items">
     @for (item of menuItem().children; track item) {

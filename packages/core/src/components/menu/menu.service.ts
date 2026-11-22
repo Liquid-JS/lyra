@@ -93,6 +93,11 @@ export class NbMenuItem<D = unknown> {
      */
     expanded?: boolean
     /**
+     * Whether the submenu opens and closes (`true` by default). With `false` the children always show and the item has
+     * no toggle, e.g. the sections of the page it links to. A horizontal menu's dropdowns still open and close.
+     */
+    collapsible?: boolean
+    /**
      * A badge shown after the title.
      */
     badge?: NbMenuBadgeConfig

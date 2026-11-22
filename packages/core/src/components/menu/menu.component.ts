@@ -62,13 +62,16 @@ export class NbMenuItemComponent implements DoCheck, AfterViewInit, AfterViewChe
     readonly selectItem = output<NbMenuItem>()
     readonly itemClick = output<NbMenuItem>()
 
+    // The menu it's in, which says how a selection shows.
+    private readonly menu = inject(NbMenuComponent, { optional: true })
+
     toggleState = NbToggleStates.Collapsed
 
     private readonly submenu = viewChild<ElementRef<HTMLElement>>('submenu')
     private rendered?: { submenu: HTMLElement, state: NbToggleStates }
 
     ngDoCheck() {
-        this.toggleState = this.menuItem().expanded ? NbToggleStates.Expanded : NbToggleStates.Collapsed
+        this.toggleState = this.isExpanded() ? NbToggleStates.Expanded : NbToggleStates.Collapsed
     }
 
     // Menu items are plain objects, so the item compares the state its submenu rendered with the one it had; a submenu
@@ -86,7 +89,7 @@ export class NbMenuItemComponent implements DoCheck, AfterViewInit, AfterViewChe
             .onSubmenuToggle()
             .pipe(
                 filter(({ item }) => item === this.menuItem()),
-                map(({ item }: NbMenuBag) => item.expanded),
+                map(({ item }: NbMenuBag) => item.expanded || !this.collapsible()),
                 takeUntilDestroyed(this.destroyRef)
             )
             .subscribe((isExpanded) => (this.toggleState = isExpanded ? NbToggleStates.Expanded : NbToggleStates.Collapsed))
@@ -118,6 +121,35 @@ export class NbMenuItemComponent implements DoCheck, AfterViewInit, AfterViewChe
     /** An item whose children are all hidden renders as a plain item, without an expand toggle. */
     hasVisibleChildren(): boolean {
         return !!this.menuItem().children?.some((child) => !child.hidden)
+    }
+
+    /** Whether the submenu opens and closes: unless the item says otherwise, and always as a dropdown. */
+    collapsible(): boolean {
+        return this.dropdown() || this.menuItem().collapsible !== false
+    }
+
+    /** Whether the item has a toggle for its submenu. */
+    hasToggle(): boolean {
+        return this.hasVisibleChildren() && this.collapsible()
+    }
+
+    /** Whether the submenu shows: open, or one that doesn't close. */
+    isExpanded(): boolean {
+        return !!this.menuItem().expanded || !this.collapsible()
+    }
+
+    /**
+     * Whether the item shows as selected: the selected item, and its parents unless the menu marks only the item; then a
+     * parent shows it only while its closed submenu hides the item.
+     */
+    isActive(): boolean {
+        const item = this.menuItem()
+        if (!item.selected) {
+            return false
+        }
+        return this.menu?.highlightParents() !== false
+            || !this.isExpanded()
+            || !item.children?.some((child) => child.selected && !child.hidden)
     }
 
     /**
@@ -209,6 +241,14 @@ export class NbMenuItemComponent implements DoCheck, AfterViewInit, AfterViewChe
  *
  * With `autoCollapse`, opening a submenu closes the others:
  * @stacked-example(Autocollapse Menu, menu/menu-autocollapse.component)
+ *
+ * The parents of the selected item show as selected too. With `highlightParents` set to `false`, only the item does,
+ * and a parent while its closed submenu hides the item. An item with `collapsible: false` always shows its children,
+ * without a toggle, e.g. the sections of the page it links to:
+ * ```html
+ * <nb-menu [items]="[{ title: 'Guide', link: '/guide', collapsible: false, children: sections }]"
+ *          [highlightParents]="false" />
+ * ```
  *
  * An item's `badge` shows an `nb-badge` after its title:
  * @stacked-example(Menu item badge, menu/menu-badge.component)
@@ -314,6 +354,12 @@ export class NbMenuComponent implements OnInit, OnChanges, AfterViewInit {
      * Closes the other submenus when one opens, and when an item is selected.
      */
     readonly autoCollapse = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty })
+
+    /**
+     * Shows the parents of the selected item as selected too (`true` by default). With `false` only the item shows as
+     * selected, and a parent while its closed submenu hides the item.
+     */
+    readonly highlightParents = input<boolean, NbBooleanInput>(true, { transform: convertToBoolProperty })
 
     /**
      * Shows the top-level items in a column, or in a row with their children in dropdowns.
