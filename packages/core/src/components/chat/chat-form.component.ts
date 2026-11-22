@@ -154,7 +154,11 @@ export class NbChatFormComponent implements NbChatFormRef {
             observer.observe(button)
             onCleanup(() => {
                 observer.disconnect()
-                row.style.removeProperty('--nb-chat-send-width')
+                // Kept while the button is still in the row, as when the form leaves with an animation, so the text
+                // stays clear of it until it's gone.
+                if (!row.contains(button)) {
+                    row.style.removeProperty('--nb-chat-send-width')
+                }
             })
         })
 

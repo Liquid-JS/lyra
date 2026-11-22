@@ -169,3 +169,46 @@ describe('NbChatFormComponent message field', () => {
         expect(fixture.nativeElement.querySelector('.dropped-files')).toBeNull()
     })
 })
+
+@Component({
+    template: `
+    <div class="nb-theme-default" dir="ltr" style="width: 24rem">
+      @if (shown()) {
+        <nb-chat-form buttonTitle="Send message" animate.leave="nb-chat-form-spec-leave" />
+      }
+    </div>
+  `,
+    styleUrl: './chat-form-input.spec.scss',
+    styles: `
+    .nb-chat-form-spec-leave { animation: nb-chat-form-spec-hold 1s; }
+    @keyframes nb-chat-form-spec-hold { to { opacity: 1; } }
+  `,
+    encapsulation: ViewEncapsulation.None,
+    imports: [NbChatModule]
+})
+class ChatFormLeavingHostComponent {
+    readonly shown = signal(true)
+}
+
+describe('NbChatFormComponent leaving', () => {
+    it('should keep its text clear of the send button while it leaves with an animation', async () => {
+        TestBed.configureTestingModule({ imports: [NbThemeModule.forRoot(), NbChatModule.forRoot()], animationsEnabled: true })
+        const fixture = TestBed.createComponent(ChatFormLeavingHostComponent)
+        fixture.detectChanges()
+        await fixture.whenStable()
+        for (let frame = 0; frame < 2; frame++) {
+            await new Promise((resolve) => requestAnimationFrame(resolve))
+        }
+        const form = fixture.nativeElement.querySelector('nb-chat-form') as HTMLElement
+        const field = form.querySelector('textarea') as HTMLTextAreaElement
+        const padding = () => parseFloat(getComputedStyle(field).paddingRight)
+        const before = padding()
+        expect(before).toBeGreaterThan((form.querySelector('.send-button') as HTMLElement).getBoundingClientRect().height * 2)
+
+        fixture.componentInstance.shown.set(false)
+        fixture.detectChanges()
+
+        expect(form.isConnected).toBe(true)
+        expect(padding()).toBe(before)
+    })
+})
