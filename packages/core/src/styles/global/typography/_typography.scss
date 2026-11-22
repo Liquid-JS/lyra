@@ -90,6 +90,22 @@
             color: nb-theme(link-text-focus-color);
         }
 
+        // Focused from the keyboard, a link's text is highlighted in the focus colour, a little past its edges, rather
+        // than ringed as a button is: a ring doesn't sit well on text. A link that wraps has it on each line.
+        &:focus-visible {
+            @include nb-focus-highlight(nb-theme(link-outline-width), nb-theme(link-outline-color), nb-theme(link-outline-border-radius));
+        }
+
+        // A link that's only an image has the ring around the image, which has a shape of its own.
+        &:focus-visible:has(> img:only-child) {
+            background-color: transparent;
+            box-shadow: none;
+
+            > img {
+                @include nb-outline(nb-theme(outline-width), nb-theme(outline-color));
+            }
+        }
+
         &:hover {
             color: nb-theme(link-text-hover-color);
         }

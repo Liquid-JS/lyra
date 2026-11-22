@@ -208,6 +208,13 @@
         overflow: auto;
         padding: nb-theme(card-padding);
         position: relative;
+
+        // A body that scrolls can be focused from the keyboard, to scroll it; the ring is inside, as the card clips.
+        &:focus-visible {
+            outline: none;
+            box-shadow: inset 0 0 0 nb-theme(card-outline-width) nb-theme(card-outline-color);
+        }
+
         @include nb-scrollbars(
             nb-theme(card-scrollbar-color),
             nb-theme(card-scrollbar-background-color),

@@ -86,6 +86,11 @@
         }
     }
 
+    // Moved through with the keyboard, the active tag has the focus ring as well as its active colours.
+    nb-tag-list:focus-visible nb-tag.active {
+        box-shadow: 0 0 0 nb-theme(outline-width) nb-theme(outline-color);
+    }
+
     // A filled basic tag lightens under the pointer, which in a field is the field's own colour, so in a list with an
     // input it takes its active colours instead: a step away from the field, whatever its state.
     .nb-tag-list-with-input nb-tag.appearance-filled.status-basic:hover {

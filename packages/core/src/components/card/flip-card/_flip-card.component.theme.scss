@@ -8,6 +8,11 @@
         // Inside the card's border, so the chevron ends where the card's text does.
         margin-inline-end: nb-theme(card-border-width);
         padding: nb-theme(card-padding);
+
+        // Highlighted within its padding, which already reaches the card's edge, rather than a little past it.
+        &:focus-visible {
+            box-shadow: none;
+        }
     }
 
     .flipcard-body .front-container {

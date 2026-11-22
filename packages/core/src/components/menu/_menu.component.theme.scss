@@ -28,6 +28,12 @@
                 color: nb-theme(menu-text-color);
                 border-radius: nb-theme(menu-item-border-radius);
                 @include nb-component-animation(background-color, color);
+
+                // The focus ring is inside the item, as the menu clips what's outside its items.
+                &:focus-visible {
+                    outline: none;
+                    box-shadow: inset 0 0 0 nb-theme(menu-item-outline-width) nb-theme(menu-item-outline-color);
+                }
             }
 
             .menu-icon {
@@ -103,7 +109,7 @@
                 // Inside the button, as the menu clips what's outside its items.
                 &:focus-visible {
                     outline: none;
-                    box-shadow: inset 0 0 0 nb-theme(outline-width) nb-theme(outline-color);
+                    box-shadow: inset 0 0 0 nb-theme(menu-item-outline-width) nb-theme(menu-item-outline-color);
                 }
             }
         }

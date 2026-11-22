@@ -18,5 +18,10 @@
         margin-inline-end: nb-theme(card-border-width);
         margin-bottom: nb-theme(card-border-width);
         padding: nb-theme(card-padding);
+
+        // Highlighted within its padding, which already reaches the card's edge, rather than a little past it.
+        &:focus-visible {
+            box-shadow: none;
+        }
     }
 }

@@ -37,6 +37,16 @@
     }
 }
 
+// A text-like control focused from the keyboard, e.g. a link: highlighted in the focus colour a little past its edges,
+// as a ring doesn't sit well on text. One that wraps has it on each line.
+@mixin nb-focus-highlight($width, $color, $border-radius) {
+    outline: none;
+    border-radius: $border-radius;
+    background-color: $color;
+    box-shadow: 0 0 0 $width $color;
+    box-decoration-break: clone;
+}
+
 @mixin nb-outline($outline-width, $outline-color, $inset-shadow-length: 0) {
     $outset-shadow: 0 0 0 $outline-width $outline-color;
 

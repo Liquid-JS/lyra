@@ -183,5 +183,12 @@
         }
     }
 
+    // The sort buttons read as the headers' text, and the row toggles as bare chevrons, so they're highlighted as a
+    // link is rather than ringed.
+    .nb-tree-grid-header-change-sort-button:focus-visible,
+    nb-tree-grid-row-toggle .row-toggle-button:focus-visible {
+        @include nb-focus-highlight(nb-theme(tree-grid-button-outline-width), nb-theme(tree-grid-button-outline-color), nb-theme(tree-grid-button-outline-border-radius));
+    }
+
     @include tree-grid-sort-theme.nb-tree-grid-sort-header-theme;
 }

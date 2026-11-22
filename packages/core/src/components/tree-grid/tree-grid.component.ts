@@ -154,6 +154,9 @@ import { NbColumnsService } from './tree-grid-columns.service'
  * tree-grid-sort-header-button-background-color:
  * tree-grid-sort-header-button-border:
  * tree-grid-sort-header-button-padding:
+ * tree-grid-button-outline-width:
+ * tree-grid-button-outline-color:
+ * tree-grid-button-outline-border-radius:
  */
 @Component({
     selector: 'table[nbTreeGrid]',

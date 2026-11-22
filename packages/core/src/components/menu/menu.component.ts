@@ -300,6 +300,8 @@ export class NbMenuItemComponent implements DoCheck, AfterViewInit, AfterViewChe
  * menu-item-hover-background-color:
  * menu-item-hover-cursor:
  * menu-item-focus-background-color:
+ * menu-item-outline-width:
+ * menu-item-outline-color:
  * menu-item-hover-text-color:
  * menu-item-icon-hover-color:
  * menu-item-active-background-color:
