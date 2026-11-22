@@ -50,7 +50,7 @@ export class NbAccordionItemBodyComponent {
                     this.container().nativeElement,
                     state === 'expanded',
                     { easing: 'ease-in-out' },
-                    { visibility: 'visible' }
+                    { visibility: 'visible', overflow: 'hidden' }
                 )
             }
             previous = state

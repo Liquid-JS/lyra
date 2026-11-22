@@ -1,5 +1,7 @@
+// It clips its content only while it's closed or opening and closing, so the focus rings of controls at the content's
+// edges show in full once it's open. It's a formatting context of its own either way, as it was while it clipped.
 .item-body-container {
-    overflow: hidden;
+    display: flow-root;
 
     // Its height changes on every frame as it opens or closes, and its content isn't where the page should stay; as a
     // scroll anchor, the page would jump by the content's height as an item opens below another closing.
@@ -8,5 +10,6 @@
     &.collapsed {
         height: 0;
         visibility: hidden;
+        overflow: hidden;
     }
 }
