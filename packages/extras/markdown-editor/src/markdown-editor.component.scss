@@ -236,6 +236,15 @@ nb-markdown-editor {
         }
     }
 
+    // Focused from the keyboard, a toolbar button has the frame it has under the pointer, and the focus ring a ghost
+    // button has.
+    .uf-toolbar button:not(:disabled):focus-visible {
+        outline: none;
+        border: 1px solid var(--uf-toolbar-button-hover-border-color);
+        background-color: var(--uf-toolbar-button-hover-bg-color);
+        box-shadow: 0 0 0 var(--button-outline-width) var(--button-outline-color);
+    }
+
     .uf-toolbar input:focus-visible + .switch {
         border-color: var(--toggle-basic-focus-border-color);
         background-color: var(--toggle-basic-focus-background-color);
