@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [22.0.0-alpha.4](https://github.com/Liquid-JS/lyra/compare/v22.0.0-alpha.3...v22.0.0-alpha.4) (2026-11-22)
+
+### Bug Fixes
+
+* **core:** clip an accordion item's body only while it's closed or animating ([dc2a8f8](https://github.com/Liquid-JS/lyra/commit/dc2a8f805db73a6f53adb8ea2f3d6a9850afcd02))
+
+### Features
+
+* **core:** give every focusable part the theme's focus ring, or a highlight where it reads as text ([5d5242e](https://github.com/Liquid-JS/lyra/commit/5d5242e9de8c7eab49f557f4075524e0d7b632ae))
+
 # [22.0.0-alpha.3](https://github.com/Liquid-JS/lyra/compare/v22.0.0-alpha.2...v22.0.0-alpha.3) (2026-11-22)
 
 ### Bug Fixes

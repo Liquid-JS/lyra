@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [22.0.0-alpha.4](https://github.com/Liquid-JS/lyra/compare/v22.0.0-alpha.3...v22.0.0-alpha.4) (2026-11-22)
+
+### Bug Fixes
+
+* **extras:** show a focus ring on the markdown editor's toolbar buttons ([1d51e0e](https://github.com/Liquid-JS/lyra/commit/1d51e0e180d1497354d0366bd3c2cc20222c382a))
+
 # [22.0.0-alpha.3](https://github.com/Liquid-JS/lyra/compare/v22.0.0-alpha.2...v22.0.0-alpha.3) (2026-11-22)
 
 **Note:** Version bump only for package @liquid-js/lyr-extras
