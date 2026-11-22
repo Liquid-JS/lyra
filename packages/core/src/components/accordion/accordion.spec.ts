@@ -1,4 +1,4 @@
-import { Component, viewChildren } from '@angular/core'
+import { Component, viewChild, viewChildren } from '@angular/core'
 import { TestBed } from '@angular/core/testing'
 import { NbAccordionItemComponent, NbAccordionModule, NbThemeModule } from '@liquid-js/lyr-core'
 
@@ -22,7 +22,41 @@ class NbAccordionTestComponent {
     changes = { first: [] as boolean[], second: [] as boolean[] }
 }
 
+@Component({
+    template: `
+    <nb-accordion>
+      <nb-accordion-item>
+        <nb-accordion-item-header>Lazy</nb-accordion-item-header>
+        <nb-accordion-item-body>
+          <span class="lazy-content" *nbAccordionItemBodyContent>Lazy body</span>
+        </nb-accordion-item-body>
+      </nb-accordion-item>
+    </nb-accordion>
+  `,
+    imports: [NbAccordionModule]
+})
+class NbAccordionLazyTestComponent {
+    readonly item = viewChild.required(NbAccordionItemComponent)
+}
+
 describe('nb-accordion', () => {
+    it('should create nbAccordionItemBodyContent when the item first expands, and keep it', () => {
+        TestBed.configureTestingModule({ imports: [NbThemeModule.forRoot(), NbAccordionLazyTestComponent] })
+        const fixture = TestBed.createComponent(NbAccordionLazyTestComponent)
+        fixture.detectChanges()
+        const content = () => fixture.nativeElement.querySelector('.lazy-content') as HTMLElement | null
+
+        expect(content()).toBeNull()
+
+        fixture.componentInstance.item().open()
+        fixture.detectChanges()
+        expect(content()?.textContent).toBe('Lazy body')
+
+        fixture.componentInstance.item().close()
+        fixture.detectChanges()
+        expect(content()).not.toBeNull()
+    })
+
     it('should report each item state change once', () => {
         TestBed.configureTestingModule({
             imports: [NbThemeModule.forRoot(), NbAccordionModule, NbAccordionTestComponent],

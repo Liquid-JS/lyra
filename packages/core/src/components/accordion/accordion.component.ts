@@ -54,6 +54,17 @@ export interface NbAccordionItem {
  *
  * `NbAccordionItemComponent` has several methods, for example it is possible to trigger item click/toggle:
  * @stacked-example(Expand API, accordion/accordion-toggle.component)
+ *
+ * An item's content is created with the accordion. Content in an `nbAccordionItemBodyContent` template is created
+ * when the item is first expanded, and kept from then on:
+ * ```html
+ * <nb-accordion-item>
+ *   <nb-accordion-item-header>Settings</nb-accordion-item-header>
+ *   <nb-accordion-item-body>
+ *     <some-component *nbAccordionItemBodyContent />
+ *   </nb-accordion-item-body>
+ * </nb-accordion-item>
+ * ```
  * @styles
  *
  * accordion-border-width:
