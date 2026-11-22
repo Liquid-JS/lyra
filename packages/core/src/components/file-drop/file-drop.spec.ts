@@ -327,6 +327,40 @@ describe('NbFileDropComponent', () => {
     })
 })
 
+@Component({
+    template: `
+    <nb-file-drop fullWidth [formControl]="control">
+      <ng-template nbFileDropPreview let-files let-url="url">
+        <img class="preview" [src]="url(files[0])" alt="" style="max-height: 4rem" />
+      </ng-template>
+    </nb-file-drop>
+  `,
+    imports: [ReactiveFormsModule, NbFileDropModule]
+})
+class FileDropImagePreviewHostComponent {
+    readonly control = new FormControl<unknown>(null)
+}
+
+describe('NbFileDropComponent preview', () => {
+    it('should show an image of a preview at its proportions, centred', async () => {
+        TestBed.configureTestingModule({ imports: [NbThemeModule.forRoot()] })
+        const fixture = TestBed.createComponent(FileDropImagePreviewHostComponent)
+        const canvas = document.createElement('canvas')
+        canvas.width = 200
+        canvas.height = 100
+        fixture.componentInstance.control.setValue(canvas.toDataURL())
+        fixture.detectChanges()
+        await fixture.whenStable()
+        const image = fixture.nativeElement.querySelector('img.preview') as HTMLImageElement
+        await image.decode()
+
+        const drop = (fixture.nativeElement.querySelector('nb-file-drop') as HTMLElement).getBoundingClientRect()
+        const box = image.getBoundingClientRect()
+        expect(box.width / box.height).toBeCloseTo(2, 1)
+        expect((box.left + box.right) / 2).toBeCloseTo((drop.left + drop.right) / 2, 0)
+    })
+})
+
 describe('NbFileDropComponent texts', () => {
     it('should use provided texts', async () => {
         TestBed.configureTestingModule({

@@ -1,8 +1,10 @@
+// A preview's content is centred at its own size, so an image keeps its proportions; the prompt and the file list
+// take the whole width.
 :host {
     position: relative;
     display: flex;
     flex-direction: column;
-    align-items: stretch;
+    align-items: center;
     justify-content: center;
     cursor: pointer;
 
@@ -12,6 +14,7 @@
 }
 
 .prompt {
+    align-self: stretch;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -26,6 +29,7 @@
 }
 
 .file-list {
+    align-self: stretch;
     list-style: none;
     margin: 0;
     padding: 0;
