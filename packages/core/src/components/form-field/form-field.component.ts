@@ -186,7 +186,11 @@ export class NbFormFieldComponent implements AfterContentChecked {
             onCleanup(() => {
                 this.resizeObserver?.unobserve(element)
                 this.addonProperties.delete(element)
-                host.style.removeProperty(property)
+                // Kept while the addon is still in the field, as when the field leaves with an animation, so the control
+                // keeps its padding until it's gone.
+                if (!host.contains(element)) {
+                    host.style.removeProperty(property)
+                }
             })
         })
     }

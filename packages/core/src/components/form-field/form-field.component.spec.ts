@@ -100,6 +100,50 @@ describe('NbFormFieldComponent', () => {
 
 @Component({
     template: `
+    <div class="nb-theme-default">
+    @if (shown()) {
+      <nb-form-field class="leaving" animate.leave="nb-form-field-spec-leave">
+        <span nbPrefix class="wide-box"></span>
+        <input nbInput />
+      </nb-form-field>
+    }
+    </div>
+  `,
+    styleUrl: './form-field.component.spec.scss',
+    styles: `
+    .wide-box { display: block; width: 4rem; height: 1.25rem; }
+    .nb-form-field-spec-leave { animation: nb-form-field-spec-hold 1s; }
+    @keyframes nb-form-field-spec-hold { to { opacity: 1; } }
+  `,
+    encapsulation: ViewEncapsulation.None,
+    imports: [NbFormFieldModule, NbInputModule]
+})
+class FormFieldLeavingHostComponent {
+    readonly shown = signal(true)
+}
+
+describe('NbFormFieldComponent leaving', () => {
+    it('should keep padding the control by its addon while it leaves with an animation', async () => {
+        TestBed.configureTestingModule({ imports: [NbThemeModule.forRoot()], animationsEnabled: true })
+        const fixture = TestBed.createComponent(FormFieldLeavingHostComponent)
+        fixture.detectChanges()
+        await fixture.whenStable()
+        await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+        const field = fixture.nativeElement.querySelector('nb-form-field.leaving') as HTMLElement
+        const padding = () => parseFloat(getComputedStyle(field.querySelector('input') as HTMLInputElement).paddingInlineStart)
+        const before = padding()
+        expect(before).toBeGreaterThan(60)
+
+        fixture.componentInstance.shown.set(false)
+        fixture.detectChanges()
+
+        expect(field.isConnected).toBe(true)
+        expect(padding()).toBe(before)
+    })
+})
+
+@Component({
+    template: `
     <nb-form-field class="state">
       <span nbPrefix>@</span>
       <input nbInput [status]="status()" [fieldSize]="size()" [fullWidth]="fullWidth()" [disabled]="disabled()" />
