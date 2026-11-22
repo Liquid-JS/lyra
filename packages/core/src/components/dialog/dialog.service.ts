@@ -164,6 +164,8 @@ export class NbDialogService {
         dialogRef.onClose.subscribe(() => escape.remove())
         const container = this.createContainer(config, overlayRef)
         this.createContent(config, content, container, dialogRef)
+        // Rendered before the browser paints, rather than with the next change detection, which can come a frame later.
+        container.detectChanges()
         void animateDialog(overlayRef.overlayElement, true)
 
         this.registerCloseListeners(config, overlayRef, dialogRef)

@@ -104,6 +104,15 @@ describe('dialog-service', () => {
         expect(ref.componentRef?.instance instanceof NbTestDialogComponent).toBeTruthy()
     })
 
+    it('should render its content as it opens, not with the next change detection', () => {
+        const ref = dialog.open(NbSignalInputTestDialogComponent, { context: { value: 10 } })
+        const content = ref.componentRef?.location.nativeElement as HTMLElement
+
+        expect(content.querySelector('.test-input')?.textContent?.trim()).toBe('10')
+        expect(dialog.open(NbRenderedContentTestDialogComponent).componentRef?.location.nativeElement
+            .querySelector('.test-rendered-button')).toBeTruthy()
+    })
+
     it('should fade in as it opens, and be removed only once it has faded out', async () => {
         document.body.appendChild(overlayContainer)
         const ref = dialog.open(NbTestDialogComponent, { autoFocus: false })

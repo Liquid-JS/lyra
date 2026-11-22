@@ -1,6 +1,7 @@
 import {
     afterNextRender,
     ChangeDetectionStrategy,
+    ChangeDetectorRef,
     Component,
     ComponentRef,
     ElementRef,
@@ -40,6 +41,7 @@ export class NbDialogContainerComponent implements OnInit, OnDestroy {
     protected readonly elementRef = inject(ElementRef)
     protected readonly focusTrapFactory = inject(NbFocusTrapFactoryService)
     protected readonly injector = inject(Injector)
+    protected readonly changeDetectorRef = inject(ChangeDetectorRef)
 
     readonly portalOutlet = viewChild.required(NbPortalOutletDirective)
 
@@ -68,5 +70,12 @@ export class NbDialogContainerComponent implements OnInit, OnDestroy {
 
     attachTemplatePortal<C>(portal: NbTemplatePortal<C>): EmbeddedViewRef<C> {
         return this.portalOutlet().attachTemplatePortal(portal)
+    }
+
+    /**
+     * Renders the dialog and its attached content now.
+     */
+    detectChanges() {
+        this.changeDetectorRef.detectChanges()
     }
 }
