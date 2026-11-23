@@ -1,66 +1,15 @@
-import {
-    booleanAttribute,
-    ChangeDetectionStrategy,
-    Component,
-    computed,
-    contentChildren,
-    ElementRef,
-    inject,
-    input,
-    TemplateRef,
-    viewChild,
-    viewChildren,
-    ViewEncapsulation
-} from '@angular/core'
-import type { Node, Root } from 'mdast'
+import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from '@angular/core'
+import { NbMarkdownProcessor, NbMarkdownRendering } from '@liquid-js/lyr-extras/markdown-renderer'
 import { RemarkNodeComponent, RemarkTemplateDirective, RemarkTemplatesService } from 'ngx-remark'
-import { HighlightDirective, NXT_HIGHLIGHT_OPTIONS } from 'nxt-highlightjs'
+import { HighlightDirective } from 'nxt-highlightjs'
 import { remark } from 'remark'
 import remarkGfm from 'remark-gfm'
 import remarkSmartypants from 'remark-smartypants'
-
-import { prepareTree } from './markdown-tree'
-import { injectNbMarkdownViewerTexts } from './texts'
-
-/** A unified processor that parses markdown, with its plugins, e.g. `remark().use(remarkGfm)`. */
-export interface NbMarkdownProcessor {
-    parse(markdown: string): Node
-    runSync(tree: Node): Node
-}
 
 /** Typographic characters for the plain ones the markdown editor's Format button writes: `--` and `---` are dashes. */
 const typography = { dashes: 'oldschool' } as const
 
 const defaultProcessor: NbMarkdownProcessor = remark().use(remarkGfm).use(remarkSmartypants, typography).freeze()
-
-/** HTML elements the markdown can use in a line of text, without their attributes. */
-const htmlElements = new Set([
-    'abbr',
-    'b',
-    'br',
-    'cite',
-    'code',
-    'del',
-    'em',
-    'i',
-    'ins',
-    'kbd',
-    'mark',
-    's',
-    'samp',
-    'small',
-    'span',
-    'strong',
-    'sub',
-    'sup',
-    'u',
-    'var',
-    'wbr'
-])
-
-const blockParents = new Set(['root', 'blockquote', 'listItem', 'footnoteDefinition'])
-
-let nextId = 0
 
 /**
  * Shows markdown, in the theme's text styles:
@@ -115,6 +64,8 @@ let nextId = 0
  * they need `dir="auto"` themselves.
  *
  * `processor` replaces the parser, e.g. to add remark plugins, whose new types of nodes need templates of their own.
+ * An app with a processor and content styles of its own can use `nb-markdown-renderer` instead, which renders the same
+ * way without loading the default processor's packages or these styles.
  *
  * ### Code highlighting
  *
@@ -137,7 +88,8 @@ let nextId = 0
  */
 @Component({
     selector: 'nb-markdown-viewer',
-    templateUrl: './markdown-viewer.component.html',
+    // The renderer's templates, so both render the markdown the same way.
+    templateUrl: '../../markdown-renderer/src/markdown-renderer.component.html',
     styleUrl: './markdown-viewer.component.scss',
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush,
@@ -147,61 +99,11 @@ let nextId = 0
         class: 'nb-markdown'
     }
 })
-export class NbMarkdownViewerComponent {
-    /** The markdown to show. */
-    readonly markdown = input('')
+export class NbMarkdownViewerComponent extends NbMarkdownRendering {
     /** Parses the markdown, `remark().use(remarkGfm).use(remarkSmartypants, { dashes: 'oldschool' })` by default. */
     readonly processor = input<NbMarkdownProcessor>()
-    /**
-     * Gives each block of the document, e.g. a paragraph or a list, the direction of its own text (`dir="auto"`), for
-     * text in more than one direction; `false` by default.
-     */
-    readonly autoDirection = input(false, { transform: booleanAttribute })
 
-    /** The markdown's syntax tree, as its templates render it. */
-    readonly tree = computed(() => {
-        const processor = this.processor() ?? defaultProcessor
-        return prepareTree(processor.runSync(processor.parse(this.markdown())) as Root)
-    })
-
-    protected readonly id = `nb-markdown-${nextId++}`
-    protected readonly texts = injectNbMarkdownViewerTexts()
-    protected readonly htmlElements = htmlElements
-    protected readonly blockParents = blockParents
-    protected readonly element = inject<ElementRef<HTMLElement>>(ElementRef)
-    /** Whether the app loads highlight.js for code, the same on the server and in the browser. */
-    protected readonly highlighting = !!inject(NXT_HIGHLIGHT_OPTIONS, { optional: true })
-    protected readonly defaultTemplates = viewChildren(RemarkTemplateDirective)
-    protected readonly customTemplates = contentChildren(RemarkTemplateDirective)
-    protected readonly fallback = viewChild.required<TemplateRef<unknown>>('fallback')
-
-    constructor() {
-    // A node without a template, e.g. of a plugin, shows its content.
-        inject(RemarkTemplatesService).templates = computed(() => {
-            const templates: Record<string, TemplateRef<unknown> | undefined> = {}
-            for (const template of [...this.defaultTemplates(), ...this.customTemplates()]) {
-                templates[template.nodeType()] = template.template
-            }
-            const fallback = this.fallback()
-            return new Proxy(templates, { get: (target, type: string) => target[type] ?? fallback })
-        })
-    }
-
-    /** `auto` for a block of the document, with `autoDirection`, which a block in a quote or a list shares. */
-    protected direction(parent: Node) {
-        return this.autoDirection() && parent.type === 'root' ? 'auto' : null
-    }
-
-    protected footnoteId(identifier: string, reference = false) {
-        return `${this.id}-${reference ? 'fnref' : 'fn'}-${identifier}`
-    }
-
-    /** Moves to a footnote in the page, whose address the document's base would otherwise change. */
-    protected showFootnote(event: Event, id: string) {
-        const target = this.element.nativeElement.querySelector<HTMLElement>(`#${CSS.escape(id)}`)
-        if (target) {
-            event.preventDefault()
-            target.scrollIntoView()
-        }
+    protected parser() {
+        return this.processor() ?? defaultProcessor
     }
 }

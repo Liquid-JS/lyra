@@ -1,0 +1,9 @@
+// Only what the templates need to lay out; the content's look is the app's.
+nb-markdown-renderer {
+    display: block;
+
+    // nodes whose content is rendered in another element, e.g. a task's text next to its state
+    remark-node {
+        display: contents;
+    }
+}

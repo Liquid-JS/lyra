@@ -1,3 +1,8 @@
 export * from './markdown-viewer.component'
-export type { NbMarkdownFootnoteBack, NbMarkdownFootnotes, NbMarkdownHtmlElement } from './markdown-tree'
-export type { NbMarkdownViewerTexts } from './texts'
+export type {
+    NbMarkdownFootnoteBack,
+    NbMarkdownFootnotes,
+    NbMarkdownHtmlElement,
+    NbMarkdownProcessor,
+    NbMarkdownViewerTexts
+} from '@liquid-js/lyr-extras/markdown-renderer'
