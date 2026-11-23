@@ -19,5 +19,9 @@ export const MARKDOWN_ROUTES: Routes = [
         path: 'markdown-viewer-templates.component',
         loadComponent: () =>
             import('./markdown-viewer-templates.component').then((m) => m.MarkdownViewerTemplatesComponent)
+    },
+    {
+        path: 'markdown-renderer.component',
+        loadComponent: () => import('./markdown-renderer.component').then((m) => m.MarkdownRendererComponent)
     }
 ]

@@ -1,0 +1,27 @@
+// The app's own content styles, built on the theme's variables.
+.release-notes .uf-contents {
+    h3 {
+        margin: 1.5rem 0 0.5rem;
+        font-size: var(--text-subtitle-font-size);
+        color: var(--text-hint-color);
+
+        &:first-child {
+            margin-top: 0;
+        }
+    }
+
+    ul {
+        margin: 0;
+        padding-inline-start: 1.25rem;
+    }
+
+    table {
+        border-collapse: collapse;
+    }
+
+    th,
+    td {
+        padding: 0.25rem 1rem 0.25rem 0;
+        text-align: start;
+    }
+}

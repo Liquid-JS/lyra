@@ -2090,6 +2090,12 @@ export const PLAYGROUND_COMPONENTS: ComponentLink[] = [
                 link: '/markdown/markdown-viewer-templates.component',
                 component: 'MarkdownViewerTemplatesComponent',
                 name: 'Markdown Viewer Templates'
+            },
+            {
+                path: 'markdown-renderer.component',
+                link: '/markdown/markdown-renderer.component',
+                component: 'MarkdownRendererComponent',
+                name: 'Markdown Renderer'
             }
         ]
     },

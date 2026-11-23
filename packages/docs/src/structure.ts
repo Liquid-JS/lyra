@@ -1001,7 +1001,7 @@ export const structure: NgdAreaEntry[] = [
                         type: 'tabs',
                         name: 'Markdown Viewer',
                         icon: 'markdown-viewer.svg',
-                        source: ['NbMarkdownViewerComponent']
+                        source: ['NbMarkdownViewerComponent', 'NbMarkdownRendererComponent']
                     },
                     {
                         type: 'tabs',
