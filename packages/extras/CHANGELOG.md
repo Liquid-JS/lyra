@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [22.0.0-alpha.5](https://github.com/Liquid-JS/lyra/compare/v22.0.0-alpha.4...v22.0.0-alpha.5) (2026-11-24)
+
+### Features
+
+* **extras:** add nb-markdown-renderer, the markdown viewer without its processor and styles ([57f59a1](https://github.com/Liquid-JS/lyra/commit/57f59a1635f4ca03a288f9ede7b6405f5509e36f))
+
 # [22.0.0-alpha.4](https://github.com/Liquid-JS/lyra/compare/v22.0.0-alpha.3...v22.0.0-alpha.4) (2026-11-22)
 
 ### Bug Fixes
