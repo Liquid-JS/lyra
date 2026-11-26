@@ -6,10 +6,20 @@ nb-phone-input {
         display: block;
     }
 
-    // The flag and the arrow close together, and the number apart from the button, which the field pads it by.
-    .nb-phone-input-country {
+    // The flag and the arrow close together, and the number as close after the arrow: the button ends as near the
+    // arrow as the arrow is to the flag. It starts as a prefix icon is inset, so the flag lines up with the icons of
+    // other fields; the field pads the number by the button's width.
+    .nb-phone-input-country-content {
+        display: inline-flex;
         gap: 0.25rem;
-        margin-inline-end: 0.25rem;
+        align-items: center;
+    }
+
+    @each $size in (tiny, small, medium, large, giant) {
+        .nb-phone-input-country.appearance-ghost.size-#{$size}[nbButton] {
+            padding-inline-start: calc((var(--form-field-addon-#{$size}-width) - var(--form-field-addon-#{$size}-icon-size)) / 2);
+            padding-inline-end: 0.25rem;
+        }
     }
 
     // The number reads left to right from the left in any page, as nbInput's tel fields do, while the country button

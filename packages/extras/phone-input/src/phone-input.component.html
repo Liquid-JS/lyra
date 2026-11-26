@@ -10,11 +10,14 @@
         [disabled]="isDisabled() || readonly()"
         [attr.aria-label]="countryLabel()"
         (click)="pick()">
-        <nxt-flag [country]="flag(selectedCountry())"
-            size="s" />
-        <nb-icon icon="chevron-down-outline"
-            pack="essentials"
-            aria-hidden="true" />
+        <!-- Together in one element, so the button spaces neither as its icon: the arrow sits close to the flag. -->
+        <span class="nb-phone-input-country-content">
+            <nxt-flag [country]="flag(selectedCountry())"
+                size="s" />
+            <nb-icon icon="chevron-down-outline"
+                pack="essentials"
+                aria-hidden="true" />
+        </span>
     </button>
     <input #number
         nbInput
