@@ -22,7 +22,14 @@ export interface NbRouteTab {
 }
 
 /**
- * Tabs that are router links, with a `router-outlet` under them for the active route's content.
+ * Tabs that are router links, with a `router-outlet` under them for the active route's content. Without the outlet,
+ * `outlet="false"`, the tabs are navigation alone, such as a header's links to the app's pages:
+ *
+ * ```html
+ * <nb-layout-header>
+ *   <nb-route-tabset [tabs]="pages" outlet="false" />
+ * </nb-layout-header>
+ * ```
  *
  * ```ts
  * tabs: NbRouteTab[] = [
@@ -125,10 +132,14 @@ export interface NbRouteTab {
     }
 })
 export class NbRouteTabsetComponent {
+    /** The tabs, each a link to its `route`. */
     readonly tabs = input<NbRouteTab[]>([])
 
     /** The `routerLinkActiveOptions` of the tabs' links; `{ exact: true }` by default. */
     readonly activeLinkOptions = input<RouterLinkActive['routerLinkActiveOptions']>({ exact: true })
+
+    /** Shows the active route's content in a `router-outlet` under the tabs; off, the tabs are navigation alone. */
+    readonly outlet = input<boolean, NbBooleanInput>(true, { transform: convertToBoolProperty })
 
     /** The tabs share the tabset's width. */
     readonly fullWidth = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty })

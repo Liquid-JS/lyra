@@ -15,6 +15,17 @@ class RouteTabsetTestComponent {
     ]
 }
 
+@Component({
+    template: '<nb-route-tabset [tabs]="tabs" outlet="false" />',
+    imports: [NbRouteTabsetModule]
+})
+class RouteNavigationTestComponent {
+    readonly tabs: NbRouteTab[] = [
+        { title: 'Orders', route: '/orders' },
+        { title: 'Archive', route: '/archive' }
+    ]
+}
+
 describe('nb-route-tabset', () => {
     it('should isolate the direction of the tab titles', () => {
         TestBed.configureTestingModule({ providers: [provideRouter([])] })
@@ -40,5 +51,23 @@ describe('nb-route-tabset', () => {
 
         const link = fixture.nativeElement.querySelector('.route-tab:not(.disabled) a') as HTMLAnchorElement
         expect(link.getAttribute('aria-current')).toBe('page')
+    })
+
+    it('should leave out its outlet when the tabs are navigation alone', () => {
+        TestBed.configureTestingModule({ providers: [provideRouter([])] })
+        const fixture = TestBed.createComponent(RouteNavigationTestComponent)
+        fixture.detectChanges()
+
+        const element: HTMLElement = fixture.nativeElement
+        expect(element.querySelector('router-outlet')).toBeNull()
+        expect(element.querySelectorAll('.route-tab')).toHaveLength(2)
+    })
+
+    it('should show the active route in its outlet by default', () => {
+        TestBed.configureTestingModule({ providers: [provideRouter([])] })
+        const fixture = TestBed.createComponent(RouteTabsetTestComponent)
+        fixture.detectChanges()
+
+        expect((fixture.nativeElement as HTMLElement).querySelector('router-outlet')).not.toBeNull()
     })
 })
