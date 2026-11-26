@@ -27,7 +27,7 @@
     .h4,
     .h5,
     .h6 {
-        color: nb-theme(text-basic-color);
+        color: nb-theme(text-heading-color);
     }
 
     @each $size in (1, 2, 3, 4, 5, 6) {

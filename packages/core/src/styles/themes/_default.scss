@@ -314,6 +314,8 @@ $theme: (
     border-danger-color-5: color-danger-900,
     // Text colors - general and status
     text-basic-color: color-basic-800,
+    // Headings' own, h1 to h6: the text colour unless a theme gives them one, e.g. a brand's heading colour.
+    text-heading-color: text-basic-color,
     text-alternate-color: color-basic-100,
     text-control-color: color-basic-100,
     text-disabled-color: color-basic-transparent-600,
