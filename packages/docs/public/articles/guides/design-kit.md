@@ -64,12 +64,17 @@ of. Stack them in a frame with auto layout to build your own:
 
 - **App layout**: `Layout Header`, `Sidebar/Expanded` or `Sidebar/Compacted`, and `Layout Footer` around your
   content, on `Background/Basic/3`, each resized as your screen needs. The sidebar holds a menu.
+- **Phones, tablets and laptops**: `Adaptive Layout/Laptop`, `/Tablet` and `/Phone` show one layout at each size: a
+  header with the sections as tabs, the actions and the user; on a phone, a top bar whose actions fold into a menu,
+  `Route Tabset/Bar/…` with the sections along the bottom, and `/Phone/Drawer`, the drawer with the user and the
+  account's links over the page. Design each screen at the sizes it's used at, from these.
 - **Menus**: `Menu Item/…` for each item, by kind: `Icon`, `Collapsed` and `Expanded` for items with children,
   `Child`, `Badge` and `Group`, each also `Selected`. Starters show them at rest, hovered and selected.
 - **Actions**: `Action/…` side by side, by size, with an icon alone, a `Dot` or a `Badge`; the `Disabled` look. In
   code, actions after the first have a divider before them, as the `Actions` symbols show, unless it's turned off.
 - **Tabs**: `Tab/Text`, `Tab/Icon` or `Tab/Badge` side by side, one of them with the `Active` look. Tabs that link to
-  pages, e.g. a header's navigation, are an `nb-route-tabset` with `outlet="false"` in code.
+  pages, e.g. a header's navigation, are an `nb-route-tabset` with `outlet="false"` in code, and a phone's along the
+  bottom are `Route Tabset/Bar/3 Tabs` to `/5 Tabs`, `appearance="bar"` in a fixed footer.
 - **Tables**: a row of `Table Header Cell/…`, `Unsorted` or sorted by its column, above rows of `Table Cell`.
 - **Lists**: `List Item`, one below another.
 - **Cards**: a frame with a card's layer style, such as `Card/Outline`, holding a `Card Header` starter for its
@@ -243,6 +248,9 @@ the design's Check page and every finding in its `lyra-check` setting. Then, wit
 - Set what a component's `notes` say it needs to look as drawn, e.g. a badge's `position`.
 - Read the component's `docs` page for inputs and content the design doesn't show.
 - Compare a screenshot of the result with the design.
+- A design with phone and laptop screens is one layout in code: the parts that show at one size alone take
+  `*nbShownBelow="'md'"` or `*nbShownAbove="'md'"`, actions `collapse="menu" below="md"`, and a phone's drawer is a
+  `fixed drawer` sidebar; the `Adaptive Layout` symbols' notes in `lyra-kit.json` show how.
 
 ### Scripting the kit
 
