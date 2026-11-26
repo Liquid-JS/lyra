@@ -57,6 +57,7 @@
         "design-kit:model": "yarn workspace design-kit model",
         "design-kit:sketch": "yarn workspace design-kit sketch",
         "design-kit:manifest": "yarn workspace design-kit manifest",
+        "design-kit:devices": "yarn workspace design-kit devices",
         "docs:prepare": "node scripts/docs/prepare.ts",
         "docs:example-pictures": "node scripts/docs/example-pictures.ts",
         "docs:home-devices": "node scripts/docs/home-devices.ts",

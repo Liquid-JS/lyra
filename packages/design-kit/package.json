@@ -10,6 +10,7 @@
         "model": "node src/model.ts",
         "sketch": "node src/sketch.ts",
         "manifest": "node src/manifest.ts",
+        "devices": "node src/devices.ts",
         "typecheck": "run -T tsc -p tsconfig.json --noEmit && run -T tsc -p src/sketch/tsconfig.json --noEmit",
         "lint": "yarn typecheck && run -T eslint .",
         "lint:fix": "run -T eslint . --fix",

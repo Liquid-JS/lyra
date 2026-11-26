@@ -72,6 +72,13 @@ typography text styles, the icon symbols and the Colors, Typography and Effects 
 file; a component's run warns about any it can't find. The docs' Theme Editor updates the colour variables and fonts
 from a theme (its Design kit tab).
 
+## Phones and right to left
+
+`yarn design-kit:devices [component …] [--url …] [--width 390]` opens each specimen page at a phone's width, left to
+right and then right to left, and writes `devices.json`: the page's errors, the parts that run out of their component,
+and the parts that don't mirror. Some are expected, e.g. a step's label wider than its number, or a menu's chevron that's
+another icon right to left; look through the rest before a release.
+
 ## Before publishing
 
 - Update the version on the Cover page to the release's.
