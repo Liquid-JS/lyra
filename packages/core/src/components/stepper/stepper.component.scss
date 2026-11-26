@@ -1,4 +1,7 @@
 :host(.horizontal) {
+    // A block, as the kit draws it: margins around a stepper apply.
+    display: block;
+
     .header {
         .step {
             flex-direction: column;
