@@ -3,13 +3,17 @@ import sketch = require('sketch')
 import type { FileColour, FileLayer } from './file-format.ts'
 
 /**
- * An open document by its path, or by its ID: copies of a file share its ID, so a path finds the right one. A path as
- * Sketch gives it is encoded, e.g. spaces as `%20`.
+ * A path as the same file has it however it's reached: Sketch gives a path encoded, e.g. spaces as `%20`, and macOS's
+ * `/tmp`, `/var` and `/etc` are links to `/private/…`, which Sketch gives either way.
  */
+export const samePath = (path: string): string => decodeURIComponent(path).replace(/^\/private\/(tmp|var|etc)\//, '/$1/')
+
+/** An open document by its path, or by its ID: copies of a file share its ID, so a path finds the right one. */
 export function openDocument(pathOrId: string): sketch.Document {
     const opened = sketch.getDocuments()
+    const wanted = samePath(pathOrId)
     const found =
-        opened.find((candidate) => candidate.path && decodeURIComponent(String(candidate.path)) === pathOrId) ??
+        opened.find((candidate) => candidate.path && samePath(String(candidate.path)) === wanted) ??
         opened.find((candidate) => candidate.id === pathOrId)
     if (!found) {
         throw new Error(`No open document ${pathOrId}`)

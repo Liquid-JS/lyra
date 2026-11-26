@@ -18,7 +18,7 @@ const PADDING = 64
 const COLUMN = 760
 const ROW = 28
 const HEADING = 56
-const INTRO = 120
+const INTRO = 144
 const DARK = '#222b45ff'
 const VALUE = '#2e3a59ff'
 const HINT = '#8f9bb3ff'
@@ -36,7 +36,7 @@ function rowOf(knob: ThemeKnob, values: BoardValues) {
 
 const titleOf = (values: BoardValues) => `Theme: ${values.themeName}, over Lyra's ${values.baseTheme} theme`
 const introductionOf = (values: BoardValues) =>
-    `Every value the kit follows, by what it's for: a value of the theme's own, or the formula it follows from others, as Lyra's ${values.baseTheme} theme sets it. Change a value, or a colour's chip, then run Lyra › Apply theme: everything that follows it changes with it, as it does in the app. Clear a value for the ${values.baseTheme} theme's again.`
+    `Every value the kit follows, by what it's for: a value of the theme's own, or the formula it follows from others, as Lyra's ${values.baseTheme} theme sets it. Change a value, or a colour's chip, then run Lyra › Apply theme: everything that follows it changes with it, as it does in the app. Clear a value for the ${values.baseTheme} theme's again. Any other variable in tokens.json can be given to the theme script, as the design kit guide shows: the theme keeps it when it's applied from here again.`
 
 /**
  * What the theme sets, and what the kit follows, on a board of its own, to change and apply again: each variable's own

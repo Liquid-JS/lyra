@@ -16,7 +16,7 @@ import { combinations, kit } from './specimen'
                 <nb-step label="Account"
                     [completed]="true">Account details</nb-step>
                 <nb-step label="Profile">Profile details</nb-step>
-                <nb-step label="Plan">Plan details</nb-step>
+                <nb-step label="Payment">Payment details</nb-step>
                 <nb-step label="Confirm">Confirm details</nb-step>
             </nb-stepper>
             }

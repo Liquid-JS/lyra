@@ -1,7 +1,7 @@
 import sketch = require('sketch')
 
 import type { ComponentData, Gradient, Layer, LayerStyle, Paint, Starter, TextStyle } from '../kit.ts'
-import { childrenOf, fileFormatOf, openDocument } from './document.ts'
+import { childrenOf, fileFormatOf, isLocal, openDocument } from './document.ts'
 import type { FileLayer } from './file-format.ts'
 import { WEIGHT_INDEX } from './theme/values.ts'
 
@@ -79,6 +79,7 @@ class ComponentBuilder {
 
     build(): void {
         this.buildStyles()
+        this.adoptRenamed()
         const built: sketch.SymbolMaster[] = []
         const symbolsByName = new Map(this.kit.symbols.map((symbol) => [symbol.name, symbol]))
         for (const symbol of this.kit.symbols) {
@@ -524,6 +525,11 @@ class ComponentBuilder {
             made.horizontalPins = near(layer.x, layer.width, parentLayer.width)
             made.verticalPins = near(layer.y, layer.height, parentLayer.height)
         }
+        // At its share of its parent's width, e.g. a progress bar's value, as the instance is drawn wider or narrower.
+        if (layer.relative) {
+            made.horizontalPins = sketch.Pin.Min
+            made.horizontalSizing = sketch.FlexSizing.Relative
+        }
         return made
     }
 
@@ -631,6 +637,29 @@ class ComponentBuilder {
     }
 
     /** A symbol master, new or emptied for rebuilding, kept where it is. */
+    /**
+     * A symbol the kit has under a longer name since an input was added, e.g. `Progress Bar/Bar/Medium` now one per
+     * value: the first of those takes it over, keeping its ID, so designs that use it stay linked. Others the kit no
+     * longer has are kept for the designs that use them, with a warning.
+     */
+    private adoptRenamed() {
+        const names = new Set([...this.kit.symbols, ...this.kit.starters].map((symbol) => symbol.name))
+        const prefix = `${this.kit.component}/`
+        for (const [name, master] of [...this.masters]) {
+            if (!name.startsWith(prefix) || names.has(name) || !isLocal(master)) {
+                continue
+            }
+            const successor = this.kit.symbols.find((symbol) => symbol.name.startsWith(`${name}/`) && !this.masters.has(symbol.name))
+            if (successor) {
+                master.name = successor.name
+                this.masters.delete(name)
+                this.masters.set(successor.name, master)
+            } else {
+                this.warnings.push(`${name} isn't in the kit any more: remove it once no design uses it`)
+            }
+        }
+    }
+
     private symbolMaster(name: string, width: number, height: number): sketch.SymbolMaster {
         let made = this.masters.get(name)
         if (made) {
@@ -849,9 +878,13 @@ function lockOverrides(made: sketch.SymbolMaster, root: Layer) {
         if (depth === 1 && override.property === 'symbolID' && override.affectedLayer.name.endsWith(' Glyph')) {
             editable = true
         }
+        // A picture, e.g. a user's, can be the design's own.
+        if (depth === 1 && override.property === 'image' && override.affectedLayer.type === 'Image') {
+            editable = true
+        }
         // Inside a component of the kit: what its own symbol lets its users set, two levels deep at most.
         if (depth === 2) {
-            editable = holdsKitSymbol && ['stringValue', 'layerStyle', 'textStyle', 'fillColor', 'textColor'].includes(override.property)
+            editable = holdsKitSymbol && ['stringValue', 'layerStyle', 'textStyle', 'fillColor', 'textColor', 'image'].includes(override.property)
         }
         override.editable = editable
     }

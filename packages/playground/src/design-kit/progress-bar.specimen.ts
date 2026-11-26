@@ -3,7 +3,10 @@ import { NbProgressBarComponent } from '@liquid-js/lyr-core'
 
 import { combinations, kit, SIZES, STATUSES } from './specimen'
 
-/** Progress at 60%, with its value shown, as a bar and a ring, in each size and status. */
+/**
+ * Progress with its value shown, as a bar and a ring, in each size: at 60% in each status, and bars from 0 to 100% in
+ * steps of 10 in the primary one.
+ */
 @Component({
     template: `
         <div class="specimens">
@@ -12,7 +15,7 @@ import { combinations, kit, SIZES, STATUSES } from './specimen'
                 [shape]="bar.shape"
                 [size]="bar.size"
                 [status]="bar.status"
-                [value]="60"
+                [value]="bar.value"
                 displayValue
                 aria-label="Progress"
                 [style.width]="bar.shape === 'bar' ? '16rem' : null" />
@@ -23,5 +26,9 @@ import { combinations, kit, SIZES, STATUSES } from './specimen'
 })
 export class ProgressBarSpecimenComponent {
     readonly kit = kit
-    readonly bars = combinations({ shape: ['bar', 'ring'] as const, size: SIZES, status: STATUSES })
+    readonly bars = [
+        ...combinations({ shape: ['bar', 'ring'] as const, size: SIZES, value: [60], status: STATUSES }),
+        // A ring's arc is a gradient its status's style holds, which a swap would keep: rings show 60% alone.
+        ...combinations({ shape: ['bar'] as const, size: SIZES, value: [0, 10, 20, 30, 40, 50, 70, 80, 90, 100], status: ['primary'] as const })
+    ]
 }

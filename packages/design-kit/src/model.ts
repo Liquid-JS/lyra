@@ -512,7 +512,8 @@ function layoutOf(node: CapturedNode, children: CapturedNode[]): Layer['layout']
     // e.g. a label and its required mark.
     const field = node.tag === 'input' || node.tag === 'textarea'
     // A table cell lays its content out as a block does, e.g. a sortable header's button and arrow in a row.
-    const shown = node.style.display === 'table-cell' ? 'block' : node.style.display
+    // So does a block that holds its floats, e.g. a validation error's.
+    const shown = node.style.display === 'table-cell' || node.style.display === 'flow-root' ? 'block' : node.style.display
     const display = field ? 'flex' : shown ?? 'block'
     if (!['flex', 'block', 'inline-flex'].includes(display)) {
         return undefined
@@ -536,7 +537,12 @@ function layoutOf(node: CapturedNode, children: CapturedNode[]): Layer['layout']
         return undefined
     }
     const flexValue = (value: string | undefined, fallback: string) =>
-        !value || value === 'normal' ? fallback : value.replace(/^flex-/, '').replace('space-between', 'between')
+        !value || value === 'normal' ? fallback : value.replace(/^(flex|flow|self)-/, '').replace('space-between', 'between')
+    // A reversed row or column is laid out from its end: its children are drafted in reverse, packed at the other end.
+    const reversed = !field && !inline && display !== 'block' && !!node.style.flexDirection?.endsWith('-reverse')
+    // Children that grow take the room the justification would spread, e.g. a stepper's connectors.
+    const justify = flowing.some((child) => Number(child.style.flexGrow) > 0) ? 'start' : flexValue(node.style.justifyContent, 'start')
+    const packed = reversed ? ({ start: 'end', end: 'start' } as Record<string, string>)[justify] ?? justify : justify
     // A block of centred (or end-aligned) text alone, e.g. an avatar's initials, centres it.
     const textAlign = node.style.textAlign ?? 'start'
     const aligned = display === 'block' && flowing.length > 0 && flowing.every((child) => child.tag === '#text') && /center|end|right/.test(textAlign)
@@ -561,7 +567,7 @@ function layoutOf(node: CapturedNode, children: CapturedNode[]): Layer['layout']
         gap,
         padding,
         align,
-        justify: field || inline ? 'start' : flexValue(node.style.justifyContent, 'start'),
+        justify: field || inline ? 'start' : packed,
         hug: { width: false, height: false },
         ...(field ? { fixed: true } : {})
     }
@@ -651,6 +657,39 @@ function growOnlyWithRoom(layer: Layer) {
     }
 }
 
+/**
+ * Makes the texts in a part wrap in the room the component gives it, as code wraps a longer text, e.g. a toast's
+ * message: the part takes the room its row leaves, or its column's width, and its columns and texts their width.
+ */
+function wrapIn(layer: Layer, part: string) {
+    const index = layer.children.findIndex((child) => child.name === part)
+    const found = layer.children[index]
+    if (!found) {
+        layer.children.forEach((child) => wrapIn(child, part))
+        return
+    }
+    if (layer.layout?.direction === 'row') {
+        found.grow = true
+    } else if (layer.layout) {
+        found.fill = true
+    }
+    const spread = (frame: Layer) => {
+        if (!frame.layout || frame.layout.direction !== 'column') {
+            return
+        }
+        frame.layout.hug.width = false
+        for (const child of frame.children.filter((candidate) => !candidate.absolute)) {
+            child.fill = true
+            if (child.kind === 'text') {
+                child.textSizing = 'fixed'
+                child.width = round(frame.width - frame.layout.padding[1] - frame.layout.padding[3])
+            }
+            spread(child)
+        }
+    }
+    spread(found)
+}
+
 /** Whether a layer is a field, e.g. an input, or holds one. */
 const holdsField = (layer: Layer): boolean => !!layer.layout?.fixed || layer.children.some(holdsField)
 
@@ -702,6 +741,10 @@ function stacks(layer: Layer, retried = false): boolean {
         const crossSize = row ? child.height : child.width
         const expectedCross =
             layout.align === 'center' ? startCross + (innerCross - crossSize) / 2 : layout.align === 'end' ? startCross + innerCross - crossSize : startCross
+        // A part of its own size across isn't stretched, e.g. a chat message's avatar beside its taller bubble.
+        if (child.fill && child.kind !== 'text' && Math.abs(crossSize - innerCross) >= tolerance && Math.abs(cross - startCross) < tolerance) {
+            child.fill = false
+        }
         const placed =
             Math.abs((row ? child.x : child.y) - main) < tolerance &&
             Math.abs(cross - expectedCross) < tolerance &&
@@ -713,9 +756,49 @@ function stacks(layer: Layer, retried = false): boolean {
         for (const child of inFlow) {
             delete child.fill
         }
+        // Parts off the row's line across, e.g. a stepper's connectors level with its steps' numbers: each in a box as
+        // tall as the row, where it keeps its place, so the row can stack the boxes.
+        const crossAt = (child: Layer) => (row ? child.y : child.x)
+        const offLine = inFlow.filter((child) => child.kind !== 'text' && !child.fill && layout.align === 'start' && Math.abs(crossAt(child) - startCross) > 0.6)
+        const within = offLine.every((child) => crossAt(child) > startCross && crossAt(child) + (row ? child.height : child.width) <= startCross + innerCross + 0.6)
+        if (!retried && offLine.length && within && !layer.children.some((child) => child.name.endsWith(' Box'))) {
+            const children = layer.children
+            layer.children = children.map((child) => {
+                if (!offLine.includes(child)) {
+                    return child
+                }
+                const box: Layer = {
+                    name: `${child.name} Box`,
+                    kind: 'frame',
+                    x: row ? child.x : startCross,
+                    y: row ? startCross : child.y,
+                    width: row ? child.width : innerCross,
+                    height: row ? innerCross : child.height,
+                    children: [{ ...child, x: row ? 0 : round(child.x - startCross), y: row ? round(child.y - startCross) : 0, grow: false }],
+                    ...(child.grow ? { grow: true } : {})
+                }
+                return box
+            })
+            if (stacks(layer, false)) {
+                return true
+            }
+            layer.children = children
+        }
+        // Room before the first child, e.g. a validation message's top margin, as the frame's padding.
+        // Not where something grows into that room, e.g. a divider's line before its label.
+        const lead = inFlow.length && layout.justify === 'start' && !layer.children.some((child) => child.absolute && child.grow) && inFlow[0].width > 0 && inFlow[0].height > 0 ? (row ? inFlow[0].x - left : inFlow[0].y - top) : 0
+        if (lead > 0.6) {
+            const padding = [...layout.padding] as [number, number, number, number]
+            layout.padding[row ? 3 : 0] = round(layout.padding[row ? 3 : 0] + lead)
+            if (stacks(layer, retried)) {
+                return true
+            }
+            layout.padding = padding
+        }
         // Spacing from margins, e.g. a button's icon's, as a stack's gap, where it's even between the children.
         const spaces = inFlow.slice(1).map((child, index) => (row ? child.x - (inFlow[index].x + inFlow[index].width) : child.y - (inFlow[index].y + inFlow[index].height)))
-        if (!retried && spaces.length && spaces.every((space) => Math.abs(space - spaces[0]) < 0.6) && Math.abs(spaces[0] - layout.gap) > 0.5) {
+        // Overlapping by a border at most, e.g. a button group's buttons, not laid over one another.
+        if (!retried && spaces.length && spaces[0] > -2.1 && spaces.every((space) => Math.abs(space - spaces[0]) < 0.6) && Math.abs(spaces[0] - layout.gap) > 0.5) {
             const gap = layout.gap
             layout.gap = round(spaces[0])
             if (stacks(layer, true)) {
@@ -779,12 +862,20 @@ function stacks(layer: Layer, retried = false): boolean {
         }
         return false
     }
+    // Room after the last child where children grow, e.g. a stepper's last step's margin, as the frame's padding: else
+    // they'd grow into it.
+    const last = inFlow[inFlow.length - 1]
+    const trailing = last ? (row ? layer.width - right - (last.x + last.width) : layer.height - bottom - (last.y + last.height)) : 0
+    if (inFlow.some((child) => child.grow) && trailing > 0.6) {
+        layout.padding[row ? 1 : 2] = round(layout.padding[row ? 1 : 2] + trailing)
+    }
     // A frame hugs its content where its size is its padding and its content's, unless children stretch to it.
     const along = mainSize + (row ? left + right : top + bottom)
     const across = Math.max(0, ...inFlow.map((child) => (row ? child.height : child.width))) + (row ? top + bottom : left + right)
     const stretched = inFlow.some((child) => child.fill)
-    if (layout.align === 'stretch' && !stretched) {
-        // Nothing stretches, e.g. a badge's text that sizes to its words: stretching it would wrap it at a rounding.
+    if (layout.align === 'stretch' && (!stretched || inFlow.some((child) => !child.fill && child.kind !== 'text'))) {
+        // Nothing stretches, e.g. a badge's text that sizes to its words: stretching it would wrap it at a rounding. Or
+        // a part keeps its own size, e.g. a chat message's avatar: the parts that stretch fill across instead.
         layout.align = 'start'
     }
     const hugsMain = Math.abs(along - (row ? layer.width : layer.height)) < 0.6
@@ -950,9 +1041,10 @@ function draftOf(
         // A wrapper that draws nothing and holds one element in its own box is that element, e.g. a select's spans
         // around its text, or its host around its button.
         const only = current.children.length === 1 ? current.children[0] : undefined
+        // A component inside another isn't, but the root is, as it is when drafted on its own.
         if (
             only &&
-            !current.ref &&
+            (!current.ref || !parent) &&
             !namedPart(spec, current) &&
             !current.icon &&
             current.style.position !== 'absolute' &&
@@ -1005,12 +1097,12 @@ function draftOf(
         // A component inside this one is an instance of its symbol, unless it's drawn in place as part of this one; the
         // root is always drawn, e.g. when a nested component is drafted on its own to check it fits its symbol.
         if (current.ref && parentLayer && !inlineParts.has(part)) {
-            const { component, inputs, text, icon } = current.ref
+            const { component, inputs, text, texts, icon } = current.ref
             const iconName = icon ?? current.icon?.name
             const refLayer: Layer = {
                 ...base,
                 kind: 'ref',
-                ref: { component, inputs, ...(text !== undefined ? { text } : {}), ...(iconName ? { icon: iconSymbol(iconName) } : {}) },
+                ref: { component, inputs, ...(text !== undefined ? { text } : {}), ...(texts ? { texts } : {}), ...(iconName ? { icon: iconSymbol(iconName) } : {}) },
                 absolute: current.style.position === 'absolute'
             }
             refSources.set(refLayer, { node: current, part })
@@ -1068,6 +1160,48 @@ function draftOf(
         const z = (child: CapturedNode) => (child.style.zIndex === undefined ? 0 : Number(child.style.zIndex) || 0)
         const drafted = current.children.map((child, index) => ({ z: z(child), index, layer: visit(child, current, layer, part) }))
         layer.children = drafted.map((entry) => entry.layer)
+        // A reversed row or column, e.g. a chat's reply, lists its children as they show.
+        if (layer.layout && current.style.flexDirection?.endsWith('-reverse') && ['flex', 'inline-flex'].includes(current.style.display ?? '')) {
+            layer.children.reverse()
+        }
+        // An inline element of one line of text, e.g. a toast's title, is as tall as its line, as its block lays it out,
+        // not as its glyphs: else a column can't stack it.
+        const lineBox = Math.max(0, ...layer.children.map((child) => (child.kind === 'text' ? child.height : 0)))
+        if (current.style.display === 'inline' && layer.children.length && layer.children.every((child) => child.kind === 'text' && !wrapping.has(child)) && lineBox > layer.height) {
+            const y = round(layer.y + layer.height / 2 - lineBox / 2)
+            layer.children.forEach((child) => (child.y = round(child.y + layer.y - y)))
+            layer.y = y
+            layer.height = lineBox
+        }
+        // A shadow on a part that draws nothing else, over its parent's box that does, e.g. a layout header's bar: the
+        // parent's, as a design tool draws a shadow only under what a layer draws.
+        const own = looks.get(name)
+        for (const child of layer.children) {
+            const childLook = looks.get(child.name)
+            const sameBox = Math.abs(child.x) < 0.5 && Math.abs(child.y) < 0.5 && Math.abs(child.width - layer.width) < 0.5 && Math.abs(child.height - layer.height) < 0.5
+            if (own?.kind !== 'layer' || childLook?.kind !== 'layer' || child.kind !== 'frame' || !sameBox) {
+                continue
+            }
+            const [parentStyle, childStyle] = [own.look as LayerStyle, childLook.look as LayerStyle]
+            if (childStyle.shadows.length && !childStyle.fills.length && !childStyle.border && parentStyle.fills.length && !parentStyle.shadows.length) {
+                parentStyle.shadows = childStyle.shadows
+                childStyle.shadows = []
+                if (childLook.bindings?.shadow) {
+                    own.bindings = { ...own.bindings, shadow: childLook.bindings.shadow }
+                    delete childLook.bindings.shadow
+                }
+                if (!draws(childStyle)) {
+                    looks.delete(child.name)
+                }
+            }
+        }
+        // A part at a share of its parent's width scales with it, which a design tool does outside a stack only.
+        for (const child of layer.children) {
+            if (spec.relative?.includes(child.name)) {
+                child.relative = true
+                delete layer.layout
+            }
+        }
         if (layer.layout && !stacks(layer)) {
             delete layer.layout
         }
@@ -1133,6 +1267,9 @@ function draftOf(
     }
     hugInHuggingRows(top)
     growOnlyWithRoom(top)
+    for (const part of spec.wraps ?? []) {
+        wrapIn(top, part)
+    }
     if (spec.stretches && top.layout) {
         stretchToField(top)
     }
@@ -1203,7 +1340,7 @@ function textsOf(layer: Layer | undefined, texts = new Map<string, string>()): M
 }
 
 /** Differences in layout between two drafts of one symbol, as paths, or none. */
-function layoutDifferences(a: Layer, b: Layer, path = a.name, resized = false, reflowed = false): string[] {
+function layoutDifferences(a: Layer, b: Layer, path = a.name, resized = false, reflowed = false, centred = false): string[] {
     const differences: string[] = []
     if (a.kind !== b.kind || a.children.length !== b.children.length) {
         return [`${path}: ${a.kind}/${a.children.length} vs ${b.kind}/${b.children.length}`]
@@ -1215,8 +1352,11 @@ function layoutDifferences(a: Layer, b: Layer, path = a.name, resized = false, r
         // An instance drawn larger or smaller than its symbol, where the symbol doesn't hug its content, e.g. a
         // full-width input, lays out alike if its text starts where it did: a text that sizes to its words needn't match.
         const sized = property === 'width' || property === 'height'
-        const stretched = resized && sized && (path === a.name ? !a.layout?.hug?.[property] : a.kind === 'text' && a.textSizing === 'auto')
-        const followsText = (reflows && property === 'width') || (reflowed && property === 'x')
+        // Nor need a part that sizes to its content, e.g. a step's label, where the text is another.
+        const stretched = resized && sized && (path === a.name ? !a.layout?.hug?.[property] : (a.kind === 'text' && a.textSizing === 'auto') || !!a.layout?.hug?.[property])
+        // A text centred across its row, e.g. a calendar cell's day, starts where its words' width puts it.
+        const centredText = centred && property === 'x' && ((a.kind === 'text' && a.textSizing === 'auto') || !!a.layout?.hug?.width)
+        const followsText = (reflows && property === 'width') || (reflowed && property === 'x') || centredText
         if (!stretched && !followsText && Math.abs(a[property] - b[property]) > 0.6) {
             differences.push(`${path}.${property}: ${a[property]} vs ${b[property]}`)
         }
@@ -1224,13 +1364,14 @@ function layoutDifferences(a: Layer, b: Layer, path = a.name, resized = false, r
     // Children by their names, as their order can change with how they're stacked, e.g. a raised toggle's.
     a.children.forEach((child, index) => {
         const other = b.children.find((candidate) => candidate.name === child.name) ?? b.children[index]
-        differences.push(...layoutDifferences(child, other, `${path}/${child.name}`, resized, reflows))
+        const centres = !!a.layout && (a.layout.direction === 'row' ? a.layout.justify === 'center' : a.layout.align === 'center')
+        differences.push(...layoutDifferences(child, other, `${path}/${child.name}`, resized, reflows, centres))
     })
     return differences
 }
 
 /** How a component of the kit inside another is placed: its symbol and the overrides that give it its look. */
-type Resolver = (inputs: Record<string, string>, text?: string, icon?: string) => { symbol: string, overrides: Starter['overrides'], layer: Layer } | undefined
+type Resolver = (inputs: Record<string, string>, text?: string, icon?: string, texts?: string[]) => { symbol: string, overrides: Starter['overrides'], layer: Layer } | undefined
 
 /** The layers in a tree that are components of the kit, not inside one another. */
 function refsOf(layer: Layer, found: Layer[] = []): Layer[] {
@@ -1264,7 +1405,7 @@ function build(component: string, spec: ComponentSpec, captured: Captured[], kit
         for (const { draft } of drafts) {
             for (const layer of refsOf(draft.layer)) {
                 const resolver = layer.ref && known.get(layer.ref.component)
-                const resolved = layer.ref && resolver?.(layer.ref.inputs, layer.ref.text, layer.ref.icon)
+                const resolved = layer.ref && resolver?.(layer.ref.inputs, layer.ref.text, layer.ref.icon, layer.ref.texts)
                 const source = refSources.get(layer)
                 if (!layer.ref || !resolved || !source) {
                     continue
@@ -1449,7 +1590,10 @@ function build(component: string, spec: ComponentSpec, captured: Captured[], kit
             const top = Math.min(0, ...layer.children.map((child) => child.y))
             const right = Math.max(layer.width, ...layer.children.map((child) => child.x + child.width))
             const bottom = Math.max(layer.height, ...layer.children.map((child) => child.y + child.height))
-            if (left < -0.5 || top < -0.5 || right > layer.width + 0.5 || bottom > layer.height + 0.5) {
+            // A column of centred parts that one overruns on both sides alike, e.g. a step's label wider than its number,
+            // keeps its size, as the component does, so it fits where another holds it.
+            const centred = layer.layout?.direction === 'column' && layer.layout.align === 'center' && Math.abs(-left - (right - layer.width)) < 1 && top > -0.5 && bottom < layer.height + 0.5
+            if (!centred && (left < -0.5 || top < -0.5 || right > layer.width + 0.5 || bottom > layer.height + 0.5)) {
                 // An overlay can open to the left or above, e.g. a datepicker's calendar: everything moves with it.
                 for (const child of layer.children) {
                     child.x = round(child.x - left)
@@ -1554,7 +1698,7 @@ function build(component: string, spec: ComponentSpec, captured: Captured[], kit
         })
     }
     // Where another component holds this one: the captured combination that has its inputs, as a symbol and overrides.
-    const resolveRef: Resolver = (inputs, text, icon) => {
+    const resolveRef: Resolver = (inputs, text, icon, texts) => {
         const fits = (capture: Captured, keys: string[]) => keys.every((input) => inputs[input] === undefined || String(capture.inputs[input]) === inputs[input])
         // The symbol of the captured combination with its symbol inputs, and the look of the one with its style
         // inputs: the specimens needn't capture every combination of both, e.g. buttons' sizes only at rest.
@@ -1564,9 +1708,18 @@ function build(component: string, spec: ComponentSpec, captured: Captured[], kit
             return undefined
         }
         const overrides = overridesOf(look.capture, look.draft)
-        const textLayer = [...textsOf(shape.draft.layer).keys()][0]
+        const textLayers = [...textsOf(shape.draft.layer)]
+        const textLayer = textLayers[0]?.[0]
         if (text !== undefined && textLayer) {
             overrides[textLayer] = { ...overrides[textLayer], text }
+        }
+        // All its texts, where it shows as many as its symbol, e.g. a calendar cell's day.
+        if (texts?.length === textLayers.length) {
+            textLayers.forEach(([layerName, shown], index) => {
+                if (texts[index] !== shown) {
+                    overrides[layerName] = { ...overrides[layerName], text: texts[index] }
+                }
+            })
         }
         const iconLayer = [...iconsOf(shape.draft.layer).keys()][0]
         if (icon && iconLayer) {

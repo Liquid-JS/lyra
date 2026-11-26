@@ -129,7 +129,13 @@ const THEME_COLOURS = [
     'sidebar-background-color',
     'text-basic-color',
     'text-heading-color',
-    'text-hint-color'
+    'text-hint-color',
+    // Text on filled controls, e.g. a filled button's, and in the primary colour, e.g. a link's or an active tab's.
+    'text-control-color',
+    'text-primary-color',
+    // Fields' and cards' borders.
+    'border-basic-color-3',
+    'border-basic-color-4'
 ]
 
 /** Variables' prefixes that aren't a component's key, by the group they go in on the Theme board. */
@@ -201,10 +207,16 @@ function knobsOf(formulas: Record<string, string>): ThemeKnob[] {
         .flatMap((category) => ['font-family', 'font-size', 'font-weight', 'line-height'].map((suffix) => `text-${category}-${suffix}`))
         .filter((variable) => formulas[variable] !== undefined)
     typography.forEach((variable) => foundations.delete(variable))
+    // Every text case together, e.g. buttons' and tabs', which the Theme Editor sets at once.
+    const textCases = Object.keys(formulas).filter((variable) => variable.endsWith('-text-transform')).sort()
+    for (const set of [foundations, ...groups.values()]) {
+        textCases.forEach((variable) => set.delete(variable))
+    }
     return [
         ...THEME_COLOURS.filter((variable) => formulas[variable] !== undefined).map((variable) => ({ group: 'Colours', variable, colour: true })),
         ...sorted(new Set([...foundations, ...(groups.get('Foundations') ?? [])])).map((variable) => ({ group: 'Foundations', variable })),
         ...typography.map((variable) => ({ group: 'Typography', variable })),
+        ...textCases.map((variable) => ({ group: 'Text case', variable })),
         ...[...kit.components.map((component) => component.name), 'Text'].flatMap((group) => sorted(groups.get(group) ?? new Set()).map((variable) => ({ group, variable })))
     ]
 }
@@ -319,7 +331,8 @@ if (!only.length || only.includes('theme')) {
 
 /**
  * What the design check knows of the kit: its symbols and starters, and its styles, by the component they're of, a
- * typography style as the theme's; its colour variables' theme variables; and its own pages, which it doesn't check.
+ * typography style as the theme's; its colour variables' theme variables; its own pages, which it doesn't check; and
+ * each symbol's top layers, by which it tells a detached copy from a frame of that name.
  */
 function checkData(swatches: Record<string, string>): KitCheck {
     const symbols = Object.fromEntries(
@@ -336,7 +349,8 @@ function checkData(swatches: Record<string, string>): KitCheck {
         ])
     )
     const pages = [...new Set(['Cover', 'Colors', 'Typography', 'Effects', 'Icons', 'Symbols', 'Theme', 'Check', ...Object.values(COMPONENTS).map((spec) => spec.page)])]
-    return { symbols, styles, swatches, pages }
+    const parts = Object.fromEntries(kit.components.flatMap((component) => component.symbols.map((symbol) => [symbol.name, symbol.layer.children.map((child) => child.name)])))
+    return { symbols, styles, swatches, pages, parts, typography: prefixes }
 }
 
 /**

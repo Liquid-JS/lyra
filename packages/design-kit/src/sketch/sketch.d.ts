@@ -209,6 +209,7 @@ declare module 'sketch' {
         getSymbols(): SymbolMaster[]
         getSharedLayerStyleWithID(id: unknown): SharedStyle | undefined
         getSharedTextStyleWithID(id: unknown): SharedStyle | undefined
+        getSymbolMasterWithID(id: string): SymbolMaster | undefined
         getLayerWithID(id: string): Layer | undefined
         /** Lays out what changed: stacks, and instances of changed symbols. */
         processPendingChanges(): void
@@ -252,7 +253,7 @@ declare module 'sketch' {
         BorderPosition: { Center: string, Inside: string, Outside: string }
     }
     export const StackLayout: { Direction: { Row: number, Column: number } }
-    export const FlexSizing: { Fixed: number, Fit: number, Fill: number }
+    export const FlexSizing: { Fixed: number, Fit: number, Fill: number, Relative: number }
     export const Pin: { None: number, Min: number, Max: number, All: number }
 
     export const Settings: {

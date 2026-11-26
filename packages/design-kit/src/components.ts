@@ -39,6 +39,20 @@ export interface ComponentSpec {
     container?: boolean
     /** Gives every element a part, and so a style, of its own, for content that repeats elements, e.g. markdown. */
     uniqueParts?: boolean
+    /**
+     * Parts whose texts wrap in the room the component gives them, as code wraps a longer text: they take the room their
+     * row leaves, and their texts its width, e.g. a toast's content.
+     */
+    wraps?: string[]
+    /**
+     * Where another component holds this one, the inputs its classes say, its own or those of the container `from`
+     * selects: the first of `classes` it has, else `otherwise`, e.g. a calendar cell's state.
+     */
+    refInputs?: Record<string, { from?: string, classes: Record<string, string>, otherwise?: string }>
+    /** Parts as wide as a share of their parent, which scale with it, e.g. a progress bar's value. */
+    relative?: string[]
+    /** Where another component holds this one, its texts in order are the instance's, e.g. a step's number and label. */
+    refTexts?: boolean
     /** The part whose styles have the component's own name, if not the root, e.g. a select's button. */
     main?: string
     /**
@@ -133,6 +147,35 @@ export const COMPONENTS: Record<string, ComponentSpec> = {
         starter: { size: 'medium', status: 'basic', state: 'default', value: 'off' },
         main: 'Track',
         parts: { 'root': 'Toggle', '.toggle-label': 'Row', '.toggle': 'Track', '.toggle-switcher': 'Knob', 'nb-icon': 'Check', '.text': 'Label' }
+    },
+    // A day of a calendar, in each state, for designs to show the days they need: today, selected, a range.
+    'calendar-cell': {
+        name: 'Calendar Cell',
+        code: {
+            class: 'NbCalendarComponent',
+            notes: ['A day of an `<nb-calendar>` or `<nb-calendar-range>`, which the calendar draws: its state comes from the calendar\'s value, `min`, `max`, `filter` and today.'],
+            inputs: {
+                kind: 'A cell of an `<nb-calendar-range>` (`range`) or an `<nb-calendar>`.',
+                size: 'The calendar\'s `size`.',
+                state: 'The calendar\'s value: its `date` (`selected`) or `range` (`range start`, `in range`, `range end`), with today from `NbDateService.today()`, days outside `min`, `max` or `filter` disabled, and the days of the months around it (`other month`).'
+            }
+        },
+        selector: 'nb-calendar-day-cell, nb-calendar-range-day-cell',
+        page: 'Form controls',
+        board: 'Calendar cells',
+        symbol: { kind: size, size, state: (value) => String(value).split(' ').map(title).join(' ') },
+        style: [],
+        starter: { kind: 'single', size: 'medium', state: 'default' },
+        refInputs: {
+            kind: { classes: { 'range-cell': 'range' }, otherwise: 'single' },
+            size: { classes: { 'size-large': 'large' }, otherwise: 'medium' },
+            state: {
+                classes: { 'start': 'range start', 'end': 'range end', 'in-range': 'in range', 'selected': 'selected', 'today': 'today', 'disabled': 'disabled', 'bounding-month': 'other month' },
+                otherwise: 'default'
+            }
+        },
+        refTexts: true,
+        parts: { 'root': 'Cell', '.cell-content': 'Content' }
     },
     'calendar': {
         name: 'Calendar',
@@ -412,6 +455,7 @@ export const COMPONENTS: Record<string, ComponentSpec> = {
     },
     'tabset': {
         name: 'Tabset',
+        code: { notes: ['An `<nb-tab>` pads its content by `tabset-content-padding` (`--tabset-content-padding`), which the drawings don\'t show around a design\'s own content.'] },
         page: 'Navigation',
         board: 'Tabsets',
         symbol: { fullWidth: (value) => (value ? 'Full Width' : '') },
@@ -430,7 +474,11 @@ export const COMPONENTS: Record<string, ComponentSpec> = {
     },
     'tab': {
         name: 'Tab',
-        code: { class: 'NbTabComponent', inputs: { content: 'A `tabTitle`, with a `tabIcon` (`icon`) or a `badgeText` (`badge`).', state: '`active` is the tab\'s `active`, `disabled` its `disabled`; `hover` comes with interaction.' } },
+        code: {
+            class: 'NbTabComponent',
+            inputs: { content: 'A `tabTitle`, with a `tabIcon` (`icon`) or a `badgeText` (`badge`).', state: '`active` is the tab\'s `active`, `disabled` its `disabled`; `hover` comes with interaction.' },
+            notes: ['Tabs that switch content in the page are an `<nb-tabset>`\'s; tabs that link to pages, e.g. a header\'s navigation, are an `<nb-route-tabset [tabs]>` with `outlet="false"`, which looks the same by its own `route-tabset-*` variables.']
+        },
         page: 'Navigation',
         board: 'Tabs',
         symbol: { content: size },
@@ -440,6 +488,7 @@ export const COMPONENTS: Record<string, ComponentSpec> = {
     },
     'actions': {
         name: 'Actions',
+        code: { notes: ['Each action after the first has a divider before it (`actions-divider-*`).'] },
         page: 'Navigation',
         board: 'Actions',
         symbol: { size },
@@ -450,13 +499,40 @@ export const COMPONENTS: Record<string, ComponentSpec> = {
     // An action, to compose a design's own actions with.
     'action': {
         name: 'Action',
-        code: { class: 'NbActionComponent', inputs: { size: 'The `size` of the `<nb-actions>` it\'s in.', content: 'An `icon`, with `badgeDot` (`dot`) or a `badgeText` (`badge`).', state: '`disabled` is its `disabled`.' } },
+        code: {
+            class: 'NbActionComponent',
+            notes: ['In an `<nb-actions>`, each action after the first has a divider before it, as the Actions symbols show; for actions side by side without one, as these parts are drawn, set `--actions-divider-width: 0` on the `<nb-actions>` (or the theme\'s `actions-divider-width`).'],
+            inputs: { size: 'The `size` of the `<nb-actions>` it\'s in.', content: 'An `icon`, with `badgeDot` (`dot`) or a `badgeText` (`badge`).', state: '`disabled` is its `disabled`.' } },
         page: 'Navigation',
         board: 'Action items',
         symbol: { size, content: (value) => title(String(value)) },
         style: ['state'],
         starter: { size: 'medium', content: 'icon', state: 'default' },
         parts: { root: 'Action' }
+    },
+    // A step of a stepper, in each state, for designs to show how far along they are.
+    'stepper-step': {
+        name: 'Stepper Step',
+        code: {
+            class: 'NbStepComponent',
+            notes: ['A step of an `<nb-stepper>`, which the stepper draws for each `<nb-step>` with its `label`.'],
+            inputs: {
+                orientation: 'The stepper\'s `orientation`.',
+                state: 'The stepper\'s `selectedIndex` is the `current` step; another is `completed` while it\'s marked `completed`, or was visited with its `stepControl` valid, and `upcoming` otherwise.'
+            }
+        },
+        selector: 'nb-stepper .step',
+        page: 'Navigation',
+        board: 'Stepper steps',
+        symbol: { orientation: size, state: size },
+        style: [],
+        starter: { orientation: 'horizontal', state: 'upcoming' },
+        refInputs: {
+            orientation: { from: 'nb-stepper', classes: { horizontal: 'horizontal', vertical: 'vertical' } },
+            state: { classes: { selected: 'current', completed: 'completed' }, otherwise: 'upcoming' }
+        },
+        refTexts: true,
+        parts: { 'root': 'Step', '.label-index': 'Index', '.label': 'Label' }
     },
     'stepper': {
         name: 'Stepper',
@@ -600,6 +676,7 @@ export const COMPONENTS: Record<string, ComponentSpec> = {
     },
     'route-tabset': {
         name: 'Route Tabset',
+        code: { notes: ['It shows the active route under its tabs in a `router-outlet` of its own; as navigation alone, e.g. in a header, set `outlet="false"`.'] },
         page: 'Navigation',
         board: 'Route tabsets',
         symbol: { fullWidth: (value) => (value ? 'Full Width' : '') },
@@ -620,9 +697,12 @@ export const COMPONENTS: Record<string, ComponentSpec> = {
         name: 'Progress Bar',
         page: 'Feedback',
         board: 'Progress bars',
-        symbol: { shape: size, size },
+        code: { inputs: { value: '`value`, shown by `displayValue`; the kit has bars in steps of 10, and rings at 60%.' } },
+        // How full it is changes its layout, so each value is a symbol; swapping one for another keeps the overrides.
+        symbol: { shape: size, size, value: (value) => `${String(value)}%` },
         style: ['status'],
-        starter: { shape: 'bar', size: 'medium', status: 'primary' },
+        starter: { shape: 'bar', size: 'medium', value: 60, status: 'primary' },
+        relative: ['Value'],
         parts: { 'root': 'Progress Bar', '::before': 'Ring', '.progress-container': 'Track', '.progress-value': 'Value', '.progress-ring-content': 'Content' }
     },
     'spinner': {
@@ -679,13 +759,14 @@ export const COMPONENTS: Record<string, ComponentSpec> = {
     },
     'user': {
         name: 'User',
-        code: { inputs: { content: '`onlyPicture` (`picture`).' } },
+        code: { inputs: { content: '`onlyPicture` (`picture`).', avatar: 'A `picture` URL (`image`), or the `name`\'s initials.' } },
         selector: 'nb-user',
         page: 'Content',
         board: 'Users',
-        symbol: { content: (value) => (value === 'picture' ? 'Picture' : 'Full'), size, shape: size },
+        // A picture replaces the initials; its image layer takes an image override.
+        symbol: { content: (value) => (value === 'picture' ? 'Picture' : 'Full'), size, shape: size, avatar: (value) => (value === 'image' ? 'Image' : '') },
         style: [],
-        starter: { content: 'full', size: 'medium', shape: 'round' },
+        starter: { content: 'full', size: 'medium', shape: 'round', avatar: 'initials' },
         parts: { 'root': 'User', '.user-picture': 'Picture', '.user-name': 'Name', '.user-title': 'Title' }
     },
     'divider': {
@@ -726,6 +807,7 @@ export const COMPONENTS: Record<string, ComponentSpec> = {
         symbol: {},
         style: ['status'],
         starter: { status: 'primary' },
+        wraps: ['Content Container'],
         parts: { 'root': 'Toast', '.icon-container': 'Icon Box', '.title': 'Title', '.message': 'Message' }
     },
     'dialog': {

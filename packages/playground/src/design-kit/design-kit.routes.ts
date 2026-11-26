@@ -25,6 +25,7 @@ export const DESIGN_KIT_ROUTES: Routes = [
             { path: 'radio', loadComponent: () => import('./radio.specimen').then((m) => m.RadioSpecimenComponent) },
             { path: 'toggle', loadComponent: () => import('./toggle.specimen').then((m) => m.ToggleSpecimenComponent) },
             { path: 'calendar', loadComponent: () => import('./calendar.specimen').then((m) => m.CalendarSpecimenComponent) },
+            { path: 'calendar-cell', loadComponent: () => import('./calendar-cell.specimen').then((m) => m.CalendarCellSpecimenComponent) },
             {
                 path: 'picker',
                 // Overlays are made outside the page's injector, so the fixed today is the route's.
@@ -40,6 +41,7 @@ export const DESIGN_KIT_ROUTES: Routes = [
             { path: 'actions', loadComponent: () => import('./actions.specimen').then((m) => m.ActionsSpecimenComponent) },
             { path: 'action', loadComponent: () => import('./actions.specimen').then((m) => m.ActionsSpecimenComponent) },
             { path: 'stepper', loadComponent: () => import('./stepper.specimen').then((m) => m.StepperSpecimenComponent) },
+            { path: 'stepper-step', loadComponent: () => import('./stepper-step.specimen').then((m) => m.StepperStepSpecimenComponent) },
             { path: 'menu', loadComponent: () => import('./menu.specimen').then((m) => m.MenuSpecimenComponent) },
             { path: 'context-menu', loadComponent: () => import('./menu.specimen').then((m) => m.MenuSpecimenComponent) },
             { path: 'route-tabset', loadComponent: () => import('./route-tabset.specimen').then((m) => m.RouteTabsetSpecimenComponent) },

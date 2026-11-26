@@ -4,7 +4,7 @@ import { join, resolve } from 'node:path'
 import { chromium, type Page } from 'playwright'
 
 import { variableName } from '../../docs/src/design-kit-names.ts'
-import { COMPONENTS } from './components.ts'
+import { COMPONENTS, type ComponentSpec } from './components.ts'
 import type { Binding } from './kit.ts'
 import { themeFormulas } from './theme-formulas.ts'
 
@@ -41,6 +41,16 @@ const components = args.length ? args : Object.keys(COMPONENTS)
 const kitSelectors = Object.fromEntries(
     Object.entries(COMPONENTS).flatMap(([key, spec]) => (spec.selector ? [[key, spec.selector]] : []))
 )
+
+/** How the components another holds read their inputs and texts, where their classes don't say, e.g. a calendar's cells. */
+const kitRefs: Record<string, RefReading> = Object.fromEntries(
+    Object.entries(COMPONENTS).flatMap(([key, spec]) => (spec.refInputs || spec.refTexts ? [[key, { inputs: spec.refInputs ?? {}, texts: !!spec.refTexts }]] : []))
+)
+
+interface RefReading {
+    inputs: NonNullable<ComponentSpec['refInputs']>
+    texts: boolean
+}
 
 /** The theme areas whose colours become the design tools' colour variables. */
 const VARIABLE_GROUPS = ['color', 'background', 'border', 'text', 'outline', 'divider', 'scrollbar']
@@ -149,7 +159,7 @@ export interface CapturedNode {
     /** The URL an image shows, fetched with the page's images. */
     pictureUrl?: string
     /** A Lyra component inside the captured one, e.g. an alert's close button, with its inputs and text. */
-    ref?: { component: string, inputs: Record<string, string>, text?: string, icon?: string }
+    ref?: { component: string, inputs: Record<string, string>, text?: string, texts?: string[], icon?: string }
     /** How the box's measures follow the theme's variables that aren't colours, found by nudging each one. */
     bindings?: Partial<Record<BoundMeasure, Binding>>
     /** A component's width at its content's, which it's wider than where it takes its container's. */
@@ -195,7 +205,7 @@ export const BOUND_MEASURES = [
 export type BoundMeasure = (typeof BOUND_MEASURES)[number]
 
 /** Reads the tagged components on the page as trees of boxes. Runs in the page. */
-function read({ properties, selectors }: { properties: ReadonlyArray<StyleProperty>, selectors: Record<string, string> }): Captured[] {
+function read({ properties, selectors, refs }: { properties: ReadonlyArray<StyleProperty>, selectors: Record<string, string>, refs: Record<string, RefReading> }): Captured[] {
     const DEFAULTS: Record<string, string> = {
         flexWrap: 'nowrap',
         backgroundImage: 'none',
@@ -258,10 +268,32 @@ function read({ properties, selectors }: { properties: ReadonlyArray<StyleProper
                 ...(field ? { content: field.value ? 'value' : 'placeholder' } : {}),
                 ...(key === 'button' ? { icon: element.classList.contains('icon-start') ? 'start' : element.classList.contains('icon-end') ? 'end' : 'none' } : {})
             }
+            // Inputs the component's spec reads from classes, its own or a container's, e.g. a calendar cell's state.
+            const reading = refs[key]
+            for (const [input, { from, classes, otherwise }] of Object.entries(reading?.inputs ?? {})) {
+                const source = from ? element.closest(from) : element
+                const found = Object.keys(classes).find((name) => source?.classList.contains(name))
+                const value = found ? classes[found] : otherwise
+                if (value !== undefined) {
+                    inputs[input] = value
+                }
+            }
+            // Its texts, in order, e.g. a step's number and label, where its symbol shows others.
+            const texts: string[] = []
+            if (reading?.texts) {
+                const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT)
+                for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+                    const value = node.textContent?.trim()
+                    if (value && node.parentElement?.checkVisibility()) {
+                        texts.push(value)
+                    }
+                }
+            }
             return {
                 component: key,
                 inputs,
                 ...(field ? { text: field.value || field.placeholder } : key === 'button' ? { text } : {}),
+                ...(texts.length ? { texts } : {}),
                 ...(icon ? { icon: iconOf(icon).name } : {})
             }
         }
@@ -1021,13 +1053,13 @@ for (const component of components) {
             await tab.screenshot({ path: join(screenshots, `${[component, variant].filter(Boolean).join('-').replace(/[^\w-]+/g, '-')}.png`), fullPage: true, clip, scale: 'css' })
         }
         const selectors = Object.fromEntries(Object.entries(kitSelectors).filter(([key]) => !spec?.inline?.includes(key)))
-        const captured = await tab.evaluate(read, { properties: STYLES, selectors })
+        const captured = await tab.evaluate(read, { properties: STYLES, selectors, refs: kitRefs })
         // What the theme's variables set, before the colour probes change the page.
         const inUse = await tab.evaluate(themeVariablesInUse)
-        await bindAll(tab, captured, inUse, { properties: STYLES, selectors })
-        await bindColours(tab, captured, inUse, { properties: STYLES, selectors })
+        await bindAll(tab, captured, inUse, { properties: STYLES, selectors, refs: kitRefs })
+        await bindColours(tab, captured, inUse, { properties: STYLES, selectors, refs: kitRefs })
         await probeVariables(tab)
-        const probed = await tab.evaluate(read, { properties: STYLES, selectors })
+        const probed = await tab.evaluate(read, { properties: STYLES, selectors, refs: kitRefs })
         captured.forEach((entry, index) => {
             merge(entry.node, probed[index]?.node)
             inheritText(entry.node)

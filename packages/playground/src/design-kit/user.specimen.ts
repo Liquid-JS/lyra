@@ -3,7 +3,10 @@ import { NbUserComponent } from '@liquid-js/lyr-core'
 
 import { combinations, kit, SIZES } from './specimen'
 
-/** Users with initials, their name and title, in each size and shape, and with the picture alone. */
+/**
+ * Users with their name and title, in each size and shape, and with the picture alone: each with initials, and with a
+ * picture, a placeholder a design's image override replaces.
+ */
 @Component({
     template: `
         <div class="specimens">
@@ -13,7 +16,8 @@ import { combinations, kit, SIZES } from './specimen'
                 title="Designer"
                 [size]="user.size"
                 [shape]="user.shape"
-                [onlyPicture]="user.content === 'picture'" />
+                [onlyPicture]="user.content === 'picture'"
+                [picture]="user.avatar === 'image' ? picture : ''" />
             }
         </div>
     `,
@@ -21,9 +25,11 @@ import { combinations, kit, SIZES } from './specimen'
 })
 export class UserSpecimenComponent {
     readonly kit = kit
+    readonly picture = '/assets/design-kit/avatar.png'
     readonly users = combinations({
         content: ['full', 'picture'] as const,
         size: SIZES,
-        shape: ['round', 'semi-round', 'rectangle'] as const
+        shape: ['round', 'semi-round', 'rectangle'] as const,
+        avatar: ['initials', 'image'] as const
     })
 }

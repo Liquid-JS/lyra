@@ -78,6 +78,8 @@ export interface Layer {
         inputs: Record<string, string>
         icon?: string
         text?: string
+        /** Its texts in order, where its spec reads them all, e.g. a step's number and label. */
+        texts?: string[]
         /** For a component of the kit: its symbol, and the overrides that give it the captured look. */
         symbol?: string
         overrides?: Starter['overrides']
@@ -106,6 +108,8 @@ export interface Layer {
     fill?: boolean
     /** Takes the room its parent's layout leaves along it, as a flex item that grows does, e.g. a list item's title. */
     grow?: boolean
+    /** Scales with its parent's width, which has no stack, e.g. a progress bar's value at its share of the track. */
+    relative?: boolean
     clip?: boolean
     children: Layer[]
 }
@@ -277,6 +281,10 @@ export interface KitCheck {
     swatches: Record<string, string>
     /** The kit's own pages, which aren't checked. */
     pages: string[]
+    /** The names of each symbol's top layers, which a detached copy of it has. */
+    parts: Record<string, string[]>
+    /** The typography's text styles' names begin with these, e.g. `Heading/H4`, then a colour: the theme's own. */
+    typography: string[]
 }
 
 export interface CheckOptions {
@@ -285,6 +293,16 @@ export interface CheckOptions {
     board?: boolean
     /** How many findings the result lists, 200 by default. */
     limit?: number
+}
+
+/** Findings that are the same thing, e.g. a logo on every screen, as the Check page lists them once. */
+export interface CheckRow {
+    kind: string
+    where: string
+    detail: string
+    app: string
+    boards: string[]
+    count: number
 }
 
 export interface CheckFinding {

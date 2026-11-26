@@ -39,6 +39,8 @@ export async function applyTheme(kit: KitTheme, options: ThemeOptions): Promise<
 /** What the document recorded of its theme, for the app, and to apply it again. */
 interface RecordedTheme {
     name?: string
+    /** The name the Sass registers it by, for the app's `provideNbTheme`. */
+    id?: string
     base?: string
     variables?: Variables
     css?: string
@@ -91,6 +93,8 @@ async function apply(doc: sketch.Document, kit: KitTheme, options: ThemeOptions)
     // The theme's own values: those given, or those the document recorded with what the designer changed on its Theme
     // board: a value's text, empty for the theme's own again, or a colour's chip.
     const given: Variables = { ...(options.theme ?? recorded.variables ?? {}) }
+    // The values changed on the board, of those given.
+    const fromBoard = new Set<string>()
     if (boardData && !options.theme) {
         // Each value and chip counts where it's no longer what the board showed: a row's chip and text both stand for
         // its variable, and the one the designer changed wins.
@@ -108,6 +112,7 @@ async function apply(doc: sketch.Document, kit: KitTheme, options: ThemeOptions)
                 const colour = fill?.color ? hexOf(fill.color) : undefined
                 if (colour && differentColours(colour, colourIn(shown(variable)))) {
                     given[variable] = colour.endsWith('ff') ? colour.slice(0, 7) : colour
+                    fromBoard.add(variable)
                 }
                 return
             }
@@ -119,13 +124,15 @@ async function apply(doc: sketch.Document, kit: KitTheme, options: ThemeOptions)
                 delete given[variable]
             } else {
                 given[variable] = cssOf(text, kit.formulas)
+                fromBoard.add(variable)
             }
         }
         visitBoard(boardData)
     }
-    // A value that's its variable's formula in the base theme, however it's written, isn't the theme's own.
+    // A value changed on the board to its variable's formula in the base theme, however it's written, isn't the theme's
+    // own. One the theme was given with is kept, so the code the theme is recorded as has every value it was given.
     const flat = (value: string) => value.replace(/\s+/g, '')
-    for (const variable of Object.keys(given)) {
+    for (const variable of [...fromBoard]) {
         const formula = baseFormulas[variable]
         const value = given[variable] ?? ''
         if (formula !== undefined && (flat(value) === flat(formula) || flat(cssOf(display(formula), kit.formulas)) === flat(value))) {
@@ -188,8 +195,12 @@ async function apply(doc: sketch.Document, kit: KitTheme, options: ThemeOptions)
         }
         const [binding, ...others] = bindings
         const chosen = binding ? valueFor(binding) : undefined
-        if (others.some((other) => valueFor(other) !== chosen)) {
-            warnings.push(`${label}: the theme sets it differently for some of the parts it stands for; the kit shows ${chosen}`)
+        const differing = others.filter((other) => valueFor(other) !== chosen)
+        if (differing.length) {
+            // By the variables, so the designer knows which values to make alike, or that it's meant.
+            const nameOf = (one: Binding) => one.variable ?? one.terms?.map((term) => term.variable).join(' + ') ?? '?'
+            const parts = [binding, ...differing].filter((one): one is Binding => !!one).map((one) => `${nameOf(one)} ${String(valueFor(one))}`)
+            warnings.push(`${label}: one style stands for parts the theme gives different values (${parts.slice(0, 3).join(', ')}); the kit shows ${chosen}, the app each part's own. Fine if meant`)
         }
         return chosen
     }
@@ -652,6 +663,35 @@ async function apply(doc: sketch.Document, kit: KitTheme, options: ThemeOptions)
         }
     }
 
+    // ---- The Typography page ----
+
+    // Each sample's font, weight, size and line height as the theme has them, beside its `--text-<category>-*` label,
+    // and the primary font named above them.
+    const WEIGHT_NAMES: Record<string, string> = { 100: 'Thin', 200: 'ExtraLight', 300: 'Light', 400: 'Regular', 500: 'Medium', 600: 'SemiBold', 700: 'Bold', 800: 'ExtraBold', 900: 'Black' }
+    const lengthOf = (variable: string) => numberOf(partsOf(themed(variable) ?? '')[0] ?? '')
+    for (const scale of (doc.pages.find((page) => page.name === 'Typography')?.layers ?? []).filter((layer) => layer.type === 'Artboard')) {
+        const texts = childrenOf(scale).filter((layer): layer is sketch.Text => layer.type === 'Text')
+        texts.forEach((text, index) => {
+            const category = /^--text-([\w-]+)-\*$/.exec(text.text)?.[1]
+            const description = texts[index - 1]
+            if (!category || !description || !description.text.includes(' · ')) {
+                return
+            }
+            const family = firstFamily(themed(`text-${category}-font-family`) ?? '')
+            const weight = WEIGHT_NAMES[String(Math.round(Number(themed(`text-${category}-font-weight`)) / 100) * 100)] ?? ''
+            const [size, line] = [lengthOf(`text-${category}-font-size`), lengthOf(`text-${category}-line-height`)]
+            const shown = `${[family, weight].filter(Boolean).join(' ')} · ${size ?? '?'} / ${line ?? '?'}`
+            if (family && description.text !== shown) {
+                description.text = shown
+            }
+        })
+        const introduction = texts.find((text) => /^[^.]{1,60}\. Each style/.test(text.text))
+        const primary = firstFamily(themed('font-family-primary') ?? '')
+        if (introduction && primary && !introduction.text.startsWith(`${primary}.`)) {
+            introduction.text = introduction.text.replace(/^[^.]{1,60}\./, `${primary}.`)
+        }
+    }
+
     // ---- The Theme board ----
 
     const themeName = options.name ?? recorded.name ?? 'custom'
@@ -665,7 +705,7 @@ async function apply(doc: sketch.Document, kit: KitTheme, options: ThemeOptions)
     // over the base theme, or the Sass that registers it, with the shades worked out; and the values it was given, to
     // apply it again after the kit is rebuilt.
     const { css, scss } = themeCode(themeName, baseTheme, own)
-    sketch.Settings.setDocumentSettingForKey(doc, 'lyra-theme', { ...recorded, name: themeName, base: baseTheme, variables: given, css, scss })
+    sketch.Settings.setDocumentSettingForKey(doc, 'lyra-theme', { ...recorded, name: themeName, id: themeId(themeName), base: baseTheme, variables: given, css, scss })
     // What the styles and symbols now follow, to change only what moves next time.
     sketch.Settings.setDocumentSettingForKey(doc, 'lyra-theme-applied', { stamp: kit.stamp, values: current })
 
@@ -825,11 +865,22 @@ function relayout(starters: sketch.Artboard) {
     }
 }
 
+/** The name the Sass registers a theme by, which the app provides: its name in lower case, words joined by hyphens. */
+export const themeId = (themeName: string): string => themeName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'custom'
+
 /** The theme as the Theme Editor gives it to an app: CSS variables over the base theme, and the Sass that registers it. */
 function themeCode(themeName: string, baseTheme: string, own: Variables): { css: string, scss: string } {
     const entries = Object.entries(own).sort(([a], [b]) => (a < b ? -1 : 1))
-    const css = [`/* ${themeName}: CSS variables over Lyra's ${baseTheme} theme, loaded after its CSS. */`, `.nb-theme-${baseTheme} {`, ...entries.map(([key, value]) => `  --${key}: ${value};`), '}', ''].join('\n')
+    const id = themeId(themeName)
+    const css = [
+        `/* ${themeName} as CSS variables over Lyra's ${baseTheme} theme: after its prebuilt CSS, with provideNbTheme({ name: '${baseTheme}' }). */`,
+        `.nb-theme-${baseTheme} {`,
+        ...entries.map(([key, value]) => `  --${key}: ${value};`),
+        '}',
+        ''
+    ].join('\n')
     const scss = [
+        `// ${themeName} as a theme of its own: the app's themes.scss, with provideNbTheme({ name: '${id}' }).`,
         '@use \'sass:string\';',
         '@forward \'@liquid-js/lyr-core/styles/theming\';',
         '@use \'@liquid-js/lyr-core/styles/theming\' as *;',
@@ -839,7 +890,7 @@ function themeCode(themeName: string, baseTheme: string, own: Variables): { css:
         '  (',
         ...entries.map(([key, value]) => (key.startsWith('font-family') ? `    ${key}: string.unquote('${value.replace(/'/g, '\\\'')}'),` : `    ${key}: ${value},`)),
         '  ),',
-        `  ${themeName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'custom'},`,
+        `  ${id},`,
         `  ${baseTheme}`,
         ');',
         ''
