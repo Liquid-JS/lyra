@@ -865,6 +865,18 @@ function relayout(starters: sketch.Artboard) {
     }
 }
 
+/** Whether a value is a list, e.g. `"IBM Plex Mono", monospace`: a comma outside parentheses. */
+function hasTopLevelComma(value: string): boolean {
+    let depth = 0
+    for (const char of value) {
+        depth += char === '(' ? 1 : char === ')' ? -1 : 0
+        if (char === ',' && depth === 0) {
+            return true
+        }
+    }
+    return false
+}
+
 /** The name the Sass registers a theme by, which the app provides: its name in lower case, words joined by hyphens. */
 export const themeId = (themeName: string): string => themeName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'custom'
 
@@ -888,7 +900,9 @@ function themeCode(themeName: string, baseTheme: string, own: Variables): { css:
         '',
         '$nb-themes: nb-register-theme(',
         '  (',
-        ...entries.map(([key, value]) => (key.startsWith('font-family') ? `    ${key}: string.unquote('${value.replace(/'/g, '\\\'')}'),` : `    ${key}: ${value},`)),
+        // A font's name, or a list, e.g. a font stack or several shadows, which a Sass map would read as its own
+        // entries, as a string the CSS gets as it is.
+        ...entries.map(([key, value]) => (key.includes('font-family') || hasTopLevelComma(value) ? `    ${key}: string.unquote('${value.replace(/'/g, '\\\'')}'),` : `    ${key}: ${value},`)),
         '  ),',
         `  ${id},`,
         `  ${baseTheme}`,

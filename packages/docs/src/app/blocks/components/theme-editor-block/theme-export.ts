@@ -219,9 +219,23 @@ function fontsComment(draft: NgdThemeDraft, comment: (text: string) => string): 
         : []
 }
 
+/** Whether a value is a list, e.g. `"IBM Plex Mono", monospace`: a comma outside parentheses. */
+function hasTopLevelComma(text: string): boolean {
+    let depth = 0
+    for (const char of text) {
+        depth += char === '(' ? 1 : char === ')' ? -1 : 0
+        if (char === ',' && depth === 0) {
+            return true
+        }
+    }
+    return false
+}
+
 export function themeScss(draft: NgdThemeDraft, variables: Record<string, string>): string {
     const entries = Object.entries(variables).map(([key, entry]) =>
-        key.startsWith('font-family') ? `    ${key}: string.unquote('${entry.replace(/'/g, "\\'")}'),` : `    ${key}: ${entry},`
+        // A font's name, or a list, e.g. a font stack or several shadows, which a Sass map would read as its own
+        // entries, as a string the CSS gets as it is.
+        key.includes('font-family') || hasTopLevelComma(entry) ? `    ${key}: string.unquote('${entry.replace(/'/g, "\\'")}'),` : `    ${key}: ${entry},`
     )
     return [
         `// ${draft.name} as a theme of its own: the app's themes.scss, with provideNbTheme({ name: '${slug(draft.name)}' }).`,
