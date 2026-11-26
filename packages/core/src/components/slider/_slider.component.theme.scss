@@ -127,6 +127,11 @@
             }
         }
 
+        // The control status is for coloured backgrounds: its labels take the text colour for them.
+        &.status-control .slider-labels {
+            color: nb-theme(slider-control-label-text-color);
+        }
+
         &.disabled {
             cursor: nb-theme(slider-disabled-cursor);
 

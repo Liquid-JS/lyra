@@ -147,6 +147,7 @@ let lastSliderId = 0
  * slider-tick-color:
  * slider-tick-active-color:
  * slider-label-text-color:
+ * slider-control-label-text-color:
  * slider-label-text-font-family:
  * slider-label-text-font-size:
  * slider-label-text-font-weight:
