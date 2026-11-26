@@ -646,7 +646,8 @@ class ComponentBuilder {
         const names = new Set([...this.kit.symbols, ...this.kit.starters].map((symbol) => symbol.name))
         const prefix = `${this.kit.component}/`
         for (const [name, master] of [...this.masters]) {
-            if (!name.startsWith(prefix) || names.has(name) || !isLocal(master)) {
+            // Its own name too, e.g. `Route Tabset` before its tabs were counted.
+            if (!(name.startsWith(prefix) || name === this.kit.component) || names.has(name) || !isLocal(master)) {
                 continue
             }
             const successor = this.kit.symbols.find((symbol) => symbol.name.startsWith(`${name}/`) && !this.masters.has(symbol.name))
