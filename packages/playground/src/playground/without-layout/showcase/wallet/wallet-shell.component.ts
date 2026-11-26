@@ -4,12 +4,16 @@ import {
     NbActionComponent,
     NbActionsComponent,
     NbContextMenuDirective,
-    NbIconComponent,
     NbLayoutColumnComponent,
     NbLayoutComponent,
+    NbLayoutFooterComponent,
     NbLayoutHeaderComponent,
     NbMenuItem,
-    NbUserComponent
+    NbRouteTabsetComponent,
+    NbShownAboveDirective,
+    NbShownBelowDirective,
+    NbUserComponent,
+    type NbRouteTab
 } from '@liquid-js/lyr-core'
 
 import { portrait } from '../shared/showcase-images'
@@ -26,10 +30,13 @@ import { portrait } from '../shared/showcase-images'
         NbActionComponent,
         NbActionsComponent,
         NbContextMenuDirective,
-        NbIconComponent,
         NbLayoutColumnComponent,
         NbLayoutComponent,
         NbLayoutHeaderComponent,
+        NbLayoutFooterComponent,
+        NbRouteTabsetComponent,
+        NbShownAboveDirective,
+        NbShownBelowDirective,
         NbUserComponent,
         RouterLink,
         RouterLinkActive,
@@ -48,6 +55,9 @@ export class WalletShellComponent {
         { path: 'budgets', title: 'Budgets', icon: 'pie-chart-outline' },
         { path: 'transfer', title: 'Transfer', icon: 'paper-plane-outline' }
     ]
+
+    // On a phone, the sections' tabs along the bottom.
+    readonly tabs: NbRouteTab[] = this.sections.map((section) => ({ route: this.link(section.path), title: section.title, icon: section.icon }))
 
     readonly userMenu: NbMenuItem[] = [{ title: 'Profile' }, { title: 'Security' }, { title: 'Sign out' }]
 

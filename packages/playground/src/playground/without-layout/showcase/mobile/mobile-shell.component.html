@@ -21,20 +21,16 @@
         </button>
     </nb-layout-header>
 
-    <nb-layout-column class="screen">
+    <nb-layout-column>
         <router-outlet />
     </nb-layout-column>
-</nb-layout>
 
-<nav class="tabs"
-    aria-label="Sections">
-    @for (tab of tabs; track tab.path) {
-    <a [routerLink]="tab.path"
-        routerLinkActive="active"
-        #link="routerLinkActive"
-        [attr.aria-current]="link.isActive ? 'page' : null">
-        <nb-icon [icon]="tab.icon" />
-        <span>{{ tab.title }}</span>
-    </a>
-    }
-</nav>
+    <nb-layout-footer fixed>
+        <nav aria-label="Sections">
+            <nb-route-tabset [tabs]="tabs"
+                [activeLinkOptions]="{ exact: false }"
+                outlet="false"
+                appearance="bar" />
+        </nav>
+    </nb-layout-footer>
+</nb-layout>

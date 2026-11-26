@@ -1,6 +1,5 @@
 @use "@liquid-js/lyr-core/styles/theming" as *;
 
-$tabs-height: 4rem;
 $phone: 767.98px;
 
 nb-layout-header ::ng-deep nav {
@@ -56,10 +55,6 @@ nb-layout-header ::ng-deep nav {
             box-shadow: 0 0 0 nb-theme(outline-width) nb-theme(outline-color);
         }
     }
-
-    @media (max-width: $phone) {
-        display: none;
-    }
 }
 
 nb-actions {
@@ -73,11 +68,11 @@ nb-user ::ng-deep .info-container {
     }
 }
 
-// The pages are a column of a comfortable width, with room for the tabs on a phone.
+// The pages are a column of a comfortable width.
 .page {
     --layout-padding: 2rem 1.5rem 3rem;
     --layout-medium-padding: 1.5rem 1.5rem 3rem;
-    --layout-small-padding: 1rem 1rem calc(#{$tabs-height} + 1.5rem);
+    --layout-small-padding: 1rem 1rem 1.5rem;
 
     ::ng-deep > * {
         display: block;
@@ -87,46 +82,7 @@ nb-user ::ng-deep .info-container {
     }
 }
 
-// The tabs along the bottom, in the header's colours, on a phone only.
-.tabs {
-    position: fixed;
-    inset-inline: 0;
-    bottom: 0;
-    z-index: 1040;
-    display: none;
-    height: $tabs-height;
-    padding-bottom: env(safe-area-inset-bottom);
-    border-top: 1px solid nb-theme(divider-color);
-    background: nb-theme(header-background-color);
-
-    @media (max-width: $phone) {
-        display: flex;
-    }
-
-    a {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 0.25rem;
-        color: nb-theme(text-hint-color);
-        font-size: 0.75rem;
-        font-weight: 600;
-        text-decoration: none;
-
-        nb-icon {
-            font-size: 1.5rem;
-        }
-
-        &.active {
-            color: nb-theme(text-primary-color);
-            box-shadow: inset 0 2px 0 nb-theme(color-primary-default);
-        }
-
-        &:focus-visible {
-            outline: none;
-            box-shadow: inset 0 0 0 nb-theme(outline-width) nb-theme(outline-color);
-        }
-    }
+// The tabs span the footer.
+nb-layout-footer nav {
+    width: 100%;
 }
