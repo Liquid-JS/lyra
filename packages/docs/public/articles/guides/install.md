@@ -97,7 +97,7 @@ budget in `angular.json`, e.g. its `maximumWarning` to `2mb` and its `maximumErr
 <div class="note note-info">
   <div class="note-title">Customizable Theme Configuration</div>
   <div class="note-body">
-    To change theme variables or switch between several themes at run time, see [Enabling Customizable Theme](theme/customization/enable-customizable-theme) and [Multiple Runtime Themes](theme/customization/enable-multiple-runtime-themes).
+    To change theme variables or switch between several themes at run time, see <a href="theme/customization/enable-customizable-theme">Enabling Customizable Theme</a> and <a href="theme/customization/enable-multiple-runtime-themes">Multiple Runtime Themes</a>.
   </div>
 </div>
 

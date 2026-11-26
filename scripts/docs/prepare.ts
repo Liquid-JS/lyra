@@ -25,6 +25,7 @@ const EXTENSIONS = ['ts', 'html', 'scss']
 console.log('Extracting API documentation')
 const classes = extractApi(root, collectSourceFiles(join(root, 'packages')))
 validateStructure(classes)
+validateNotes()
 
 console.log('Copying playground examples')
 rmSync(examplesDir, { recursive: true, force: true })
@@ -137,6 +138,22 @@ function validateStructure(documented: DocClass[]) {
         throw new Error(
             `structure.ts names classes without API documentation (is their doc comment right above them?):\n${missing.join('\n')}`
         )
+    }
+}
+
+// The docs render an article's HTML as it is, so Markdown inside a note's HTML shows raw, e.g. a link's brackets, or
+// vanishes, e.g. a tag in backticks: a note is written in HTML throughout.
+function validateNotes() {
+    const markdown = /\]\(|`|\*\*/
+    const found = listFiles(join(docsPublic, 'articles'))
+        .filter((file) => file.endsWith('.md'))
+        .flatMap((file) =>
+            [...readFileSync(file, 'utf8').matchAll(/<div class="note-body">([\s\S]*?)<\/div>/g)]
+                .filter(([, body]) => markdown.test(body))
+                .map(([, body]) => `${file.slice(docsPublic.length + 1)}: ${body.trim().slice(0, 60)}`)
+        )
+    if (found.length) {
+        throw new Error(`These notes have Markdown inside their HTML, which shows raw; write it in HTML, e.g. <a href> and <code>:\n${found.join('\n')}`)
     }
 }
 

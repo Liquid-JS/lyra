@@ -5,7 +5,7 @@ Lyra's styles come as prebuilt CSS by default. To customize theme variables, use
 <div class="note note-info section-end">
   <div class="note-title">Note</div>
   <div class="note-body">
-    You may already have this setup in place, if you used `ng add @liquid-js/lyr-core` and selected customizable themes during the installation process.
+    You may already have this setup in place, if you used <code>ng add @liquid-js/lyr-core</code> and selected customizable themes during the installation process.
   </div>
 </div>
 
