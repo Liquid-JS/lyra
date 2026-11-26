@@ -312,3 +312,51 @@ function isRecord(entry: unknown): entry is Record<string, unknown> {
 function withoutUnset(entry: Record<string, unknown>): Record<string, unknown> {
     return Object.fromEntries(Object.entries(entry).filter(([, item]) => item !== undefined && item !== ''))
 }
+
+/**
+ * Where Sketch keeps the design kit's plugin, as double-clicking it installs it, under the user's home folder: its theme
+ * script applies a theme to the kit as Lyra › Apply theme does.
+ */
+const KIT_PLUGIN = '/Library/Application Support/com.bohemiancoding.sketch3/Plugins/Lyra design kit.sketchplugin/Contents/Sketch/theme.js'
+
+/**
+ * A script for Sketch that gives the draft to the Lyra design kit, through the kit's plugin: in the kit, its colour
+ * variables, styles and symbols take the theme, as the app does; in a design made with the kit, the theme is recorded
+ * for the app, on its Theme page and in its settings (`lyra-theme`). Without the plugin, it records the theme for the
+ * plugin's Lyra › Apply theme. Run from Plugins › Run Script or a Sketch MCP server's run-code tool.
+ */
+export function designKitScript(draft: NgdThemeDraft, variables: Record<string, string>): string {
+    const record = { name: draft.name, base: draft.base, variables, css: themeCss(draft, variables), scss: themeScss(draft, variables) }
+    return `// ${draft.name}, for the Lyra design kit. Run it in Sketch from Plugins › Run Script, in your copy of the kit, then in
+// your design files: with the kit's plugin installed, the kit takes the theme as the app does, and a design records it
+// for whoever builds it. Without the plugin, it records the theme for the plugin's Lyra › Apply theme.
+const sketch = require('sketch')
+const theme = ${JSON.stringify(record, null, 2)}
+const doc = sketch.getSelectedDocument()
+let apply
+try {
+  apply = require(require('os').homedir() + ${JSON.stringify(KIT_PLUGIN)})
+} catch (error) {
+  apply = undefined
+}
+if (apply) {
+  // It works in turns, so Sketch stays responsive meanwhile.
+  sketch.UI.message('Applying the theme…')
+  Promise.resolve()
+    .then(() => apply({ document: doc.path ? decodeURIComponent(String(doc.path)) : doc.id, name: theme.name, base: theme.base, theme: theme.variables }))
+    .then((json) => {
+      const result = JSON.parse(json)
+      sketch.UI.message('Theme applied: ' + result.counts.colours + ' colours, ' + (result.counts.layerStyles + result.counts.textStyles) + ' styles and ' + result.counts.layers + ' symbols changed.')
+      if (result.warningCount) {
+        sketch.UI.alert('Lyra theme', result.warnings.join('\\n'))
+      }
+    })
+    .catch((error) => sketch.UI.alert('Lyra theme', 'The theme could not be applied: ' + error))
+} else {
+  // Recorded for the plugin, which shows it on the Theme page as it applies it; the page's old values go.
+  sketch.Settings.setDocumentSettingForKey(doc, 'lyra-theme', theme)
+  doc.pages.filter((page) => page.name === 'Theme').forEach((page) => page.layers.filter((layer) => layer.name === 'Theme').forEach((layer) => layer.remove()))
+  sketch.UI.alert('Lyra theme', 'The theme is recorded in this document. Install the Lyra design kit plugin, then choose Lyra › Apply theme.')
+}
+`
+}

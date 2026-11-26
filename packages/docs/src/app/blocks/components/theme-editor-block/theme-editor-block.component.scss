@@ -138,3 +138,10 @@
         border-top: nb-theme(tabset-divider-width) nb-theme(tabset-divider-style) nb-theme(tabset-divider-color);
     }
 }
+
+// The design kit's script is long: it scrolls in the block, under its copy button.
+.design-kit-script {
+    display: flex;
+    flex-direction: column;
+    max-height: 24rem;
+}

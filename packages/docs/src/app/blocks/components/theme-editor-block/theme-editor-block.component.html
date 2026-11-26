@@ -130,6 +130,12 @@
                 <p>Give the components these defaults across your app, see <a href="theme/customization/component-defaults">Component Defaults</a>:</p>
                 <ngd-code-block [code]="defaultsCode()" />
             </nb-tab>
+            <nb-tab tabTitle="Design kit">
+                <p>Give the <a href="docs/guides/design-kit">design kit</a> this theme: install the kit's plugin, open your copy of the kit in Sketch, then run this script from Plugins › Run Script. The kit takes the theme as the app does, its colours, fonts, corners and spacing, and shows it on its Theme page, where you can change it further. Run it in your design files too, to record the theme for whoever builds them. It applies your theme over the theme you started from, e.g. Dark, as the app does.</p>
+                <div class="design-kit-script">
+                    <ngd-code-block [code]="designKit()" />
+                </div>
+            </nb-tab>
         </nb-tabset>
     </nb-card-body>
 </nb-card>

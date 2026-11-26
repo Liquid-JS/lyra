@@ -95,6 +95,17 @@ export const structure: NgdAreaEntry[] = [
                     },
                     {
                         type: 'page',
+                        name: 'Design kit',
+                        children: [
+                            {
+                                type: 'block',
+                                block: 'markdown',
+                                source: 'guides/design-kit.md'
+                            }
+                        ]
+                    },
+                    {
+                        type: 'page',
                         name: 'Server deployment',
                         children: [
                             {

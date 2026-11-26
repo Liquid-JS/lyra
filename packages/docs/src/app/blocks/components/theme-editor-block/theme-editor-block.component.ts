@@ -26,7 +26,7 @@ import { NgdThemeCardComponent } from './theme-card.component'
 import { NgdThemeControlsComponent } from './theme-controls.component'
 import { NgdThemeCard, NgdThemeDrafts, themeLabel } from './theme-drafts.service'
 import { BASE_THEMES, NgdPreviewScreen, PREVIEW_SCREENS, themeEditorState } from './theme-editor-state'
-import { defaultsTs, themeCss, themeScss } from './theme-export'
+import { defaultsTs, designKitScript, themeCss, themeScss } from './theme-export'
 import { NgdThemeMessage } from './theme-message'
 
 /** Which devices the preview shows the screen on. */
@@ -112,6 +112,7 @@ export class NgdThemeEditorBlockComponent {
     protected readonly scss = computed(() => themeScss(this.draft(), this.themes.variables()))
     protected readonly css = computed(() => themeCss(this.draft(), this.themes.variables()))
     protected readonly defaultsCode = computed(() => defaultsTs(this.themes.defaults()))
+    protected readonly designKit = computed(() => designKitScript(this.draft(), this.themes.variables()))
 
     constructor() {
     // The base themes' values, for their cards and the drafts over them.
