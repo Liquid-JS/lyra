@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [22.0.0-alpha.6](https://github.com/Liquid-JS/lyra/compare/v22.0.0-alpha.5...v22.0.0-alpha.6) (2026-11-26)
+
+### Bug Fixes
+
+* **extras:** space a phone input's flag, arrow and number closely ([63e166c](https://github.com/Liquid-JS/lyra/commit/63e166c38f43981592568a4c4027d6ded8a2c2d7))
+
 # [22.0.0-alpha.5](https://github.com/Liquid-JS/lyra/compare/v22.0.0-alpha.4...v22.0.0-alpha.5) (2026-11-24)
 
 ### Features

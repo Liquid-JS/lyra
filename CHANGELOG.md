@@ -3,6 +3,28 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [22.0.0-alpha.6](https://github.com/Liquid-JS/lyra/compare/v22.0.0-alpha.5...v22.0.0-alpha.6) (2026-11-26)
+
+### Bug Fixes
+
+* **core:** keep a card's body where it is, and its parts laid out in a form ([adb9d27](https://github.com/Liquid-JS/lyra/commit/adb9d27e86d10534c44bf50dd6240fe667db6fc8))
+* **core:** keep round file drops and tag lists with an input only so round, as textareas are ([4ffe121](https://github.com/Liquid-JS/lyra/commit/4ffe1215e8a50daa503d8ffceafae353b9fd38ec))
+* **core:** lay a horizontal stepper out as a block ([2fe1a29](https://github.com/Liquid-JS/lyra/commit/2fe1a290fe71a578af5d7aaa96b9395ebe32a488))
+* **core:** let ng add set up a project that doesn't have the CDK yet ([348dc53](https://github.com/Liquid-JS/lyra/commit/348dc5315cc569b0847af50558020c78722b0cb5))
+* **core:** show a control slider's labels in the text colour for coloured backgrounds ([42c4673](https://github.com/Liquid-JS/lyra/commit/42c46732ab0b6c1cb55d83be07dc27606d269eb0))
+* **extras:** space a phone input's flag, arrow and number closely ([63e166c](https://github.com/Liquid-JS/lyra/commit/63e166c38f43981592568a4c4027d6ded8a2c2d7))
+* tag prereleases when publishing, and keep latest on the newest until a stable release ([4b571aa](https://github.com/Liquid-JS/lyra/commit/4b571aa5d8545d2d6d573e41f2509ed791345437))
+
+### Features
+
+* **core:** add a heading colour to the themes ([27aef94](https://github.com/Liquid-JS/lyra/commit/27aef9492ce937949374740cc028168615d3b29c))
+* **core:** add a toastr-offset theme variable ([43ecb81](https://github.com/Liquid-JS/lyra/commit/43ecb811fcfced675021dec390c54a3abaaf79a6))
+* **core:** add the text-basic and text-control colour classes ([11cc34d](https://github.com/Liquid-JS/lyra/commit/11cc34d64f974b0e4a262c7a672140daf8823157))
+* **core:** raise the initial budget for the theme's CSS in ng add ([7770855](https://github.com/Liquid-JS/lyra/commit/77708551091b500f32d1b0aae42c333c15cf8096))
+* **design-kit:** add a design kit for Sketch, made from the components themselves ([0df0074](https://github.com/Liquid-JS/lyra/commit/0df00746bebd6df688e22945794d75fef2544650))
+* **docs:** add the design kit guide, and give the Theme Editor's theme to the kit ([cec65f9](https://github.com/Liquid-JS/lyra/commit/cec65f9589260ff9cf57620a08de685596aa2217))
+* **docs:** set the heading colour and the button and tab text case in the Theme Editor ([b5f7520](https://github.com/Liquid-JS/lyra/commit/b5f7520eacbc1a235d34bea7798efd5296dbf4fa))
+
 # [22.0.0-alpha.5](https://github.com/Liquid-JS/lyra/compare/v22.0.0-alpha.4...v22.0.0-alpha.5) (2026-11-24)
 
 ### Features
