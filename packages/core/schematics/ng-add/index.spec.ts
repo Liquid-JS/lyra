@@ -196,6 +196,19 @@ describe('ng-add', () => {
         expect(styles).toContain('./node_modules/@liquid-js/lyr-core/styles/prebuilt/default.css')
     })
 
+    it('should raise the initial budget for the theme\'s CSS, keeping higher ones', async () => {
+        const raised = JSON.parse((await runSetupSchematic()).readContent('/angular.json'))
+        const budgets = raised.projects.app.architect.build.configurations.production.budgets
+        expect(budgets.find((budget: { type: string }) => budget.type === 'initial')).toMatchObject({ maximumWarning: '2mb', maximumError: '3mb' })
+
+        appTree = await createTestWorkspace(runner)
+        const workspace = JSON.parse(appTree.readText('/angular.json'))
+        workspace.projects.app.architect.build.configurations.production.budgets = [{ type: 'initial', maximumWarning: '4mb', maximumError: '1mb' }]
+        appTree.overwrite('/angular.json', JSON.stringify(workspace))
+        const kept = JSON.parse((await runSetupSchematic()).readContent('/angular.json'))
+        expect(kept.projects.app.architect.build.configurations.production.budgets[0]).toMatchObject({ maximumWarning: '4mb', maximumError: '3mb' })
+    })
+
     it('should create theme.scss and plug it into the project', async () => {
         appTree = await createTestWorkspace(runner, { style: Style.Scss })
         const tree = await runSetupSchematic({ customization: true })

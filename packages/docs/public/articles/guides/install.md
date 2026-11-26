@@ -12,7 +12,14 @@ ng add @liquid-js/lyr-core
 
 It adds `@liquid-js/lyr-core`, `@angular/cdk` and `@liquid-js/lyr-icons`, provides the theme, the icons and the
 router, installs the theme you pick (as customizable SCSS, or as the prebuilt CSS with `--no-customization`) and
-wraps the root component in `nb-layout` (skip it with `--no-layout`). That's it.
+wraps the root component in `nb-layout` (skip it with `--no-layout`). Lyra's theme styles every component, about 740 kB
+of CSS before it's compressed, more than a new app's budget allows, so it raises the `initial` budget in
+`angular.json` to `2mb`. That's it.
+
+Something to know before your first build:
+
+- Lyra ships no fonts. The default theme uses Inter: load it in your `index.html`, e.g. from Google Fonts, or set your
+  own in your theme.
 
 ---
 
@@ -83,6 +90,9 @@ Add a prebuilt theme to the `styles` of your `angular.json`:
 ```
 
 The prebuilt themes are `default`, `dark`, `cosmic`, `corporate`, `material-light` and `material-dark`.
+
+The theme is about 740 kB of CSS before it's compressed, more than a new app's budget allows: raise the `initial`
+budget in `angular.json`, e.g. its `maximumWarning` to `2mb` and its `maximumError` to `3mb`.
 
 <div class="note note-info">
   <div class="note-title">Customizable Theme Configuration</div>
