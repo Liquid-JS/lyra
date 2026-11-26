@@ -51,7 +51,8 @@
             border-color: transparent;
 
             > nb-card-header,
-            > nb-card-footer {
+            > nb-card-footer,
+            > form > nb-card-footer {
                 border-color: nb-theme(card-filled-divider-color);
             }
         }
@@ -201,6 +202,16 @@
     // The card is the link's containing block, so it covers the card from inside the body too.
     nb-card-body:has(.card-link) {
         position: static;
+    }
+
+    // A form around the body and footer, e.g. a dialog's, lays them out as the card's own.
+    nb-card > form {
+        display: contents;
+    }
+
+    // Blocks wherever they are, e.g. in a form, as flex items they'd be in the card; other rules can make them rows.
+    :where(nb-card-header, nb-card-body, nb-card-footer) {
+        display: block;
     }
 
     nb-card-body {
