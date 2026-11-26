@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [22.0.0-alpha.8](https://github.com/Liquid-JS/lyra/compare/v22.0.0-alpha.7...v22.0.0-alpha.8) (2026-11-26)
+
+### Bug Fixes
+
+* **core:** mirror badges, a spinner's message and a tab's title in right to left pages ([b97f187](https://github.com/Liquid-JS/lyra/commit/b97f187c2078c4206d65e895bc9e3742c888698f))
+* **core:** show the actions' menu button, and a drawer over its backdrop ([52d673b](https://github.com/Liquid-JS/lyra/commit/52d673be4dc84f1274afc1dfbd11f2f1dcf2b6d1))
+* **core:** span a phone's navigation in a footer however it's wrapped ([1fb21f7](https://github.com/Liquid-JS/lyra/commit/1fb21f7f52059b8f2e323b3fb54b3a4d8ab51230))
+
+### Features
+
+* **core:** name a select with aria-label, start a table sorted, finish a stepper ([b4ad3d4](https://github.com/Liquid-JS/lyra/commit/b4ad3d40fcdcb47354293b1c10bc66e207e58606))
+* **core:** navigation that adapts to phones ([7855e5c](https://github.com/Liquid-JS/lyra/commit/7855e5cfd874a4eb66e8d2964b14e8de104056c2))
+* **core:** show a dialog as a sheet along the bottom ([1c0b20b](https://github.com/Liquid-JS/lyra/commit/1c0b20bf6d1c5ab2ca4c9f2d58b048b601e0c0de))
+* **core:** show a part only below or above a breakpoint ([0608437](https://github.com/Liquid-JS/lyra/commit/06084370a76eea5d7369ff82bfbf215f99596b7f))
+
 # [22.0.0-alpha.7](https://github.com/Liquid-JS/lyra/compare/v22.0.0-alpha.6...v22.0.0-alpha.7) (2026-11-26)
 
 ### Bug Fixes

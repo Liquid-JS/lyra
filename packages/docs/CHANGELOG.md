@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [22.0.0-alpha.8](https://github.com/Liquid-JS/lyra/compare/v22.0.0-alpha.7...v22.0.0-alpha.8) (2026-11-26)
+
+### Bug Fixes
+
+* **design-kit:** fit composites to their content, and record themes in moments ([3ea76b8](https://github.com/Liquid-JS/lyra/commit/3ea76b87b73681c70f1e67af235c19018a86dcdb))
+* **design-kit:** quote lists in a theme's Sass, so it compiles ([271e067](https://github.com/Liquid-JS/lyra/commit/271e067ae3f823ec023c6c3ee6fc882eb1992790))
+
 # [22.0.0-alpha.7](https://github.com/Liquid-JS/lyra/compare/v22.0.0-alpha.6...v22.0.0-alpha.7) (2026-11-26)
 
 **Note:** Version bump only for package docs

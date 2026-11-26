@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [22.0.0-alpha.8](https://github.com/Liquid-JS/lyra/compare/v22.0.0-alpha.7...v22.0.0-alpha.8) (2026-11-26)
+
+### Bug Fixes
+
+* **core:** mirror badges, a spinner's message and a tab's title in right to left pages ([b97f187](https://github.com/Liquid-JS/lyra/commit/b97f187c2078c4206d65e895bc9e3742c888698f))
+* **core:** show the actions' menu button, and a drawer over its backdrop ([52d673b](https://github.com/Liquid-JS/lyra/commit/52d673be4dc84f1274afc1dfbd11f2f1dcf2b6d1))
+* **core:** span a phone's navigation in a footer however it's wrapped ([1fb21f7](https://github.com/Liquid-JS/lyra/commit/1fb21f7f52059b8f2e323b3fb54b3a4d8ab51230))
+* **design-kit:** carry a symbol named like its component over to its new name ([cc20cbf](https://github.com/Liquid-JS/lyra/commit/cc20cbf30299e1122528b55df20497fa835a8df1))
+* **design-kit:** fit composites to their content, and record themes in moments ([3ea76b8](https://github.com/Liquid-JS/lyra/commit/3ea76b87b73681c70f1e67af235c19018a86dcdb))
+* **design-kit:** quote lists in a theme's Sass, so it compiles ([271e067](https://github.com/Liquid-JS/lyra/commit/271e067ae3f823ec023c6c3ee6fc882eb1992790))
+
+### Features
+
+* **core:** name a select with aria-label, start a table sorted, finish a stepper ([b4ad3d4](https://github.com/Liquid-JS/lyra/commit/b4ad3d40fcdcb47354293b1c10bc66e207e58606))
+* **core:** navigation that adapts to phones ([7855e5c](https://github.com/Liquid-JS/lyra/commit/7855e5cfd874a4eb66e8d2964b14e8de104056c2))
+* **core:** show a dialog as a sheet along the bottom ([1c0b20b](https://github.com/Liquid-JS/lyra/commit/1c0b20bf6d1c5ab2ca4c9f2d58b048b601e0c0de))
+* **core:** show a part only below or above a breakpoint ([0608437](https://github.com/Liquid-JS/lyra/commit/06084370a76eea5d7369ff82bfbf215f99596b7f))
+* **design-kit:** add an adaptive layout and a phone's tab bar ([157a0e6](https://github.com/Liquid-JS/lyra/commit/157a0e6887a1ea4594a877b5b019ef50283cb7d6))
+* **design-kit:** check the components on a phone and right to left ([acec202](https://github.com/Liquid-JS/lyra/commit/acec202d71aec2687bde78ec1b386e5bd1d91891))
+
 # [22.0.0-alpha.7](https://github.com/Liquid-JS/lyra/compare/v22.0.0-alpha.6...v22.0.0-alpha.7) (2026-11-26)
 
 ### Bug Fixes

@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [22.0.0-alpha.8](https://github.com/Liquid-JS/lyra/compare/v22.0.0-alpha.7...v22.0.0-alpha.8) (2026-11-26)
+
+### Bug Fixes
+
+* **design-kit:** fit composites to their content, and record themes in moments ([3ea76b8](https://github.com/Liquid-JS/lyra/commit/3ea76b87b73681c70f1e67af235c19018a86dcdb))
+
+### Features
+
+* **design-kit:** add an adaptive layout and a phone's tab bar ([157a0e6](https://github.com/Liquid-JS/lyra/commit/157a0e6887a1ea4594a877b5b019ef50283cb7d6))
+
 # [22.0.0-alpha.7](https://github.com/Liquid-JS/lyra/compare/v22.0.0-alpha.6...v22.0.0-alpha.7) (2026-11-26)
 
 ### Features
