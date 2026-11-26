@@ -5960,6 +5960,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"design-kit@workspace:packages/design-kit":
+  version: 0.0.0-use.local
+  resolution: "design-kit@workspace:packages/design-kit"
+  dependencies:
+    esbuild: "npm:0.28.2"
+    playwright: "npm:^1.65.1"
+  languageName: unknown
+  linkType: soft
+
 "detect-indent@npm:^7.0.1":
   version: 7.0.2
   resolution: "detect-indent@npm:7.0.2"

@@ -1,0 +1,22 @@
+{
+    "name": "design-kit",
+    "version": "22.0.0-alpha.5",
+    "private": true,
+    "license": "MIT",
+    "type": "module",
+    "scripts": {
+        "tokens": "node src/tokens.ts",
+        "capture": "node src/capture.ts",
+        "model": "node src/model.ts",
+        "sketch": "node src/sketch.ts",
+        "manifest": "node src/manifest.ts",
+        "typecheck": "run -T tsc -p tsconfig.json --noEmit && run -T tsc -p src/sketch/tsconfig.json --noEmit",
+        "lint": "yarn typecheck && run -T eslint .",
+        "lint:fix": "run -T eslint . --fix",
+        "test": "run -T vitest run --root . --environment node"
+    },
+    "dependencies": {
+        "esbuild": "0.28.2",
+        "playwright": "^1.65.1"
+    }
+}

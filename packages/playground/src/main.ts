@@ -15,6 +15,11 @@ bootstrapApplication(AppComponent, {
         provideCheckNoChangesConfig({ exhaustive: true, interval: 1000 }),
         provideHttpClient(withInterceptorsFromDi()),
         provideRouter([
+            // Specimen pages the design kit is captured from (packages/design-kit), kept out of the docs' examples.
+            {
+                path: 'design-kit',
+                loadChildren: () => import('./design-kit/design-kit.routes').then((m) => m.DESIGN_KIT_ROUTES)
+            },
             {
                 path: '',
                 loadChildren: () => import('./playground/playground.routes').then((m) => m.PLAYGROUND_ROUTES)
