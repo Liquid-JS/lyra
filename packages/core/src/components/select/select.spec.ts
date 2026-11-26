@@ -1580,6 +1580,9 @@ describe('NbSelectComponent - stale selection', () => {
     <nb-select class="unlabelled" ghost>
       <nb-option value="si">Slovenia</nb-option>
     </nb-select>
+    <nb-select class="named" aria-label="Sort by">
+      <nb-option value="date">Date</nb-option>
+    </nb-select>
   `,
     imports: [NbSelectModule]
 })
@@ -1597,6 +1600,20 @@ describe('NbSelectComponent - label', () => {
         expect(button.getAttribute('aria-labelledby')).toBe(`select-label ${button.id}`)
         expect(labelled.hasAttribute('aria-labelledby')).toBe(false)
         expect(unlabelled.querySelector('button')?.hasAttribute('aria-labelledby')).toBe(false)
+    })
+
+    it('should name its button with its aria-label and its own text', async () => {
+        TestBed.configureTestingModule({ imports: [NbThemeModule.forRoot()] })
+        const fixture = TestBed.createComponent(NbLabelledSelectComponent)
+        fixture.detectChanges()
+        await fixture.whenStable()
+
+        const named = (fixture.nativeElement as HTMLElement).querySelector('nb-select.named') as HTMLElement
+        const button = named.querySelector('button') as HTMLButtonElement
+        const [labelId] = (button.getAttribute('aria-labelledby') ?? '').split(' ')
+        expect(named.querySelector(`#${labelId}`)?.textContent).toBe('Sort by')
+        expect(button.getAttribute('aria-labelledby')).toBe(`${labelId} ${button.id}`)
+        expect(named.hasAttribute('aria-label')).toBe(false)
     })
 
     it('should say that its button opens a list, and whether the list is open', async () => {

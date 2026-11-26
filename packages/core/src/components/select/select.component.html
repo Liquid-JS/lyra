@@ -1,3 +1,7 @@
+@if (ariaLabel()) {
+<span [id]="labelId"
+    hidden>{{ ariaLabel() }}</span>
+}
 <button [disabled]="isDisabled()"
     [class]="selectButtonClasses()"
     [id]="buttonId"

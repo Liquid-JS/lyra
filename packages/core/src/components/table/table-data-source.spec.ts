@@ -67,6 +67,13 @@ describe('nbTableDataSource with rows in the browser', () => {
         expect(source.total()).toBe(5)
     })
 
+    it('should start in the order it\'s given', () => {
+        const source = TestBed.runInInjectionContext(() =>
+            nbTableDataSource({ data: [{ name: 'Bea' }, { name: 'Al' }], sort: { column: 'name', direction: 'asc' } })
+        )
+        expect(source.sort()).toEqual({ column: 'name', direction: 'asc' })
+    })
+
     it('should take sort requests from sort headers, and tell each column its direction', () => {
         const source = create(() => nbTableDataSource({ data: users }))
         source.page.set(1)

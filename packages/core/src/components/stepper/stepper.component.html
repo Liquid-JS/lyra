@@ -2,13 +2,13 @@
 <div class="header">
     @for (step of steps(); track step; let index = $index) {
     @if (!step.hidden() && hasVisibleStepBefore(index)) {
-    <div [class.connector-past]="index <= selectedIndex()"
+    <div [class.connector-past]="finished() || index <= selectedIndex()"
         class="connector"></div>
     }
     @if (!step.hidden()) {
     <div class="step"
         [class.selected]="isStepSelected(step)"
-        [class.completed]="!isStepSelected(step) && step.isCompleted"
+        [class.completed]="isStepDone(step)"
         [class.noninteractive]="disableStepNavigation()"
         [attr.role]="disableStepNavigation() ? null : 'button'"
         [attr.tabindex]="disableStepNavigation() ? null : 0"
@@ -17,10 +17,10 @@
         (keydown.enter)="$event.preventDefault(); changeStep(step)"
         (keydown.space)="$event.preventDefault(); changeStep(step)">
         <div class="label-index">
-            @if (!step.isCompleted || isStepSelected(step)) {
+            @if (!isStepDone(step)) {
             <span>{{ getStepNumber(index) }}</span>
             }
-            @if (!isStepSelected(step) && step.isCompleted) {
+            @if (isStepDone(step)) {
             <nb-icon icon="checkmark-outline"
                 pack="essentials" />
             }

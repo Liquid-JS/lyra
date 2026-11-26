@@ -219,13 +219,14 @@ export class NbUserComponent {
 
     /**
      * The first letters of the first two words of the name: whole characters, so an emoji or a letter with a combining
-     * mark stays whole.
+     * mark stays whole. A name that's initials already, two or three capitals such as `PS`, is shown as it is.
      */
     getInitials(): string {
-        const name = this.displayName()
-        return name
-            .split(/\s+/)
-            .filter(Boolean)
+        const words = this.displayName().split(/\s+/).filter(Boolean)
+        if (words.length === 1 && /^\p{Lu}{2,3}$/u.test(words[0] ?? '')) {
+            return words[0] ?? ''
+        }
+        return words
             .slice(0, 2)
             .map((word) => firstGrapheme(word))
             .join('')

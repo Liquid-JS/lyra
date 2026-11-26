@@ -277,3 +277,34 @@ describe('Stepper: next button in a form', () => {
         expect(fixture.componentInstance.stepper().selectedIndex()).toBe(1)
     })
 })
+
+@Component({
+    template: `
+    <nb-stepper [finished]="finished()" [selectedIndex]="1">
+      <nb-step label="Account" completed>Account</nb-step>
+      <nb-step label="Payment">Payment</nb-step>
+    </nb-stepper>
+  `,
+    imports: [NbStepperModule]
+})
+class NbStepperFinishedTestComponent {
+    readonly finished = signal(false)
+}
+
+describe('Stepper: finished', () => {
+    it('should show every step completed and none current once finished', () => {
+        TestBed.configureTestingModule({ imports: [NbThemeModule.forRoot(), NbStepperModule, NbStepperFinishedTestComponent] })
+        const fixture = TestBed.createComponent(NbStepperFinishedTestComponent)
+        fixture.detectChanges()
+        const element: HTMLElement = fixture.nativeElement
+        expect(element.querySelectorAll('.step.completed')).toHaveLength(1)
+        expect(element.querySelector('.step.selected')).not.toBeNull()
+
+        fixture.componentInstance.finished.set(true)
+        fixture.detectChanges()
+        expect(element.querySelectorAll('.step.completed')).toHaveLength(2)
+        expect(element.querySelector('.step.selected')).toBeNull()
+        expect(element.querySelector('[aria-current]')).toBeNull()
+        expect(element.querySelectorAll('.connector-past')).toHaveLength(1)
+    })
+})

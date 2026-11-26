@@ -96,6 +96,11 @@ export interface NbStepChangeEvent {
  * so the user moves only with `nbStepperPrevious` and `nbStepperNext` buttons.
  * @stacked-example(Disabled steps navigation, stepper/stepper-disabled-step-nav.component)
  *
+ * Once the user is through, e.g. after a booking, `finished` shows every step completed and none current:
+ * ```html
+ * <nb-stepper [finished]="booked()">…</nb-stepper>
+ * ```
+ *
  * `stepChange` emits an `NbStepChangeEvent` with the step selected and the one left:
  * @stacked-example(Step change event, stepper/stepper-step-change-event.component)
  * @styles
@@ -154,6 +159,9 @@ export class NbStepperComponent {
 
     /** A step can be reached only once the steps before it are completed; on by default. */
     readonly linear = input<boolean, NbBooleanInput>(true, { transform: convertToBoolProperty })
+
+    /** Shows every step completed and none current, once the user is through them. */
+    readonly finished = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty })
 
     /** Emits after another step is selected, or the stepper is reset, with the step and the one left. */
     readonly stepChange = output<NbStepChangeEvent>()
@@ -264,7 +272,12 @@ export class NbStepperComponent {
     }
 
     isStepSelected(step: NbStepComponent) {
-        return this.selected() === step
+        return !this.finished() && this.selected() === step
+    }
+
+    /** @docs-private Whether the step shows as completed: done, or the stepper `finished`. */
+    isStepDone(step: NbStepComponent) {
+        return !this.isStepSelected(step) && (this.finished() || step.isCompleted)
     }
 
     /** @docs-private The number shown for the step at the index: hidden steps aren't counted. */

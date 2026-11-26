@@ -618,7 +618,8 @@ export function nbSelectFormFieldControlConfigFactory() {
         '[class.full-width]': 'fullWidth()',
         '[class.open]': 'isOpen()',
         // The label goes to the button, which is what screen readers focus.
-        '[attr.aria-labelledby]': 'null'
+        '[attr.aria-labelledby]': 'null',
+        '[attr.aria-label]': 'null'
     }
 })
 // `M` defaults to a mode that isn't known, as a query gives it: typed as a single select, as an unset `multiple` is.
@@ -737,11 +738,19 @@ implements AfterViewInit, AfterContentChecked, OnDestroy, ControlValueAccessor, 
      */
     readonly ariaLabelledBy = input<string>(undefined, { alias: 'aria-labelledby' })
 
+    /**
+     * The select's name, where no element on the page labels it, e.g. a sort order's in a toolbar. Screen readers
+     * announce it and then the selected value.
+     */
+    readonly ariaLabel = input<string>(undefined, { alias: 'aria-label' })
+
     protected readonly buttonId = `nb-select-button-${lastSelectId++}`
     protected readonly listId = `${this.buttonId}-list`
+    protected readonly labelId = `${this.buttonId}-label`
     protected readonly buttonLabelledBy = computed(() => {
     // Its own label and an `nbLabel` of its `nbValidation`, then the selected value.
-        const labelledBy = [this.ariaLabelledBy(), this.validation?.labelledBy()].filter(Boolean).join(' ')
+        const own = this.ariaLabel() ? this.labelId : undefined
+        const labelledBy = [this.ariaLabelledBy(), own, this.validation?.labelledBy()].filter(Boolean).join(' ')
         return labelledBy ? `${labelledBy} ${this.buttonId}` : null
     })
 

@@ -45,6 +45,8 @@ export interface NbTablePage<T> {
 interface NbTableDataSourceCommonOptions<T> {
     /** Rows on a page; 10 by default. */
     pageSize?: number
+    /** The order it starts in, e.g. `{ column: 'name', direction: 'asc' }`; the rows' own by default. */
+    sort?: NbTableSort
     /**
      * A row's identity, which keeps it selected and expanded when the rows are loaded again; the row itself by default.
      */
@@ -116,8 +118,8 @@ function defaultFilter<T>(row: T, filters: NbTableFilters) {
  *   `page`, from 0, `pageSize`, `sort`, `filters` and `params`. `params` is a signal of what the rows depend on, e.g. a customer's id, whose
  *   change loads the first page again.
  *
- * Both take `pageSize`, 10 by default, and `rowId`, a row's identity, which keeps it selected and expanded when the
- * rows load again. To start sorted, set `sort`, e.g. `this.users.sort.set({ column: 'name', direction: 'asc' })`.
+ * Both take `pageSize`, 10 by default; `sort`, the order it starts in, e.g. `{ column: 'name', direction: 'asc' }`; and
+ * `rowId`, a row's identity, which keeps it selected and expanded when the rows load again.
  */
 export class NbTableDataSource<T, P = void> extends DataSource<T> implements NbPageable, NbSortState {
     /** The order; `undefined` for the rows' own. A change goes back to the first page. */
@@ -154,6 +156,9 @@ export class NbTableDataSource<T, P = void> extends DataSource<T> implements NbP
         super()
         this.rowId = options.rowId ?? ((row) => row)
         this.pageSize = signal(options.pageSize ?? 10)
+        if (options.sort) {
+            this.sort.set(options.sort)
+        }
         const params = 'load' in options ? options.params : undefined
         this.page = linkedSignal({
             source: () => [this.filters(), this.sort(), params?.()],

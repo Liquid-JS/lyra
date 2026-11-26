@@ -120,6 +120,16 @@ describe('NbUserComponent', () => {
         expect(initialsElement.textContent.trim()).toEqual('NN')
     })
 
+    it('should show a name that\'s initials as it is', () => {
+        fixture.componentRef.setInput('name', 'PS')
+        fixture.detectChanges()
+        expect(userElement.querySelector(INITIALS_SELECTOR)?.textContent?.trim()).toEqual('PS')
+
+        fixture.componentRef.setInput('name', 'Priya')
+        fixture.detectChanges()
+        expect(userElement.querySelector(INITIALS_SELECTOR)?.textContent?.trim()).toEqual('P')
+    })
+
     it('should not show initials if picture is set', () => {
         fixture.componentRef.setInput('name', 'Name')
         fixture.componentRef.setInput('title', 'Title')
