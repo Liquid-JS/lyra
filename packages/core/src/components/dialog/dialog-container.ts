@@ -24,9 +24,20 @@ import { NbDialogConfig } from './dialog-config'
     selector: 'nb-dialog-container',
     template: '<ng-template nbPortalOutlet />',
     // The overlay pane is capped to the viewport; dialogs taller or wider than it scroll instead of overflowing it.
-    styles: ':host { display: block; max-width: 100%; max-height: 100%; overflow: auto; overscroll-behavior: contain; }',
+    // A sheet spans the screen up to 36rem, its content flush with the bottom and clear of a phone's home bar.
+    styles: `
+        :host { display: block; max-width: 100%; max-height: 100%; overflow: auto; overscroll-behavior: contain; }
+        :host(.sheet) { width: 100vw; max-width: 36rem; }
+        :host(.sheet) ::ng-deep > * {
+            margin: 0;
+            border-end-start-radius: 0;
+            border-end-end-radius: 0;
+            padding-bottom: env(safe-area-inset-bottom, 0);
+        }
+    `,
     host: {
-    // Without a backdrop the page stays usable, so the dialog isn't modal.
+        '[class.sheet]': 'config.sheet',
+        // Without a backdrop the page stays usable, so the dialog isn't modal.
         '[attr.aria-modal]': 'config.hasBackdrop',
         '[attr.role]': 'config.role',
         '[attr.aria-labelledby]': 'config.ariaLabelledBy',

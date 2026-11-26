@@ -76,6 +76,12 @@ export class NbDialogConfig<D = unknown> {
     positionOffset = ''
 
     /**
+     * Shows the dialog as a sheet along the bottom of the screen, as a phone's: at the bottom whatever its `position`,
+     * as wide as the screen up to 36rem, its content's bottom corners square and its end clear of a phone's home bar.
+     */
+    sheet = false
+
+    /**
      * The dialog's ARIA role: `dialog`, or `alertdialog` for one that asks the user to confirm or acknowledge something.
      */
     role: 'dialog' | 'alertdialog' = 'dialog'

@@ -123,6 +123,12 @@ import { animateDialog } from './dialog-animation'
  * suits notices such as a cookie consent.
  * @stacked-example(Position, dialog/dialog-position.component)
  *
+ * `sheet` - a sheet along the bottom of the screen, as a phone's: a card's details under the thumb, as wide as the
+ * screen up to 36rem, flush with the bottom.
+ * ```ts
+ * this.dialogService.open(DetailsComponent, { sheet: true, closeOnBackdropClick: true })
+ * ```
+ *
  * ### Confirm dialog
  *
  * `confirm` asks the user to confirm an action and resolves to whether they did. Pass `action` to run it from the
@@ -217,8 +223,8 @@ export class NbDialogService {
 
     protected createPositionStrategy(config?: NbDialogConfig): NbGlobalPositionStrategy {
         const strategy = this.positionBuilder.global()
-        const position = config?.position ?? 'center'
-        const offset = config?.positionOffset ?? ''
+        const position = config?.sheet ? 'bottom' : config?.position ?? 'center'
+        const offset = config?.sheet ? '' : config?.positionOffset ?? ''
         switch (position) {
             case 'center':
                 return strategy.centerVertically().centerHorizontally()
