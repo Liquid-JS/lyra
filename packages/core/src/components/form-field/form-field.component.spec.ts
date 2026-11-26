@@ -24,6 +24,10 @@ import {
         <span nbSuffix>{{ unit() }}</span>
       }
     </nb-form-field>
+    <nb-form-field class="block" style="display: block">
+      <span nbPrefix class="icon-box"></span>
+      <input nbInput />
+    </nb-form-field>
     </div>
   `,
     styleUrl: './form-field.component.spec.scss',
@@ -84,6 +88,14 @@ describe('NbFormFieldComponent', () => {
 
         expect(width(addon('text'))).toBeLessThan(before)
         expect(parseFloat(getComputedStyle(input('text')).paddingInlineEnd)).toBeCloseTo(width(addon('text')), 1)
+    })
+
+    it('should keep an addon its own width in a field a page made a block', async () => {
+        await render()
+        await render()
+
+        expect(width(addon('block'))).toBe(40)
+        expect(width(field('block'))).toBe(width(field('icon')))
     })
 
     it('should drop the padding with the addon', async () => {

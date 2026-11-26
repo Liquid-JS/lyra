@@ -8,6 +8,10 @@
     .nb-form-field-addon {
         display: flex;
         flex-shrink: 0;
+
+        // As wide as its content, as a flex item is anyway, so an addon whose field isn't a flex container (a page's
+        // `display: block`) doesn't stretch past its negative margin, measure wider and stretch again.
+        inline-size: max-content;
         justify-content: center;
         align-items: center;
         z-index: 1;
