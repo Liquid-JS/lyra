@@ -69,4 +69,10 @@
     .toastr-overlay-container {
         z-index: 1041;
     }
+
+    // The toasts' distance from the screen's edges, besides their own margin, e.g. below a fixed header.
+    .toastr-overlay-container nb-toastr-container {
+        display: block;
+        padding: nb-theme(toastr-offset);
+    }
 }

@@ -280,7 +280,8 @@ export class NbToastrContainerRegistry {
  * The config's options:
  *
  * `position` - where on the screen the toast appears.
- * Default is `top-end`.
+ * Default is `top-end`. The theme's `toastr-offset` keeps toasts clear of what's fixed at the screen's edges, e.g.
+ * `4.5rem 0 0` below a fixed header.
  * @stacked-example(Position, toastr/toastr-positions.component)
  *
  * `status` - the colour and icon of the toast.
