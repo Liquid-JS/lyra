@@ -374,6 +374,10 @@ export class NbTagComponent implements OnDestroy, NbHighlightableOption {
      */
     readonly remove = output<NbTagComponent>()
 
+    /**
+     * Emits the tag and its state when its selection changes: by the user in an `nb-tag-list`, by the list, or by
+     * `setSelected`.
+     */
     readonly selectedChange = output<NbTagSelectionChange>()
 
     /**
