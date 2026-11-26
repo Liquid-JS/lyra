@@ -106,9 +106,10 @@
             border-color: nb-theme(file-drop-drag-border-color);
         }
 
+        // A field's shape, only so round, as a textarea's: its lines would run past fully round corners.
         @each $shape in nb-get-shapes() {
             &.shape-#{$shape} {
-                border-radius: nb-theme(input-#{$shape}-border-radius);
+                border-radius: min(#{nb-theme(input-#{$shape}-border-radius)}, #{nb-theme(file-drop-max-border-radius)});
             }
         }
 

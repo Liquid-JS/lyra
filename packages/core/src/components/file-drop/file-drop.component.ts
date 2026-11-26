@@ -107,6 +107,7 @@ let lastFileDropId = 0
  *
  * file-drop-border-style:
  * file-drop-border-width:
+ * file-drop-max-border-radius:
  * file-drop-tiny-padding:
  * file-drop-tiny-min-height:
  * file-drop-tiny-gap:

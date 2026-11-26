@@ -35,9 +35,10 @@
     .nb-tag-list-with-input {
         @include input-theme.nb-input-core-theme;
 
+        // Only so round, as a textarea: its tags wrap onto more lines, which would run past fully round corners.
         @each $shape in nb-get-shapes() {
             &.shape-#{$shape} {
-                border-radius: nb-theme(tag-list-with-input-#{$shape}-border-radius);
+                border-radius: min(#{nb-theme(tag-list-with-input-#{$shape}-border-radius)}, #{nb-theme(tag-list-with-input-max-border-radius)});
             }
         }
 

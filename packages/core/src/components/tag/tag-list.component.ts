@@ -69,6 +69,7 @@ const SEPARATOR_CHARACTERS: Record<number, string> = { [COMMA]: ',', [SEMICOLON]
  * tag-list-with-input-rectangle-border-radius:
  * tag-list-with-input-semi-round-border-radius:
  * tag-list-with-input-round-border-radius:
+ * tag-list-with-input-max-border-radius:
  */
 @Component({
     selector: 'nb-tag-list',
