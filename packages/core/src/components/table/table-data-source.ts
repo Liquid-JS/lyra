@@ -107,7 +107,17 @@ function defaultFilter<T>(row: T, filters: NbTableFilters) {
  * The rows of a `nbTable`, from an array in the browser or a server, sorted, filtered and a page at a time; it's also
  * what `nbSort` sorts and `nb-pagination [for]` pages, and it keeps the selection and the expanded rows of the page.
  *
- * Create it with `nbTableDataSource()` in an injection context, e.g. a component's field.
+ * Create it with `nbTableDataSource()` in an injection context, e.g. a component's field, with either:
+ *
+ * - `data`: rows in the browser, an array or a signal of one, which it sorts, filters and pages itself. `sortValue`
+ *   gives a row's value to sort a column by, its property of the column's name by default; `filter` says whether a
+ *   row passes the filters, by default each filter's text in the row's property of its name, or a value equal to it.
+ * - `load`: a function that loads a page of rows for a query, as an observable of `{ rows, total }`; the query has
+ *   `page`, from 0, `pageSize`, `sort`, `filters` and `params`. `params` is a signal of what the rows depend on, e.g. a customer's id, whose
+ *   change loads the first page again.
+ *
+ * Both take `pageSize`, 10 by default, and `rowId`, a row's identity, which keeps it selected and expanded when the
+ * rows load again. To start sorted, set `sort`, e.g. `this.users.sort.set({ column: 'name', direction: 'asc' })`.
  */
 export class NbTableDataSource<T, P = void> extends DataSource<T> implements NbPageable, NbSortState {
     /** The order; `undefined` for the rows' own. A change goes back to the first page. */
