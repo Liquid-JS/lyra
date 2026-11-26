@@ -1,0 +1,1 @@
+var o=[{path:`theme-select-showcase.component`,loadComponent:()=>import(`./chunk-BIsc7ces.js`).then(e=>e.ThemeSelectShowcaseComponent)}];export{o as THEME_SELECT_ROUTES};

@@ -1,0 +1,1 @@
+var e=[{path:`qr-code-showcase.component`,loadComponent:()=>import(`./chunk-D7Gak80n.js`).then(o=>o.QrCodeShowcaseComponent)},{path:`qr-code-download.component`,loadComponent:()=>import(`./chunk-BvPpfk6f.js`).then(o=>o.QrCodeDownloadComponent)}];export{e as QR_CODE_ROUTES};

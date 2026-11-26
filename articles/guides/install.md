@@ -16,6 +16,16 @@ wraps the root component in `nb-layout` (skip it with `--no-layout`). Lyra's the
 of CSS before it's compressed, more than a new app's budget allows, so it raises the `initial` budget in
 `angular.json` to `2mb`. That's it.
 
+Its options, for a run without questions, e.g. `ng add @liquid-js/lyr-core --theme=dark --defaults`:
+
+| Option               | What it does                                                                              |
+| -------------------- | ----------------------------------------------------------------------------------------- |
+| `--project`          | The project to set up, if the workspace has more than one.                                |
+| `--theme`            | The theme: `default`, `dark`, `cosmic`, `corporate`, `material-light` or `material-dark`. |
+| `--no-customization` | Uses the theme's prebuilt CSS rather than its customizable SCSS.                          |
+| `--no-layout`        | Doesn't wrap the root component in `nb-layout`.                                           |
+| `--defaults`         | Takes the defaults for the options it isn't given, without asking.                        |
+
 Something to know before your first build:
 
 - Lyra ships no fonts. The default theme uses Inter: load it in your `index.html`, e.g. from Google Fonts, or set your

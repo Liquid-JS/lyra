@@ -1,16 +1,19 @@
 import { Component, inject } from '@angular/core'
 import { toSignal } from '@angular/core/rxjs-interop'
-import { ActivatedRoute, NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router'
+import { ActivatedRoute, NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router'
 import {
     NbButtonComponent,
     NbIconComponent,
     NbLayoutColumnComponent,
     NbLayoutComponent,
-    NbLayoutHeaderComponent
+    NbLayoutFooterComponent,
+    NbLayoutHeaderComponent,
+    NbRouteTabsetComponent,
+    type NbRouteTab
 } from '@liquid-js/lyr-core'
 import { filter, map, startWith } from 'rxjs/operators'
 
-/** A mobile app's frame: a header with the screen's title, and tabs along the bottom. */
+/** A mobile app's frame: a header with the screen's title, and the sections' tabs along the bottom. */
 @Component({
     selector: 'npg-mobile-shell',
     templateUrl: './mobile-shell.component.html',
@@ -21,8 +24,9 @@ import { filter, map, startWith } from 'rxjs/operators'
         NbLayoutColumnComponent,
         NbLayoutComponent,
         NbLayoutHeaderComponent,
+        NbLayoutFooterComponent,
+        NbRouteTabsetComponent,
         RouterLink,
-        RouterLinkActive,
         RouterOutlet
     ]
 })
@@ -30,11 +34,11 @@ export class MobileShellComponent {
     protected readonly router = inject(Router)
     protected readonly route = inject(ActivatedRoute)
 
-    readonly tabs = [
-        { path: 'today', title: 'Today', icon: 'home-outline' },
-        { path: 'customers', title: 'Customers', icon: 'people-outline' },
-        { path: 'messages', title: 'Messages', icon: 'message-circle-outline' },
-        { path: 'settings', title: 'Settings', icon: 'settings-2-outline' }
+    readonly tabs: NbRouteTab[] = [
+        { route: 'today', title: 'Today', icon: 'home-outline' },
+        { route: 'customers', title: 'Customers', icon: 'people-outline' },
+        { route: 'messages', title: 'Messages', icon: 'message-circle-outline' },
+        { route: 'settings', title: 'Settings', icon: 'settings-2-outline' }
     ]
 
     /** The screen's title and whether it has a way back, from its route's data. */

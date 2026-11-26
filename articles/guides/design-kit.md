@@ -64,17 +64,22 @@ of. Stack them in a frame with auto layout to build your own:
 
 - **App layout**: `Layout Header`, `Sidebar/Expanded` or `Sidebar/Compacted`, and `Layout Footer` around your
   content, on `Background/Basic/3`, each resized as your screen needs. The sidebar holds a menu.
+- **Phones, tablets and laptops**: `Adaptive Layout/Laptop`, `/Tablet` and `/Phone` show one layout at each size: a
+  header with the sections as tabs, the actions and the user; on a phone, a top bar whose actions fold into a menu,
+  `Route Tabset/Bar/…` with the sections along the bottom, and `/Phone/Drawer`, the drawer with the user and the
+  account's links over the page. Design each screen at the sizes it's used at, from these.
 - **Menus**: `Menu Item/…` for each item, by kind: `Icon`, `Collapsed` and `Expanded` for items with children,
   `Child`, `Badge` and `Group`, each also `Selected`. Starters show them at rest, hovered and selected.
 - **Actions**: `Action/…` side by side, by size, with an icon alone, a `Dot` or a `Badge`; the `Disabled` look. In
   code, actions after the first have a divider before them, as the `Actions` symbols show, unless it's turned off.
 - **Tabs**: `Tab/Text`, `Tab/Icon` or `Tab/Badge` side by side, one of them with the `Active` look. Tabs that link to
-  pages, e.g. a header's navigation, are an `nb-route-tabset` with `outlet="false"` in code.
+  pages, e.g. a header's navigation, are an `nb-route-tabset` with `outlet="false"` in code, and a phone's along the
+  bottom are `Route Tabset/Bar/3 Tabs` to `/5 Tabs`, `appearance="bar"` in a fixed footer.
 - **Tables**: a row of `Table Header Cell/…`, `Unsorted` or sorted by its column, above rows of `Table Cell`.
 - **Lists**: `List Item`, one below another.
 - **Cards**: a frame with a card's layer style, such as `Card/Outline`, holding a `Card Header` starter for its
-  status, a frame with your content, padded as a `Card Body` is, and a `Card Footer`. In code, it's an `nb-card` with
-  the inputs the style stands for.
+  status, a frame with your content, padded as a `Card Body` is, and a `Card Footer`. Applying the theme gives the
+  frame the card's corners. In code, it's an `nb-card` with the inputs the style stands for.
 - **Dialogs**: a card on a layer filled with `Effect/Backdrop`, over the screen.
 
 Each part maps to code as the components do: `lyra-kit.json` says what each part is in its component, e.g. a menu
@@ -98,8 +103,8 @@ variables, and the kit's plugin, **Lyra design kit.sketchplugin**, applies them.
 - **From the [Theme Editor](theme/theme-editor)**, its **Design kit** tab gives a script that applies the theme you
   made there in the same way: run it in the kit from Plugins › Run Script.
 - **In each design file you hand over**, apply the theme too. The design's symbols and styles come from the kit, as a
-  library; the design records the theme, on its Theme page and in its settings as `lyra-theme`, with its CSS and Sass
-  for the app, so the design and the app use one theme.
+  library; the design records the theme, on its Theme page, which shows the theme's own values, and in its settings as
+  `lyra-theme`, with its CSS and Sass for the app, so the design and the app use one theme.
 
 A theme starts from one of Lyra's themes, as in the Theme Editor: Default, Dark, Cosmic, Corporate, Material Light or
 Material Dark. The base theme sets everything your theme doesn't, e.g. Dark's backgrounds, borders, text colours and
@@ -210,7 +215,7 @@ Write the inputs the design shows: those you leave out follow your app's default
 follows the theme. **Lyra › Check design** lists what a design does beyond the kit and its theme, with what each takes
 in the app: that's the design's own CSS, and the design's own text styles, e.g. a display size or a third typeface,
 as typography classes of the app's own. A frame with a component's style, e.g. a card composed as above, is that
-component, with your content. Its Check page puts alike things together, e.g. a logo's shapes as one drawing and texts
+component, with your content, and a layer with `Effect/Backdrop` is the backdrop Lyra draws under a dialog. Its Check page puts alike things together, e.g. a logo's shapes as one drawing and texts
 that look alike as one style to make; the design's `lyra-check` setting has every finding, and the page's `rows`.
 
 `tokens.json` has the theme's variables as design tokens, by group: `button` › `filled-primary-background-color` is
@@ -232,7 +237,8 @@ applied to a document changes everything that follows it, in a minute or so; aft
 the variables whose values changed, in seconds, and `full: true` changes everything again. It works in Sketch's turns:
 it returns a promise, so a run-code tool may return, or time out, before it's done. When it's done, the document's
 `lyra-theme-result` setting has what changed, with `finished`, or the `error`; wait for it before running other
-scripts on the document. Its `check.js` is Lyra › Check design:
+scripts on the document. A run that changes nothing, e.g. one a tool runs again after it timed out, keeps the result
+before it, with `checkedAgain`. Its `check.js` is Lyra › Check design:
 `require('…/check.js')({ document: '<path>' })` lists what a design does beyond the kit and its theme, and puts it on
 the design's Check page and every finding in its `lyra-check` setting. Then, with `lyra-kit.json`:
 
@@ -243,6 +249,9 @@ the design's Check page and every finding in its `lyra-check` setting. Then, wit
 - Set what a component's `notes` say it needs to look as drawn, e.g. a badge's `position`.
 - Read the component's `docs` page for inputs and content the design doesn't show.
 - Compare a screenshot of the result with the design.
+- A design with phone and laptop screens is one layout in code: the parts that show at one size alone take
+  `*nbShownBelow="'md'"` or `*nbShownAbove="'md'"`, actions `collapse="menu" below="md"`, and a phone's drawer is a
+  `fixed drawer` sidebar; the `Adaptive Layout` symbols' notes in `lyra-kit.json` show how.
 
 ### Scripting the kit
 

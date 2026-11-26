@@ -1,0 +1,1 @@
+var o=[{path:``,loadComponent:()=>import(`./chunk-hcTyqt8X.js`).then(e=>e.NgdHomeComponent)}];export{o as HOME_ROUTES};

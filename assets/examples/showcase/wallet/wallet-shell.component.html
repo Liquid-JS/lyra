@@ -7,7 +7,8 @@
             Wallet
         </a>
 
-        <nav class="sections"
+        <nav *nbShownAbove="'md'"
+            class="sections"
             aria-label="Sections">
             @for (section of sections; track section.path) {
             <a [routerLink]="link(section.path)"
@@ -34,17 +35,14 @@
     <nb-layout-column class="page">
         <router-outlet />
     </nb-layout-column>
-</nb-layout>
 
-<nav class="tabs"
-    aria-label="Sections">
-    @for (section of sections; track section.path) {
-    <a [routerLink]="link(section.path)"
-        routerLinkActive="active"
-        #tab="routerLinkActive"
-        [attr.aria-current]="tab.isActive ? 'page' : null">
-        <nb-icon [icon]="section.icon" />
-        <span>{{ section.title }}</span>
-    </a>
-    }
-</nav>
+    <nb-layout-footer *nbShownBelow="'md'"
+        fixed>
+        <nav aria-label="Sections">
+            <nb-route-tabset [tabs]="tabs"
+                [activeLinkOptions]="{ exact: false }"
+                outlet="false"
+                appearance="bar" />
+        </nav>
+    </nb-layout-footer>
+</nb-layout>
