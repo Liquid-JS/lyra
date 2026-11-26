@@ -106,7 +106,18 @@ const SURFACE_FIELDS = [
     { key: 'header-background-color', label: 'Header' },
     { key: 'sidebar-background-color', label: 'Sidebar' },
     { key: 'text-basic-color', label: 'Text' },
+    { key: 'text-heading-color', label: 'Headings' },
     { key: 'text-hint-color', label: 'Hint text' }
+]
+
+/** The text case of buttons' and tabs' labels, by the theme variables that set it. */
+const TEXT_CASE_KEYS = [
+    'button-filled-text-transform',
+    'button-outline-text-transform',
+    'button-ghost-text-transform',
+    'button-hero-text-transform',
+    'tabset-tab-text-transform',
+    'route-tabset-tab-text-transform'
 ]
 const SURFACE_KEYS = new Set(SURFACE_FIELDS.map(({ key }) => key))
 
@@ -138,7 +149,7 @@ export class NgdThemeControlsComponent {
     protected readonly draft = this.themes.draft
     /** The theme's variables it has no controls for, e.g. a showcase's. */
     protected readonly otherVariables = computed(() =>
-        Object.entries(this.draft().variables ?? {}).filter(([key]) => !SURFACE_KEYS.has(key))
+        Object.entries(this.draft().variables ?? {}).filter(([key]) => !SURFACE_KEYS.has(key) && !TEXT_CASE_KEYS.includes(key))
     )
     protected readonly id = `ngd-theme-${nextId++}`
 
@@ -159,6 +170,22 @@ export class NgdThemeControlsComponent {
         return (key: string) => themeValue(variables, base, key)
     })
     protected readonly basic = computed(() => this.draft().basic ?? this.valueOf()('color-basic-600'))
+    /** Buttons' and tabs' text case: in capitals, as most base themes have it, or as written. */
+    protected readonly textCase = computed(() => this.valueOf()(TEXT_CASE_KEYS[0]))
+    protected readonly textCaseOptions = [
+        { value: 'uppercase', label: 'In capitals' },
+        { value: 'none', label: 'As written' }
+    ]
+
+    protected setTextCase(value: string | null) {
+        if (!value) {
+            return
+        }
+        const base = this.themes.baseValues()
+        for (const key of TEXT_CASE_KEYS) {
+            this.themes.setVariable(key, value === String(base[key]?.value ?? '') ? null : value)
+        }
+    }
     protected readonly greys = computed(() => BASIC_SHADES.map((shade) => this.valueOf()(`color-basic-${shade}`)))
 
     /** Whether the theme holds text to the stricter 4.5:1 of WCAG AA for small text, over the 3:1 it's held to by default. */
