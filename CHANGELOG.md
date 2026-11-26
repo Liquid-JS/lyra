@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [22.0.0-alpha.7](https://github.com/Liquid-JS/lyra/compare/v22.0.0-alpha.6...v22.0.0-alpha.7) (2026-11-26)
+
+### Bug Fixes
+
+* **core:** keep a form field's addon its own width when the field is a block ([a2cda78](https://github.com/Liquid-JS/lyra/commit/a2cda78552ad4a02b52316360b6dd9ab9a90be40))
+* **core:** open pickers and autocomplete when the user focuses the input ([5597b23](https://github.com/Liquid-JS/lyra/commit/5597b238e57583316598fa7263d2d521e68d2200))
+
+### Features
+
+* **core:** let a route tabset be navigation alone, without its outlet ([e16ebaa](https://github.com/Liquid-JS/lyra/commit/e16ebaa8b380085a14101a3f26acd4851ada3882))
+* **design-kit:** show values with symbols, wrap texts, and check and hand over designs better ([f838c55](https://github.com/Liquid-JS/lyra/commit/f838c5542fc1984af924f7e08df7b9208865a801))
+
 # [22.0.0-alpha.6](https://github.com/Liquid-JS/lyra/compare/v22.0.0-alpha.5...v22.0.0-alpha.6) (2026-11-26)
 
 ### Bug Fixes
