@@ -17,7 +17,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { isPlatformBrowser } from '@angular/common'
 import { filter } from 'rxjs/operators'
 
-import { ɵbelowBreakpoint as belowBreakpoint, ɵconvertToBoolProperty as convertToBoolProperty, NbBooleanInput, NbThemeService, NbSpinnerService, NbLayoutDirectionService, NbScrollPosition, NbLayoutScrollService, NbLayoutDimensions, NbLayoutRulerService, NB_WINDOW, NB_DOCUMENT } from '@liquid-js/lyr-core/base'
+import { ɵconvertToBoolProperty as convertToBoolProperty, NbBooleanInput, NbThemeService, NbSpinnerService, NbLayoutDirectionService, NbScrollPosition, NbLayoutScrollService, NbLayoutDimensions, NbLayoutRulerService, NB_WINDOW, NB_DOCUMENT } from '@liquid-js/lyr-core/base'
 import { NB_LAYOUT_SCROLL_BLOCK_CLASS, NbOverlayContainerAdapter } from '@liquid-js/lyr-core/cdk'
 import { NbRestoreScrollTopHelper } from './restore-scroll-top.service'
 
@@ -491,11 +491,11 @@ export class NbLayoutHeaderComponent {
 
 /**
  * The page's footer, under the columns, beside the sidebars. A `fixed` footer stays at the bottom of the view port
- * while the columns scroll past it, clear of a phone's home bar, e.g. with a phone's navigation in it, which shows only
- * on narrow screens with `shownBelow`:
+ * while the columns scroll past it, clear of a phone's home bar, e.g. with a phone's navigation in it, shown only on
+ * narrow screens with `*nbShownBelow`:
  *
  * ```html
- * <nb-layout-footer fixed shownBelow="md">
+ * <nb-layout-footer fixed *nbShownBelow="'md'">
  *   <nb-route-tabset [tabs]="sections" outlet="false" appearance="bar" />
  * </nb-layout-footer>
  * ```
@@ -519,17 +519,10 @@ export class NbLayoutHeaderComponent {
     selector: 'nb-layout-footer',
     templateUrl: './layout-footer.component.html',
     host: {
-        '[class.fixed]': 'fixed()',
-        '[attr.hidden]': 'hiddenAbove() ? "" : null'
+        '[class.fixed]': 'fixed()'
     }
 })
 export class NbLayoutFooterComponent {
     /** The footer stays at the bottom of the view port while the columns scroll past it. */
     readonly fixed = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty })
-
-    /** The media breakpoint, e.g. `md`, below which alone the footer shows, e.g. a phone's navigation. */
-    readonly shownBelow = input<string>()
-
-    protected readonly narrow = belowBreakpoint(() => this.shownBelow())
-    protected readonly hiddenAbove = computed(() => !!this.shownBelow() && !this.narrow())
 }

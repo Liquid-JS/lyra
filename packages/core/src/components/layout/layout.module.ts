@@ -7,6 +7,7 @@ import {
     NbLayoutHeaderComponent
 } from './layout.component'
 
+import { NbShownAboveDirective, NbShownBelowDirective } from './layout-breakpoint.directive'
 import { NbLtrDirective, NbRtlDirective } from './layout-direction.directive'
 
 const NB_LAYOUT_COMPONENTS = [
@@ -16,7 +17,7 @@ const NB_LAYOUT_COMPONENTS = [
     NbLayoutHeaderComponent
 ]
 
-const NB_LAYOUT_DIRECTIVES = [NbLtrDirective, NbRtlDirective]
+const NB_LAYOUT_DIRECTIVES = [NbLtrDirective, NbRtlDirective, NbShownBelowDirective, NbShownAboveDirective]
 
 @NgModule({
     imports: [...NB_LAYOUT_COMPONENTS, ...NB_LAYOUT_DIRECTIVES],

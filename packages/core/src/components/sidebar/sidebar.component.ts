@@ -112,12 +112,13 @@ export class NbSidebarFooterComponent {}
  * `closeOnOutsideClick` when the user clicks outside it. It then compacts on tablets and collapses otherwise. A
  * click that expands the sidebar, e.g. on a toggle button in the header, doesn't close it.
  *
- * A `drawer` is a responsive sidebar that, expanded on its collapsed breakpoints, e.g. a phone's, lies over the page
- * with a backdrop, which closes it, as a phone's menu does:
+ * A `drawer` lies over the page while it's expanded, with a backdrop that closes it, as a phone's menu does: a `fixed`
+ * one whenever it's expanded, e.g. a phone's alone, toggled from its header; a `responsive` one on its collapsed
+ * breakpoints.
  * ```html
- * <nb-sidebar responsive drawer [collapsedBreakpoints]="['xs', 'is', 'sm']" closeOnNavigation>
+ * <nb-sidebar *nbShownBelow="'md'" fixed drawer state="collapsed" tag="drawer" closeOnNavigation>
  *   <nb-sidebar-header><nb-user name="Jane Doe" title="Designer" /></nb-sidebar-header>
- *   <nb-menu [items]="sections" />
+ *   <nb-menu [items]="account" />
  * </nb-sidebar>
  * ```
  * @stacked-example(Closing an overlaying sidebar, sidebar/sidebar-close.component)
@@ -265,13 +266,15 @@ export class NbSidebarComponent {
     readonly expanded = computed(() => this.state() === 'expanded')
 
     /**
-     * Expanded on its collapsed breakpoints, a `responsive` sidebar is a drawer: over the page, with a backdrop that
-     * closes it.
+     * Expanded, it's a drawer: over the page, with a backdrop that closes it; a `responsive` one on its collapsed
+     * breakpoints alone.
      */
     readonly drawer = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty })
 
     /** Whether it's open as a drawer now. */
-    readonly drawerOpen = computed(() => this.drawer() && this.responsive() && this.responsiveState() === 'mobile' && this.expanded())
+    readonly drawerOpen = computed(
+        () => this.drawer() && this.expanded() && (this.responsive() ? this.responsiveState() === 'mobile' : this.isFixed())
+    )
     readonly collapsed = computed(() => this.state() === 'collapsed')
     readonly compacted = computed(() => this.state() === 'compacted')
 

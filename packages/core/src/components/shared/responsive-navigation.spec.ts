@@ -41,7 +41,8 @@ class NavigationHostComponent {
         <nb-layout>
             <nb-sidebar responsive drawer [collapsedBreakpoints]="['xs', 'is', 'sm']">Menu</nb-sidebar>
             <nb-layout-column>Page</nb-layout-column>
-            <nb-layout-footer fixed shownBelow="md">Tabs</nb-layout-footer>
+            <nb-layout-footer fixed *nbShownBelow="'md'">Tabs</nb-layout-footer>
+            <nb-layout-header><span class="wide" *nbShownAbove="'md'">Tabs</span></nb-layout-header>
         </nb-layout>
     `,
     imports: [NbLayoutModule, NbSidebarModule]
@@ -96,11 +97,13 @@ describe('responsive navigation', () => {
         width(1200)
         fixture.detectChanges()
         const element: HTMLElement = fixture.nativeElement
-        expect(element.querySelector('nb-layout-footer')?.hasAttribute('hidden')).toBe(true)
+        expect(element.querySelector('nb-layout-footer')).toBeNull()
+        expect(element.querySelector('.wide')).not.toBeNull()
 
         width(400)
         fixture.detectChanges()
-        expect(element.querySelector('nb-layout-footer')?.hasAttribute('hidden')).toBe(false)
+        expect(element.querySelector('nb-layout-footer')).not.toBeNull()
+        expect(element.querySelector('.wide')).toBeNull()
         const sidebar = element.querySelector('nb-sidebar') as HTMLElement
         expect(sidebar.querySelector('.drawer-backdrop')).toBeNull()
 

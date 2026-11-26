@@ -76,17 +76,19 @@ export type NbRouteTabsetAppearance = 'tabs' | 'bar'
  * A tab is active while its link is, by `activeLinkOptions`; a tab's own `activeLinkOptions` add to the tabset's.
  * A `disabled` tab is shown but isn't a link, and a tab's `badgeText` or `badgeDot` shows a badge on it.
  *
- * On a phone, the same tabs can be the navigation along the bottom, `appearance="bar"`, in a fixed footer that shows
- * below a breakpoint; and in the header, they fold into a menu button below it, `collapse="menu"`:
+ * On a phone, the same tabs can be the navigation along the bottom, `appearance="bar"`, in a fixed footer shown below
+ * a breakpoint, while the header shows them above it:
  *
  * ```html
  * <nb-layout-header fixed>
- *   <nb-route-tabset [tabs]="sections" outlet="false" collapse="menu" below="md" />
+ *   <nb-route-tabset *nbShownAbove="'md'" [tabs]="sections" outlet="false" />
  * </nb-layout-header>
- * <nb-layout-footer fixed shownBelow="md">
+ * <nb-layout-footer fixed *nbShownBelow="'md'">
  *   <nb-route-tabset [tabs]="sections" outlet="false" appearance="bar" />
  * </nb-layout-footer>
  * ```
+ *
+ * Or the header's tabs fold into a menu button below a breakpoint, `collapse="menu" below="md"`.
  *
  * ### Installation
  *
