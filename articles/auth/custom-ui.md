@@ -7,7 +7,7 @@ the look.
 <div class="note note-info">
   <div class="note-title">Note</div>
   <div class="note-body">
-    This article assumes an app set up as in the [Auth Installation guide](extras/auth/installation): a strategy in `app.config.ts` and routes to the built-in components in `app.routes.ts`.
+    This article assumes an app set up as in the <a href="extras/auth/installation">Auth Installation guide</a>: a strategy in <code>app.config.ts</code> and routes to the built-in components in <code>app.routes.ts</code>.
   </div>
 </div>
 
@@ -135,7 +135,7 @@ The package doesn't ship the template sources, so copy Lyra's template from
 <div class="note note-info">
   <div class="note-title">Note</div>
   <div class="note-body">
-    Copy the sources of the Lyra version you have installed: the `master` branch may be ahead of it.
+    Copy the sources of the Lyra version you have installed: the <code>master</code> branch may be ahead of it.
   </div>
 </div>
 

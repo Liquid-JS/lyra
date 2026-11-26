@@ -1,0 +1,1 @@
+var e=[{path:`page-indicator-showcase.component`,loadComponent:()=>import(`./chunk-DscsN3Hk.js`).then(o=>o.PageIndicatorShowcaseComponent)}];export{e as PAGE_INDICATOR_ROUTES};

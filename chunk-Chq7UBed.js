@@ -1,1 +1,0 @@
-var n=[{path:`icon-showcase.component`,loadComponent:()=>import(`./chunk-8YJwo77K.js`).then(o=>o.IconShowcaseComponent)},{path:`icon-colors.component`,loadComponent:()=>import(`./chunk-xHCchN6y.js`).then(o=>o.IconColorsComponent)}];export{n as ICON_ROUTES};

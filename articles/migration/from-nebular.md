@@ -158,7 +158,8 @@ models, so they support two-way binding (`[(flipped)]`) and can be set with `.se
   the URL already shown.
 - A navigation to a URL that no menu item matches clears the menu's selection, so the previous page's item doesn't stay
   selected. To keep a parent selected on its detail pages, give it `pathMatch: 'prefix'`.
-- Dialogs close on router navigation by default; `closeOnNavigation: false` in the dialog config keeps them open.
+- Dialogs can close when a navigation leaves their page, e.g. with the browser's back button: `closeOnNavigation: true`
+  in the dialog config. A navigation that only changes the query or fragment leaves them open.
 - Toasts have an opt-in close button and pause-on-hover (`closeButton`, `closeButtonLabel`, `pauseOnHover`,
   `statusIcons`).
 - The `@nebular/bootstrap` package is not continued.

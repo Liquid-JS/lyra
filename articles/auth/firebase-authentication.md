@@ -12,9 +12,9 @@
 <div class="note note-info">
   <div class="note-title">Note</div>
   <div class="note-body">
-   The package needs `firebase` and `@angular/fire` installed and configured, see the [@angular/fire docs](https://github.com/angular/angularfire):
+   The package needs <code>firebase</code> and <code>@angular/fire</code> installed and configured, see the <a href="https://github.com/angular/angularfire">@angular/fire docs</a>:
    provide the Firebase app and the Auth instance with the modular AngularFire API, e.g.
-`provideFirebaseApp(() => initializeApp(config))` and `provideAuth(() => getAuth())`.
+<code>provideFirebaseApp(() =&gt; initializeApp(config))</code> and <code>provideAuth(() =&gt; getAuth())</code>.
   </div>
 </div>
 

@@ -194,7 +194,9 @@ text-caption-line-height: 1rem,
 ```
 
 Links take their colours from the primary text colours, `link-text-color`, `link-text-hover-color` and
-`link-text-focus-color`, and are underlined, `link-text-decoration`.
+`link-text-focus-color`, and are underlined, `link-text-decoration`. Focused from the keyboard, a link's text is highlighted in the
+focus colour, `link-outline-color`, reaching `link-outline-width` past it with `link-outline-border-radius` corners, as
+a ring doesn't sit well on text; a link that's only an image has the focus ring around the image instead.
 
 ---
 
@@ -230,6 +232,10 @@ button-filled-medium-padding: 1.25rem,
 ## General Theme Variables
 
 Other supporting variables, such as `border-radius`, `outline-width` & `outline-color`, `shadow`, etc.
+
+`outline-width` and `outline-color` draw the focus ring of everything focused from the keyboard: buttons, cards, menu
+items, tabs. Each component has its own pair mapped to them, e.g. `menu-item-outline-color`, to change one
+without the others. Fields show focus with their border instead.
 
 ---
 

@@ -1,0 +1,1 @@
+import{t as y}from"./chunk-Di4o0yfC.js";import"./main-4UEYSITZ.js";export{y as SiteMockupComponent};
