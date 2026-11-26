@@ -170,7 +170,7 @@
                     }
 
                     // A phone's navigation spans the footer.
-                    > nav:has(> nb-route-tabset.appearance-bar) {
+                    > nav:has(nb-route-tabset.appearance-bar) {
                         padding: 0;
                     }
 
