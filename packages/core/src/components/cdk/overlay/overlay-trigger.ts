@@ -1,6 +1,18 @@
 import { ComponentRef, inject, Service } from '@angular/core'
 import { EMPTY, fromEvent as observableFromEvent, merge as observableMerge, Observable, Subject } from 'rxjs'
-import { debounceTime, delay, filter, map, repeat, share, switchMap, takeUntil, takeWhile } from 'rxjs/operators'
+import {
+    debounceTime,
+    delay,
+    filter,
+    ignoreElements,
+    map,
+    repeat,
+    share,
+    switchMap,
+    takeUntil,
+    takeWhile,
+    tap
+} from 'rxjs/operators'
 import { NB_DOCUMENT, ɵisComposing as isComposing } from '@liquid-js/lyr-core/base'
 
 export type NbTriggerValues = 'noop' | 'click' | 'hover' | 'hint' | 'focus'
@@ -234,11 +246,30 @@ export class NbHintTriggerStrategy extends NbTriggerStrategyBase {
 }
 
 /**
- * Shows 100 ms after the host is focused or clicked, unless the focus leaves first. Hides when the focus moves
- * outside the host and the container, when Tab leaves the container, on a click outside both, and when the page
- * loses focus.
+ * Shows 100 ms after the user focuses or clicks the host, unless the focus leaves first. A focus a script gives, such
+ * as a dialog's autofocus, doesn't show it. Hides when the focus moves outside the host and the container, when Tab
+ * leaves the container, on a click outside both, and when the page loses focus.
  */
 export class NbFocusTriggerStrategy extends NbTriggerStrategyBase {
+    /**
+     * Whether the user is moving the focus, with Tab or a pointer, until the browser has moved it: a focus that
+     * follows neither came from a script.
+     */
+    protected userMovesFocus = false
+
+    protected userInput$: Observable<never> = observableMerge(
+        observableFromEvent<KeyboardEvent>(this.document, 'keydown', { capture: true }).pipe(
+            filter((event) => event.key === 'Tab')
+        ),
+        observableFromEvent<Event>(this.document, 'pointerdown', { capture: true })
+    ).pipe(
+        tap(() => {
+            this.userMovesFocus = true
+            setTimeout(() => (this.userMovesFocus = false))
+        }),
+        ignoreElements()
+    )
+
     protected focusOut$: Observable<Event> = observableFromEvent<Event>(this.host, 'focusout').pipe(
         switchMap(() =>
             observableFromEvent<Event>(this.document, 'focusin').pipe(
@@ -275,7 +306,11 @@ export class NbFocusTriggerStrategy extends NbTriggerStrategyBase {
         takeUntil(this.destroyed$)
     )
 
-    show$: Observable<Event> = observableMerge(observableFromEvent<Event>(this.host, 'focusin'), this.clickIn$).pipe(
+    protected userFocusIn$: Observable<Event> = observableFromEvent<Event>(this.host, 'focusin').pipe(
+        filter(() => this.userMovesFocus)
+    )
+
+    show$: Observable<Event> = observableMerge(this.userInput$, this.userFocusIn$, this.clickIn$).pipe(
         filter(() => !this.container()),
         debounceTime(100),
 

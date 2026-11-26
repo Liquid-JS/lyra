@@ -149,9 +149,9 @@ export interface NbDateServiceOptions {
 export const NB_DATE_SERVICE_OPTIONS = new InjectionToken<NbDateServiceOptions>('Date service options')
 
 /**
- * A form control that picks a date, a range or a date with a time in a calendar, which opens under the input when it
- * is focused or clicked. The input's text is the value in the picker's `format`, and dates typed into it are read
- * back.
+ * A form control that picks a date, a range or a date with a time in a calendar, which opens under the input when the
+ * user focuses or clicks it; a focus from a script, such as a dialog's autofocus, doesn't open it. The input's text is
+ * the value in the picker's `format`, and dates typed into it are read back.
  *
  * ```html
  * <input [nbDatepicker]="datepicker">
@@ -478,7 +478,7 @@ export class NbDatepickerDirective<D> implements OnChanges, ControlValueAccessor
     }
 
     /**
-     * Focuses the input, then hides the picker: the input opens the picker on focus, unless it's open.
+     * Returns the focus to the input and hides the picker.
      */
     protected hidePicker() {
         this.input.focus()

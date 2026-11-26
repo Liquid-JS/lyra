@@ -272,7 +272,6 @@ export abstract class NbBasePicker<D, T, P> extends NbDatepicker<T, D> {
             if (event.key === 'Escape' && this.isShown) {
                 event.preventDefault()
                 event.stopPropagation()
-                // Focus first: the input opens the picker on focus, unless it's open.
                 hostRef.nativeElement.focus()
                 this.hide()
             }

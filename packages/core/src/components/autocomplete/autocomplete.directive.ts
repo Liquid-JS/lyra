@@ -29,8 +29,8 @@ import { NbAutocompleteComponent } from './autocomplete.component'
 import { NbAutocompleteRef } from './autocomplete-ref'
 
 /**
- * Attaches an `nb-autocomplete` to an input: its options open below the input on focus, click or typing, and the
- * chosen one fills the input.
+ * Attaches an `nb-autocomplete` to an input: its options open below the input when the user focuses or
+ * clicks it, or types, and the chosen one fills the input.
  *
  * The input is a combobox. Up and Down open the options and move the active one, Enter selects it, Escape closes
  * the options and keeps the text, and they close when the focus leaves them. A form control bound to the input gets

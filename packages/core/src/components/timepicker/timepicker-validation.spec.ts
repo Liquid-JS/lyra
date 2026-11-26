@@ -37,7 +37,8 @@ describe('nbTimepicker validation', () => {
     const hours = () => Array.from(document.querySelectorAll('.values-list:first-of-type .list-item')) as HTMLElement[]
     const open = async () => {
         field().focus()
-        // The focus trigger shows the picker after a short delay.
+        // A click opens it, as a focus from a script doesn't; the trigger shows the picker after a short delay.
+        field().click()
         await new Promise((resolve) => setTimeout(resolve, 150))
         await render()
     }

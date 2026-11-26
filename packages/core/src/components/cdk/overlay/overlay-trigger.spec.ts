@@ -502,16 +502,32 @@ describe('focus-trigger-strategy', () => {
         triggerStrategyBuilder.trigger(NbTrigger.FOCUS).host(host).container(withContainer(container))
     })
 
-    it('should fire show$ when focused into host', async () => {
+    it('should fire show$ when the user focuses the host', async () => {
         vi.useFakeTimers()
         const showSpy = vi.fn()
         const triggerStrategy = triggerStrategyBuilder.container(() => undefined).build()
 
         triggerStrategy.show$.subscribe(showSpy)
+        tab(document)
         focus(host)
         await vi.advanceTimersByTimeAsync(100)
 
         expect(showSpy).toHaveBeenCalled()
+    })
+
+    it('should not fire show$ when a script focuses the host, as a dialog\'s autofocus', async () => {
+        vi.useFakeTimers()
+        const showSpy = vi.fn()
+        const triggerStrategy = triggerStrategyBuilder.container(() => undefined).build()
+
+        triggerStrategy.show$.subscribe(showSpy)
+        // A click that opens a dialog, which then focuses the host.
+        document.dispatchEvent(new Event('pointerdown'))
+        await vi.advanceTimersByTimeAsync(1)
+        focus(host)
+        await vi.advanceTimersByTimeAsync(100)
+
+        expect(showSpy).not.toHaveBeenCalled()
     })
 
     it('should fire show$ when clicked into host', async () => {
@@ -572,6 +588,7 @@ describe('focus-trigger-strategy', () => {
         const showSpy = vi.fn()
         const triggerStrategy = triggerStrategyBuilder.container(() => undefined).build()
         triggerStrategy.show$.subscribe(showSpy)
+        tab(document)
         focus(host)
         click(host)
         await vi.advanceTimersByTimeAsync(100)
@@ -586,6 +603,7 @@ describe('focus-trigger-strategy', () => {
 
         triggerStrategy.show$.subscribe(showSpy)
 
+        tab(document)
         focus(host)
 
         // focus trigger strategy has 100 milliseconds delay before firing show$
@@ -596,6 +614,7 @@ describe('focus-trigger-strategy', () => {
         document.body.removeChild(host)
         document.body.appendChild(host)
 
+        tab(document)
         focus(host)
 
         // focus trigger strategy has 100 milliseconds delay before firing show$

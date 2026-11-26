@@ -31,8 +31,9 @@ import { NbTimePickerComponent } from './timepicker.component'
 let nextDialogId = 0
 
 /**
- * A form control on an input that picks a time: the time picker opens when the input gets focus, and the input's
- * text is parsed as the user types.
+ * A form control on an input that picks a time: the time picker opens when the user focuses or clicks the input (a
+ * focus from a script, such as a dialog's autofocus, doesn't open it), and the input's text is parsed as the user
+ * types.
  *
  * Arrow Down in the input moves into the timepicker, a named dialog, to its selected time. Its columns are listboxes:
  * the arrow keys, Home, End, Page Up and Page Down move in a column, Enter or Space picks, and Tab goes to the next
@@ -454,7 +455,6 @@ export class NbTimePickerDirective<D> implements AfterViewInit, ControlValueAcce
             if (event.key === 'Escape' && !isComposing(event) && this.isOpen) {
                 event.preventDefault()
                 event.stopPropagation()
-                // Focus first: the input opens the time picker on focus, unless it's open.
                 this.input.focus()
                 this.hide()
             }
