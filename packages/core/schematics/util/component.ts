@@ -1,4 +1,3 @@
-import { getDecoratorMetadata, parseSourceFile } from '@angular/cdk/schematics'
 import { Tree } from '@angular-devkit/schematics'
 import { dirname, join, normalize } from '@angular-devkit/core'
 import { insertImport } from '@schematics/angular/utility/ast-utils'
@@ -6,6 +5,7 @@ import { applyToUpdateRecorder } from '@schematics/angular/utility/change'
 import * as ts from 'typescript'
 
 import { getProject } from './project.js'
+import { getDecoratorMetadata, parseSourceFile } from './source.js'
 
 export class TemplateDescriptor {
     constructor(public templateProp: ts.PropertyAssignment,

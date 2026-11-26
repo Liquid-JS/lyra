@@ -1,20 +1,18 @@
 import { chain, Rule, Tree } from '@angular-devkit/schematics'
 import { addRootProvider } from '@schematics/angular/utility'
 import { getRouterModuleDeclaration } from '@schematics/angular/utility/ast-utils'
-import {
-    addModuleImportToRootModule,
-    getProjectMainFile,
-    parseSourceFile
-} from '@angular/cdk/schematics'
 import { normalize, workspaces } from '@angular-devkit/core'
 
 import { Schema } from '../schema.js'
 import {
+    addModuleImportToRootModule,
     getAppModulePath,
     getProject,
+    getProjectMainFile,
     hasRootProvider,
     isImportedInMainModule,
-    isStandaloneProject
+    isStandaloneProject,
+    parseSourceFile
 } from '../../util/index.js'
 import { appRoutingModuleContent } from './app-routing-module-content.js'
 

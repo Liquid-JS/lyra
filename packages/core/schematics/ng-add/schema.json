@@ -30,7 +30,6 @@
         },
         "animations": {
             "type": "boolean",
-            "default": true,
             "description": "No longer used: Lyra animates without an animations provider.",
             "x-deprecated": "Lyra animates without an animations provider, so this option has no effect."
         }

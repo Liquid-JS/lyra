@@ -1,9 +1,8 @@
 import { SchematicsException, Tree } from '@angular-devkit/schematics'
 import { isJsonObject, join, JsonArray, JsonValue, normalize, Path, workspaces } from '@angular-devkit/core'
 
-import { getProjectFromWorkspace, getProjectStyleFile, getProjectTargetOptions } from '@angular/cdk/schematics'
 import { updateWorkspace, WorkspaceDefinition } from '@schematics/angular/utility'
-import { getProject } from '../../util/index.js'
+import { getProject, getProjectStyleFile, getProjectTargetOptions, projectOf } from '../../util/index.js'
 import { Schema } from '../schema.js'
 import { createThemeContent, stylesContent } from './theme-content.js'
 
@@ -15,9 +14,9 @@ import { createThemeContent, stylesContent } from './theme-content.js'
 export function registerCustomizableTheme(options: Schema) {
     return async (tree: Tree) => {
         const project = await getProject(tree, options.project)
-        const stylesPath: string = getProjectStyleFile(project, 'scss') as string
+        const stylesPath = getProjectStyleFile(project, 'scss')
 
-        if (!tree.exists(stylesPath)) {
+        if (!stylesPath || !tree.exists(stylesPath)) {
             throwSCSSRequiredForCustomizableThemes()
         }
 
@@ -29,7 +28,7 @@ export function registerCustomizableTheme(options: Schema) {
 /** Adds the chosen theme's prebuilt CSS to the build target's styles in `angular.json`. */
 export function registerPrebuiltTheme(options: Schema) {
     return updateWorkspace(async (workspace: WorkspaceDefinition) => {
-        const project = getProjectFromWorkspace(workspace, options.project)
+        const project = projectOf(workspace, options.project)
 
         const themePath = `./node_modules/@liquid-js/lyr-core/styles/prebuilt/${options.theme}.css`
 
@@ -80,6 +79,6 @@ function noLyraThemeIncluded(styles: JsonArray, stylesPath: string): boolean {
     return !hasGivenTheme && !hasOtherTheme
 }
 
-function throwSCSSRequiredForCustomizableThemes() {
+function throwSCSSRequiredForCustomizableThemes(): never {
     throw new SchematicsException('No scss root found. Customizable theme requires scss to be enabled in the project.')
 }

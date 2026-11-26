@@ -10,8 +10,8 @@ import {
     lyraVersionRange
 } from '../util/package.js'
 import { Schema } from './schema.js'
-// Imported from `util/package` directly, not from `util`: the other utilities use `@angular/cdk/schematics` and
-// `@schematics/angular`, which aren't installed yet at this step.
+// Imported from `util/package` directly, not from `util`: the other utilities use `@schematics/angular`, which may not
+// be installed yet at this step.
 
 /** The `ng add` entry: adds the dependencies to `package.json`, installs them, then sets the project up. */
 export function ngAdd(options: Schema): Rule {
@@ -32,8 +32,9 @@ function installMainPeerDependencies(tree: Tree) {
 
 /**
  * Queues the package install, then the `post-install` schematic, then `setup`. The setup uses
- * `@angular/cdk/schematics` and `@schematics/angular`, which must be installed first, and tasks that depend on the
- * install task are the only way to run a schematic after it.
+ * `@schematics/angular`, which must be installed first, and tasks that depend on the install task are the only way to
+ * run a schematic after it. It doesn't use `@angular/cdk/schematics`: Node, having looked for the CDK before the
+ * install, can't import it in the same process.
  */
 function runSetupSchematics(options: Schema) {
     return (tree: Tree, context: SchematicContext) => {

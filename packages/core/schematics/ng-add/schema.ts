@@ -4,5 +4,5 @@ export interface Schema {
     customization: boolean
     layout: boolean
     /** @deprecated Lyra animates without an animations provider, so this option has no effect. */
-    animations: boolean
+    animations?: boolean
 }
