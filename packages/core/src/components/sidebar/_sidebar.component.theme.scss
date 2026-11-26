@@ -7,6 +7,11 @@
             background-color: nb-theme(sidebar-drawer-backdrop-color);
         }
 
+        // Over its backdrop, a drawer's panel has the sidebar's background of its own.
+        &.drawer .main-container {
+            background-color: nb-theme(sidebar-background-color);
+        }
+
         background-color: nb-theme(sidebar-background-color);
         box-shadow: nb-theme(sidebar-shadow);
         color: nb-theme(sidebar-text-color);

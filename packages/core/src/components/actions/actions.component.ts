@@ -191,17 +191,34 @@ export class NbActionComponent {
     template: `
         <ng-content select="nb-action" />
         @if (collapsed() && menuItems().length) {
-        <nb-action class="more"
-            icon="more-vertical-outline"
-            [title]="texts().more"
-            [nbContextMenu]="menuItems()"
-            [nbContextMenuTag]="tag" />
+        <nb-action class="more">
+            <button type="button"
+                class="more-button"
+                [attr.aria-label]="texts().more"
+                [nbContextMenu]="menuItems()"
+                [nbContextMenuTag]="tag">
+                <nb-icon icon="more-vertical-outline" />
+            </button>
+        </nb-action>
         }
     `,
-    imports: [forwardRef(() => NbActionComponent), NbContextMenuDirective],
+    // The menu button looks like an icon action.
+    styles: `
+        .more-button {
+            display: inline-flex;
+            padding: 0;
+            border: 0;
+            background: none;
+            color: inherit;
+            font: inherit;
+            cursor: pointer;
+        }
+    `,
+    imports: [forwardRef(() => NbActionComponent), NbContextMenuDirective, NbIconComponent],
     host: {
         '[class]': '"size-" + size()',
-        '[class.full-width]': 'fullWidth()'
+        '[class.full-width]': 'fullWidth()',
+        '[class.collapsed]': 'collapsed()'
     }
 })
 export class NbActionsComponent {

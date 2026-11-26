@@ -26,7 +26,9 @@
         @include nb-ltr(border-left, $divider);
         @include nb-rtl(border-right, $divider);
 
-        &:first-child {
+        &:first-child,
+        // The menu actions fold into, after them.
+        nb-actions.collapsed &.more {
             @include nb-ltr(border-left, none !important);
             @include nb-rtl(border-right, none !important);
         }
