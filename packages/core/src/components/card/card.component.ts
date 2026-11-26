@@ -147,6 +147,9 @@ export class NbCardActionsComponent {}
  *
  * `size` gives a card a fixed height, so cards of smaller sizes stack beside a bigger one in a row:
  * @stacked-example(Card sizes combinations, card/card-sizes-combinations.component)
+ *
+ * A card's first and last children keep to its rounded corners: their outer corners take the card's radius inside its
+ * border, e.g. an image that fills its top. A child with corners of its own, e.g. an arched picture, goes in a wrapper.
  * @additional-example(Multiple Sizes, card/card-sizes.component)
  * @styles
  *
