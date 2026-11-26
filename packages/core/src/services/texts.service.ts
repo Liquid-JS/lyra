@@ -43,6 +43,10 @@ if (typeof scope.$localize !== 'function') {
  * The texts of Lyra's components, by component. Other Lyra packages add theirs.
  */
 export interface NbTexts {
+    actions: {
+    /** Label of the button that opens the actions as a menu, where they fold into one. */
+        more: string
+    }
     alert: {
     /** Label of the close button. */
         close: string
@@ -130,6 +134,10 @@ export interface NbTexts {
     revealCard: {
     /** Label of the button that reveals the back of the card. */
         toggle: string
+    }
+    routeTabset: {
+    /** Label of the button that opens the tabs as a menu, where they fold into one. */
+        menu: string
     }
     search: {
     /** Placeholder of the search field. */

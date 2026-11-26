@@ -94,6 +94,29 @@
             }
         }
 
+        &.appearance-bar {
+            background-color: nb-theme(route-tabset-bar-background-color);
+
+            .route-tabset {
+                border-bottom: 0;
+            }
+
+            .tab-link {
+                gap: nb-theme(route-tabset-bar-tab-gap);
+                padding: nb-theme(route-tabset-bar-tab-padding);
+                font-family: nb-theme(route-tabset-bar-tab-text-font-family);
+                font-size: nb-theme(route-tabset-bar-tab-text-font-size);
+                font-weight: nb-theme(route-tabset-bar-tab-text-font-weight);
+                line-height: nb-theme(route-tabset-bar-tab-text-line-height);
+                text-transform: nb-theme(route-tabset-bar-tab-text-transform);
+
+                .tab-icon nb-icon {
+                    font-size: nb-theme(route-tabset-bar-tab-icon-size);
+                    line-height: 1;
+                }
+            }
+        }
+
         .route-tab.responsive {
             @media screen and (max-width: $route-tabset-tab-text-hide-breakpoint) {
                 .tab-text {

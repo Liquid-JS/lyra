@@ -1,3 +1,14 @@
+@if (collapsed()) {
+<button nbButton
+    appearance="ghost"
+    status="basic"
+    type="button"
+    class="menu-button"
+    [attr.aria-label]="texts().menu"
+    [nbContextMenu]="menuItems()">
+    <nb-icon icon="menu-outline" />
+</button>
+} @else {
 <ul class="route-tabset">
     @for (tab of tabs(); track tab) {
     @if (tab.disabled) {
@@ -6,13 +17,8 @@
         tabindex="-1">
         <a tabindex="-1"
             class="tab-link">
-            @if (tab.icon) {
-            <nb-icon [config]="tab.icon" />
-            }
-            @if (tab.title) {
-            <span class="tab-text"
-                dir="auto">{{ tab.title }}</span>
-            }
+            <ng-container [ngTemplateOutlet]="content"
+                [ngTemplateOutletContext]="{ $implicit: tab }" />
         </a>
     </li>
     } @else {
@@ -34,18 +40,40 @@
             [replaceUrl]="tab.replaceUrl"
             [state]="tab.state"
             class="tab-link">
-            @if (tab.icon) {
-            <nb-icon [config]="tab.icon" />
-            }
-            @if (tab.title) {
-            <span class="tab-text"
-                dir="auto">{{ tab.title }}</span>
-            }
+            <ng-container [ngTemplateOutlet]="content"
+                [ngTemplateOutletContext]="{ $implicit: tab }" />
         </a>
     </li>
     }
     }
 </ul>
+}
 @if (outlet()) {
 <router-outlet />
 }
+
+<ng-template #content
+    let-tab>
+    @if (tab.icon) {
+    <span class="tab-icon">
+        <nb-icon [config]="tab.icon" />
+        @if (appearance() === 'bar' && (tab.badgeDot || tab.badgeText)) {
+        <nb-badge [text]="tab.badgeText"
+            [dotMode]="!!tab.badgeDot"
+            [status]="tab.badgeStatus ?? 'basic'"
+            position="top end" />
+        }
+    </span>
+    }
+    @if (tab.title) {
+    <span class="tab-text"
+        dir="auto">{{ tab.title }}</span>
+    }
+    @if ((appearance() !== 'bar' || !tab.icon) && (tab.badgeDot || tab.badgeText)) {
+    <nb-badge class="tab-count"
+        position="inline"
+        [text]="tab.badgeDot ? '' : tab.badgeText"
+        [dotMode]="!!tab.badgeDot"
+        [status]="tab.badgeStatus ?? 'basic'" />
+    }
+</ng-template>

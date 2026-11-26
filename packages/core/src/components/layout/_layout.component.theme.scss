@@ -163,6 +163,17 @@
                 > nb-layout-footer {
                     box-shadow: nb-theme(footer-shadow);
 
+                    // Clear of a phone's home bar, in the footer's colour.
+                    &.fixed {
+                        padding-bottom: env(safe-area-inset-bottom, 0);
+                        background-color: nb-theme(footer-background-color);
+                    }
+
+                    // A phone's navigation spans the footer.
+                    > nav:has(> nb-route-tabset.appearance-bar) {
+                        padding: 0;
+                    }
+
                     > nav {
                         background-color: nb-theme(footer-background-color);
                         border-top: nb-theme(footer-divider-width) nb-theme(footer-divider-style) nb-theme(footer-divider-color);

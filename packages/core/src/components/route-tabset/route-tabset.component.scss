@@ -41,9 +41,54 @@
 }
 
 :host {
-    .tab-link nb-icon + span {
-        @include nb-ltr(margin-left, 0.5rem);
-        @include nb-rtl(margin-right, 0.5rem);
+    .tab-icon {
+        position: relative;
+        display: inline-flex;
+        vertical-align: middle;
+    }
+
+    .tab-icon + .tab-text {
+        margin-inline-start: 0.5rem;
+    }
+
+    .tab-count {
+        margin-inline-start: 0.5rem;
+        vertical-align: middle;
+    }
+}
+
+// Folded into a menu button, e.g. in a phone's header.
+:host(.collapsed) {
+    display: inline-flex;
+}
+
+// A phone's navigation along the bottom: the tabs share the width, each an icon over its title, with the active
+// one's line along its top.
+:host(.appearance-bar) {
+    display: block;
+    width: 100%;
+
+    .route-tabset .route-tab {
+        flex: 1 1 0;
+        margin-bottom: 0;
+
+        a {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            box-sizing: border-box;
+
+            &:before {
+                top: 0;
+                bottom: auto;
+                border-radius: 0 0 3px 3px;
+            }
+        }
+    }
+
+    .tab-icon + .tab-text {
+        margin-inline-start: 0;
     }
 }
 

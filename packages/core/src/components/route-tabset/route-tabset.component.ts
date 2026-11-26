@@ -1,9 +1,23 @@
-import { ChangeDetectionStrategy, Component, input, output } from '@angular/core'
-import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router'
+import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core'
+import { NgTemplateOutlet } from '@angular/common'
+import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router'
 
-import { ɵconvertToBoolProperty as convertToBoolProperty, NbBooleanInput } from '@liquid-js/lyr-core/base'
+import { NbBadgeComponent } from '@liquid-js/lyr-core/badge'
+import {
+    ɵbelowBreakpoint as belowBreakpoint,
+    ɵconvertToBoolProperty as convertToBoolProperty,
+    injectNbTexts,
+    NbLocalize,
+    NbBooleanInput,
+    NbComponentOrCustomStatus
+} from '@liquid-js/lyr-core/base'
+import { NbButtonComponent } from '@liquid-js/lyr-core/button'
+import { NbContextMenuDirective } from '@liquid-js/lyr-core/context-menu'
 import { NbIconConfig, NbIconComponent } from '@liquid-js/lyr-core/icon'
+import { NbMenuItem } from '@liquid-js/lyr-core/menu'
 import { NbMergeConfigsPipe } from './merge-configs.pipe'
+
+declare const $localize: NbLocalize
 
 export interface NbRouteTab {
     route?: RouterLink['routerLink']
@@ -19,7 +33,16 @@ export interface NbRouteTab {
     replaceUrl?: RouterLink['replaceUrl']
     state?: RouterLink['state']
     activeLinkOptions?: RouterLinkActive['routerLinkActiveOptions']
+    /** A badge's text, e.g. a count, after the title, or over the icon in a `bar`. */
+    badgeText?: string
+    /** The badge's status colour; `basic` by default. */
+    badgeStatus?: NbComponentOrCustomStatus
+    /** Shows the badge as a dot, without its text. */
+    badgeDot?: boolean
 }
+
+/** `tabs`, as a page's or a header's; or `bar`, a phone's navigation along the bottom, icons over titles. */
+export type NbRouteTabsetAppearance = 'tabs' | 'bar'
 
 /**
  * Tabs that are router links, with a `router-outlet` under them for the active route's content. Without the outlet,
@@ -51,7 +74,19 @@ export interface NbRouteTab {
  * ```
  *
  * A tab is active while its link is, by `activeLinkOptions`; a tab's own `activeLinkOptions` add to the tabset's.
- * A `disabled` tab is shown but isn't a link.
+ * A `disabled` tab is shown but isn't a link, and a tab's `badgeText` or `badgeDot` shows a badge on it.
+ *
+ * On a phone, the same tabs can be the navigation along the bottom, `appearance="bar"`, in a fixed footer that shows
+ * below a breakpoint; and in the header, they fold into a menu button below it, `collapse="menu"`:
+ *
+ * ```html
+ * <nb-layout-header fixed>
+ *   <nb-route-tabset [tabs]="sections" outlet="false" collapse="menu" below="md" />
+ * </nb-layout-header>
+ * <nb-layout-footer fixed shownBelow="md">
+ *   <nb-route-tabset [tabs]="sections" outlet="false" appearance="bar" />
+ * </nb-layout-footer>
+ * ```
  *
  * ### Installation
  *
@@ -113,6 +148,15 @@ export interface NbRouteTab {
  * route-tabset-scrollbar-color:
  * route-tabset-scrollbar-background-color:
  * route-tabset-scrollbar-width:
+ * route-tabset-bar-background-color:
+ * route-tabset-bar-tab-padding:
+ * route-tabset-bar-tab-gap:
+ * route-tabset-bar-tab-icon-size:
+ * route-tabset-bar-tab-text-font-family:
+ * route-tabset-bar-tab-text-font-size:
+ * route-tabset-bar-tab-text-font-weight:
+ * route-tabset-bar-tab-text-line-height:
+ * route-tabset-bar-tab-text-transform:
  */
 @Component({
     selector: 'nb-route-tabset',
@@ -125,10 +169,16 @@ export interface NbRouteTab {
         RouterLinkActive,
         RouterLink,
         RouterOutlet,
-        NbMergeConfigsPipe
+        NbMergeConfigsPipe,
+        NgTemplateOutlet,
+        NbBadgeComponent,
+        NbButtonComponent,
+        NbContextMenuDirective
     ],
     host: {
-        '[class.full-width]': 'fullWidth()'
+        '[class.full-width]': 'fullWidth()',
+        '[class.appearance-bar]': 'appearance() === \'bar\'',
+        '[class.collapsed]': 'collapsed()'
     }
 })
 export class NbRouteTabsetComponent {
@@ -144,8 +194,50 @@ export class NbRouteTabsetComponent {
     /** The tabs share the tabset's width. */
     readonly fullWidth = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty })
 
+    /** `tabs`, the default, or `bar`: a phone's navigation along the bottom, its tabs sharing the width. */
+    readonly appearance = input<NbRouteTabsetAppearance>('tabs')
+
+    /** Folds the tabs into a menu button below the `below` breakpoint, e.g. in a phone's header: `menu`. */
+    readonly collapse = input<'menu'>()
+
+    /** The media breakpoint, e.g. `md`, below which the tabs `collapse`. */
+    readonly below = input<string>()
+
     /** Emits the tab whose link was clicked. */
     readonly tabChange = output<NbRouteTab>()
+
+    protected readonly router = inject(Router)
+    protected readonly texts = injectNbTexts('routeTabset', () => ({
+        menu: $localize`:@@nb.routeTabset.menu:Menu`
+    }))
+
+    protected readonly narrow = belowBreakpoint(() => this.below())
+
+    /** Whether the tabs are folded into a menu button now. */
+    readonly collapsed = computed(() => this.collapse() === 'menu' && this.narrow())
+
+    /** The tabs as the menu's items, where they're folded into one. */
+    protected readonly menuItems = computed<NbMenuItem[]>(() =>
+        this.tabs()
+            .filter((tab) => !tab.disabled && tab.route !== undefined && tab.route !== null)
+            .map((tab) => ({
+                title: tab.title ?? '',
+                link: this.linkOf(tab),
+                icon: tab.icon,
+                queryParams: tab.queryParams ?? undefined,
+                queryParamsHandling: tab.queryParamsHandling ?? undefined,
+                fragment: tab.fragment,
+                ...(tab.badgeText || tab.badgeDot ? { badge: { text: tab.badgeText, status: tab.badgeStatus ?? 'basic', dotMode: tab.badgeDot } } : {})
+            }))
+    )
+
+    protected linkOf(tab: NbRouteTab): string {
+        const route = tab.route
+        if (typeof route === 'string') {
+            return route
+        }
+        return this.router.serializeUrl(route instanceof Array ? this.router.createUrlTree(route) : (route as Parameters<Router['serializeUrl']>[0]))
+    }
 
     selectTab(tab: NbRouteTab) {
         this.tabChange.emit(tab)

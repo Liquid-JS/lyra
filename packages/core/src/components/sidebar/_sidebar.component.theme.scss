@@ -3,6 +3,10 @@
 
 @mixin nb-sidebar-theme() {
     nb-sidebar {
+        .drawer-backdrop {
+            background-color: nb-theme(sidebar-drawer-backdrop-color);
+        }
+
         background-color: nb-theme(sidebar-background-color);
         box-shadow: nb-theme(sidebar-shadow);
         color: nb-theme(sidebar-text-color);

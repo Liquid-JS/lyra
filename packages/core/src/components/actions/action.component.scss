@@ -7,6 +7,10 @@
     position: relative;
 }
 
+:host(.folded) {
+    display: none;
+}
+
 :host(.disabled) {
     cursor: not-allowed;
 

@@ -39,3 +39,4 @@ export { animateExpand as ɵanimateExpand, expandDuration as ɵexpandDuration } 
 export { animatePane as ɵanimatePane } from './components/shared/pane-animation'
 export { focusOnClick as ɵfocusOnClick } from './components/shared/focus'
 export { enableTransitionsAfterRender as ɵenableTransitionsAfterRender } from './components/shared/transition'
+export { belowBreakpoint as ɵbelowBreakpoint } from './components/shared/breakpoint'

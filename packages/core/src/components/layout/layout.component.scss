@@ -96,6 +96,10 @@
                 display: block;
                 margin-top: auto;
 
+                &[hidden] {
+                    display: none;
+                }
+
                 > nav {
                     justify-content: center;
                     display: flex;

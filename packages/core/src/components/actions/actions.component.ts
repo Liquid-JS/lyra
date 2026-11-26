@@ -1,10 +1,26 @@
-import { Component, input } from '@angular/core'
+import { Component, computed, contentChildren, ElementRef, forwardRef, inject, input } from '@angular/core'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
+import { filter } from 'rxjs/operators'
 
-import { ɵconvertToBoolProperty as convertToBoolProperty, NbBooleanInput, NbComponentSize, NbComponentOrCustomStatus } from '@liquid-js/lyr-core/base'
+import {
+    ɵbelowBreakpoint as belowBreakpoint,
+    ɵconvertToBoolProperty as convertToBoolProperty,
+    injectNbTexts,
+    NbLocalize,
+    NbBooleanInput,
+    NbComponentSize,
+    NbComponentOrCustomStatus
+} from '@liquid-js/lyr-core/base'
 import { NbBadgePosition, NbBadgeComponent } from '@liquid-js/lyr-core/badge'
+import { NbContextMenuDirective } from '@liquid-js/lyr-core/context-menu'
 import { NbIconConfig, NbIconComponent } from '@liquid-js/lyr-core/icon'
+import { NbMenuItem, NbMenuService } from '@liquid-js/lyr-core/menu'
 import { RouterLink } from '@angular/router'
 import { NgTemplateOutlet } from '@angular/common'
+
+declare const $localize: NbLocalize
+
+let actionsId = 0
 
 /**
  * An action in `nb-actions`: a link with an icon, or any content given instead of an icon.
@@ -15,10 +31,14 @@ import { NgTemplateOutlet } from '@angular/common'
     templateUrl: './actions.component.html',
     imports: [RouterLink, NbIconComponent, NgTemplateOutlet, NbBadgeComponent],
     host: {
-        '[class.disabled]': 'disabled()'
+        '[class.disabled]': 'disabled()',
+        '[class.folded]': 'folded()'
     }
 })
 export class NbActionComponent {
+    readonly element: ElementRef<HTMLElement> = inject(ElementRef)
+    protected readonly actions = inject(forwardRef(() => NbActionsComponent), { optional: true })
+
     /**
      * Router link of the icon; wins over `href`.
      */
@@ -64,6 +84,12 @@ export class NbActionComponent {
      * `top end`.
      */
     readonly badgePosition = input<NbBadgePosition>()
+
+    /** Whether it's an icon with a title, which `nb-actions` can fold into its menu. */
+    readonly foldable = computed(() => !!this.icon() && !!this.title() && !this.disabled())
+
+    /** Whether it's in its `nb-actions`' menu now, rather than in the row. */
+    readonly folded = computed(() => this.foldable() && !!this.actions?.collapsed())
 }
 
 /**
@@ -115,6 +141,16 @@ export class NbActionComponent {
  *
  * Action dot mode
  * @stacked-example(Action badge in dot mode, action/action-dot-mode.component)
+ *
+ * On a phone, the actions that are icons with a `title` fold into a menu button below a breakpoint, as an app bar's
+ * do; the others, e.g. a user's picture, stay:
+ * ```html
+ * <nb-actions collapse="menu" below="md">
+ *   <nb-action icon="search-outline" title="Search" link="/search" />
+ *   <nb-action icon="settings-2-outline" title="Settings" (click)="openSettings()" />
+ *   <nb-action><nb-user onlyPicture name="Jane Doe" /></nb-action>
+ * </nb-actions>
+ * ```
  * @styles
  *
  * actions-background-color:
@@ -152,7 +188,17 @@ export class NbActionComponent {
 @Component({
     selector: 'nb-actions',
     styleUrls: ['./actions.component.scss'],
-    template: ' <ng-content select="nb-action" /> ',
+    template: `
+        <ng-content select="nb-action" />
+        @if (collapsed() && menuItems().length) {
+        <nb-action class="more"
+            icon="more-vertical-outline"
+            [title]="texts().more"
+            [nbContextMenu]="menuItems()"
+            [nbContextMenuTag]="tag" />
+        }
+    `,
+    imports: [forwardRef(() => NbActionComponent), NbContextMenuDirective],
     host: {
         '[class]': '"size-" + size()',
         '[class.full-width]': 'fullWidth()'
@@ -168,4 +214,45 @@ export class NbActionsComponent {
      * Fills the width of the container, the actions sharing it equally.
      */
     readonly fullWidth = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty })
+
+    /** Folds the actions that are icons with a `title` into a menu button below the `below` breakpoint: `menu`. */
+    readonly collapse = input<'menu'>()
+
+    /** The media breakpoint, e.g. `md`, below which the actions `collapse`. */
+    readonly below = input<string>()
+
+    protected readonly texts = injectNbTexts('actions', () => ({
+        more: $localize`:@@nb.actions.more:More`
+    }))
+
+    protected readonly tag = `nb-actions-${actionsId++}`
+    protected readonly narrow = belowBreakpoint(() => this.below())
+    protected readonly actions = contentChildren(NbActionComponent)
+
+    /** Whether the actions are folded into a menu button now. */
+    readonly collapsed = computed(() => this.collapse() === 'menu' && this.narrow())
+
+    /** The folded actions as the menu's items: a link's, or one that clicks the action. */
+    protected readonly menuItems = computed<NbMenuItem[]>(() =>
+        this.actions()
+            .filter((action) => action.foldable())
+            .map((action) => ({
+                title: action.title(),
+                icon: action.icon(),
+                ...(action.link() ? { link: action.link() } : action.href() ? { url: action.href() } : {}),
+                ...(action.badgeText() || action.badgeDot() ? { badge: { text: action.badgeText(), status: action.badgeStatus(), dotMode: action.badgeDot() } } : {}),
+                data: action
+            }))
+    )
+
+    constructor() {
+        // An action without a link does what clicking it does.
+        inject(NbMenuService)
+            .onItemClick()
+            .pipe(
+                filter(({ tag, item }) => tag === this.tag && !item.link && !item.url),
+                takeUntilDestroyed()
+            )
+            .subscribe(({ item }) => (item.data as NbActionComponent | undefined)?.element.nativeElement.click())
+    }
 }
