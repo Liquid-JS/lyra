@@ -224,6 +224,7 @@ export function themeScss(draft: NgdThemeDraft, variables: Record<string, string
         key.startsWith('font-family') ? `    ${key}: string.unquote('${entry.replace(/'/g, "\\'")}'),` : `    ${key}: ${entry},`
     )
     return [
+        `// ${draft.name} as a theme of its own: the app's themes.scss, with provideNbTheme({ name: '${slug(draft.name)}' }).`,
         ...fontsComment(draft, (text) => `// ${text}`),
         "@use 'sass:string';",
         "@forward '@liquid-js/lyr-core/styles/theming';",
@@ -244,7 +245,14 @@ export function themeScss(draft: NgdThemeDraft, variables: Record<string, string
 /** The draft as CSS variables over its base theme. */
 export function themeCss(draft: NgdThemeDraft, variables: Record<string, string>): string {
     const entries = Object.entries(variables).map(([key, entry]) => `  --${key}: ${entry};`)
-    return [...fontsComment(draft, (text) => `/* ${text} */`), `.nb-theme-${draft.base} {`, ...entries, '}', ''].join('\n')
+    return [
+        `/* ${draft.name} as CSS variables over Lyra's ${draft.base} theme: after its prebuilt CSS, with provideNbTheme({ name: '${draft.base}' }). */`,
+        ...fontsComment(draft, (text) => `/* ${text} */`),
+        `.nb-theme-${draft.base} {`,
+        ...entries,
+        '}',
+        ''
+    ].join('\n')
 }
 
 /** How a theme card draws a theme in its own colours. */
