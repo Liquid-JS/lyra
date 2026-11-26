@@ -31,20 +31,6 @@ The variables are listed under [Default Theme Variables](theme/built-in-themes/d
 
 ---
 
-## Where They Are
-
-A theme sets its variables on its class, `nb-theme-<name>`, which `nb-layout` puts on the `body`: everything in the
-body can use them, but not `:root` or `html`, which are outside it. Variables of your own that follow the theme's go on
-the `body`, or in your components:
-
-```scss
-body {
-  --app-paper: var(--color-basic-200);
-}
-```
-
----
-
 ## Multiple Runtime Themes
 
 The styles read [CSS custom properties](theme/customization/css-custom-properties), so with

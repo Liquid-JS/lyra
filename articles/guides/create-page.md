@@ -30,16 +30,15 @@ import {
 export class SomePageComponent {}
 ```
 
-The application providers need `provideRouter(routes)` next to `provideNbTheme()`, and `provideNbSidebar()` for the
-sidebar, which it controls. With NgModules, import `NbLayoutModule`, `NbSidebarModule` and `NbButtonModule` into the
-page's module instead, and `NbSidebarModule.forRoot()` into the app's root module.
+The application providers need `provideRouter(routes)` next to `provideNbTheme()`.
+With NgModules, import `NbLayoutModule`, `NbSidebarModule` and `NbButtonModule` into the page's module instead.
 
 ![image](assets/images/articles/sample-page.png)
 
 <div class="note note-info">
   <div class="note-title">Adding into existing page</div>
   <div class="note-body">
-    <code>&lt;nb-layout&gt;&lt;/nb-layout&gt;</code> is the required root of every Lyra page: place an existing page's content inside it.
+    `<nb-layout></nb-layout>` is the required root of every Lyra page: place an existing page's content inside it.
   </div>
 </div>
 

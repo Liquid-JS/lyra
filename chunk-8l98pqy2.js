@@ -1,0 +1,1 @@
+var o=[{path:``,loadComponent:()=>import(`./chunk-Ct-dgsVl.js`).then(e=>e.NgdHomeComponent)}];export{o as HOME_ROUTES};

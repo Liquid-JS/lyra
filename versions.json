@@ -1,7 +1,7 @@
 [
     {
         "checkoutTarget": "master",
-        "name": "22.0.0-alpha.6",
+        "name": "22.0.0-alpha.5",
         "path": "/lyra/",
         "isCurrent": true
     }

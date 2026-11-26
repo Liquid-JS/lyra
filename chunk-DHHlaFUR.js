@@ -1,0 +1,1 @@
+var o=[{path:`skeleton-showcase.component`,loadComponent:()=>import(`./chunk-B7m9kIBC.js`).then(e=>e.SkeletonShowcaseComponent)}];export{o as SKELETON_ROUTES};
