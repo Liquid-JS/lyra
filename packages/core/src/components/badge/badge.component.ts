@@ -137,14 +137,15 @@ export class NbBadgeComponent {
     readonly text = input<string | undefined>('')
 
     /**
-     * Badge position, `top right` by default (also for an empty value): a physical corner or side such as
-     * `bottom left` or `center right`, a logical one such as `top end`, or `inline` to show it in the flow of text.
+     * Badge position, `top end` by default (also for an empty value), the top right corner in a left to right page
+     * and the top left in a right to left one: a logical corner or side such as `bottom start`, a physical one such as
+     * `center right`, or `inline` to show it in the flow of text.
      */
     readonly position = input<
     NbBadgePosition | NbBadgeInlinePosition,
     NbBadgePosition | NbBadgeInlinePosition | '' | null | undefined
-    >('top right', {
-        transform: (position) => position || 'top right'
+    >('top end', {
+        transform: (position) => position || 'top end'
     })
 
     /**

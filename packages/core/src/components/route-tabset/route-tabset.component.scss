@@ -47,8 +47,10 @@
         vertical-align: middle;
     }
 
+    // By the page's direction: the title's own, `auto`, is its text's.
     .tab-icon + .tab-text {
-        margin-inline-start: 0.5rem;
+        @include nb-ltr(margin-left, 0.5rem);
+        @include nb-rtl(margin-right, 0.5rem);
     }
 
     .tab-count {
@@ -88,7 +90,8 @@
     }
 
     .tab-icon + .tab-text {
-        margin-inline-start: 0;
+        @include nb-ltr(margin-left, 0);
+        @include nb-rtl(margin-right, 0);
     }
 }
 

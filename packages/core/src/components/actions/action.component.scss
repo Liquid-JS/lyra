@@ -48,16 +48,21 @@ a.icon-container {
             --nb-action-badge-x: -50%;
         }
 
+        // The page's direction, which a component's own styles reach through its host's context.
         &.position-end {
             --nb-action-badge-x: 50%;
 
-            @include nb-rtl(--nb-action-badge-x, -50%);
+            :host-context([dir=rtl]) & {
+                --nb-action-badge-x: -50%;
+            }
         }
 
         &.position-start {
             --nb-action-badge-x: -50%;
 
-            @include nb-rtl(--nb-action-badge-x, 50%);
+            :host-context([dir=rtl]) & {
+                --nb-action-badge-x: 50%;
+            }
         }
     }
 
