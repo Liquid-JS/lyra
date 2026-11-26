@@ -13,13 +13,17 @@ Both are `Inter, sans-serif` by default; load the font in your app, as Lyra ship
 
 ## Colors
 
-There are 5 text colours, each also available as a CSS class:
+Text colours are theme variables, each also a CSS class:
 
 - **text-basic-color** (`.text-basic`) - main text colour, on basic backgrounds: cards, sidebars, headers
+- **text-heading-color** - headings (`<h1>` to `<h6>`, `.h1` to `.h6`), the basic text colour unless a theme sets
+  its own
 - **text-alternate-color** (`.text-alternate`) - on alternate backgrounds: coloured headers and sidebars
 - **text-control-color** (`.text-control`) - on status backgrounds (`primary`, `success`, etc): filled buttons, selects
 - **text-disabled-color** (`.text-disabled`) - disabled text
 - **text-hint-color** (`.text-hint`) - secondary text: captions, placeholders, labels
+- **text-primary-color**, **text-success-color**, **text-info-color**, **text-warning-color**,
+  **text-danger-color** (`.text-primary` to `.text-danger`) - text in a status's colour
 
 ---
 

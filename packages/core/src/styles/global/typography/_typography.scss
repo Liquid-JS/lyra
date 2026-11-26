@@ -163,8 +163,16 @@
         line-height: nb-theme(list-item-line-height);
     }
 
+    .text-basic {
+        color: nb-theme(text-basic-color);
+    }
+
     .text-alternate {
         color: nb-theme(text-alternate-color);
+    }
+
+    .text-control {
+        color: nb-theme(text-control-color);
     }
 
     .text-disabled {
