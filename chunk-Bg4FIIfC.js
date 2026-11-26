@@ -1,0 +1,1 @@
+var o=[{path:`divider-showcase.component`,loadComponent:()=>import(`./chunk-1MVkfE6I.js`).then(e=>e.DividerShowcaseComponent)}];export{o as DIVIDER_ROUTES};

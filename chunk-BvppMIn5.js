@@ -1,1 +1,0 @@
-var o=[{path:`user-test.component`,loadComponent:()=>import(`./chunk-CL-3rTRO.js`).then(e=>e.UserTestComponent)}];export{o as USER_ROUTES};
