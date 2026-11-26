@@ -1,1 +1,0 @@
-import{$ as Mr,Zr as Ay,li as FC}from"./main-4UEYSITZ.js";var r=class n{static{this.ɵfac=function(e){return new(e||n)}}static{this.ɵcmp=FC({type:n,selectors:[[`nb-playground-auth`]],decls:1,vars:0,template:function(e,m){e&1&&Ay(0,`router-outlet`)},dependencies:[Mr],encapsulation:2})}};export{r as AuthPlaygroundComponent};
