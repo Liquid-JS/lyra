@@ -826,7 +826,8 @@ function size(made: sketch.Layer, layer: Layer, parentLayer: Layer | undefined) 
     if (layer.absolute && parentLayer?.layout) {
         made.ignoresStackLayout = true
     }
-    const hug = layer.layout ? layer.layout.hug : { width: layer.kind === 'text' && layer.textSizing === 'auto', height: layer.kind === 'text' }
+    // An instance sizes as its symbol does, e.g. a button that grows with its label.
+    const hug = layer.layout ? layer.layout.hug : layer.ref?.hug ?? { width: layer.kind === 'text' && layer.textSizing === 'auto', height: layer.kind === 'text' }
     const inStack = (!parentLayer || !!parentLayer.layout) && !layer.absolute
     const column = !parentLayer?.layout || parentLayer.layout.direction === 'column'
     const fill = inStack && !!layer.fill

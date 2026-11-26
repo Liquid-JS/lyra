@@ -19,16 +19,23 @@ import { colourIn, cssOf, derive, display, firstFamily, numberOf, partsOf, shado
  * document records as `lyra-theme-applied`: the first theme applied to a kit, or one applied with `full`, changes
  * everything. It works in Sketch's turns, and records what it did in the document's settings as `lyra-theme-result`
  * once it's done, for a script that can't wait for its promise, e.g. an MCP server's run-code tool, which returns at
- * once: `finished` when it's done, `error` if it failed. Without a theme it applies the one the document recorded,
+ * once: `finished` when it's done, `error` if it failed. A run that changes nothing, e.g. one a tool runs again after
+ * it timed out, keeps the last result that changed something, with `checkedAgain`. Without a theme it applies the one
+ * the document recorded,
  * with what the designer changed on its Theme board, e.g. after the kit is rebuilt.
  */
 export async function applyTheme(kit: KitTheme, options: ThemeOptions): Promise<string> {
     const doc = openDocument(options.document)
     const recordResult = (result: object) => sketch.Settings.setDocumentSettingForKey(doc, 'lyra-theme-result', result)
+    // Kept as an object, or read back as its JSON.
+    const stored = sketch.Settings.documentSettingForKey(doc, 'lyra-theme-result') as unknown
+    const previous = (typeof stored === 'string' ? JSON.parse(stored) : stored) as (ThemeOutcome & { finished?: string }) | undefined
     recordResult({ started: new Date().toISOString() })
     try {
         const outcome = await apply(doc, kit, options)
-        recordResult({ ...outcome, finished: new Date().toISOString() })
+        const changedNothing = Object.values(outcome.counts).every((count) => !count) && !outcome.warningCount
+        const changedBefore = previous?.finished && previous.counts && Object.values(previous.counts).some((count) => count)
+        recordResult(changedNothing && changedBefore ? { ...previous, checkedAgain: new Date().toISOString() } : { ...outcome, finished: new Date().toISOString() })
         return JSON.stringify(outcome)
     } catch (error) {
         recordResult({ error: String(error), finished: new Date().toISOString() })
@@ -663,12 +670,40 @@ async function apply(doc: sketch.Document, kit: KitTheme, options: ThemeOptions)
         }
     }
 
+    // ---- Cards a design composes ----
+
+    // A length the theme gives a variable, in pixels.
+    const lengthOf = (variable: string) => numberOf(partsOf(themed(variable) ?? '')[0] ?? '')
+
+    // A frame with a card's style, as the guide composes a card, takes the card's corners, which a style can't hold.
+    if (moved('card-border-radius')) {
+        const radius = lengthOf('card-border-radius')
+        const cardStyles = new Set(doc.sharedLayerStyles.filter((shared) => shared.name.startsWith('Card/')).map((shared) => shared.id))
+        const composed: string[] = []
+        const findCards = (data: FileLayer) => {
+            if (data.sharedStyleID && cardStyles.has(data.sharedStyleID) && data._class !== 'symbolMaster') {
+                composed.push(data.do_objectID)
+            }
+            ;(data.layers ?? []).filter((child) => child._class !== 'symbolInstance').forEach(findCards)
+        }
+        for (const page of doc.pages.filter((candidate) => !['Symbols', 'Theme', 'Check'].includes(candidate.name))) {
+            findCards(fileFormatOf(page as unknown as sketch.Layer))
+            await pace()
+        }
+        for (const id of radius === undefined ? [] : composed) {
+            const layer = doc.getLayerWithID(id)
+            if (radius !== undefined && layer?.style && layer.style.corners.radii.some((corner) => corner !== radius)) {
+                layer.style.corners.radii = [radius, radius, radius, radius]
+                counts.layers++
+            }
+        }
+    }
+
     // ---- The Typography page ----
 
     // Each sample's font, weight, size and line height as the theme has them, beside its `--text-<category>-*` label,
     // and the primary font named above them.
     const WEIGHT_NAMES: Record<string, string> = { 100: 'Thin', 200: 'ExtraLight', 300: 'Light', 400: 'Regular', 500: 'Medium', 600: 'SemiBold', 700: 'Bold', 800: 'ExtraBold', 900: 'Black' }
-    const lengthOf = (variable: string) => numberOf(partsOf(themed(variable) ?? '')[0] ?? '')
     for (const scale of (doc.pages.find((page) => page.name === 'Typography')?.layers ?? []).filter((layer) => layer.type === 'Artboard')) {
         const texts = childrenOf(scale).filter((layer): layer is sketch.Text => layer.type === 'Text')
         texts.forEach((text, index) => {
@@ -677,10 +712,15 @@ async function apply(doc: sketch.Document, kit: KitTheme, options: ThemeOptions)
             if (!category || !description || !description.text.includes(' · ')) {
                 return
             }
-            const family = firstFamily(themed(`text-${category}-font-family`) ?? '')
-            const weight = WEIGHT_NAMES[String(Math.round(Number(themed(`text-${category}-font-weight`)) / 100) * 100)] ?? ''
+            // A size of a category, e.g. a giant button's, has the category's font and weight, and buttons their case.
+            const base = category.replace(/-(tiny|small|medium|large|giant)$/, '')
+            const fontOf = (suffix: string) => themed(`text-${category}-${suffix}`) ?? themed(`text-${base}-${suffix}`)
+            const family = firstFamily(fontOf('font-family') ?? '')
+            const weight = WEIGHT_NAMES[String(Math.round(Number(fontOf('font-weight')) / 100) * 100)] ?? ''
+            const transform = base === 'button' ? themed('button-filled-text-transform') : undefined
             const [size, line] = [lengthOf(`text-${category}-font-size`), lengthOf(`text-${category}-line-height`)]
-            const shown = `${[family, weight].filter(Boolean).join(' ')} · ${size ?? '?'} / ${line ?? '?'}`
+            const look = [family, weight].filter(Boolean).join(' ') + (transform && transform !== 'none' ? `, ${transform}` : '')
+            const shown = `${look} · ${size ?? '?'} / ${line ?? '?'}`
             if (family && description.text !== shown) {
                 description.text = shown
             }
@@ -696,9 +736,13 @@ async function apply(doc: sketch.Document, kit: KitTheme, options: ThemeOptions)
 
     const themeName = options.name ?? recorded.name ?? 'custom'
     if (options.board !== false) {
-        const values: BoardValues = { themeName, baseTheme, given, baseFormulas, themed }
+        // A design made with the kit shows the theme's own values alone, which it draws in moments; the kit's Theme page
+        // has every value, which takes minutes to draw anew.
+        const design = !localSymbols.some((symbol) => symbol.name === 'Button/Medium/Rectangle')
+        const values: BoardValues = { themeName, baseTheme, given, baseFormulas, themed, design }
         const page = boardPage ?? new sketch.Page({ name: 'Theme', parent: doc })
-        await writeThemeBoard(page, board, boardData, kit, values, pace)
+        const shown = design ? { ...kit, knobs: kit.knobs.filter((knob) => given[knob.variable] !== undefined) } : kit
+        await writeThemeBoard(page, board, boardData, shown, values, pace)
     }
 
     // The theme, recorded for whoever builds from the document, as the Theme Editor gives it to an app: CSS variables

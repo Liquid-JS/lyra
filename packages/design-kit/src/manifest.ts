@@ -40,7 +40,10 @@ const hexOf = (value: unknown, depth = 0): string | undefined => {
         const [group, name] = value.replace(/^\{|\}$/g, '').split('.')
         return depth < 10 ? hexOf(tokens[group]?.[name]?.$value, depth + 1) : undefined
     }
-    return (value as { hex?: string } | undefined)?.hex
+    // With its alpha, where it's see-through, e.g. a backdrop's: `#rrggbbaa`.
+    const colour = value as { hex?: string, alpha?: number } | undefined
+    const alpha = colour?.alpha ?? 1
+    return colour?.hex && alpha < 1 ? `${colour.hex}${Math.round(alpha * 255).toString(16).padStart(2, '0')}` : colour?.hex
 }
 const variables: Record<string, { css: string, value?: string, usedBy?: unknown[] }> = {}
 for (const [group, entries] of Object.entries(tokens)) {

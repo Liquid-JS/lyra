@@ -612,8 +612,11 @@ async function openOverlays(page: Page) {
             if (opener) {
                 opener.show?.()
             } else if (candidates.some((candidate) => candidate?.overlay)) {
-                // …or a component that opens its overlay on focus, e.g. a colour picker, focused as a user would.
-                ;(element.querySelector('input') ?? (element as HTMLElement)).focus()
+                // …or a component that opens its overlay when the user focuses or clicks it, e.g. a colour picker,
+                // clicked as a user would: a focus from a script doesn't open it.
+                const field = element.querySelector('input') ?? (element as HTMLElement)
+                field.focus()
+                field.click()
             }
         }
     })

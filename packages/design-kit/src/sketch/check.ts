@@ -16,26 +16,24 @@ export function checkDesign(kit: KitCheck, options: CheckOptions): string {
     const findings: CheckFinding[] = []
 
     // The colour variables the design can use, its own and the kit's, by their colours, for the nearest to a colour.
-    // A design that uses the kit as a library has none of its own: those its styles and symbols use, in the kit's
-    // theme.
+    // A design that uses the kit as a library has the kit's as those its styles and symbols use, in the kit's theme,
+    // besides its own.
     const swatchColours = new Map(doc.swatches.map((swatch) => [swatch.name, String(swatch.color).toLowerCase()]))
-    if (!swatchColours.size) {
-        const collect = (style: sketch.Style) => {
-            for (const paint of [...style.fills, ...style.borders]) {
-                if (paint.swatch) {
-                    swatchColours.set(paint.swatch.name, String(paint.swatch.color).toLowerCase())
-                }
+    const collect = (style: sketch.Style) => {
+        for (const paint of [...style.fills, ...style.borders]) {
+            if (paint.swatch && !swatchColours.has(paint.swatch.name)) {
+                swatchColours.set(paint.swatch.name, String(paint.swatch.color).toLowerCase())
             }
         }
-        doc.sharedLayerStyles.forEach((shared) => collect(shared.style))
-        const walk = (layer: sketch.Layer) => {
-            if (layer.style) {
-                collect(layer.style)
-            }
-            childrenOf(layer).forEach(walk)
-        }
-        doc.getSymbols().forEach(walk)
     }
+    doc.sharedLayerStyles.forEach((shared) => collect(shared.style))
+    const walkStyles = (layer: sketch.Layer) => {
+        if (layer.style) {
+            collect(layer.style)
+        }
+        childrenOf(layer).forEach(walkStyles)
+    }
+    doc.getSymbols().forEach(walkStyles)
     const swatches = [...swatchColours].map(([name, color]) => ({ name, color }))
     const channels = (hex: string) => [1, 3, 5, 7].map((at) => parseInt(hex.slice(at, at + 2) || 'ff', 16))
     // The nearest colour variable, where one is close enough to be what was meant: a colour far from all of them, e.g.
@@ -201,6 +199,11 @@ export function checkDesign(kit: KitCheck, options: CheckOptions): string {
         const copied = layer.type === 'Group' && kitSymbols[layer.name] && (!parts || (named.length > 0 && named.every((name) => parts.includes(name)))) ? kitSymbols[layer.name] : undefined
         if (copied) {
             add('Detached', layer, `A detached copy of ${layer.name}`, `Lyra's ${copied} with the inputs the kit's map gives, and custom CSS for what was changed.`)
+        }
+        // The theme's backdrop under a dialog, as the guide composes one: the dialog's own in the app.
+        if (layer.sharedStyle?.name === 'Effect/Backdrop' || (layer.style?.fills ?? []).some((fill) => fill.swatch?.name === 'Effect/Backdrop')) {
+            add('Composed', layer, 'A backdrop with Effect/Backdrop', 'The backdrop a dialog or a drawer opens over: Lyra draws it, `overlay-backdrop-background-color`.')
+            return
         }
         // A frame with a component's style, e.g. a card's, holding the design's content, as the guide composes them: that
         // component in the app.

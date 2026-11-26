@@ -12,6 +12,8 @@ export interface BoardValues {
     given: Variables
     baseFormulas: Variables
     themed: (name: string) => string | undefined
+    /** A design made with the kit, which shows the theme's own values alone: the kit's Theme page has them all. */
+    design?: boolean
 }
 
 const PADDING = 64
@@ -36,7 +38,9 @@ function rowOf(knob: ThemeKnob, values: BoardValues) {
 
 const titleOf = (values: BoardValues) => `Theme: ${values.themeName}, over Lyra's ${values.baseTheme} theme`
 const introductionOf = (values: BoardValues) =>
-    `Every value the kit follows, by what it's for: a value of the theme's own, or the formula it follows from others, as Lyra's ${values.baseTheme} theme sets it. Change a value, or a colour's chip, then run Lyra › Apply theme: everything that follows it changes with it, as it does in the app. Clear a value for the ${values.baseTheme} theme's again. Any other variable in tokens.json can be given to the theme script, as the design kit guide shows: the theme keeps it when it's applied from here again.`
+    values.design
+        ? `The theme's own values, over Lyra's ${values.baseTheme} theme, as this design records them for the app. Change them on the Theme page of your copy of the kit, then apply the theme here again.`
+        : `Every value the kit follows, by what it's for: a value of the theme's own, or the formula it follows from others, as Lyra's ${values.baseTheme} theme sets it. Change a value, or a colour's chip, then run Lyra › Apply theme: everything that follows it changes with it, as it does in the app. Clear a value for the ${values.baseTheme} theme's again. Any other variable in tokens.json can be given to the theme script, as the design kit guide shows: the theme keeps it when it's applied from here again.`
 
 /**
  * What the theme sets, and what the kit follows, on a board of its own, to change and apply again: each variable's own

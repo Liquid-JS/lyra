@@ -82,6 +82,8 @@ export interface Layer {
         texts?: string[]
         /** For a component of the kit: its symbol, and the overrides that give it the captured look. */
         symbol?: string
+        /** Whether its symbol sizes to its content, so the instance does too, e.g. a button with a longer label. */
+        hug?: { width: boolean, height: boolean }
         overrides?: Starter['overrides']
     }
     layout?: {

@@ -49,6 +49,8 @@ export interface FileLayer {
     rightPadding?: number
     /** An instance's symbol. */
     symbolID?: string
+    /** The shared style it has. */
+    sharedStyleID?: string
     /** A text's content. */
     attributedString?: { string: string }
     /** Layer settings, by the plugin or script that wrote them. */

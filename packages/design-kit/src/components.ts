@@ -88,12 +88,13 @@ export const COMPONENTS: Record<string, ComponentSpec> = {
         name: 'Button',
         code: { inputs: { icon: 'An `<nb-icon>` before the text (`start`) or after it (`end`).' } },
         selector: '[nbButton]',
+        refInputs: { fullWidth: { classes: { 'full-width': 'true' }, otherwise: 'false' } },
         page: 'Buttons',
         board: 'Buttons',
-        // An icon before or after the text moves it.
-        symbol: { size, shape: size, icon: (value) => (value === 'none' ? '' : `Icon ${title(String(value))}`) },
+        // An icon before or after the text moves it, and a full-width button takes its container's width.
+        symbol: { size, shape: size, icon: (value) => (value === 'none' ? '' : `Icon ${title(String(value))}`), fullWidth: (value) => (value === true || value === 'true' ? 'Full Width' : '') },
         style: ['appearance', 'status', 'state'],
-        starter: { size: 'medium', shape: 'rectangle', icon: 'none', appearance: 'filled', status: 'primary', state: 'default' },
+        starter: { size: 'medium', shape: 'rectangle', icon: 'none', fullWidth: false, appearance: 'filled', status: 'primary', state: 'default' },
         parts: { '#text': 'Label', 'nb-icon': 'Icon' }
     },
     'icon-button': {
@@ -187,7 +188,10 @@ export const COMPONENTS: Record<string, ComponentSpec> = {
     },
     'calendar': {
         name: 'Calendar',
-        code: { inputs: { kind: '`range` is `<nb-calendar-range>`.', view: '`startView`.' } },
+        code: {
+            inputs: { kind: '`range` is `<nb-calendar-range>`.', view: '`startView`.' },
+            notes: ['A calendar is as wide as `calendar-width`, or narrower where it has less room, whatever room it has more; one drawn wider sets `--calendar-width` on it.']
+        },
         page: 'Form controls',
         board: 'Calendars',
         symbol: { kind: size, size, view: size },
@@ -326,6 +330,7 @@ export const COMPONENTS: Record<string, ComponentSpec> = {
     },
     'alert': {
         name: 'Alert',
+        code: { notes: ['Its `size` gives it a fixed height, e.g. `alert-medium-height`, as the symbols are drawn; an alert drawn as tall as its text is one without a `size`.'] },
         page: 'Feedback',
         board: 'Alerts',
         // Outline alerts have a border the filled ones don't, which moves their content.
@@ -344,6 +349,7 @@ export const COMPONENTS: Record<string, ComponentSpec> = {
     },
     'card': {
         name: 'Card',
+        code: { notes: ['Its first and last children\'s outer corners take its radius inside its border, e.g. an image filling its top; a child with corners of its own goes in a wrapper. A frame composed with a card\'s style takes the card\'s corners, `card-border-radius`, from the theme.'] },
         page: 'Content',
         board: 'Cards',
         // A status header covers the card's border, which moves the content.
@@ -687,7 +693,10 @@ export const COMPONENTS: Record<string, ComponentSpec> = {
         page: 'Navigation',
         board: 'Route tabsets',
         code: {
-            notes: ['It shows the active route under its tabs in a `router-outlet` of its own; as navigation alone, e.g. in a header, set `outlet="false"`.'],
+            notes: [
+                'It shows the active route under its tabs in a `router-outlet` of its own; as navigation alone, e.g. in a header, set `outlet="false"`.',
+                'A line runs along the tabs\' width, `route-tabset-divider-*`, which tabs in a header may not show: `--route-tabset-divider-width: 0`.'
+            ],
             inputs: { tabs: 'How many `tabs` it has: a `bar` has 3 to 5, the others 4, to swap for as many as a design needs.' }
         },
         selector: 'nb-route-tabset',
@@ -833,7 +842,10 @@ export const COMPONENTS: Record<string, ComponentSpec> = {
     },
     'divider': {
         name: 'Divider',
-        code: { inputs: { kind: '`vertical`; `label` is text inside `<nb-divider>`.' } },
+        code: {
+            inputs: { kind: '`vertical`; `label` is text inside `<nb-divider>`.' },
+            notes: ['It has a margin around it, `divider-margin` (`divider-vertical-margin` down the page), which the drawings leave out: a divider drawn flush sets `--divider-margin: 0`.']
+        },
         page: 'Content',
         board: 'Dividers',
         symbol: { kind: size },
@@ -886,6 +898,7 @@ export const COMPONENTS: Record<string, ComponentSpec> = {
         symbol: {},
         style: [],
         starter: {},
+        wraps: ['Body'],
         parts: {
             'root': 'Dialog',
             'nb-card': 'Card',
@@ -908,6 +921,7 @@ export const COMPONENTS: Record<string, ComponentSpec> = {
     },
     'table': {
         name: 'Table',
+        code: { notes: ['A row is at least `table-row-min-height` tall and as tall as its cells\' content with `table-cell-padding`, e.g. taller with a button in a cell; rows drawn other heights set those variables.'] },
         page: 'Content',
         board: 'Tables',
         symbol: {},

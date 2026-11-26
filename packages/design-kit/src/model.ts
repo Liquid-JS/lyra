@@ -722,6 +722,21 @@ function spreadFluid(layer: Layer, inRow = false) {
     layer.children.forEach((child) => spreadFluid(child, layout?.direction === 'row'))
 }
 
+/**
+ * A row stretched across its container whose parts are far apart, e.g. a calendar's title and its arrows, which an auto
+ * margin keeps at the ends: they stay at the ends of whatever width it's given.
+ */
+function spreadApart(layer: Layer) {
+    const layout = layer.layout
+    const inFlow = layer.children.filter((child) => !child.absolute)
+    if (layout?.direction === 'row' && layer.fill && inFlow.length === 2 && layout.gap >= 24 && layout.justify === 'start') {
+        layout.justify = 'between'
+        layout.gap = 0
+        layout.hug.width = false
+    }
+    layer.children.forEach(spreadApart)
+}
+
 /** Whether a layer is a field, e.g. an input, or holds one. */
 const holdsField = (layer: Layer): boolean => !!layer.layout?.fixed || layer.children.some(holdsField)
 
@@ -830,7 +845,7 @@ function stacks(layer: Layer, retried = false): boolean {
         // Spacing from margins, e.g. a button's icon's, as a stack's gap, where it's even between the children.
         const spaces = inFlow.slice(1).map((child, index) => (row ? child.x - (inFlow[index].x + inFlow[index].width) : child.y - (inFlow[index].y + inFlow[index].height)))
         // Overlapping by a border at most, e.g. a button group's buttons, not laid over one another.
-        if (!retried && spaces.length && spaces[0] > -2.1 && spaces.every((space) => Math.abs(space - spaces[0]) < 0.6) && Math.abs(spaces[0] - layout.gap) > 0.5) {
+        if (!retried && layout.justify !== 'between' && spaces.length && spaces[0] > -2.1 && spaces.every((space) => Math.abs(space - spaces[0]) < 0.6) && Math.abs(spaces[0] - layout.gap) > 0.5) {
             const gap = layout.gap
             layout.gap = round(spaces[0])
             if (stacks(layer, true)) {
@@ -892,6 +907,17 @@ function stacks(layer: Layer, retried = false): boolean {
                 inFlow.forEach((child, index) => Object.assign(child, before.frames[index]))
             }
         }
+        // A row of parts each centred across, e.g. a tab's title and its count, rather than stretched.
+        const middle = (child: Layer) => child.y + child.height / 2
+        const centre = startCross + innerCross / 2
+        const centred = inFlow.every((child) => Math.abs(middle(child) - centre) < 1) && inFlow.some((child) => Math.abs(child.height - innerCross) > 0.6)
+        if (!retried && row && layout.align === 'stretch' && inFlow.length > 1 && centred) {
+            layout.align = 'center'
+            if (stacks(layer, false)) {
+                return true
+            }
+            layout.align = 'stretch'
+        }
         return false
     }
     // Room after the last child where children grow, e.g. a stepper's last step's margin, as the frame's padding: else
@@ -910,7 +936,8 @@ function stacks(layer: Layer, retried = false): boolean {
         // a part keeps its own size, e.g. a chat message's avatar: the parts that stretch fill across instead.
         layout.align = 'start'
     }
-    const hugsMain = Math.abs(along - (row ? layer.width : layer.height)) < 0.6
+    // Parts spread apart, e.g. a calendar's title and its arrows, keep to the ends of whatever width it's given.
+    const hugsMain = layout.justify !== 'between' && Math.abs(along - (row ? layer.width : layer.height)) < 0.6
     const hugsCross = !stretched && Math.abs(across - (row ? layer.height : layer.width)) < 0.6
     layout.hug = layout.fixed ? { width: false, height: false } : row ? { width: hugsMain, height: hugsCross } : { width: hugsCross, height: hugsMain }
     return true
@@ -1321,6 +1348,7 @@ function draftOf(
         }
     }
     // A screen shows what's in the window, e.g. not the end of a drawer taller than it.
+    spreadApart(top)
     if (spec.fluid) {
         spreadFluid(top)
         top.clip = true
@@ -1475,6 +1503,9 @@ function build(component: string, spec: ComponentSpec, captured: Captured[], kit
                     found.set(source.part, layer.ref.component)
                 }
                 layer.ref.symbol = resolved.symbol
+                if (resolved.layer.layout) {
+                    layer.ref.hug = { ...resolved.layer.layout.hug }
+                }
                 layer.ref.overrides = resolved.overrides
             }
         }
