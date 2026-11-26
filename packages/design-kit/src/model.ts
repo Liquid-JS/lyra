@@ -580,6 +580,11 @@ function layoutOf(node: CapturedNode, children: CapturedNode[]): Layer['layout']
 /** The texts the browser wraps over more than one line, which keep the width they wrap at. */
 const wrapping = new WeakSet<Layer>()
 
+/** Layers of fixed elements, which no frame they're in clips, e.g. a drawer's backdrop over the page. */
+const fixedLayers = new WeakSet<Layer>()
+/** The fixed layers a clipping frame let out, which its parent places beside it. */
+const escaping = new WeakMap<Layer, Layer[]>()
+
 /**
  * A row that sizes to its content can't stretch what's in it, so a column in it sizes to its content too, e.g. a
  * user's name and title: its children don't stretch, and its texts of one line grow with their words.
@@ -688,6 +693,33 @@ function wrapIn(layer: Layer, part: string) {
         }
     }
     spread(found)
+}
+
+/**
+ * A screen's blocks take the width they're given: columns don't size to their content, their parts stretch across
+ * them, and their texts wrap at that width, as in the browser; rows keep their parts' own sizes.
+ */
+function spreadFluid(layer: Layer, inRow = false) {
+    const layout = layer.layout
+    // A column in a row, e.g. a header's brand, sizes to its content, and one that centres its parts, e.g. a tab's icon
+    // and title, keeps their sizes.
+    if (layout?.direction === 'column' && !inRow && layout.align !== 'center') {
+        layout.hug.width = false
+        for (const child of layer.children.filter((candidate) => !candidate.absolute && candidate.kind !== 'ref')) {
+            child.fill = true
+            if (child.kind === 'text') {
+                child.textSizing = 'fixed'
+                child.width = round(layer.width - layout.padding[1] - layout.padding[3])
+            }
+        }
+        if (layout.align === 'start' && layer.children.some((child) => child.fill)) {
+            layout.align = 'stretch'
+        }
+    } else if (layout?.direction === 'row' && layout.hug.width) {
+        // A row as wide as its container, e.g. a layout's, takes its width; its parts that grow take the room left.
+        layout.hug.width = false
+    }
+    layer.children.forEach((child) => spreadFluid(child, layout?.direction === 'row'))
 }
 
 /** Whether a layer is a field, e.g. an input, or holds one. */
@@ -1158,8 +1190,31 @@ function draftOf(
         layer.layout = layoutOf(current, current.children)
         // Children are drawn in the order the browser stacks them: by z-index, then as they come.
         const z = (child: CapturedNode) => (child.style.zIndex === undefined ? 0 : Number(child.style.zIndex) || 0)
+        if (current.style.position === 'fixed' && parent) {
+            fixedLayers.add(layer)
+            layer.absolute = true
+        }
         const drafted = current.children.map((child, index) => ({ z: z(child), index, layer: visit(child, current, layer, part) }))
         layer.children = drafted.map((entry) => entry.layer)
+        // A fixed part that a child clipping its content let out goes beside that child, just before it, e.g. a
+        // drawer's backdrop: over the page, under the drawer.
+        for (const entry of [...drafted]) {
+            const out = escaping.get(entry.layer) ?? []
+            if (out.length) {
+                out.forEach((escaped) => Object.assign(escaped, { x: round(escaped.x + entry.layer.x), y: round(escaped.y + entry.layer.y), absolute: true }))
+                const at = layer.children.indexOf(entry.layer)
+                layer.children.splice(at, 0, ...out)
+                drafted.splice(drafted.indexOf(entry), 0, ...out.map((escaped) => ({ z: entry.z, index: entry.index, layer: escaped })))
+            }
+        }
+        if (layer.clip) {
+            const out = layer.children.filter((child) => fixedLayers.has(child))
+            if (out.length) {
+                escaping.set(layer, out)
+                layer.children = layer.children.filter((child) => !out.includes(child))
+                drafted.splice(0, drafted.length, ...drafted.filter((entry) => !out.includes(entry.layer)))
+            }
+        }
         // A reversed row or column, e.g. a chat's reply, lists its children as they show.
         if (layer.layout && current.style.flexDirection?.endsWith('-reverse') && ['flex', 'inline-flex'].includes(current.style.display ?? '')) {
             layer.children.reverse()
@@ -1264,6 +1319,11 @@ function draftOf(
             top.layout.padding[2] = round(top.layout.padding[2] + room)
             top.layout.hug.height = true
         }
+    }
+    // A screen shows what's in the window, e.g. not the end of a drawer taller than it.
+    if (spec.fluid) {
+        spreadFluid(top)
+        top.clip = true
     }
     hugInHuggingRows(top)
     growOnlyWithRoom(top)

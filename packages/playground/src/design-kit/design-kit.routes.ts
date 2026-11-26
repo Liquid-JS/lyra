@@ -13,6 +13,7 @@ export const DESIGN_KIT_ROUTES: Routes = [
     { path: 'layout-header', loadComponent: () => import('./layout.specimen').then((m) => m.LayoutSpecimenComponent) },
     { path: 'sidebar', loadComponent: () => import('./layout.specimen').then((m) => m.LayoutSpecimenComponent) },
     { path: 'layout-footer', loadComponent: () => import('./layout.specimen').then((m) => m.LayoutSpecimenComponent) },
+    { path: 'adaptive-layout', loadComponent: () => import('./adaptive-layout.specimen').then((m) => m.AdaptiveLayoutSpecimenComponent) },
     {
         path: '',
         component: DesignKitShellComponent,

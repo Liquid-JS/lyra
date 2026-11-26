@@ -270,10 +270,10 @@ function read({ properties, selectors, refs }: { properties: ReadonlyArray<Style
             }
             // Inputs the component's spec reads from classes, its own or a container's, e.g. a calendar cell's state.
             const reading = refs[key]
-            for (const [input, { from, classes, otherwise }] of Object.entries(reading?.inputs ?? {})) {
+            for (const [input, { from, classes = {}, otherwise, count }] of Object.entries(reading?.inputs ?? {})) {
                 const source = from ? element.closest(from) : element
                 const found = Object.keys(classes).find((name) => source?.classList.contains(name))
-                const value = found ? classes[found] : otherwise
+                const value = count ? String(element.querySelectorAll(count).length) : found ? classes[found] : otherwise
                 if (value !== undefined) {
                     inputs[input] = value
                 }
@@ -582,6 +582,8 @@ async function open(page: Page, component: string, variant: string) {
     await page.waitForTimeout(1000)
     // No transitions, so a state or the probe colours show at once.
     await page.addStyleTag({ content: '*, *::before, *::after { transition: none !important; animation: none !important; }' })
+    // Nor the playground's toolbar, above the page: fixed parts, e.g. a layout's header, are placed against the window.
+    await page.addStyleTag({ content: 'npg-app-root > .toolbar { display: none !important; }' })
     await forceStates(page)
     await openOverlays(page)
     // Let transitions finish, e.g. a theme's colours fading in, or a state's.
@@ -1038,6 +1040,7 @@ for (const component of components) {
     const real: Captured[] = []
     const images: Record<string, string> = {}
     for (const variant of spec?.variants ?? ['']) {
+        await tab.setViewportSize(spec?.viewports?.[variant] ?? spec?.viewport ?? { width: 1600, height: 8000 })
         await open(tab, component, variant)
         if (screenshots) {
             mkdirSync(screenshots, { recursive: true })

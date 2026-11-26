@@ -18,6 +18,8 @@ export interface ComponentSpec {
     viewport?: { width: number, height: number }
     /** Query strings of the specimen's pages, each captured in turn, e.g. one per sidebar state. */
     variants?: string[]
+    /** The viewport of each of those pages that needs one of its own, e.g. a phone's. */
+    viewports?: Record<string, { width: number, height: number }>
     /** The page of the kit it's shown on, and its review board's name there. */
     page: string
     board: string
@@ -37,6 +39,11 @@ export interface ComponentSpec {
     stretches?: boolean
     /** A container for a design's own content, e.g. a layout's footer or a card's body: it resizes freely. */
     container?: boolean
+    /**
+     * A screen, whose blocks take the width they're given, as a page's do: its columns stretch their parts across and
+     * their texts wrap at that width, e.g. an app's layout at a device's size.
+     */
+    fluid?: boolean
     /** Gives every element a part, and so a style, of its own, for content that repeats elements, e.g. markdown. */
     uniqueParts?: boolean
     /**
@@ -46,9 +53,10 @@ export interface ComponentSpec {
     wraps?: string[]
     /**
      * Where another component holds this one, the inputs its classes say, its own or those of the container `from`
-     * selects: the first of `classes` it has, else `otherwise`, e.g. a calendar cell's state.
+     * selects: the first of `classes` it has, else `otherwise`, e.g. a calendar cell's state; or how many elements
+     * in it `count` selects, e.g. a tabset's tabs.
      */
-    refInputs?: Record<string, { from?: string, classes: Record<string, string>, otherwise?: string }>
+    refInputs?: Record<string, { from?: string, classes?: Record<string, string>, otherwise?: string, count?: string }>
     /** Parts as wide as a share of their parent, which scale with it, e.g. a progress bar's value. */
     relative?: string[]
     /** Where another component holds this one, its texts in order are the instance's, e.g. a step's number and label. */
@@ -676,13 +684,67 @@ export const COMPONENTS: Record<string, ComponentSpec> = {
     },
     'route-tabset': {
         name: 'Route Tabset',
-        code: { notes: ['It shows the active route under its tabs in a `router-outlet` of its own; as navigation alone, e.g. in a header, set `outlet="false"`.'] },
         page: 'Navigation',
         board: 'Route tabsets',
-        symbol: { fullWidth: (value) => (value ? 'Full Width' : '') },
+        code: {
+            notes: ['It shows the active route under its tabs in a `router-outlet` of its own; as navigation alone, e.g. in a header, set `outlet="false"`.'],
+            inputs: { tabs: 'How many `tabs` it has: a `bar` has 3 to 5, the others 4, to swap for as many as a design needs.' }
+        },
+        selector: 'nb-route-tabset',
+        refInputs: {
+            appearance: { classes: { 'appearance-bar': 'bar' }, otherwise: 'tabs' },
+            fullWidth: { classes: { 'full-width': 'true' }, otherwise: 'false' },
+            tabs: { count: '.route-tab' }
+        },
+        refTexts: true,
+        // A phone's navigation along the bottom, `bar`, with as many tabs as a design needs.
+        symbol: {
+            appearance: (value) => (value === 'bar' ? 'Bar' : ''),
+            fullWidth: (value) => (value ? 'Full Width' : ''),
+            tabs: (value) => (value ? `${String(value)} Tabs` : '')
+        },
+        // A bar's texts have fonts of their own, so its styles are its own too.
+        style: ['appearance'],
+        labels: { appearance: { tabs: 'Tabs', bar: 'Bar' } },
+        starter: { appearance: 'tabs', fullWidth: false, tabs: 4 },
+        parts: { 'root': 'Route Tabset', '.active': 'Active Tab', '.disabled': 'Disabled Tab', '.route-tab': 'Tab', '.tab-link': '{parent} Link', '.tab-icon': '{parent} Icon', '.tab-text': '{parent} Label' }
+    },
+    // An app's screen that adapts to the device: on a laptop or a tablet, a header with its tabs, actions and user; on
+    // a phone, a top bar whose actions fold into a menu, a drawer with the user and the account's links, and the tabs
+    // along the bottom. One layout's markup at every size.
+    'adaptive-layout': {
+        name: 'Adaptive Layout',
+        code: {
+            class: 'NbLayoutComponent',
+            inputs: {
+                device: 'The window\'s width: a phone\'s is below `md`, where `*nbShownBelow` and `*nbShownAbove` show the phone\'s parts or the others, and the header\'s actions `collapse` into a menu.',
+                drawer: 'The phone\'s `fixed` `drawer` sidebar expanded, e.g. by the top bar\'s menu button with `NbSidebarService.toggle()`.'
+            },
+            notes: ['The playground\'s `/design-kit/adaptive-layout` page is this layout\'s markup, at every size.']
+        },
+        page: 'Navigation',
+        board: 'Adaptive layouts',
+        viewport: { width: 1440, height: 900 },
+        variants: ['device=laptop', 'device=tablet', 'device=phone', 'device=phone&drawer=open'],
+        viewports: { 'device=tablet': { width: 834, height: 1112 }, 'device=phone': { width: 390, height: 844 }, 'device=phone&drawer=open': { width: 390, height: 844 } },
+        symbol: { device: size, drawer: (value) => (value === 'open' ? 'Drawer' : '') },
         style: [],
-        starter: { fullWidth: false },
-        parts: { 'root': 'Route Tabset', '.active': 'Active Tab', '.disabled': 'Disabled Tab', '.route-tab': 'Tab', '.tab-link': '{parent} Link', '.tab-text': '{parent} Label' }
+        fluid: true,
+        starter: { device: 'laptop', drawer: 'closed' },
+        parts: {
+            'root': 'Layout',
+            'nb-layout-header': 'Header',
+            'nb-sidebar': 'Drawer',
+            'nb-sidebar-header': 'Drawer Header',
+            'nb-layout-column': 'Column',
+            'nb-layout-footer': 'Footer',
+            'nb-route-tabset': 'Tabs',
+            'nb-actions': 'Actions',
+            '.drawer-backdrop': 'Backdrop',
+            '.menu-icon': '{parent} Icon',
+            '.menu-title': '{parent} Title',
+            '.menu-item': 'Row'
+        }
     },
     'toc': {
         name: 'Table of Contents',
