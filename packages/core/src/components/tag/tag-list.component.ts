@@ -87,6 +87,7 @@ const SEPARATOR_CHARACTERS: Record<number, string> = { [COMMA]: ',', [SEMICOLON]
         '[class.focus]': '_isFocused()',
         '[class.disabled]': 'isDisabled()',
         '[class.input-full-width]': '_isFullWidth()',
+        '[class.nowrap]': '!wrap()',
         '[attr.tabindex]': 'tabIndex()',
         '[attr.role]': 'role()',
         '[attr.aria-multiselectable]': 'multiple()',
@@ -155,6 +156,12 @@ export class NbTagListComponent implements ControlValueAccessor {
      * Whether the list shows and edits the tags of its value.
      */
     readonly managed = computed(() => this.value() !== undefined)
+
+    /**
+     * Whether its tags wrap onto more lines when they don't fit; without, they stay on one line that scrolls sideways,
+     * e.g. a phone's filters, and the active one scrolls into view.
+     */
+    readonly wrap = input<boolean, NbBooleanInput>(true, { transform: convertToBoolProperty })
 
     /** Disables the list: its input, and removing its tags. */
     readonly disabled = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty })
@@ -265,9 +272,15 @@ export class NbTagListComponent implements ControlValueAccessor {
             .subscribe((isFocused: boolean) => untracked(() => this.onFocusChange(isFocused)))
         this.destroyRef.onDestroy(() => this.focusMonitor.stopMonitoring(this.hostElement))
 
-        this.keyManager.change
-            .pipe(takeUntilDestroyed())
-            .subscribe(() => this.activeTagId.set(this.keyManager.activeItem?._id))
+        this.keyManager.change.pipe(takeUntilDestroyed()).subscribe(() => {
+            const active = this.keyManager.activeItem
+            this.activeTagId.set(active?._id)
+            // On one line, the active tag is in view, as the list scrolls rather than wraps.
+            if (active && !this.wrap()) {
+                const element: HTMLElement = active._hostElement.nativeElement
+                element.scrollIntoView?.({ block: 'nearest', inline: 'nearest' })
+            }
+        })
 
         effect(() => this.keyManager.withHorizontalOrientation(this.directionService.direction()))
 

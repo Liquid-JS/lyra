@@ -32,6 +32,21 @@
         flex: 1;
     }
 
+    // On one line that scrolls sideways, e.g. a phone's filters.
+    nb-tag-list.nowrap {
+        max-width: 100%;
+
+        .nb-tag-list-tags-wrapper {
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            min-width: 0;
+
+            nb-tag {
+                flex-shrink: 0;
+            }
+        }
+    }
+
     .nb-tag-list-with-input {
         @include input-theme.nb-input-core-theme;
 
