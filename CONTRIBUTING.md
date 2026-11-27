@@ -31,7 +31,9 @@ small fix can go straight to a pull request.
 The repository is a Yarn workspace on the Node version in `.nvmrc`. Run `yarn install` in the root, then:
 
 - `yarn start` - serve the playground app with every component example (<http://localhost:4200>)
-- `yarn build` - build all packages into `dist/`
+- `yarn build` - build all packages into `dist/`; `node scripts/pack-local.ts <folder>` then packs them as tarballs
+  with a version of their own, to try in an app before a release, where `ng add` with the core tarball adds the
+  others from theirs
 - `yarn test` - run the unit tests of every package; `yarn test:schematics` runs the `ng add` schematics tests
 - `yarn e2e` - run the Playwright end-to-end tests against the playground in Chromium, Firefox and WebKit
   (`yarn e2e:install` installs the three browsers). It serves the playground built against `dist/` (`yarn build`

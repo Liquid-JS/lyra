@@ -1,4 +1,5 @@
 import { createRequire } from 'node:module'
+import { relative, sep } from 'node:path'
 import { JsonObject } from '@angular-devkit/core'
 import { Tree } from '@angular-devkit/schematics'
 import { readJSON, writeJSON } from './file.js'
@@ -25,13 +26,22 @@ export function getLyraVersion(): string {
 }
 
 /**
- * The range of the Lyra major line a core version belongs to, for adding the other Lyra packages. A release only
- * bumps the packages it changes, so they don't share core's version. While core is a prerelease, the range takes
- * the line's prereleases too: `^22.0.0-0` for core 22.0.0-alpha.1, `^22.0.0` for core 22.3.1.
+ * The range to add another Lyra package at: from the version it had in core's build, which the build records beside the
+ * schematics, or its tarball, for a build packed to try it (`scripts/pack-local.ts`). A release only bumps the packages
+ * it changes, so they don't share core's version; and a range of the whole major line would let npm install what its
+ * `latest` tag points at, which may be an older prerelease.
  */
-export function lyraVersionRange(version: string): string {
-    const major = version.split('.')[0]
-    return version.includes('-') ? `^${major}.0.0-0` : `^${major}.0.0`
+export function lyraPackageRange(packageName: string): string {
+    const versions = require('../lyra-packages.json') as Record<string, string | undefined>
+    const version = versions[packageName]
+    if (!version) {
+        throw new Error(`Core's build has no version of ${packageName}.`)
+    }
+    // A tarball's, as a build packed to try it records them: relative to the project, as npm writes the one `ng add` took.
+    if (version.startsWith('file:')) {
+        return `file:${relative(process.cwd(), version.slice('file:'.length)).split(sep).join('/')}`
+    }
+    return `^${version}`
 }
 
 /** The version range `@liquid-js/lyr-core` asks of a peer dependency; throws when it has no such peer. */

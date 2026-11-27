@@ -86,14 +86,25 @@ async function getAppModuleContent(tree: UnitTestTree): Promise<string> {
     return tree.readContent(appModulePath)
 }
 
-describe('lyraVersionRange', () => {
-    it('should take the prereleases of the major line while core is a prerelease', () => {
-        expect(lyraVersionRange('22.0.0-alpha.1')).toBe('^22.0.0-0')
-        expect(lyraVersionRange('23.1.0-rc.0')).toBe('^23.0.0-0')
+describe('lyraPackageRange', () => {
+    it('should start at the version the package had in core\'s build', () => {
+        const versions = require('../lyra-packages.json')
+        expect(lyraPackageRange('@liquid-js/lyr-icons')).toBe(`^${versions['@liquid-js/lyr-icons']}`)
     })
 
-    it('should take the major line of a release', () => {
-        expect(lyraVersionRange('22.3.1')).toBe('^22.0.0')
+    it('should give a packed build\'s tarball relative to the project', () => {
+        // The build's versions, as `require` keeps them; a build packed to try it records its tarballs' paths.
+        const versions = require('../lyra-packages.json')
+        versions['@liquid-js/lyr-packed'] = `file:${process.cwd()}/../packages/lyr-packed.tgz`
+        try {
+            expect(lyraPackageRange('@liquid-js/lyr-packed')).toBe('file:../packages/lyr-packed.tgz')
+        } finally {
+            delete versions['@liquid-js/lyr-packed']
+        }
+    })
+
+    it('should throw for a package the build has no version of', () => {
+        expect(() => lyraPackageRange('@liquid-js/lyr-nothing')).toThrow()
     })
 })
 
