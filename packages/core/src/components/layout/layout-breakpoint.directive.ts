@@ -35,11 +35,12 @@ abstract class NbBaseBreakpointDirective {
  * </nb-layout-footer>
  * ```
  *
- * Until `nb-layout` measures the window, e.g. on the server, the content isn't shown.
+ * Until `nb-layout` measures the window, e.g. on the server, the content isn't shown. Import `NbShownBelowDirective`
+ * into your standalone component, or `NbLayoutModule`, which has it.
  */
 @Directive({ selector: '[nbShownBelow]' })
 export class NbShownBelowDirective extends NbBaseBreakpointDirective {
-    /** The media breakpoint, e.g. `md`. */
+    /** The media breakpoint, e.g. `md`, 768 px wide unless the app sets others (`DEFAULT_MEDIA_BREAKPOINTS`). */
     readonly nbShownBelow = input.required<string>()
     protected readonly breakpoint = () => this.nbShownBelow()
     protected readonly shown = computed(() => this.narrow())
@@ -53,11 +54,12 @@ export class NbShownBelowDirective extends NbBaseBreakpointDirective {
  * <nb-route-tabset *nbShownAbove="'md'" [tabs]="sections" outlet="false" />
  * ```
  *
- * Until `nb-layout` measures the window, e.g. on the server, the content is shown.
+ * Until `nb-layout` measures the window, e.g. on the server, the content is shown. Import `NbShownAboveDirective`
+ * into your standalone component, or `NbLayoutModule`, which has it.
  */
 @Directive({ selector: '[nbShownAbove]' })
 export class NbShownAboveDirective extends NbBaseBreakpointDirective {
-    /** The media breakpoint, e.g. `md`. */
+    /** The media breakpoint, e.g. `md`, 768 px wide unless the app sets others (`DEFAULT_MEDIA_BREAKPOINTS`). */
     readonly nbShownAbove = input.required<string>()
     protected readonly breakpoint = () => this.nbShownAbove()
     protected readonly shown = computed(() => !this.narrow())

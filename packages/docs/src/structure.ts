@@ -199,6 +199,8 @@ export const structure: NgdAreaEntry[] = [
                             'NbLayoutHeaderComponent',
                             'NbLayoutColumnComponent',
                             'NbLayoutFooterComponent',
+                            'NbShownAboveDirective',
+                            'NbShownBelowDirective',
                             'NbLtrDirective',
                             'NbRtlDirective'
                         ]
@@ -291,7 +293,8 @@ export const structure: NgdAreaEntry[] = [
                             'NbTabComponent',
                             'NbTabTitleDirective',
                             'NbTabContentDirective',
-                            'NbRouteTabsetComponent'
+                            'NbRouteTabsetComponent',
+                            'NbRouteTab'
                         ]
                     },
                     {
@@ -448,7 +451,7 @@ export const structure: NgdAreaEntry[] = [
                         type: 'tabs',
                         name: 'Dialog',
                         icon: 'dialog.svg',
-                        source: ['NbDialogService', 'NbDialogRef', 'NbDialogConfig']
+                        source: ['NbDialogService', 'NbDialogRef', 'NbDialogConfig', 'NbConfirmDialogOptions']
                     },
                     {
                         type: 'tabs',

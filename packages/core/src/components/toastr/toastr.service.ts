@@ -325,6 +325,11 @@ export class NbToastrService {
 
     /**
      * Shows a toast and returns its ref, or `undefined` when `preventDuplicates` drops it.
+     *
+     * @param message the toast's text
+     * @param title its title, above the text
+     * @param userConfig an `NbToastrConfig`'s options over `NbToastrModule.forRoot()`'s, e.g. its `status`, `icon`
+     * or `duration`; `success()` and the other statuses' methods take them too
      */
     show(message: string, title?: string, userConfig?: Partial<NbToastrConfig>): NbToastRef | undefined {
         const config = new NbToastrConfig({ ...this.globalConfig, ...userConfig })

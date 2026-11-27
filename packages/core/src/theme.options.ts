@@ -83,6 +83,10 @@ export const NB_PREFERENCE_STORAGE = new InjectionToken<NbPreferenceStorage>('Ly
     factory: nbLocalPreferenceStorage
 })
 
+/**
+ * The media breakpoints `provideNbTheme` sets unless it's given others, by the window width each starts at: `xs` 0,
+ * `is` 400, `sm` 576, `md` 768, `lg` 992, `xl` 1200, `xxl` 1400 and `xxxl` 1600 px. A phone is below `md`.
+ */
 export const DEFAULT_MEDIA_BREAKPOINTS: NbMediaBreakpoint[] = [
     {
         name: 'xs',

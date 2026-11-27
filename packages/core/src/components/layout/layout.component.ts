@@ -81,6 +81,10 @@ import { NbRestoreScrollTopHelper } from './restore-scroll-top.service'
  *   <nb-layout-footer>Contact us</nb-layout-footer>
  * </nb-layout>
  * ```
+ *
+ * The columns pad the page by `layout-padding` from 992 px wide, `layout-medium-padding` below it and
+ * `layout-small-padding` below 768 px; a block that runs edge to edge, e.g. a hero, needs them at 0, and its own
+ * padding. The header is `header-height` tall, padded by `header-padding` at every width.
  * @styles
  *
  * layout-background-color:

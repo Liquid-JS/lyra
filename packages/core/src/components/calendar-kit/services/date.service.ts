@@ -11,6 +11,23 @@ export enum NbDayPeriod {
  */
 export type NbDateNameWidth = 'narrow' | 'abbreviated' | 'short' | 'wide'
 
+/**
+ * How the calendars, the datepicker and the timepicker read, compare, format and parse dates. `provideNbTheme` provides
+ * `NbNativeDateService`, for JavaScript `Date`s; `provideNbDateFnsDate()` (`@liquid-js/lyr-date-fns`) and
+ * `provideNbMomentDate()` (`@liquid-js/lyr-moment`) replace it. For dates of your own, e.g. a fixed today for a demo,
+ * extend one and provide it after `provideNbTheme`:
+ *
+ * ```ts
+ * @Injectable()
+ * export class DemoDateService extends NbNativeDateService {
+ *   override today(): Date {
+ *     return new Date(2026, 11, 3);
+ *   }
+ * }
+ *
+ * providers: [provideNbTheme(), { provide: NbDateService, useClass: DemoDateService }]
+ * ```
+ */
 export abstract class NbDateService<D> {
     readonly DAYS_IN_WEEK: number = 7
 

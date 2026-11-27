@@ -30,6 +30,8 @@ Something to know before your first build:
 
 - Lyra ships no fonts. The default theme uses Inter: load it in your `index.html`, e.g. from Google Fonts, or set your
   own in your theme.
+- `@angular/localize` is an optional peer dependency: without it, Lyra shows its texts in English. To translate them,
+  add it with `ng add @angular/localize`, as [Localization](docs/guides/localization) shows.
 
 ---
 

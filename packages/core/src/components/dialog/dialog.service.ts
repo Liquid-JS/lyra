@@ -79,6 +79,14 @@ import { animateDialog } from './dialog-animation'
  * The dialog closes with a result, `dialogRef.close(result)`, which the opener gets from `onClose`:
  * @stacked-example(Result, dialog/dialog-result.component)
  *
+ * `onClose` emits `unknown` unless `open` is told the result's type, after the content's:
+ *
+ * ```ts
+ * this.dialogService
+ *   .open<EditCustomerComponent, Customer>(EditCustomerComponent, { context: { customer } })
+ *   .onClose.subscribe((saved) => saved && this.save(saved));
+ * ```
+ *
  * ### Configuration
  *
  * `open` takes options, and `provideNbDialog` or `NbDialogModule.forRoot({ ... })` sets their defaults:
@@ -154,6 +162,10 @@ export class NbDialogService {
     /**
      * Opens a dialog with the component or template. `R` is the type of the result the dialog closes with, which
      * `onClose` emits, e.g. `open<EditComponent, Customer>(EditComponent)`.
+     *
+     * @param content the component or template the dialog shows
+     * @param userConfig an `NbDialogConfig`'s options over `NbDialogModule.forRoot()`'s, e.g. its `context`, `position`
+     * or `dialogClass`
      */
     open<T, R = unknown>(content: Type<T> | TemplateRef<T>,
         userConfig: Partial<NbDialogConfig<Partial<T> | string>> = {}): NbDialogRef<T, R> {
@@ -192,6 +204,9 @@ export class NbDialogService {
      *   action: () => this.invoices.delete(id),
      * });
      * ```
+     *
+     * @param options what it asks, and its buttons: an `NbConfirmDialogOptions`
+     * @param userConfig the dialog's config, as `open()` takes it, e.g. `{ position: 'top', positionOffset: '6rem' }`
      */
     confirm(options: NbConfirmDialogOptions, userConfig: Partial<NbDialogConfig> = {}): Promise<boolean> {
         const ids = NbConfirmDialogComponent.nextIds()

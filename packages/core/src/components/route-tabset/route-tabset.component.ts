@@ -32,6 +32,10 @@ export interface NbRouteTab {
     skipLocationChange?: RouterLink['skipLocationChange']
     replaceUrl?: RouterLink['replaceUrl']
     state?: RouterLink['state']
+    /**
+     * When the tab is active, over the tabset's `activeLinkOptions`: e.g. `{ exact: false }` keeps a section's tab
+     * active on the routes under it, such as `/problems/12` for `/problems`.
+     */
     activeLinkOptions?: RouterLinkActive['routerLinkActiveOptions']
     /** A badge's text, e.g. a count, after the title, or over the icon in a `bar`. */
     badgeText?: string
