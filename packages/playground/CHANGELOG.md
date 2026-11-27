@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [22.0.0-alpha.9](https://github.com/Liquid-JS/lyra/compare/v22.0.0-alpha.8...v22.0.0-alpha.9) (2026-11-27)
+
+### Bug Fixes
+
+* **design-kit:** keep the kit's parts right when they're resized, as code lays them out ([5693570](https://github.com/Liquid-JS/lyra/commit/56935704adf438f1bf3e46b3396a52236c6c45db))
+* **playground:** open Pulse's details as a dialog's sheet ([dd5c797](https://github.com/Liquid-JS/lyra/commit/dd5c79756600c4be10337f5a4b78e4ba1d42e928))
+
+### Features
+
+* **core:** add swatches, for choosing colours and patterns ([2f02357](https://github.com/Liquid-JS/lyra/commit/2f02357c254bb59cd1478215b52a8375d5b68a14))
+* **core:** give cards and alerts no margin of their own ([b967eef](https://github.com/Liquid-JS/lyra/commit/b967eef2796b2637671cda859f8a331fdbe0d8dc))
+* **core:** grow a textarea with its value with nbAutosize ([c0fd6ee](https://github.com/Liquid-JS/lyra/commit/c0fd6ee67fff315f7f89f38159a4e3eb872e542f))
+* **core:** keep a card's media inside its border with inset ([091eaee](https://github.com/Liquid-JS/lyra/commit/091eaee1d99deee43315e2cf33da7e2769eab4c3))
+* **core:** make calendars form controls ([1f472b7](https://github.com/Liquid-JS/lyra/commit/1f472b7c5fdd2c6b56816de530db3b6aa5501c98))
+* **design-kit:** add swatches, card media and typographies, and parts designs needed ([865b20b](https://github.com/Liquid-JS/lyra/commit/865b20b6fb6d117ac6a8606a5494d7295d3f84ed))
+* **playground:** fold the showcases' header tabs with the route tabset ([0d90eaf](https://github.com/Liquid-JS/lyra/commit/0d90eafa90de2813f4123e56f22162359985d4c8))
+
 # [22.0.0-alpha.8](https://github.com/Liquid-JS/lyra/compare/v22.0.0-alpha.7...v22.0.0-alpha.8) (2026-11-26)
 
 ### Bug Fixes

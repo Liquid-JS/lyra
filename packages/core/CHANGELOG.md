@@ -3,6 +3,43 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [22.0.0-alpha.9](https://github.com/Liquid-JS/lyra/compare/v22.0.0-alpha.8...v22.0.0-alpha.9) (2026-11-27)
+
+### Bug Fixes
+
+* **core:** keep a toast inside a phone's window ([8ccadf8](https://github.com/Liquid-JS/lyra/commit/8ccadf8578499ace82a3cd1293a3ea00ba7e6d55))
+* **core:** keep an alert's inline markup in its line ([b9ebcc2](https://github.com/Liquid-JS/lyra/commit/b9ebcc20993a2f27b493c436b53f88a6da6cb9b2))
+* **core:** lay out validation messages and control labels by their own direction ([8badef7](https://github.com/Liquid-JS/lyra/commit/8badef746240e5632d2c7b92912f849d6c62ca45))
+* **core:** leave no gap under a full-width textarea ([c1a4e9f](https://github.com/Liquid-JS/lyra/commit/c1a4e9fc6e1fcd7e76ce92bb5d19b7d7f5132c42))
+* **core:** let ng add install the icons at the version built with core ([93e5d2e](https://github.com/Liquid-JS/lyra/commit/93e5d2e3605dbbe922446c2b8e7dd3bbadbaf2ad))
+* **core:** show a phone's tab bar as its tabs are ([a26d64e](https://github.com/Liquid-JS/lyra/commit/a26d64ea977e2cc1bc4e37c01bc082f146197a31))
+* **core:** stop the stepper and route tabs re-creating views to no purpose ([bb353f5](https://github.com/Liquid-JS/lyra/commit/bb353f5f24570a789e9d40dfce04f28d7b0d2967))
+* **core:** take the actions' and route tabset's menu icons from essentials ([1da0e26](https://github.com/Liquid-JS/lyra/commit/1da0e261d3e07d45e37162108139bafcd158d48e))
+
+### Features
+
+* **core:** add a display size, a code typography and a mono font ([5f467a7](https://github.com/Liquid-JS/lyra/commit/5f467a70bc5d4b52ce2202f7c85f4609d6a79644))
+* **core:** add swatches, for choosing colours and patterns ([2f02357](https://github.com/Liquid-JS/lyra/commit/2f02357c254bb59cd1478215b52a8375d5b68a14))
+* **core:** give cards and alerts no margin of their own ([b967eef](https://github.com/Liquid-JS/lyra/commit/b967eef2796b2637671cda859f8a331fdbe0d8dc))
+* **core:** give each status's fills a text colour of its own ([cd84702](https://github.com/Liquid-JS/lyra/commit/cd847027785d4317773471b844118e86b21a12f5))
+* **core:** give the window's media breakpoint as a signal ([ea5adc1](https://github.com/Liquid-JS/lyra/commit/ea5adc17ae1ba88a911a8eecfdd0bf7c473f5154))
+* **core:** grow a textarea with its value with nbAutosize ([c0fd6ee](https://github.com/Liquid-JS/lyra/commit/c0fd6ee67fff315f7f89f38159a4e3eb872e542f))
+* **core:** keep a card's media inside its border with inset ([091eaee](https://github.com/Liquid-JS/lyra/commit/091eaee1d99deee43315e2cf33da7e2769eab4c3))
+* **core:** keep the layout clear of a phone's notch and home bar ([c2dd16f](https://github.com/Liquid-JS/lyra/commit/c2dd16f8b77031c401586694932baf6ebb5f6caa))
+* **core:** let a route tabset leave out its icons, and tell which tab its menu picked ([5a16bd1](https://github.com/Liquid-JS/lyra/commit/5a16bd10e6dda520975007a577440c8f82a6e02f))
+* **core:** let a stepper keep every label on a phone ([28de9f0](https://github.com/Liquid-JS/lyra/commit/28de9f09e2f51617b9d007b34680d93508c87720))
+* **core:** let a table draw lines between its rows alone ([4a4b94f](https://github.com/Liquid-JS/lyra/commit/4a4b94fd9cc5cd8a3c996cea057625877d03d485))
+* **core:** let a tag list keep its tags on one line ([d4217bf](https://github.com/Liquid-JS/lyra/commit/d4217bf1bbb2b318188c8daba8d717dc0cfd3114))
+* **core:** let a theme hold chat bubbles narrower ([1d95a41](https://github.com/Liquid-JS/lyra/commit/1d95a4160f554bd9aaf0f00b4a550fadc43ef96b))
+* **core:** let nb-user take its initials ([aa31226](https://github.com/Liquid-JS/lyra/commit/aa31226626c0fa167394b43da5b9f3dc21816e52))
+* **core:** let tabs stay on one line that scrolls sideways ([b1d90a0](https://github.com/Liquid-JS/lyra/commit/b1d90a0df6b815ac544a3783d23445dc6a28b229))
+* **core:** make calendars form controls ([1f472b7](https://github.com/Liquid-JS/lyra/commit/1f472b7c5fdd2c6b56816de530db3b6aa5501c98))
+* **core:** open a drawer over the header, with room and a divider for its header ([1e2ff24](https://github.com/Liquid-JS/lyra/commit/1e2ff2488c98e87da8d712d6b11c451badd3b8f4))
+* **core:** pack a build to try it, with ng add taking its tarballs ([7477219](https://github.com/Liquid-JS/lyra/commit/7477219c010a7a1bbd6ab54b5182c5bd2e82c853))
+* **core:** slide a dialog's sheet up and down rather than fade it ([6b2aaa6](https://github.com/Liquid-JS/lyra/commit/6b2aaa6056d71bde0abf27bfd3d475897eff9694))
+* **core:** swipe a sheet down and a drawer aside to close them ([2d3351c](https://github.com/Liquid-JS/lyra/commit/2d3351c75c51d900c8c631c7ec4f26ffe3ca8daf))
+* **core:** write a range with an en dash and a shorter start ([3c3cc50](https://github.com/Liquid-JS/lyra/commit/3c3cc508a982e228b40fd5ed2a5dfbff9f5a47b2))
+
 # [22.0.0-alpha.8](https://github.com/Liquid-JS/lyra/compare/v22.0.0-alpha.7...v22.0.0-alpha.8) (2026-11-26)
 
 ### Bug Fixes

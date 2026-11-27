@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [22.0.0-alpha.9](https://github.com/Liquid-JS/lyra/compare/v22.0.0-alpha.8...v22.0.0-alpha.9) (2026-11-27)
+
+### Features
+
+* **core:** add a display size, a code typography and a mono font ([5f467a7](https://github.com/Liquid-JS/lyra/commit/5f467a70bc5d4b52ce2202f7c85f4609d6a79644))
+* **core:** add swatches, for choosing colours and patterns ([2f02357](https://github.com/Liquid-JS/lyra/commit/2f02357c254bb59cd1478215b52a8375d5b68a14))
+* **core:** give cards and alerts no margin of their own ([b967eef](https://github.com/Liquid-JS/lyra/commit/b967eef2796b2637671cda859f8a331fdbe0d8dc))
+* **core:** give each status's fills a text colour of its own ([cd84702](https://github.com/Liquid-JS/lyra/commit/cd847027785d4317773471b844118e86b21a12f5))
+* **core:** give the window's media breakpoint as a signal ([ea5adc1](https://github.com/Liquid-JS/lyra/commit/ea5adc17ae1ba88a911a8eecfdd0bf7c473f5154))
+* **core:** grow a textarea with its value with nbAutosize ([c0fd6ee](https://github.com/Liquid-JS/lyra/commit/c0fd6ee67fff315f7f89f38159a4e3eb872e542f))
+* **design-kit:** add swatches, card media and typographies, and parts designs needed ([865b20b](https://github.com/Liquid-JS/lyra/commit/865b20b6fb6d117ac6a8606a5494d7295d3f84ed))
+* **design-kit:** mirror, inspect, unwrap, update and check designs with the plugin ([dd2edc4](https://github.com/Liquid-JS/lyra/commit/dd2edc4d2eccbb059fe5a8709c918b1c4ff4b6f7))
+
 # [22.0.0-alpha.8](https://github.com/Liquid-JS/lyra/compare/v22.0.0-alpha.7...v22.0.0-alpha.8) (2026-11-26)
 
 ### Bug Fixes

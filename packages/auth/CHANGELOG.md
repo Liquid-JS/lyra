@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [22.0.0-alpha.9](https://github.com/Liquid-JS/lyra/compare/v22.0.0-alpha.8...v22.0.0-alpha.9) (2026-11-27)
+
+**Note:** Version bump only for package @liquid-js/lyr-auth
+
 # [22.0.0-alpha.8](https://github.com/Liquid-JS/lyra/compare/v22.0.0-alpha.7...v22.0.0-alpha.8) (2026-11-26)
 
 **Note:** Version bump only for package @liquid-js/lyr-auth

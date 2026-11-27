@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [22.0.0-alpha.9](https://github.com/Liquid-JS/lyra/compare/v22.0.0-alpha.8...v22.0.0-alpha.9) (2026-11-27)
+
+### Bug Fixes
+
+* **design-kit:** keep the kit's parts right when they're resized, as code lays them out ([5693570](https://github.com/Liquid-JS/lyra/commit/56935704adf438f1bf3e46b3396a52236c6c45db))
+
+### Features
+
+* **design-kit:** add swatches, card media and typographies, and parts designs needed ([865b20b](https://github.com/Liquid-JS/lyra/commit/865b20b6fb6d117ac6a8606a5494d7295d3f84ed))
+* **design-kit:** mirror, inspect, unwrap, update and check designs with the plugin ([dd2edc4](https://github.com/Liquid-JS/lyra/commit/dd2edc4d2eccbb059fe5a8709c918b1c4ff4b6f7))
+
 # [22.0.0-alpha.8](https://github.com/Liquid-JS/lyra/compare/v22.0.0-alpha.7...v22.0.0-alpha.8) (2026-11-26)
 
 ### Bug Fixes

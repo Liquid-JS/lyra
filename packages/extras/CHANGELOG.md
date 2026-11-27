@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [22.0.0-alpha.9](https://github.com/Liquid-JS/lyra/compare/v22.0.0-alpha.8...v22.0.0-alpha.9) (2026-11-27)
+
+### Bug Fixes
+
+* **extras:** write a media time with hours only from an hour ([8f5a9dd](https://github.com/Liquid-JS/lyra/commit/8f5a9ddab594926de9f18b8a0b49020c8a19447a))
+
 # [22.0.0-alpha.8](https://github.com/Liquid-JS/lyra/compare/v22.0.0-alpha.7...v22.0.0-alpha.8) (2026-11-26)
 
 **Note:** Version bump only for package @liquid-js/lyr-extras
