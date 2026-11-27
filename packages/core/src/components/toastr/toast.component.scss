@@ -3,8 +3,12 @@
 :host {
     display: flex;
     align-items: center;
-    width: 25rem;
-    max-width: calc(100vw - 1rem);
+
+    // As wide as 25rem of content in the default padding and border, whatever a theme's are; never wider than its
+    // container, which stays inside the window, less the toast's margins.
+    box-sizing: border-box;
+    width: 27.125rem;
+    max-width: calc(100% - 1rem);
     margin: 0.5rem;
 
     // The page's direction, not the title's: it takes the direction of its text.

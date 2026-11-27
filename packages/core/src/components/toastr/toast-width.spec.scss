@@ -1,0 +1,13 @@
+// The default theme's toasts, which specs don't load otherwise, kept 1.5rem from the window's sides.
+@use "@liquid-js/lyr-core/styles/all" as *;
+@use "toast.component.theme" as toast;
+
+$nb-enabled-themes: (default);
+
+@include nb-install {
+    @include toast.nb-toast-theme;
+}
+
+.toast-width-host {
+    --toastr-offset: 1rem 1.5rem 0;
+}
