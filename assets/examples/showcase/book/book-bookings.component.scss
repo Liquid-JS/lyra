@@ -46,10 +46,6 @@ nb-tabset {
     list-style: none;
 }
 
-nb-card {
-    margin: 0;
-}
-
 nb-card-body {
     display: grid;
     grid-template-columns: auto minmax(0, 1fr) auto;

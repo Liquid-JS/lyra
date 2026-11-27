@@ -1,1 +1,0 @@
-var o=[{path:`badge-showcase.component`,loadComponent:()=>import(`./chunk-YT0HcJ2S.js`).then(e=>e.BadgeShowcaseComponent)},{path:`badge-inline.component`,loadComponent:()=>import(`./chunk-91hZFhJP.js`).then(e=>e.BadgeInlineComponent)}];export{o as BADGE_ROUTES};

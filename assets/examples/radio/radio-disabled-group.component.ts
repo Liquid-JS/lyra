@@ -10,6 +10,13 @@ import {
 
 @Component({
     templateUrl: './radio-disabled-group.component.html',
+    styles: `
+    :host {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+  `,
     imports: [
         NbCardComponent,
         NbCardHeaderComponent,

@@ -40,5 +40,9 @@ export const CALENDAR_ROUTES: Routes = [
     {
         path: 'calendar-week-number.component',
         loadComponent: () => import('./calendar-week-number.component').then((m) => m.CalendarWeekNumberComponent)
+    },
+    {
+        path: 'calendar-form.component',
+        loadComponent: () => import('./calendar-form.component').then((m) => m.CalendarFormComponent)
     }
 ]

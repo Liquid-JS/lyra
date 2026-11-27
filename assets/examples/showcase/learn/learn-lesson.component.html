@@ -102,31 +102,30 @@
                 </div>
                 <span class="caption">{{ done() }} of {{ chapter.lessons.length }}</span>
             </nb-card-header>
-            <nb-card-body class="chapter-body">
-                <nb-progress-bar size="tiny"
-                    status="primary"
-                    [value]="chapterProgress()"
-                    aria-label="Chapter progress" />
-                <nb-list>
-                    @for (item of chapter.lessons; track item.id; let i = $index) {
-                    <nb-list-item class="chapter-lesson"
-                        [class.current]="i === lessonIndex"
-                        [class.done]="item.done">
-                        <nb-icon [icon]="item.done ? 'checkmark-circle-2' : i === lessonIndex ? 'play-circle' : 'play-circle-outline'"
-                            [status]="item.done ? 'success' : i === lessonIndex ? 'primary' : 'basic'" />
-                        <a routerLink="../lesson"
-                            [attr.aria-current]="i === lessonIndex ? 'page' : null">{{ item.title }}</a>
-                        <span class="caption">{{ item.minutes }} min</span>
-                    </nb-list-item>
-                    }
-                    <nb-list-item class="chapter-lesson quiz">
-                        <nb-icon icon="checkmark-square-2-outline"
-                            status="primary" />
-                        <a routerLink="../quiz">Chapter quiz</a>
-                        <span class="caption">8 questions</span>
-                    </nb-list-item>
-                </nb-list>
-            </nb-card-body>
+            <nb-progress-bar class="chapter-progress"
+                size="tiny"
+                status="primary"
+                [value]="chapterProgress()"
+                aria-label="Chapter progress" />
+            <nb-list>
+                @for (item of chapter.lessons; track item.id; let i = $index) {
+                <nb-list-item class="chapter-lesson"
+                    [class.current]="i === lessonIndex"
+                    [class.done]="item.done">
+                    <nb-icon [icon]="item.done ? 'checkmark-circle-2' : i === lessonIndex ? 'play-circle' : 'play-circle-outline'"
+                        [status]="item.done ? 'success' : i === lessonIndex ? 'primary' : 'basic'" />
+                    <a routerLink="../lesson"
+                        [attr.aria-current]="i === lessonIndex ? 'page' : null">{{ item.title }}</a>
+                    <span class="caption">{{ item.minutes }} min</span>
+                </nb-list-item>
+                }
+                <nb-list-item class="chapter-lesson quiz">
+                    <nb-icon icon="checkmark-square-2-outline"
+                        status="primary" />
+                    <a routerLink="../quiz">Chapter quiz</a>
+                    <span class="caption">8 questions</span>
+                </nb-list-item>
+            </nb-list>
             <nb-card-footer class="next">
                 <p class="caption-2 eyebrow">Up next</p>
                 <a routerLink="../course">Chapter {{ chapterIndex + 2 }} · {{ nextChapter.title }}</a>

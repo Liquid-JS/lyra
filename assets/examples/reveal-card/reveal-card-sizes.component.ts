@@ -11,6 +11,13 @@ import {
 @Component({
     selector: 'nb-reveal-card-sizes',
     templateUrl: './reveal-card-sizes.component.html',
+    styles: `
+    :host {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+  `,
     imports: [
         NbRevealCardComponent,
         NbCardFrontComponent,

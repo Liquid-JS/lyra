@@ -4,6 +4,13 @@ import { NbCardComponent, NbCardHeaderComponent, NbCardBodyComponent } from '@li
 @Component({
     selector: 'nb-card-accents',
     templateUrl: './card-accents.component.html',
+    styles: `
+    :host {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+  `,
     imports: [NbCardComponent, NbCardHeaderComponent, NbCardBodyComponent]
 })
 export class CardAccentsComponent {

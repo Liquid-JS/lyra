@@ -4,6 +4,7 @@ import { NbCardComponent, NbCardBodyComponent, NbAlertComponent } from '@liquid-
 @Component({
     selector: 'nb-alert-sizes',
     templateUrl: './alert-sizes.component.html',
+    styleUrls: ['./alert-example.component.scss'],
     imports: [NbCardComponent, NbCardBodyComponent, NbAlertComponent]
 })
 export class AlertSizesComponent {

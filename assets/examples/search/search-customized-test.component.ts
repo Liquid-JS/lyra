@@ -15,6 +15,13 @@ import {
 @Component({
     selector: 'nb-search-test-customized',
     templateUrl: './search-customized-test.component.html',
+    styles: `
+    nb-layout-column {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+  `,
     imports: [
         NbLayoutComponent,
         NbLayoutHeaderComponent,

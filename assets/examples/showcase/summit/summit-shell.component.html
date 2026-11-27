@@ -4,25 +4,16 @@
             routerLink="home">{{ summit.name }}<span class="year">’{{ summit.year % 100 }}</span></a>
         <nav class="pages"
             aria-label="Pages">
-            @for (page of pages; track page.path) {
-            <a [routerLink]="page.path"
-                routerLinkActive="active">{{ page.title }}</a>
-            }
+            <nb-route-tabset [tabs]="pages"
+                outlet="false"
+                collapse="menu"
+                below="md" />
         </nav>
         <div class="actions">
             <a nbButton
                 status="primary"
                 class="tickets"
                 routerLink="tickets">Get tickets</a>
-            <button nbButton
-                ghost
-                class="menu"
-                type="button"
-                aria-label="Menu"
-                nbContextMenuTag="summit-pages"
-                [nbContextMenu]="menu">
-                <nb-icon icon="menu-outline" />
-            </button>
         </div>
     </nb-layout-header>
 

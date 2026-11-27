@@ -1,0 +1,24 @@
+<nb-card>
+    <nb-card-header>Canvas tote</nb-card-header>
+    <nb-card-body>
+        <p class="chosen subtitle-2">Colour: <span class="text-hint">{{ chosen()?.label }}</span></p>
+        <nb-swatch-group size="large"
+            aria-label="Colour"
+            [(value)]="finish">
+            @for (option of finishes; track option.value) {
+            <nb-swatch [value]="option.value"
+                [label]="option.label"
+                [color]="option.color"
+                [image]="option.image"
+                [unavailable]="!option.inStock" />
+            }
+        </nb-swatch-group>
+        <p class="stock caption">{{ chosen()?.inStock ? 'In stock, ships tomorrow' : 'Out of stock' }}</p>
+    </nb-card-body>
+    <nb-card-footer>
+        <button nbButton
+            fullWidth
+            status="primary"
+            [disabled]="!chosen()?.inStock">Add to bag</button>
+    </nb-card-footer>
+</nb-card>

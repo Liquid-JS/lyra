@@ -5,31 +5,16 @@
                 aria-hidden="true"></span>{{ studio.name }}</a>
         <nav class="sections"
             aria-label="Sections">
-            <a routerLink="home"
-                fragment="services"
-                (click)="scrollTo('services')">Services</a>
-            <a routerLink="home"
-                fragment="team"
-                (click)="scrollTo('team')">Team</a>
-            <a routerLink="home"
-                fragment="visit"
-                (click)="scrollTo('visit')">Visit us</a>
-            <a routerLink="bookings"
-                routerLinkActive="active">My bookings</a>
+            <nb-route-tabset [tabs]="sections"
+                outlet="false"
+                collapse="menu"
+                below="md"
+                (tabChange)="scrollTo($event.fragment)" />
         </nav>
         <div class="actions">
             <a nbButton
                 status="primary"
                 routerLink="book">Book now</a>
-            <button nbButton
-                ghost
-                class="menu"
-                type="button"
-                aria-label="Menu"
-                nbContextMenuTag="book-sections"
-                [nbContextMenu]="sections">
-                <nb-icon icon="menu-outline" />
-            </button>
         </div>
     </nb-layout-header>
 

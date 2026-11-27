@@ -1,0 +1,1 @@
+var n=[{path:`input-group-showcase.component`,loadComponent:()=>import(`./chunk-dPikAVYs.js`).then(o=>o.InputGroupShowcaseComponent)},{path:`input-group-full-width.component`,loadComponent:()=>import(`./chunk-EN-kToGS.js`).then(o=>o.InputGroupFullWidthComponent)}];export{n as INPUT_GROUP_ROUTES};

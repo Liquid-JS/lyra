@@ -11,6 +11,13 @@ import {
 @Component({
     selector: 'nb-flip-card-sizes',
     templateUrl: './flip-card-sizes.component.html',
+    styles: `
+    :host {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+  `,
     imports: [
         NbFlipCardComponent,
         NbCardFrontComponent,

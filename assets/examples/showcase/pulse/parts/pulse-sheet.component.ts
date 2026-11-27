@@ -6,54 +6,51 @@ import { PulsePlanItem } from '../pulse-data'
 
 /**
  * A planned item's details, in a sheet that slides up from the bottom of the screen, under the thumb: glass over the
- * screen, a handle to pull, the item's figures, and what to do about it. It's a dialog, so it keeps focus and closes on
- * Escape or a tap outside, placed at the bottom by its own styles.
+ * screen, a handle to pull, the item's figures, and what to do about it. It's a dialog's sheet, so it keeps focus and
+ * closes on Escape or a tap outside.
  */
 @Component({
     selector: 'npg-pulse-sheet',
     template: `
-    <div class="handle" aria-hidden="true"></div>
-    <header class="head">
-      <span class="tile" [class]="'tile status-' + item().status"><nb-icon [icon]="item().icon" /></span>
-      <div>
-        <h2 class="title">{{ item().title }}</h2>
-        <p class="when">{{ item().time }} · {{ item().duration }}</p>
-      </div>
-      @if (item().done) {
-        <nb-tag status="success" appearance="filled" size="tiny" text="Done" />
-      }
-    </header>
-    <p class="description">{{ item().description }}</p>
-    <dl class="details">
-      @for (detail of item().details; track detail.label) {
+    <div class="body">
+      <div class="handle" aria-hidden="true"></div>
+      <header class="head">
+        <span class="tile" [class]="'tile status-' + item().status"><nb-icon [icon]="item().icon" /></span>
         <div>
-          <dt>{{ detail.label }}</dt>
-          <dd>{{ detail.value }}</dd>
+          <h2 class="title">{{ item().title }}</h2>
+          <p class="when">{{ item().time }} · {{ item().duration }}</p>
         </div>
-      }
-    </dl>
-    <div class="actions">
-      @if (item().done) {
-        <button nbButton fullWidth status="basic" appearance="outline" type="button" (click)="ref.close()">Close</button>
-      } @else {
-        <button nbButton fullWidth status="basic" appearance="ghost" type="button" (click)="ref.close()">Later</button>
-        <button nbButton fullWidth status="primary" type="button" cdkFocusInitial (click)="start()">
-          <nb-icon icon="play-circle-outline" />
-          Start now
-        </button>
-      }
+        @if (item().done) {
+          <nb-tag status="success" appearance="filled" size="tiny" text="Done" />
+        }
+      </header>
+      <p class="description">{{ item().description }}</p>
+      <dl class="details">
+        @for (detail of item().details; track detail.label) {
+          <div>
+            <dt>{{ detail.label }}</dt>
+            <dd>{{ detail.value }}</dd>
+          </div>
+        }
+      </dl>
+      <div class="actions">
+        @if (item().done) {
+          <button nbButton fullWidth status="basic" appearance="outline" type="button" (click)="ref.close()">Close</button>
+        } @else {
+          <button nbButton fullWidth status="basic" appearance="ghost" type="button" (click)="ref.close()">Later</button>
+          <button nbButton fullWidth status="primary" type="button" cdkFocusInitial (click)="start()">
+            <nb-icon icon="play-circle-outline" />
+            Start now
+          </button>
+        }
+      </div>
     </div>
   `,
     styles: `
-    // The sheet itself is fixed to the bottom of the screen; the dialog's pane, centred by the service, has no size.
+    // The dialog's sheet places it along the bottom of the screen, as wide as it up to 36rem, and keeps it clear of a
+    // phone's home bar; this is its glass, and its content's padding.
     :host {
-      position: fixed;
-      inset-block-end: 0;
-      inset-inline: 0;
       display: block;
-      max-width: 36rem;
-      margin: 0 auto;
-      padding: 0.75rem 1.5rem calc(1.5rem + env(safe-area-inset-bottom));
       border: 1px solid var(--border-basic-color-4);
       border-bottom: 0;
       border-radius: var(--dialog-border-radius) var(--dialog-border-radius) 0 0;
@@ -61,22 +58,14 @@ import { PulsePlanItem } from '../pulse-data'
       box-shadow: var(--dialog-shadow);
       backdrop-filter: blur(24px) saturate(140%);
       -webkit-backdrop-filter: blur(24px) saturate(140%);
-      animation: rise 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
 
       @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
         background: var(--dialog-background-color);
       }
-
-      @media (prefers-reduced-motion: reduce) {
-        animation: none;
-      }
     }
 
-    @keyframes rise {
-      from {
-        transform: translateY(2rem);
-        opacity: 0;
-      }
+    .body {
+      padding: 0.75rem 1.5rem 1.5rem;
     }
 
     .handle {

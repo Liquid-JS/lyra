@@ -58,6 +58,6 @@ export class PulseTodayComponent {
 
     /** Opens an item's details in a sheet from the bottom of the screen. */
     open(item: PulsePlanItem) {
-        this.dialogs.open(PulseSheetComponent, { context: { item }, dialogClass: 'pulse-sheet' })
+        this.dialogs.open(PulseSheetComponent, { context: { item }, sheet: true, closeOnBackdropClick: true })
     }
 }

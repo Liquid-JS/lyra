@@ -1,3 +1,6 @@
-.control-status-example nb-alert {
-    margin: 0;
+// The example's alerts, one under another.
+nb-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
 }

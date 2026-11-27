@@ -36,56 +36,41 @@ nb-layout-header ::ng-deep nav {
     background: linear-gradient(135deg, nb-theme(color-primary-default), nb-theme(color-primary-700));
 }
 
+// The sections take the room up to the search; on a phone, they fold into a menu button at its end.
 .sections {
     display: flex;
-    gap: 1.5rem;
+    flex: 1;
+    margin-inline: -0.75rem;
+}
 
-    a {
-        color: nb-theme(text-hint-color);
-        font-weight: 500;
-        text-decoration: none;
+// The sections as the header's links: in the hint colour and the basic one for the page's, without the tabs' line.
+nb-route-tabset {
+    --route-tabset-divider-width: 0;
+    --route-tabset-tab-padding: 0.5rem 0.75rem;
+    --route-tabset-tab-text-font-family: #{nb-theme(header-text-font-family)};
+    --route-tabset-tab-text-font-size: #{nb-theme(header-text-font-size)};
+    --route-tabset-tab-text-font-weight: 500;
+    --route-tabset-tab-text-line-height: #{nb-theme(header-text-line-height)};
+    --route-tabset-tab-text-transform: none;
+    --route-tabset-tab-underline-width: 0;
+    --route-tabset-tab-active-text-color: #{nb-theme(text-basic-color)};
+    --route-tabset-tab-hover-background-color: transparent;
+    --route-tabset-tab-hover-text-color: #{nb-theme(text-basic-color)};
+    --route-tabset-tab-focus-text-color: #{nb-theme(text-basic-color)};
 
-        &:hover,
-        &.active {
-            color: nb-theme(text-basic-color);
-        }
-    }
+    flex: 1;
+    justify-content: flex-end;
 }
 
 .search {
     flex: 1;
     max-width: 22rem;
-    margin-inline-start: auto;
 }
 
 .actions {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-}
-
-.menu {
-    display: none;
-}
-
-// A phone keeps the brand, the avatar and a menu.
-@media (width <= 767.98px) {
-    .sections,
-    .search {
-        display: none;
-    }
-
-    .actions {
-        margin-inline-start: auto;
-    }
-
-    .menu {
-        display: inline-flex;
-    }
-
-    .user ::ng-deep .info-container {
-        display: none;
-    }
 }
 
 .footer {

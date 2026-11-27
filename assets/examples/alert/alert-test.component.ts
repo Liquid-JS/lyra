@@ -4,6 +4,13 @@ import { NbAlertComponent } from '@liquid-js/lyr-core'
 @Component({
     selector: 'nb-alert-test',
     templateUrl: './alert-test.component.html',
+    styles: `
+    :host {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+  `,
     imports: [NbAlertComponent]
 })
 export class AlertTestComponent {

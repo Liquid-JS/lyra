@@ -23,7 +23,6 @@ export class DynamicToAddComponent {
         `
       nb-card {
         border: 0;
-        margin-bottom: 0;
       }
     `
     ],
@@ -38,7 +37,6 @@ export class PopoverListComponent {}
         `
       nb-card {
         border: 0;
-        margin-bottom: 0;
       }
     `
     ],

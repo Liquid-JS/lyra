@@ -1,20 +1,19 @@
-import { ApplicationRef, Component, DestroyRef, inject } from '@angular/core'
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
-import { ActivatedRoute, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router'
+import { ApplicationRef, Component, inject } from '@angular/core'
+import { ActivatedRoute, Router, RouterLink, RouterOutlet } from '@angular/router'
 import {
     NB_DOCUMENT,
     NbButtonComponent,
-    NbContextMenuDirective,
-    NbIconComponent,
     NbLayoutColumnComponent,
     NbLayoutComponent,
     NbLayoutHeaderComponent,
-    NbMenuItem,
-    NbMenuService
+    NbRouteTabsetComponent,
+    type NbRouteTab
 } from '@liquid-js/lyr-core'
-import { filter } from 'rxjs'
 
 import { STUDIO } from './book-data'
+
+// A section's tab is the page's while the page shows that section.
+const sectionActive = { paths: 'exact', queryParams: 'ignored', fragment: 'exact', matrixParams: 'ignored' } as const
 
 /** The studio's frame: a top bar with its sections, the customer's bookings and the way to book. */
 @Component({
@@ -23,13 +22,11 @@ import { STUDIO } from './book-data'
     styleUrls: ['./book-shell.component.scss'],
     imports: [
         NbButtonComponent,
-        NbContextMenuDirective,
-        NbIconComponent,
         NbLayoutColumnComponent,
         NbLayoutComponent,
         NbLayoutHeaderComponent,
+        NbRouteTabsetComponent,
         RouterLink,
-        RouterLinkActive,
         RouterOutlet
     ]
 })
@@ -41,35 +38,25 @@ export class BookShellComponent {
 
     readonly studio = STUDIO
 
-    // The phone menu: the home page's sections and the bookings.
-    readonly sections: NbMenuItem[] = [
-        { title: 'Services', data: { section: 'services' } },
-        { title: 'Team', data: { section: 'team' } },
-        { title: 'Visit us', data: { section: 'visit' } },
-        { title: 'My bookings', data: { path: 'bookings' } }
+    // The home page's sections and the bookings, which fold into a menu on a phone.
+    readonly sections: NbRouteTab[] = [
+        { title: 'Services', route: this.link('home'), fragment: 'services', activeLinkOptions: sectionActive },
+        { title: 'Team', route: this.link('home'), fragment: 'team', activeLinkOptions: sectionActive },
+        { title: 'Visit us', route: this.link('home'), fragment: 'visit', activeLinkOptions: sectionActive },
+        { title: 'My bookings', route: this.link('bookings') }
     ]
 
-    constructor() {
-        inject(NbMenuService)
-            .onItemClick()
-            .pipe(
-                filter(({ tag }) => tag === 'book-sections'),
-                takeUntilDestroyed(inject(DestroyRef))
-            )
-            .subscribe(({ item }) => {
-                const { section, path } = item.data as { section?: string, path?: string }
-                if (section) {
-                    void this.router.navigate(['home'], { relativeTo: this.route, fragment: section })
-                    void this.scrollTo(section)
-                } else if (path) {
-                    void this.router.navigate([path], { relativeTo: this.route })
-                }
-            })
-    }
-
     /** Scrolls to a section of the home page once the link's navigation to it settles. */
-    async scrollTo(section: string) {
+    async scrollTo(section?: string) {
+        if (!section) {
+            return
+        }
         await this.appRef.whenStable()
         this.document.getElementById(section)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+
+    // A page of this app, wherever it's mounted: in the playground, or in the docs' examples.
+    protected link(page: string): string {
+        return this.router.serializeUrl(this.router.createUrlTree([page], { relativeTo: this.route }))
     }
 }

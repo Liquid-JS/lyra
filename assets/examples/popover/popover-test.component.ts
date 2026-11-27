@@ -14,6 +14,13 @@ import { DynamicToAddComponent } from './components/dynamic.components'
 @Component({
     selector: 'nb-popover-example',
     templateUrl: './popover-test.component.html',
+    styles: `
+    :host {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+  `,
     imports: [
         NbCardComponent,
         NbCardHeaderComponent,
