@@ -54,9 +54,30 @@
         @include nb-rtl(margin-right, 0.5rem);
     }
 
+    // Beside the title without making the tab taller than its neighbours, so their underlines line up.
     .tab-count {
+        align-self: center;
+        margin-block: -0.25rem;
         margin-inline-start: 0.5rem;
-        vertical-align: middle;
+    }
+}
+
+:host(:not(.appearance-bar)) .tab-icon {
+    align-self: center;
+    margin-block: -0.5rem;
+}
+
+// On one line that scrolls sideways, rather than shrinking its tabs.
+:host(.nowrap) .route-tabset {
+    overflow-x: auto;
+    overflow-y: hidden;
+
+    .route-tab {
+        flex: none;
+    }
+
+    .tab-text {
+        white-space: nowrap;
     }
 }
 

@@ -1,6 +1,8 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core'
+import { afterNextRender, ChangeDetectionStrategy, Component, computed, ElementRef, inject, Injector, input, output } from '@angular/core'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { NgTemplateOutlet } from '@angular/common'
-import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router'
+import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router'
+import { filter } from 'rxjs/operators'
 
 import { NbBadgeComponent } from '@liquid-js/lyr-core/badge'
 import {
@@ -103,6 +105,9 @@ export type NbRouteTabsetAppearance = 'tabs' | 'bar'
  * </nb-layout-footer>
  * ```
  *
+ * `showIcons="false"` leaves the tabs' icons out, here the header's, so one list of tabs serves both. Tabs short of
+ * room shrink, their titles wrapping onto more lines; with `wrap="false"` they stay on one line that scrolls sideways.
+ *
  * Or the header's tabs fold into a menu button below a breakpoint, `collapse="menu" below="md"`.
  *
  * ### Installation
@@ -195,7 +200,8 @@ export type NbRouteTabsetAppearance = 'tabs' | 'bar'
     host: {
         '[class.full-width]': 'fullWidth()',
         '[class.appearance-bar]': 'appearance() === \'bar\'',
-        '[class.collapsed]': 'collapsed()'
+        '[class.collapsed]': 'collapsed()',
+        '[class.nowrap]': '!wrap()'
     }
 })
 export class NbRouteTabsetComponent {
@@ -211,6 +217,18 @@ export class NbRouteTabsetComponent {
     /** The tabs share the tabset's width. */
     readonly fullWidth = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty })
 
+    /**
+     * Shows the tabs' icons; off, the tabs show their titles alone, e.g. in a header whose tabs are text while the
+     * same tabs in a phone's `bar` have icons.
+     */
+    readonly showIcons = input<boolean, NbBooleanInput>(true, { transform: convertToBoolProperty })
+
+    /**
+     * Whether its tabs wrap their titles onto more lines when they don't fit; without, they stay on one line that
+     * scrolls sideways, keeping the active tab in view.
+     */
+    readonly wrap = input<boolean, NbBooleanInput>(true, { transform: convertToBoolProperty })
+
     /** `tabs`, the default, or `bar`: a phone's navigation along the bottom, its tabs sharing the width. */
     readonly appearance = input<NbRouteTabsetAppearance>('tabs')
 
@@ -224,6 +242,29 @@ export class NbRouteTabsetComponent {
     readonly tabChange = output<NbRouteTab>()
 
     protected readonly router = inject(Router)
+
+    /** The tag of the menu the tabs fold into, whose picks are its tabs'. */
+    protected readonly menuTag = `nb-route-tabset-menu-${nextMenuId++}`
+    protected readonly hostElement = inject<ElementRef<HTMLElement>>(ElementRef)
+    protected readonly injector = inject(Injector)
+
+    constructor() {
+        // A tab picked from the folded menu is a tab clicked.
+        inject(NbMenuService)
+            .onItemClick()
+            .pipe(
+                filter(({ tag }) => tag === this.menuTag),
+                takeUntilDestroyed()
+            )
+            .subscribe(({ item }) => this.selectTab(item.data as NbRouteTab))
+
+        // On one line, the active tab is in view once the router has gone to its route.
+        this.router.events.pipe(filter((event) => event instanceof NavigationEnd), takeUntilDestroyed()).subscribe(() => {
+            if (!this.wrap()) {
+                afterNextRender(() => this.hostElement.nativeElement.querySelector('.route-tab.active')?.scrollIntoView?.({ block: 'nearest', inline: 'nearest' }), { injector: this.injector })
+            }
+        })
+    }
     protected readonly texts = injectNbTexts('routeTabset', () => ({
         menu: $localize`:@@nb.routeTabset.menu:Menu`
     }))

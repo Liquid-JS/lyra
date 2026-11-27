@@ -7,6 +7,20 @@
         justify-content: space-around;
     }
 
+    // On one line that scrolls sideways, e.g. a phone's days of the week, rather than shrinking its tabs.
+    &.nowrap .tabset {
+        overflow-x: auto;
+        overflow-y: hidden;
+
+        .tab {
+            flex: none;
+        }
+
+        .tab-text {
+            white-space: nowrap;
+        }
+    }
+
     ::ng-deep nb-tab {
         flex: 1;
         display: none;

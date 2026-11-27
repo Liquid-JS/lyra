@@ -5,6 +5,7 @@ import {
     contentChild,
     contentChildren,
     DestroyRef,
+    ElementRef,
     inject,
     input,
     linkedSignal,
@@ -158,6 +159,10 @@ export class NbTabComponent {
  * With `fullWidth`, the tabs share the width of the tabset:
  * @stacked-example(Full Width, tabset/tabset-width.component)
  *
+ * Tabs short of room shrink, their titles wrapping onto more lines; with `wrap="false"` they stay on one line that
+ * scrolls sideways, keeping the selected tab in view, e.g. a phone's days of the week. In a card, a tab's content is
+ * padded by the card's `card-padding`, to line up with its header, rather than `tabset-content-padding`.
+ *
  * `tabIcon` adds an icon to a tab, with or without a title. A `responsive` tab hides its title on screens narrower
  * than the theme's `$tabset-tab-text-hide-breakpoint`, keeping the icon: make the window narrower, and the titles
  * of the last tabset go.
@@ -239,17 +244,25 @@ export class NbTabComponent {
     templateUrl: './tabset.component.html',
     imports: [NbIconComponent, NgTemplateOutlet, NbBadgeComponent],
     host: {
-        '[class.full-width]': 'fullWidth()'
+        '[class.full-width]': 'fullWidth()',
+        '[class.nowrap]': '!wrap()'
     }
 })
 export class NbTabsetComponent implements AfterContentInit {
     private readonly route = inject(ActivatedRoute)
     private readonly destroyRef = inject(DestroyRef)
+    private readonly hostElement = inject<ElementRef<HTMLElement>>(ElementRef)
 
     readonly tabs = contentChildren(NbTabComponent)
 
     /** The tabs share the tabset's width. */
     readonly fullWidth = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty })
+
+    /**
+     * Whether its tabs wrap their titles onto more lines when they don't fit; without, they stay on one line that
+     * scrolls sideways.
+     */
+    readonly wrap = input<boolean, NbBooleanInput>(true, { transform: convertToBoolProperty })
 
     /** A route param the tabset selects the tab by: the tab whose `route` is its value. */
     readonly routeParam = input<string>()
@@ -278,6 +291,10 @@ export class NbTabsetComponent implements AfterContentInit {
         if (!selectedTab.disabled()) {
             this.tabs().forEach((tab) => tab.isActive.set(tab === selectedTab))
             this.tabChange.emit(selectedTab)
+            // On one line, the selected tab is in view, as the tabs scroll rather than wrap.
+            if (!this.wrap()) {
+                this.hostElement.nativeElement.querySelector(`[id="${selectedTab.labelId}"]`)?.scrollIntoView?.({ block: 'nearest', inline: 'nearest' })
+            }
         }
     }
 
