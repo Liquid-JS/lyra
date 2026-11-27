@@ -55,6 +55,7 @@ export function variableName(token: string): string | undefined {
 
 /** The theme's typography categories, by their variables' prefix, as the kits name their text styles. */
 export const TYPOGRAPHY: Record<string, string> = {
+    'display': 'Display',
     'heading-1': 'Heading/H1',
     'heading-2': 'Heading/H2',
     'heading-3': 'Heading/H3',
@@ -68,6 +69,7 @@ export const TYPOGRAPHY: Record<string, string> = {
     'caption': 'Caption/C1',
     'caption-2': 'Caption/C2',
     'label': 'Label',
+    'code': 'Code',
     'button-tiny': 'Button/Tiny',
     'button-small': 'Button/Small',
     'button-medium': 'Button/Medium',

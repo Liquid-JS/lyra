@@ -245,9 +245,10 @@ const layerStyles = Object.fromEntries(
         .filter(([name]) => used.has(name))
         .map(([name, style]) => [name, { variables: [...new Set(paintsOf(style).map(cssOf).filter(Boolean))], ...followsOf(name), ...usesOf(name) }])
 )
+/** The typographies Lyra has a global class for, by the class's name; the others, e.g. display, are CSS variables. */
+const CLASSED = new Set(['subtitle', 'subtitle-2', 'paragraph', 'paragraph-2', 'caption', 'caption-2', 'label'])
 /** Lyra's global class for a typography, e.g. `h4`; buttons' typography is the buttons' own. */
-const typographyClass = (category: string) =>
-    category.startsWith('heading-') ? `h${category.slice('heading-'.length)}` : category.startsWith('button-') ? undefined : category
+const typographyClass = (category: string) => (category.startsWith('heading-') ? `h${category.slice('heading-'.length)}` : CLASSED.has(category) ? category : undefined)
 /**
  * Lyra's global class for a text colour, by its name in a style's, e.g. `text-hint` for Hint: none for a typography's
  * own colour, e.g. a heading's or a paragraph's basic one, but `text-basic` for a caption's or a label's, which are

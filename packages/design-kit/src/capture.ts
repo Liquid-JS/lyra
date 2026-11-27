@@ -270,10 +270,11 @@ function read({ properties, selectors, refs }: { properties: ReadonlyArray<Style
             }
             // Inputs the component's spec reads from classes, its own or a container's, e.g. a calendar cell's state.
             const reading = refs[key]
-            for (const [input, { from, classes = {}, otherwise, count }] of Object.entries(reading?.inputs ?? {})) {
+            for (const [input, { from, classes = {}, has = {}, otherwise, count }] of Object.entries(reading?.inputs ?? {})) {
                 const source = from ? element.closest(from) : element
                 const found = Object.keys(classes).find((name) => source?.classList.contains(name))
-                const value = count ? String(element.querySelectorAll(count).length) : found ? classes[found] : otherwise
+                const holds = Object.keys(has).find((selector) => source?.querySelector(selector))
+                const value = count ? String(element.querySelectorAll(count).length) : found ? classes[found] : holds ? has[holds] : otherwise
                 if (value !== undefined) {
                     inputs[input] = value
                 }

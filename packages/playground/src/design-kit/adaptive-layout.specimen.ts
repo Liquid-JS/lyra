@@ -107,9 +107,12 @@ import { kit } from './specimen'
             margin-inline-end: 2rem;
         }
 
-        // In the header, the tabs' line is the header's edge.
+        // In the header, the tabs' line is the header's edge, and they take the room between the brand and the actions.
         .kit-tabs {
             --route-tabset-divider-width: 0;
+
+            flex: 1;
+            margin-inline-end: 2rem;
         }
 
         .kit-actions {

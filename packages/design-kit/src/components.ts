@@ -190,7 +190,7 @@ export const COMPONENTS: Record<string, ComponentSpec> = {
         name: 'Calendar',
         code: {
             inputs: { kind: '`range` is `<nb-calendar-range>`.', view: '`startView`.' },
-            notes: ['A calendar is as wide as `calendar-width`, or narrower where it has less room, whatever room it has more; one drawn wider sets `--calendar-width` on it.']
+            notes: ['A calendar is as wide as `calendar-width`, or narrower where it has less room, whatever room it has more; one drawn wider sets `--calendar-width` on it.', 'A calendar is a form control: `formControl`, `ngModel` or `formField` gives it its selected date or range, as a form sets and restores it.']
         },
         page: 'Form controls',
         board: 'Calendars',
@@ -258,6 +258,33 @@ export const COMPONENTS: Record<string, ComponentSpec> = {
         style: ['status', 'state'],
         starter: { size: 'medium', status: 'basic', state: 'default' },
         parts: { 'root': 'Phone Input', '.nb-phone-input-country': 'Country', 'nxt-flag': 'Flag' }
+    },
+    'swatch': {
+        name: 'Swatch',
+        code: {
+            class: 'NbSwatchComponent',
+            inputs: {
+                size: 'The `nb-swatch-group`\'s `size`.',
+                shape: 'The `nb-swatch-group`\'s `shape`.',
+                fill: '`color`, one CSS colour; `split`, `[color]` with two, the first top left; `picture`, `image`, a picture\'s address.',
+                state: '`selected` is the swatch the group\'s value chooses; `hover` and `focus` come with interaction; `disabled` is `disabled`, the swatch\'s or the group\'s.'
+            },
+            notes: [
+                'Swatches are an `<nb-swatch-group>`\'s, side by side `swatch-gap` apart; its `multiple` lets any number be chosen, e.g. for a filter, and its value is the chosen swatches\' `value`s, which a form sets and restores.',
+                'Each swatch needs a `label`, its name for assistive technologies and its tooltip: write the colour\'s or pattern\'s name.',
+                'A group\'s `max` shows that many swatches and a button with how many more, e.g. +3, which shows the others.',
+                'Swatches are choices: a colour or picture that\'s only shown, e.g. beside an item\'s name, is an image or a block in code, not a swatch.'
+            ]
+        },
+        selector: 'nb-swatch',
+        page: 'Form controls',
+        board: 'Swatches',
+        // A second colour or a picture adds a layer, as does the strike across an unavailable option.
+        symbol: { size, shape: size, fill: (value) => (value === 'split' ? 'Split' : value === 'picture' ? 'Picture' : ''), unavailable: (value) => (value ? 'Unavailable' : '') },
+        style: ['state'],
+        starter: { size: 'medium', shape: 'round', fill: 'color', unavailable: false, state: 'default' },
+        recolour: ['Fill', 'Second'],
+        parts: { 'root': 'Swatch', '.swatch': 'Ring', '.swatch-fill': 'Fill', '.kit-second': 'Second', '.kit-edge': 'Edge', '::after': 'Strike' }
     },
     'select': {
         name: 'Select',
@@ -349,7 +376,7 @@ export const COMPONENTS: Record<string, ComponentSpec> = {
     },
     'card': {
         name: 'Card',
-        code: { notes: ['Its first and last children\'s outer corners take its radius inside its border, e.g. an image filling its top; a child with corners of its own goes in a wrapper. A frame composed with a card\'s style takes the card\'s corners, `card-border-radius`, from the theme.'] },
+        code: { notes: ['A picture at its top or bottom, reaching its edges, is `nbCardMedia` on the `<img>`, or on a wrapper holding the picture and what goes over it, e.g. a tag in its corner, which it clips to the card\'s corners.', 'Its first and last children\'s outer corners take its radius inside its border, e.g. an image filling its top; a child with corners of its own goes in a wrapper. A frame composed with a card\'s style takes the card\'s corners, `card-border-radius`, from the theme.', 'A floating card\'s shadow, `card-floating-shadow`, is the theme\'s `shadow` unless the theme sets it apart.'] },
         page: 'Content',
         board: 'Cards',
         // A status header covers the card's border, which moves the content.
@@ -469,7 +496,7 @@ export const COMPONENTS: Record<string, ComponentSpec> = {
     },
     'tabset': {
         name: 'Tabset',
-        code: { notes: ['An `<nb-tab>` pads its content by `tabset-content-padding` (`--tabset-content-padding`), which the drawings don\'t show around a design\'s own content.'] },
+        code: { notes: ['An `<nb-tab>` pads its content by `tabset-content-padding` (`--tabset-content-padding`), and on screens up to 576 px wide by `tabset-content-small-padding`, which the drawings don\'t show around a design\'s own content; in an `<nb-card>`, by the card\'s `card-padding` instead, to line up with its header.', 'Tabs short of room shrink in code, their titles wrapping onto more lines; drawn narrower, the kit\'s run past the end. Tabs drawn on one line running past the end, e.g. a phone\'s days, are `wrap="false"`, which scrolls them sideways.'] },
         page: 'Navigation',
         board: 'Tabsets',
         symbol: { fullWidth: (value) => (value ? 'Full Width' : '') },
@@ -493,6 +520,13 @@ export const COMPONENTS: Record<string, ComponentSpec> = {
             inputs: { content: 'A `tabTitle`, with a `tabIcon` (`icon`) or a `badgeText` (`badge`).', state: '`active` is the tab\'s `active`, `disabled` its `disabled`; `hover` comes with interaction.' },
             notes: ['Tabs that switch content in the page are an `<nb-tabset>`\'s; tabs that link to pages, e.g. a header\'s navigation, are an `<nb-route-tabset [tabs]>` with `outlet="false"`, which looks the same by its own `route-tabset-*` variables.']
         },
+        // A tabset's tabs are these, so a design shows which is active by their looks.
+        selector: 'nb-tabset li.tab',
+        refInputs: {
+            content: { has: { 'nb-badge': 'badge', 'nb-icon': 'icon' }, otherwise: 'text' },
+            state: { classes: { active: 'active', disabled: 'disabled' }, otherwise: 'default' }
+        },
+        refTexts: true,
         page: 'Navigation',
         board: 'Tabs',
         symbol: { content: size },
@@ -639,6 +673,7 @@ export const COMPONENTS: Record<string, ComponentSpec> = {
         starter: { sidebar: 'expanded' },
         parts: {
             'root': 'Layout',
+            '.kit-brand': 'Brand',
             'nb-layout-header': 'Header',
             'nb-sidebar': 'Sidebar',
             'nb-layout-column': 'Column',
@@ -695,6 +730,7 @@ export const COMPONENTS: Record<string, ComponentSpec> = {
         code: {
             notes: [
                 'It shows the active route under its tabs in a `router-outlet` of its own; as navigation alone, e.g. in a header, set `outlet="false"`.',
+                'Tabs short of room shrink in code, their titles wrapping onto more lines, e.g. a header\'s at a tablet\'s width; drawn narrower, the kit\'s run past the end: shorten their titles, or show fewer, where they don\'t fit, or set `wrap="false"`, which scrolls them sideways.',
                 'A line runs along the tabs\' width, `route-tabset-divider-*`, which tabs in a header may not show: `--route-tabset-divider-width: 0`.'
             ],
             inputs: { tabs: 'How many `tabs` it has: a `bar` has 3 to 5, the others 4, to swap for as many as a design needs.' }
@@ -717,6 +753,35 @@ export const COMPONENTS: Record<string, ComponentSpec> = {
         labels: { appearance: { tabs: 'Tabs', bar: 'Bar' } },
         starter: { appearance: 'tabs', fullWidth: false, tabs: 4 },
         parts: { 'root': 'Route Tabset', '.active': 'Active Tab', '.disabled': 'Disabled Tab', '.route-tab': 'Tab', '.tab-link': '{parent} Link', '.tab-icon': '{parent} Icon', '.tab-text': '{parent} Label' }
+    },
+    // A route tabset's tab, in a header or a phone's bar: a route tabset's tabs are these, so a design shows which is
+    // active by their looks.
+    'route-tab': {
+        name: 'Route Tab',
+        code: {
+            class: 'NbRouteTabsetComponent',
+            notes: ['A tab of an `<nb-route-tabset [tabs]>`, which it draws for each of its `tabs`: an `NbRouteTab`.'],
+            inputs: {
+                appearance: 'The route tabset\'s `appearance`.',
+                content: 'The tab\'s `title`, with an `icon` (`icon`) or a `badgeText` (`badge`); a `bar`\'s tabs have an icon over their title.',
+                state: 'The tab whose `route` is the page\'s is `active`, one with `disabled` is `disabled`; `hover` comes with interaction.'
+            }
+        },
+        selector: 'nb-route-tabset .route-tab',
+        refInputs: {
+            appearance: { from: 'nb-route-tabset', classes: { 'appearance-bar': 'bar' }, otherwise: 'tabs' },
+            content: { has: { 'nb-badge': 'badge', 'nb-icon': 'icon' }, otherwise: 'text' },
+            state: { classes: { active: 'active', disabled: 'disabled' }, otherwise: 'default' }
+        },
+        refTexts: true,
+        page: 'Navigation',
+        board: 'Route tabs',
+        symbol: { appearance: (value) => (value === 'bar' ? 'Bar' : ''), content: size },
+        // A bar's texts have fonts of their own, so its styles are its own too.
+        style: ['appearance', 'state'],
+        labels: { appearance: { tabs: 'Tabs', bar: 'Bar' } },
+        starter: { appearance: 'tabs', content: 'text', state: 'default' },
+        parts: { 'root': 'Tab', '.tab-link': 'Link', '.tab-icon': 'Icon Box', '.tab-text': 'Title', 'nb-badge': 'Badge' }
     },
     // An app's screen that adapts to the device: on a laptop or a tablet, a header with its tabs, actions and user; on
     // a phone, a top bar whose actions fold into a menu, a drawer with the user and the account's links, and the tabs
@@ -742,6 +807,7 @@ export const COMPONENTS: Record<string, ComponentSpec> = {
         starter: { device: 'laptop', drawer: 'closed' },
         parts: {
             'root': 'Layout',
+            '.kit-brand': 'Brand',
             'nb-layout-header': 'Header',
             'nb-sidebar': 'Drawer',
             'nb-sidebar-header': 'Drawer Header',
@@ -905,7 +971,7 @@ export const COMPONENTS: Record<string, ComponentSpec> = {
             'nb-card-header': 'Header',
             'nb-card-body': 'Body',
             'nb-card-footer': 'Footer',
-            '.appearance-ghost': 'Cancel Button',
+            '.appearance-outline': 'Cancel Button',
             '.status-danger': 'Confirm Button'
         }
     },
@@ -921,7 +987,7 @@ export const COMPONENTS: Record<string, ComponentSpec> = {
     },
     'table': {
         name: 'Table',
-        code: { notes: ['A row is at least `table-row-min-height` tall and as tall as its cells\' content with `table-cell-padding`, e.g. taller with a button in a cell; rows drawn other heights set those variables.'] },
+        code: { notes: ['Cells drawn with lines between the rows alone, not between the columns, are `rules="rows"`; a table placed directly in an `<nb-card>` has those already.', 'A row is at least `table-row-min-height` tall and as tall as its cells\' content with `table-cell-padding`, e.g. taller with a button in a cell; rows drawn other heights set those variables.'] },
         page: 'Content',
         board: 'Tables',
         symbol: {},

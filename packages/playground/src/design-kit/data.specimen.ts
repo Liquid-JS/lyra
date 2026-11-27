@@ -4,7 +4,7 @@ import { NbChatComponent, NbChatFormComponent, NbChatMessageComponent } from '@l
 import { TableShowcaseComponent } from '../playground/with-layout/table/table-showcase.component'
 import { TreeGridShowcaseComponent } from '../playground/with-layout/tree-grid/tree-grid-showcase.component'
 
-/** The table and tree grid as the playground shows them, each tagged whole, and a short conversation. */
+/** The table and tree grid as the playground shows them, each tagged whole, and a conversation, also as wide as a phone. */
 @Component({
     template: `
         <div class="specimens">

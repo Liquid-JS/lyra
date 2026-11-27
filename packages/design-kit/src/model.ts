@@ -140,7 +140,11 @@ function conicOf(value: string): Gradient | undefined {
     return { angle, stops, angular: true }
 }
 
-function backgroundImageOf(value: string | undefined): { gradient?: Gradient, band?: Band } {
+/**
+ * A background image's gradient, in a box of the element's size: a linear one's angle from a side, a corner, e.g.
+ * `to right top`, or degrees, and its stops' positions along it, a length or a share, e.g. `calc(50% - 2px)`.
+ */
+function backgroundImageOf(value: string | undefined, width = 0, height = 0): { gradient?: Gradient, band?: Band } {
     const conic = value ? conicOf(value) : undefined
     if (conic) {
         return { gradient: conic }
@@ -152,9 +156,33 @@ function backgroundImageOf(value: string | undefined): { gradient?: Gradient, ba
     const args = split(match[1], ',')
     let angle = 180
     const direction = /^to (top|bottom|left|right)$/.exec(args[0]) ?? /^(-?[\d.]+)deg$/.exec(args[0])
+    // A corner: the angle whose middle line runs through the other two corners, 45° in a square.
+    const corner = /^to (top|bottom|left|right) (top|bottom|left|right)$/.exec(args[0])
     if (direction) {
         args.shift()
         angle = { top: 0, right: 90, bottom: 180, left: 270 }[direction[1]] ?? Number(direction[1])
+    } else if (corner) {
+        args.shift()
+        const sides = new Set([corner[1], corner[2]])
+        const slant = width && height ? (Math.atan(width / height) * 180) / Math.PI : 45
+        angle = sides.has('top') ? (sides.has('right') ? slant : 360 - slant) : sides.has('right') ? 180 - slant : 180 + slant
+    }
+    // How long the gradient line is, for a stop's length along it.
+    const radians = (angle * Math.PI) / 180
+    const length = Math.abs(width * Math.sin(radians)) + Math.abs(height * Math.cos(radians))
+    // A share of the line, from a share, a length, or a share and a length, e.g. `calc(50% - 2px)`.
+    const shareOf = (position: string | undefined): number | undefined => {
+        if (!position) {
+            return undefined
+        }
+        if (position.endsWith('%') && !position.startsWith('calc')) {
+            return px(position) / 100
+        }
+        const calc = /^calc\(([\d.]+)%\s*([+-])\s*([\d.]+)px\)$/.exec(position)
+        if (calc && length) {
+            return Number(calc[1]) / 100 + (calc[2] === '-' ? -1 : 1) * (Number(calc[3]) / length)
+        }
+        return position.endsWith('px') && length ? px(position) / length : undefined
     }
     const stops = args.map((stop) => {
         const parts = split(stop, ' ')
@@ -169,7 +197,7 @@ function backgroundImageOf(value: string | undefined): { gradient?: Gradient, ba
         gradient: {
             angle,
             stops: stops.flatMap((stop, index) =>
-                stop.paint ? [{ paint: stop.paint, position: stop.position?.endsWith('%') ? px(stop.position) / 100 : index / Math.max(1, stops.length - 1) }] : []
+                stop.paint ? [{ paint: stop.paint, position: shareOf(stop.position) ?? index / Math.max(1, stops.length - 1) }] : []
             )
         }
     }
@@ -216,8 +244,9 @@ function borderShapeOf(node: CapturedNode, turn: number): { path: string, paint:
     const shown = SIDES.map((_, index) => index).filter((index) => widths[index] > 0 && !transparent(paints[index]))
     const [side] = shown
     const paint = paints[side]
-    // Its neighbours cut the side's ends at an angle only where they're there, if unseen.
-    if (shown.length !== 1 || !paint || !widths[(side + 1) % 4] || !widths[(side + 3) % 4]) {
+    // Its neighbours cut the side's ends at an angle only where they're there, if unseen: both, a triangle or a
+    // trapezoid, e.g. an arrow; one, a right triangle, e.g. half a two-colour swatch.
+    if (shown.length !== 1 || !paint || (!widths[(side + 1) % 4] && !widths[(side + 3) % 4])) {
         return undefined
     }
     const [top, right, bottom, left] = widths
@@ -257,7 +286,7 @@ function drawingOf(node: CapturedNode, bandSides: ReadonlySet<string> = new Set(
     // Each gradient of a background image is a fill, over the background colour, the first one on top as in CSS;
     // images, e.g. an alpha slider's checkerboard, aren't drawn.
     const layers = node.style.backgroundImage && node.style.backgroundImage !== 'none' ? split(node.style.backgroundImage, ',') : []
-    for (const image of layers.map(backgroundImageOf).reverse()) {
+    for (const image of layers.map((layer) => backgroundImageOf(layer, node.width, node.height)).reverse()) {
         if (image.gradient) {
             style.fills.push(image.gradient)
         }
@@ -715,8 +744,9 @@ function spreadFluid(layer: Layer, inRow = false) {
         if (layout.align === 'start' && layer.children.some((child) => child.fill)) {
             layout.align = 'stretch'
         }
-    } else if (layout?.direction === 'row' && layout.hug.width) {
-        // A row as wide as its container, e.g. a layout's, takes its width; its parts that grow take the room left.
+    } else if (layout?.direction === 'row' && layout.hug.width && layer.fill) {
+        // A row as wide as its container, e.g. a layout's, takes its width; its parts that grow take the room left. A
+        // row inside another, e.g. a header's actions, keeps sizing to its parts.
         layout.hug.width = false
     }
     layer.children.forEach((child) => spreadFluid(child, layout?.direction === 'row'))
@@ -1158,13 +1188,20 @@ function draftOf(
         if (current.ref && parentLayer && !inlineParts.has(part)) {
             const { component, inputs, text, texts, icon } = current.ref
             const iconName = icon ?? current.icon?.name
+            // An element that draws nothing and stretches around its one child, e.g. a user as wide as a drawer's
+            // header: its symbol is at the child's box, as drafting the component on its own draws the child alone.
+            const inner = current.children.length === 1 ? current.children[0] : undefined
+            const { style: hostStyle, bands: hostBands } = drawingOf(current)
+            const stretched = inner && inner.tag !== '#text' && !inner.icon && !draws(hostStyle) && hostBands.length === 0 && inner.width < current.width - 0.5 ? inner : undefined
+            const box = stretched ?? current
             const refLayer: Layer = {
                 ...base,
+                ...(stretched ? { x: round(box.x - origin.x), y: round(box.y - origin.y), width: round(box.width), height: round(box.height) } : {}),
                 kind: 'ref',
                 ref: { component, inputs, ...(text !== undefined ? { text } : {}), ...(texts ? { texts } : {}), ...(iconName ? { icon: iconSymbol(iconName) } : {}) },
                 absolute: current.style.position === 'absolute'
             }
-            refSources.set(refLayer, { node: current, part })
+            refSources.set(refLayer, { node: box, part })
             if (Number(current.style.flexGrow) > 0) {
                 refLayer.grow = true
             }
@@ -1428,7 +1465,7 @@ function textsOf(layer: Layer | undefined, texts = new Map<string, string>()): M
 }
 
 /** Differences in layout between two drafts of one symbol, as paths, or none. */
-function layoutDifferences(a: Layer, b: Layer, path = a.name, resized = false, reflowed = false, centred = false): string[] {
+function layoutDifferences(a: Layer, b: Layer, path = a.name, resized = false, reflowed = false, centred = false, parent?: Layer): string[] {
     const differences: string[] = []
     if (a.kind !== b.kind || a.children.length !== b.children.length) {
         return [`${path}: ${a.kind}/${a.children.length} vs ${b.kind}/${b.children.length}`]
@@ -1453,7 +1490,7 @@ function layoutDifferences(a: Layer, b: Layer, path = a.name, resized = false, r
     a.children.forEach((child, index) => {
         const other = b.children.find((candidate) => candidate.name === child.name) ?? b.children[index]
         const centres = !!a.layout && (a.layout.direction === 'row' ? a.layout.justify === 'center' : a.layout.align === 'center')
-        differences.push(...layoutDifferences(child, other, `${path}/${child.name}`, resized, reflows, centres))
+        differences.push(...layoutDifferences(child, other, `${path}/${child.name}`, resized, reflows, centres, a))
     })
     return differences
 }

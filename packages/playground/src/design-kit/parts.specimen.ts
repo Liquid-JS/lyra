@@ -4,6 +4,7 @@ import {
     NbCardComponent,
     NbCardFooterComponent,
     NbCardHeaderComponent,
+    NbCardMediaDirective,
     NbListComponent,
     NbListItemComponent,
     NbListItemDescriptionComponent,
@@ -31,7 +32,7 @@ const MENU_KINDS: Record<string, string> = {
 
 /**
  * The parts larger components are made of, for designs to compose their own: menu items of every kind, tabs, a table's
- * header cells in each sort and its cells, a list item, and a card's header in every status, body and footer. Each
+ * header cells in each sort and its cells, a list item, and a card's media, header in every status, body and footer. Each
  * part is tagged where its component renders it, after the components render.
  */
 @Component({
@@ -70,6 +71,14 @@ const MENU_KINDS: Record<string, string> = {
                     <nb-list-item-description>Designer</nb-list-item-description>
                 </nb-list-item>
             </nb-list>
+            <nb-card style="width: 20rem">
+                <img nbCardMedia
+                    [attr.data-kit]="kit('card-media', {})"
+                    src="assets/design-kit/card-media.png"
+                    alt=""
+                    style="aspect-ratio: 16 / 9" />
+                <nb-card-body>Body</nb-card-body>
+            </nb-card>
             @for (status of cardStatuses; track status; let first = $first) {
             <nb-card [status]="status"
                 style="width: 20rem">
@@ -92,6 +101,7 @@ const MENU_KINDS: Record<string, string> = {
         NbCardHeaderComponent,
         NbCardBodyComponent,
         NbCardFooterComponent,
+        NbCardMediaDirective,
         TableShowcaseComponent
     ]
 })

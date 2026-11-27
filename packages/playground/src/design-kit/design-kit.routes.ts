@@ -46,6 +46,7 @@ export const DESIGN_KIT_ROUTES: Routes = [
             { path: 'menu', loadComponent: () => import('./menu.specimen').then((m) => m.MenuSpecimenComponent) },
             { path: 'context-menu', loadComponent: () => import('./menu.specimen').then((m) => m.MenuSpecimenComponent) },
             { path: 'route-tabset', loadComponent: () => import('./route-tabset.specimen').then((m) => m.RouteTabsetSpecimenComponent) },
+            { path: 'route-tab', loadComponent: () => import('./route-tab.specimen').then((m) => m.RouteTabSpecimenComponent) },
             { path: 'toc', loadComponent: () => import('./toc.specimen').then((m) => m.TocSpecimenComponent) },
             { path: 'progress-bar', loadComponent: () => import('./progress-bar.specimen').then((m) => m.ProgressBarSpecimenComponent) },
             { path: 'spinner', loadComponent: () => import('./spinner.specimen').then((m) => m.SpinnerSpecimenComponent) },
@@ -57,6 +58,7 @@ export const DESIGN_KIT_ROUTES: Routes = [
             { path: 'table-header-cell', loadComponent: () => import('./parts.specimen').then((m) => m.PartsSpecimenComponent) },
             { path: 'table-cell', loadComponent: () => import('./parts.specimen').then((m) => m.PartsSpecimenComponent) },
             { path: 'list-item', loadComponent: () => import('./parts.specimen').then((m) => m.PartsSpecimenComponent) },
+            { path: 'card-media', loadComponent: () => import('./parts.specimen').then((m) => m.PartsSpecimenComponent) },
             { path: 'card-header', loadComponent: () => import('./parts.specimen').then((m) => m.PartsSpecimenComponent) },
             { path: 'card-body', loadComponent: () => import('./parts.specimen').then((m) => m.PartsSpecimenComponent) },
             { path: 'card-footer', loadComponent: () => import('./parts.specimen').then((m) => m.PartsSpecimenComponent) },
@@ -78,6 +80,7 @@ export const DESIGN_KIT_ROUTES: Routes = [
                 loadComponent: () => import('./extras.specimen').then((m) => m.ExtrasSpecimenComponent)
             })),
             { path: 'select', loadComponent: () => import('./select.specimen').then((m) => m.SelectSpecimenComponent) },
+            { path: 'swatch', loadComponent: () => import('./swatch.specimen').then((m) => m.SwatchSpecimenComponent) },
             { path: 'form-field', loadComponent: () => import('./form-field.specimen').then((m) => m.FormFieldSpecimenComponent) },
             { path: 'field', loadComponent: () => import('./field.specimen').then((m) => m.FieldSpecimenComponent) },
             { path: 'alert', loadComponent: () => import('./alert.specimen').then((m) => m.AlertSpecimenComponent) },

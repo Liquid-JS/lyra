@@ -184,17 +184,29 @@ class ComponentBuilder {
                 stops
             }
         }
+        // Sketch draws stops that don't start at 0 and end at 1 as though they did, squeezing what's between them: its
+        // ends go there, in the first and the last stops' colours, as CSS paints past them.
+        const first = gradient.stops[0]
+        const last = gradient.stops[gradient.stops.length - 1]
+        const ends = [
+            ...(first && first.position > 0 ? [{ position: 0, paint: first.paint }] : []),
+            ...gradient.stops,
+            ...(last && last.position < 1 ? [{ position: 1, paint: last.paint }] : [])
+        ]
+        // As long as CSS's gradient line, which reaches the box's corners: a diagonal one is longer than a side, in a
+        // square by √2.
         const radians = (gradient.angle * Math.PI) / 180
-        const dx = Math.sin(radians) / 2
-        const dy = -Math.cos(radians) / 2
+        const reach = Math.abs(Math.sin(radians)) + Math.abs(Math.cos(radians))
+        const dx = (Math.sin(radians) * reach) / 2
+        const dy = (-Math.cos(radians) * reach) / 2
         return {
             gradient: {
                 gradientType: sketch.Style.GradientType.Linear,
                 from: { x: 0.5 - dx, y: 0.5 - dy },
                 to: { x: 0.5 + dx, y: 0.5 + dy },
-                stops: gradient.stops.map((stop) => ({ position: stop.position, color: hex8(stop.paint.color) }))
+                stops: ends.map((stop) => ({ position: stop.position, color: hex8(stop.paint.color) }))
             },
-            stops: gradient.stops
+            stops: ends
         }
     }
 
@@ -505,6 +517,26 @@ class ComponentBuilder {
             if (style) {
                 shape.sharedStyle = style
                 shape.style.syncWithSharedStyle(style)
+            }
+            size(shape, layer, parentLayer)
+            made = shape
+        } else if (layer.kind === 'frame' && !layer.children.length && !layer.image && this.kit.layerStyles[layer.layerStyle ?? '']?.fills.some((fill) => 'stops' in fill)) {
+            // A gradient on its own, e.g. an unavailable swatch's strike: Sketch spreads a frame's gradient over what the
+            // frame holds, so one that holds nothing draws none, where a shape draws it over its box.
+            const shape = new sketch.ShapePath({ parent, name: layer.name, frame })
+            shape.style.fills = []
+            shape.style.borders = []
+            const style = this.layerStyles.get(layer.layerStyle ?? '')
+            if (style) {
+                shape.sharedStyle = style
+                shape.style.syncWithSharedStyle(style)
+            }
+            // A shape's corners are its points', each no rounder than the shape allows, e.g. a round swatch's circle.
+            const radius = layer.radius
+            if (radius) {
+                ;(shape as unknown as { points: Array<{ cornerRadius: number }> }).points.forEach((point, index) => {
+                    point.cornerRadius = Math.min(radius[index] ?? 0, layer.width / 2, layer.height / 2)
+                })
             }
             size(shape, layer, parentLayer)
             made = shape

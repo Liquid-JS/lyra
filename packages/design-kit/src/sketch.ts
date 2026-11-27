@@ -4,10 +4,11 @@ import { join, resolve } from 'node:path'
 
 import { buildSync } from 'esbuild'
 
-import { TYPOGRAPHY, variableName } from '../../docs/src/design-kit-names.ts'
+import { TYPOGRAPHY, TYPOGRAPHY_COLOURS, variableName } from '../../docs/src/design-kit-names.ts'
 import { COMPONENTS } from './components.ts'
 import { builtThemes, themeFormulas } from './theme-formulas.ts'
-import type { Binding, ComponentData, Kit, KitCheck, KitTheme, Layer, Starter, ThemedSymbol, ThemeKnob } from './kit.ts'
+import type { Binding, ComponentData, Kit, KitCheck, KitTheme, Layer, Starter, ThemedSymbol, ThemeKnob, TypographyData } from './kit.ts'
+import { firstFamily, numberOf, valuesOf } from './sketch/theme/values.ts'
 
 /**
  * Writes a Sketch script per component of the design kit's model: the component builder (sketch/component.ts) with

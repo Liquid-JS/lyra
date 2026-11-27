@@ -15,8 +15,9 @@ design into Angular.
 - **Colour variables**: the theme's colours, named by what they're for. `Palette/Primary/500` is
   `--color-primary-500`, `State/Primary/Hover` is `--color-primary-hover`, `Background/Basic/2` is
   `--background-basic-color-2`, `Text/Hint` is `--text-hint-color`.
-- **Text styles**: the theme's typography in each text colour, such as `Heading/H1/Basic` or `Caption/C1/Hint`, and
-  components' own fonts, such as `Input Text/Medium/Hint`.
+- **Text styles**: the theme's typography in each text colour, such as `Heading/H1/Basic` or `Caption/C1/Hint`, a
+  `Display` size above the headings and `Code` in the theme's third typeface, and components' own fonts, such as
+  `Input Text/Medium/Hint`.
 - **Symbols**: one for each layout a component has, named by the inputs that change its size or arrangement.
   `Button/Medium/Rectangle/Icon Start` is a medium, rectangular button with an icon before its text. Its texts have
   the fonts of its size.
@@ -63,7 +64,8 @@ Menus, tabs, tables, lists, cards and the app's layout hold your content, so the
 of. Stack them in a frame with auto layout to build your own:
 
 - **App layout**: `Layout Header`, `Sidebar/Expanded` or `Sidebar/Compacted`, and `Layout Footer` around your
-  content, on `Background/Basic/3`, each resized as your screen needs. The sidebar holds a menu.
+  content, on `Background/Basic/3`, each resized as your screen needs. The sidebar holds a menu. `Layout/Expanded`,
+  `/Compacted` and `/Collapsed` show a whole one, whose `Brand`, `Layout/Brand`, you swap for your logo's symbol.
 - **Phones, tablets and laptops**: `Adaptive Layout/Laptop`, `/Tablet` and `/Phone` show one layout at each size: a
   header with the sections as tabs, the actions and the user; on a phone, a top bar whose actions fold into a menu,
   `Route Tabset/Bar/…` with the sections along the bottom, and `/Phone/Drawer`, the drawer with the user and the
@@ -72,9 +74,13 @@ of. Stack them in a frame with auto layout to build your own:
   `Child`, `Badge` and `Group`, each also `Selected`. Starters show them at rest, hovered and selected.
 - **Actions**: `Action/…` side by side, by size, with an icon alone, a `Dot` or a `Badge`; the `Disabled` look. In
   code, actions after the first have a divider before them, as the `Actions` symbols show, unless it's turned off.
-- **Tabs**: `Tab/Text`, `Tab/Icon` or `Tab/Badge` side by side, one of them with the `Active` look. Tabs that link to
-  pages, e.g. a header's navigation, are an `nb-route-tabset` with `outlet="false"` in code, and a phone's along the
-  bottom are `Route Tabset/Bar/3 Tabs` to `/5 Tabs`, `appearance="bar"` in a fixed footer.
+- **Tabs**: `Tab/Text`, `Tab/Icon` or `Tab/Badge` side by side, one of them with the `Active` look; a `Tabset`'s tabs
+  are these too. Tabs that link to pages, e.g. a header's navigation, are `Route Tab/…`, an `nb-route-tabset` with
+  `outlet="false"` in code, and a phone's along the bottom are `Route Tabset/Bar/3 Tabs` to `/5 Tabs`,
+  `appearance="bar"` in a fixed footer, whose tabs are `Route Tab/Bar/…`; one list of tabs serves both, with
+  `showIcons="false"` on the header's where its tabs are text. Give the page's tab the `Active` look and
+  the others `Default`: its `Link` and `Link Before` take `Route Tab Link/Active` and `Route Tab Link Before/Active`,
+  its `Icon` and `Title Text` `Text/Primary/Default`, as the `Route Tab/Bar/Active` starter shows.
 - **Tables**: a row of `Table Header Cell/…`, `Unsorted` or sorted by its column, above rows of `Table Cell`.
 - **Lists**: `List Item`, one below another.
 - **Cards**: a frame with a card's layer style, such as `Card/Outline`, holding a `Card Header` starter for its

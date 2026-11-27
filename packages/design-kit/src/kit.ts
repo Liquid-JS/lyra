@@ -66,6 +66,8 @@ export interface Layer {
     styled?: boolean
     /** Whether a text's colour is a parameter of the symbol: a look's colour, kept when the symbol is swapped. */
     tinted?: boolean
+    /** Whether a design sets the layer's fill colour, e.g. a swatch's: an override. */
+    recolour?: boolean
     text?: string
     /** A text's sizing: `fixed` wraps at its width, `auto` grows with its text. */
     textSizing?: 'fixed' | 'auto'

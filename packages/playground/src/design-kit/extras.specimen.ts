@@ -1,13 +1,13 @@
 import { Component } from '@angular/core'
+import { NbAudioComponent } from '@liquid-js/lyr-extras/media'
 
 import { ChartShowcaseComponent } from '../playground/with-layout/chart/chart-showcase.component'
 import { MarkdownEditorShowcaseComponent } from '../playground/with-layout/markdown/markdown-editor-showcase.component'
 import { MarkdownViewerShowcaseComponent } from '../playground/with-layout/markdown/markdown-viewer-showcase.component'
-import { AudioShowcaseComponent } from '../playground/with-layout/media/audio-showcase.component'
 import { VideoShowcaseComponent } from '../playground/with-layout/media/video-showcase.component'
 import { QrCodeShowcaseComponent } from '../playground/with-layout/qr-code/qr-code-showcase.component'
 
-/** The extras as the playground shows them, each tagged whole. */
+/** The extras as the playground shows them, each tagged whole, and an audio player, also as wide as a phone. */
 @Component({
     template: `
         <div class="specimens">
@@ -27,10 +27,12 @@ import { QrCodeShowcaseComponent } from '../playground/with-layout/qr-code/qr-co
                 style="width: 40rem">
                 <nb-chart-showcase />
             </div>
-            <div [attr.data-kit]="kit('audio')"
-                style="width: 28rem">
-                <nb-audio-showcase />
-            </div>
+            @for (player of players; track player.device) {
+            <nb-audio [attr.data-kit]="kitWith('audio', player)"
+                src="assets/showcase/media/melody.m4a"
+                aria-label="Episode 12, Morning melody"
+                [style.width]="player.width" />
+            }
             <div [attr.data-kit]="kit('video')"
                 style="width: 40rem">
                 <nb-video-showcase />
@@ -42,10 +44,16 @@ import { QrCodeShowcaseComponent } from '../playground/with-layout/qr-code/qr-co
         MarkdownEditorShowcaseComponent,
         QrCodeShowcaseComponent,
         ChartShowcaseComponent,
-        AudioShowcaseComponent,
+        NbAudioComponent,
         VideoShowcaseComponent
     ]
 })
 export class ExtrasSpecimenComponent {
     readonly kit = (component: string) => JSON.stringify({ component })
+    readonly kitWith = (component: string, { device }: { device: string }) => JSON.stringify({ component, device })
+    // A player as wide as a phone's screen, less its margins, drops its volume and speed.
+    readonly players = [
+        { device: 'laptop', width: '28rem' },
+        { device: 'phone', width: '21.375rem' }
+    ]
 }
