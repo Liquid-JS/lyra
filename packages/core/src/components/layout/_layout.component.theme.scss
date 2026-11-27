@@ -183,14 +183,6 @@
                         font-weight: nb-theme(footer-text-font-weight);
                         line-height: nb-theme(footer-text-line-height);
                         padding: nb-theme(footer-padding);
-
-                        a {
-                            color: nb-theme(footer-text-highlight-color);
-
-                            @include hover-focus-active {
-                                color: nb-theme(footer-text-highlight-color);
-                            }
-                        }
                     }
                 }
 
