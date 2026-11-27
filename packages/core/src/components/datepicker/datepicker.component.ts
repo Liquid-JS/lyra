@@ -650,6 +650,16 @@ export class NbRangepickerComponent<D> extends NbBasePickerComponent<
      */
     readonly range = model<NbCalendarRange<D>>()
 
+    /**
+     * The start's format where it's in the end's year, e.g. `MMM d` with a `format` of `MMM d, y` for
+     * `Nov 1 – Nov 24, 2026`; the start is in `format` without it, or across years.
+     */
+    readonly startFormatInput = input<string>(undefined, { alias: 'startFormat' })
+
+    override get startFormat(): string | undefined {
+        return this.startFormatInput()
+    }
+
     constructor() {
         super()
         effect(() => {

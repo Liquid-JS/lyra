@@ -4,6 +4,7 @@ import {
     NbDateService,
     NbDateTimeAdapterService,
     NbDateAdapterService,
+    NbNativeDateService,
     NbRangeAdapterService
 } from '@liquid-js/lyr-core'
 
@@ -140,7 +141,7 @@ describe('Date Adapters', () => {
             const format = 'mm/dd/yyyy'
             const spy = vi.spyOn(dateService, 'isValidDateString').mockReturnValueOnce(true).mockReturnValueOnce(true)
 
-            expect(adapterService.format(range, format)).toEqual('undefined - undefined')
+            expect(adapterService.format(range, format)).toEqual('undefined – undefined')
             expect(spy).toHaveBeenCalledTimes(2)
         })
 
@@ -226,6 +227,24 @@ describe('Date Adapters', () => {
             expect(adapterService.format(date, format)).toEqual(formatted)
             expect(spy).toHaveBeenCalledTimes(1)
             expect(spy).toHaveBeenCalledWith(date, format)
+        })
+    })
+
+    describe('NbRangeAdapterService with dates', () => {
+        let adapterService: NbRangeAdapterService<Date>
+        beforeEach(() => {
+            TestBed.overrideProvider(NbDateService, { useFactory: () => new NbNativeDateService() })
+            adapterService = TestBed.inject(NbRangeAdapterService)
+        })
+
+        it('should write a range with an en dash, its start in startFormat in the end\'s year, and read it back', () => {
+            const range = { start: new Date(2026, 10, 1), end: new Date(2026, 10, 24) }
+            expect(adapterService.format(range, 'MMM d, y', 'MMM d')).toBe('Nov 1 – Nov 24, 2026')
+            expect(adapterService.format({ start: new Date(2025, 11, 30), end: new Date(2026, 0, 2) }, 'MMM d, y', 'MMM d')).toBe('Dec 30, 2025 – Jan 2, 2026')
+            expect(adapterService.isValid('Nov 1 – Nov 24, 2026', 'MMM d, y', 'MMM d')).toBe(true)
+            expect(adapterService.parse('Nov 1 – Nov 24, 2026', 'MMM d, y', 'MMM d')).toEqual(range)
+            expect(adapterService.parse('Nov 1, 2026 - Nov 24, 2026', 'MMM d, y', 'MMM d')).toEqual(range)
+            expect(adapterService.parse('Nov 1, 2026 - Nov 24, 2026', 'MMM d, y')).toEqual(range)
         })
     })
 })

@@ -50,19 +50,20 @@ export abstract class NbDatepickerAdapter<D> {
     readonly comparesTime: boolean = false
 
     /**
-     * Reads a value from the input's text, in the format given.
+     * Reads a value from the input's text, in the format given; a range's start in `startFormat` too, if given.
      */
-    abstract parse(value: string, format?: string): D
+    abstract parse(value: string, format?: string, startFormat?: string): D
 
     /**
-     * Writes a value as the input's text, in the format given.
+     * Writes a value as the input's text, in the format given; a range's start in `startFormat` where it shares its
+     * year with the end, if given.
      */
-    abstract format(value?: D, format?: string): string
+    abstract format(value?: D, format?: string, startFormat?: string): string
 
     /**
-     * Whether the text is a value `parse` reads, in the format given.
+     * Whether the text is a value `parse` reads, in the formats given.
      */
-    abstract isValid(value: string, format?: string): boolean
+    abstract isValid(value: string, format?: string, startFormat?: string): boolean
 }
 
 /**
@@ -96,6 +97,11 @@ export abstract class NbDatepicker<T, D = T> {
      * The format of the input's text.
      */
     abstract format?: string
+
+    /** A range's start's format where it shares its year with the end, e.g. `MMM d`; the range picker's. */
+    get startFormat(): string | undefined {
+        return undefined
+    }
 
     /** Whether the picker is open, for the input's `aria-expanded`. */
     readonly expanded = signal(false)
@@ -205,11 +211,12 @@ export const NB_DATE_SERVICE_OPTIONS = new InjectionToken<NbDateServiceOptions>(
  * ```
  * ### Usage
  *
- * `NbRangepickerComponent` picks a range, typed as `start - end`:
+ * `NbRangepickerComponent` picks a range, written as `start – end` with an en dash and typed with a hyphen too. With
+ * `startFormat`, the start leaves out what it shares with the end, e.g. `Nov 1 – Nov 24, 2026`:
  *
  * ```html
  * <input [nbDatepicker]="rangepicker">
- * <nb-rangepicker #rangepicker></nb-rangepicker>
+ * <nb-rangepicker #rangepicker format="MMM d, y" startFormat="MMM d"></nb-rangepicker>
  * ```
  *
  * Both pickers have the calendar's inputs; see `NbCalendarComponent`.
@@ -494,7 +501,7 @@ export class NbDatepickerDirective<D> implements OnChanges, ControlValueAccessor
             return null
         }
 
-        const isValid = this.datepickerAdapter.isValid(this.inputValue, this.picker.format)
+        const isValid = this.datepickerAdapter.isValid(this.inputValue, this.picker.format, this.picker.startFormat)
         return isValid
             ? null
             : { nbDatepickerParse: nbValidationError(this.message, 'nbDatepickerParse', { value: this.inputValue }) }
@@ -506,10 +513,10 @@ export class NbDatepickerDirective<D> implements OnChanges, ControlValueAccessor
      * */
     protected validatorDates(edge: 'start' | 'end' | 'both'): D[] {
     // Text that isn't a date only has the parse error.
-        if (!this.datepickerAdapter.isValid(this.inputValue, this.picker.format)) {
+        if (!this.datepickerAdapter.isValid(this.inputValue, this.picker.format, this.picker.startFormat)) {
             return []
         }
-        const parsed = this.datepickerAdapter.parse(this.inputValue, this.picker.format) as unknown
+        const parsed = this.datepickerAdapter.parse(this.inputValue, this.picker.format, this.picker.startFormat) as unknown
         if (!parsed) {
             return []
         }
@@ -594,7 +601,7 @@ export class NbDatepickerDirective<D> implements OnChanges, ControlValueAccessor
         this.picker.attach(this.hostRef)
 
         if (this.inputValue) {
-            this.picker.value = this.datepickerAdapter.parse(this.inputValue, this.picker.format)
+            this.picker.value = this.datepickerAdapter.parse(this.inputValue, this.picker.format, this.picker.startFormat)
         }
 
         this.pickerInputsChangedSubscription?.unsubscribe()
@@ -608,7 +615,7 @@ export class NbDatepickerDirective<D> implements OnChanges, ControlValueAccessor
             )
             .subscribe(([prevFormat]) => {
                 if (this.inputValue) {
-                    const date = this.datepickerAdapter.parse(this.inputValue, prevFormat)
+                    const date = this.datepickerAdapter.parse(this.inputValue, prevFormat, this.picker.startFormat)
                     this.writeInput(date)
                 }
             })
@@ -660,7 +667,7 @@ export class NbDatepickerDirective<D> implements OnChanges, ControlValueAccessor
         if (this.hasInvalidDate(value)) {
             return
         }
-        this.hostRef.nativeElement.value = this.datepickerAdapter.format(value, this.picker.format)
+        this.hostRef.nativeElement.value = this.datepickerAdapter.format(value, this.picker.format, this.picker.startFormat)
     }
 
     /**
@@ -689,7 +696,7 @@ export class NbDatepickerDirective<D> implements OnChanges, ControlValueAccessor
      * the field has the parse error.
      */
     protected handleInputChange(value: string) {
-        if (value !== '' && !this.datepickerAdapter.isValid(value, this.picker.format)) {
+        if (value !== '' && !this.datepickerAdapter.isValid(value, this.picker.format, this.picker.startFormat)) {
             this.onValidatorChange()
             return
         }
@@ -703,8 +710,8 @@ export class NbDatepickerDirective<D> implements OnChanges, ControlValueAccessor
     }
 
     protected parseInputValue(value: string): D | undefined {
-        if (this.datepickerAdapter.isValid(value, this.picker.format)) {
-            return this.datepickerAdapter.parse(value, this.picker.format)
+        if (this.datepickerAdapter.isValid(value, this.picker.format, this.picker.startFormat)) {
+            return this.datepickerAdapter.parse(value, this.picker.format, this.picker.startFormat)
         }
 
         return undefined
