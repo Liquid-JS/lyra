@@ -1,0 +1,23 @@
+<nb-card>
+    <nb-card-header>
+        <h1 class="h5">Delivery day: {{ day.value ? (day.value | date) : 'none' }}</h1>
+    </nb-card-header>
+    <nb-card-body>
+        <nb-calendar [formControl]="day"
+            [min]="today" />
+        <div class="actions">
+            <button nbButton
+                size="small"
+                (click)="saved = day.value">Save</button>
+            <button nbButton
+                size="small"
+                appearance="outline"
+                (click)="day.setValue(saved)">Restore</button>
+            <button nbButton
+                size="small"
+                appearance="ghost"
+                (click)="day.reset(null)">Clear</button>
+            <nb-toggle (checkedChange)="toggleDisabled($event)">Disabled</nb-toggle>
+        </div>
+    </nb-card-body>
+</nb-card>

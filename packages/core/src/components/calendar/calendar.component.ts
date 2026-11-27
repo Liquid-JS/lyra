@@ -1,4 +1,5 @@
-import { Component, input, model, output, Type } from '@angular/core'
+import { Component, computed, ElementRef, forwardRef, inject, input, linkedSignal, model, output, Type, untracked } from '@angular/core'
+import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms'
 
 import { NbCalendarCell, NbCalendarSize, NbCalendarViewMode, NbCalendarSizeValues, NbCalendarViewModeValues, NbCalendarPickerMode } from '@liquid-js/lyr-core/calendar-kit'
 import { ɵconvertToBoolProperty as convertToBoolProperty, NbBooleanInput } from '@liquid-js/lyr-core/base'
@@ -15,6 +16,11 @@ import { NbBaseCalendarComponent } from './base-calendar.component'
  * Basic usage example
  *
  * @stacked-example(Showcase, calendar/calendar-showcase.component)
+ *
+ * It's a form control too, with `formControl`, `ngModel` or `formField`: the form's value is the selected date, which
+ * the form sets and restores, and validators such as `required` apply; the form's disabled state, or `disabled`,
+ * disables every day. `nb-calendar-range` is one too, its value the range:
+ * @stacked-example(Form, calendar/calendar-form.component)
  *
  * The grid works by keyboard: the arrow keys move between cells, Home and End to the ends of the row, Page Up and
  * Page Down by a month (with Shift, a year) among days or by a page among months and years, and Enter or Space picks
@@ -193,9 +199,16 @@ import { NbBaseCalendarComponent } from './base-calendar.component'
 @Component({
     selector: 'nb-calendar',
     templateUrl: './calendar.component.html',
-    imports: [NbBaseCalendarComponent]
+    imports: [NbBaseCalendarComponent],
+    providers: [{ provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => NbCalendarComponent), multi: true }],
+    host: {
+        '[attr.aria-disabled]': 'isDisabled() || null',
+        '(focusout)': 'onFocusOut($event)'
+    }
 })
-export class NbCalendarComponent<D> {
+export class NbCalendarComponent<D> implements ControlValueAccessor {
+    protected readonly hostElement = inject<ElementRef<HTMLElement>>(ElementRef)
+
     /**
      * Fills the first and last weeks with the days of the months around the one shown; without it those cells are
      * empty.
@@ -270,6 +283,21 @@ export class NbCalendarComponent<D> {
      */
     readonly date = input<D>()
 
+    /** The selected date: the `date` input's or the form's, whichever changed last, or the one picked. */
+    protected readonly selected = linkedSignal<D | undefined>(() => this.date())
+
+    /** Disables every day; a form control's disabled state does too. */
+    readonly disabled = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty })
+
+    /** Whether the days are disabled: the `disabled` input, or the form's disabled state, whichever changed last. */
+    readonly isDisabled = linkedSignal(() => this.disabled())
+
+    /** The days that can be picked: none while disabled, else those `filter` allows. */
+    protected readonly pickable = computed(() => (this.isDisabled() ? () => false : this.filter()))
+
+    protected onChange: (value: D) => void = () => {}
+    protected onTouched: () => void = () => {}
+
     /**
      * Shows a column with the week numbers before the days; off by default.
      */
@@ -289,4 +317,36 @@ export class NbCalendarComponent<D> {
      * Emits the picked day, or the first day of the picked month or year in those picker modes.
      */
     readonly dateChange = output<D>()
+
+    /** @internal */
+    pick(date: D) {
+        this.selected.set(date)
+        this.dateChange.emit(date)
+        this.onChange(date)
+        this.onTouched()
+    }
+
+    /** @internal */
+    onFocusOut(event: FocusEvent) {
+        if (!this.hostElement.nativeElement.contains(event.relatedTarget as Node | null)) {
+            this.onTouched()
+        }
+    }
+
+    // Untracked, as forms write values from wherever the app sets them.
+    writeValue(value: D | null | undefined) {
+        untracked(() => this.selected.set(value ?? undefined))
+    }
+
+    registerOnChange(fn: (value: D) => void) {
+        this.onChange = fn
+    }
+
+    registerOnTouched(fn: () => void) {
+        this.onTouched = fn
+    }
+
+    setDisabledState(isDisabled: boolean) {
+        this.isDisabled.set(isDisabled)
+    }
 }

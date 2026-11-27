@@ -374,6 +374,12 @@ export const PLAYGROUND_COMPONENTS: ComponentLink[] = [
                 link: '/calendar/calendar-week-number.component',
                 component: 'CalendarWeekNumberComponent',
                 name: 'Calendar Week Number'
+            },
+            {
+                path: 'calendar-form.component',
+                link: '/calendar/calendar-form.component',
+                component: 'CalendarFormComponent',
+                name: 'Calendar Form'
             }
         ]
     },
