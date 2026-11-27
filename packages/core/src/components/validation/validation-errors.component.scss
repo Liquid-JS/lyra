@@ -18,7 +18,7 @@
     }
 
     // No helper text, no room for it.
-    &:has(.validation-text:empty) {
+    &:has(.validation-text > span:empty) {
         display: none;
     }
 }

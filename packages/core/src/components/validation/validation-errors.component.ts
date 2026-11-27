@@ -52,7 +52,13 @@ let lastValidationErrorsId = 0
 
 /**
  * A message for one error kind of a `nb-validation-errors`, in place of the app-wide one.
- * The template gets the error as its context.
+ * The template gets the error as its context, and `error | nbValidationMessage` gives the message it replaces. Its
+ * text lays out by the page's direction, unless you mark it with `dir="auto"`, as Lyra's own messages are.
+ *
+ * The kinds are the validators' names, e.g. Angular's `required` or `minlength`, and Lyra's controls': the datepicker's
+ * `nbDatepickerParse`, `nbDatepickerMin`, `nbDatepickerMax` and `nbDatepickerFilter`, the timepicker's
+ * `nbTimepickerParse`, `nbTimepickerMin` and `nbTimepickerMax`, the number input's `nbNumberInputParse` and a range
+ * slider's `nbSliderOrder`.
  *
  * ```html
  * <ng-template nbValidationError="minlength" let-error>
@@ -162,14 +168,14 @@ export class NbValidationErrorDirective {
             @if (shown.template; as template) {
               <ng-container *ngTemplateOutlet="template; context: { $implicit: shown.error }" />
             } @else {
-              {{ shown.message }}
+              <span dir="auto">{{ shown.message }}</span>
             }
           </div>
         </div>
       }
     </div>
     <!-- Closed while errors show, which also leaves it out of the field's description. -->
-    <div #helper class="validation-helper"><div class="validation-text"><ng-content /></div></div>
+    <div #helper class="validation-helper"><div class="validation-text"><span dir="auto"><ng-content /></span></div></div>
   `,
     imports: [NgTemplateOutlet],
     host: {

@@ -9,7 +9,8 @@ export interface NbValidationError {
      */
     kind: string
     /**
-     * The message the validator gave, if any (signal forms validators can set one).
+     * The message a signal forms rule gave, if any; reactive and template-driven forms' errors have none here. The
+     * message to show, from wherever it comes, is `error | nbValidationMessage`, or `injectNbValidationMessage()`.
      */
     message?: string
     /**

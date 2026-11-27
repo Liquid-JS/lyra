@@ -329,8 +329,16 @@ describe('validation', () => {
         })
 
         it('should take no room without helper text', () => {
-            const element = fixture.nativeElement.querySelector('[data-errors="choice"] .validation-helper .validation-text')
-            expect(element.childNodes.length).toBe(0)
+            const helperText = fixture.nativeElement.querySelector('[data-errors="choice"] .validation-helper .validation-text > span')
+            expect(helperText.childNodes.length).toBe(0)
+            expect(getComputedStyle(fixture.nativeElement.querySelector('[data-errors="choice"] .validation-helper')).display).toBe('none')
+        })
+
+        it('should lay out messages and helper text by their own direction', async () => {
+            expect(fixture.nativeElement.querySelector('[data-errors="password"] .validation-helper .validation-text > span').getAttribute('dir')).toBe('auto')
+            await type('password', 'ab')
+            await blur('password')
+            expect(fixture.nativeElement.querySelector('[data-errors="password"] .validation-error .validation-text > span').getAttribute('dir')).toBe('auto')
         })
 
         it('should build messages from the error', async () => {
