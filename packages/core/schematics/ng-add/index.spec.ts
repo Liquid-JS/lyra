@@ -12,7 +12,7 @@ import { getWorkspace } from '@schematics/angular/utility/workspace'
 import { Schema as WorkspaceOptions } from '@schematics/angular/workspace/schema'
 import { Schema as ApplicationOptions, Style } from '@schematics/angular/application/schema'
 
-import { lyraVersionRange } from '../util/package.js'
+import { lyraPackageRange } from '../util/package.js'
 import { Schema as NgAddOptions } from './schema.js'
 
 const require = createRequire(import.meta.url)
@@ -143,10 +143,10 @@ describe('ng-add', () => {
             expect(dependencies['@liquid-js/lyr-core']).toBe(lyraVersion)
         })
 
-        it('should add @liquid-js/lyr-icons in package.json, in the major line of the core version', async () => {
+        it('should add @liquid-js/lyr-icons in package.json, from the version it had in core\'s build', async () => {
             let dependencies = getPackageDependencies(tree)
             // A release only bumps the packages it changes, so the icons may not have core's version.
-            const iconsVersion = lyraVersionRange(require('../../package.json').version)
+            const iconsVersion = `^${require('../../../../packages/icons/package.json').version}`
 
             expect(dependencies['@liquid-js/lyr-icons']).toBeDefined()
             expect(dependencies['@liquid-js/lyr-icons']).toBe(iconsVersion)
