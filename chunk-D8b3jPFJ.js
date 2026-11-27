@@ -1,0 +1,1 @@
+var t=[{path:``,loadChildren:()=>import(`./chunk-DE_W3k61.js`).then(e=>e.WITH_LAYOUT_ROUTES)},{path:``,loadChildren:()=>import(`./chunk-DpdKs4Vi.js`).then(e=>e.WITHOUT_LAYOUT_ROUTES)}];export{t as PLAYGROUND_ROUTES};

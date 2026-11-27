@@ -1,1 +1,0 @@
-import{$ as Mr,na as Oy,uo as jC}from"./main-CN24RKYI.js";var r=class n{static{this.ɵfac=function(e){return new(e||n)}}static{this.ɵcmp=jC({type:n,selectors:[[`nb-firebase-playground`]],decls:1,vars:0,template:function(e,s){e&1&&Oy(0,`router-outlet`)},dependencies:[Mr],encapsulation:2})}};export{r as FirebasePlaygroundComponent};

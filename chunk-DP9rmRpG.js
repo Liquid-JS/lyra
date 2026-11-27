@@ -1,0 +1,1 @@
+var o=[{path:`theme-select-showcase.component`,loadComponent:()=>import(`./chunk-PiA79dgX.js`).then(e=>e.ThemeSelectShowcaseComponent)}];export{o as THEME_SELECT_ROUTES};

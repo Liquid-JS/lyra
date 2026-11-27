@@ -1,0 +1,1 @@
+var n=[{path:`calendar-kit-full-calendar.component`,loadComponent:()=>import(`./chunk-DJMH4Fi-.js`).then(e=>e.CalendarKitFullCalendarShowcaseComponent)}];export{n as CALENDAR_KIT_ROUTES};

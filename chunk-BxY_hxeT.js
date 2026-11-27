@@ -1,0 +1,1 @@
+var o=[{path:``,loadComponent:()=>import(`./chunk-DUpQbhAC.js`).then(e=>e.NgdExampleComponent),children:[{path:``,loadChildren:()=>import(`./chunk-D8b3jPFJ.js`).then(e=>e.PLAYGROUND_ROUTES)},{path:`**`,loadComponent:()=>import(`./chunk-zJ2kbCUv.js`).then(e=>e.NgdExample404Component)}]}];export{o as EXAMPLE_ROUTES};

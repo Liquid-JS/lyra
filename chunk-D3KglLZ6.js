@@ -1,0 +1,1 @@
+import{a as Pd,c as wd,n as Cd,r as Dd}from"./chunk-C4bYDdVv.js";import"./main-QV7ZLW7Q.js";var p=[{path:``,providers:[Dd(...wd,...Cd,...Pd)],children:[{path:`chart-showcase.component`,loadComponent:()=>import(`./chunk-BVA3AQFu.js`).then(n=>n.ChartShowcaseComponent)}]}];export{p as CHART_ROUTES};

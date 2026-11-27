@@ -1,1 +1,0 @@
-var o=[{path:`pagination-showcase.component`,loadComponent:()=>import(`./chunk-CtW4kes6.js`).then(n=>n.PaginationShowcaseComponent)},{path:`pagination-tree-grid.component`,loadComponent:()=>import(`./chunk-JVafiMM_.js`).then(n=>n.PaginationTreeGridComponent)}];export{o as PAGINATION_ROUTES};

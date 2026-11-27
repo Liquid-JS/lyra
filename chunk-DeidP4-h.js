@@ -1,0 +1,1 @@
+import{Ja as eM,ka as X_,uo as jC}from"./main-QV7ZLW7Q.js";var m=class t{static{this.ɵfac=function(o){return new(o||t)}}static{this.ɵcmp=(function(){return jC({type:t,selectors:[[`nb-input-group`]],hostAttrs:[`role`,`group`],ngContentSelectors:[`*`],decls:1,vars:0,template:function(r,s){r&1&&(X_(),eM(0))},encapsulation:2})})()}};export{m as t};
