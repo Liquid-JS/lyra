@@ -208,7 +208,8 @@ for (const file of files) {
         for (const [, name] of text.matchAll(settings)) {
             use(name, shown)
         }
-        const rest = text.replace(settings, '').replace(/\binput(?:<[^>]*>)?\(\s*'essentials'\s*\)/g, '')
+        // Inline templates' icons are the templates' rule's.
+        const rest = text.replace(settings, '').replace(/<nb-icon\b[^>]*>/g, '').replace(/\binput(?:<[^>]*>)?\(\s*'essentials'\s*\)/g, '')
         if (/'essentials'|"essentials"|\bNB_ESSENTIAL_ICONS_PACK\b/.test(rest)) {
             problems.push(
                 `${shown}: can't tell which icon it uses from the essentials pack. Write each as { icon: 'name', pack: ` +

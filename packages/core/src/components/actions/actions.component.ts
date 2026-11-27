@@ -197,7 +197,7 @@ export class NbActionComponent {
                 [attr.aria-label]="texts().more"
                 [nbContextMenu]="menuItems()"
                 [nbContextMenuTag]="tag">
-                <nb-icon icon="more-vertical-outline" />
+                <nb-icon icon="more-vertical-outline" pack="essentials" />
             </button>
         </nb-action>
         }
