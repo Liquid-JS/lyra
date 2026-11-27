@@ -171,7 +171,7 @@ export class NbDialogService {
         userConfig: Partial<NbDialogConfig<Partial<T> | string>> = {}): NbDialogRef<T, R> {
         const config = new NbDialogConfig<Partial<T> | string>({ ...this.globalConfig, ...userConfig })
         const overlayRef = this.createOverlay(config)
-        const dialogRef = new NbDialogRef<T, R>(overlayRef)
+        const dialogRef = new NbDialogRef<T, R>(overlayRef, !!config.sheet)
         // The dialog takes Escape while it's on top, before its content adds what it opens, e.g. a popover, above it. One
         // that doesn't close on Escape still keeps it from what's under it.
         const escape = this.escapeStack.add(() => {
@@ -184,7 +184,7 @@ export class NbDialogService {
         this.createContent(config, content, container, dialogRef)
         // Rendered before the browser paints, rather than with the next change detection, which can come a frame later.
         container.detectChanges()
-        void animateDialog(overlayRef.overlayElement, true)
+        void animateDialog(overlayRef.overlayElement, true, !!config.sheet)
 
         this.registerCloseListeners(config, overlayRef, dialogRef)
 

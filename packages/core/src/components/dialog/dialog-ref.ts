@@ -26,7 +26,10 @@ export class NbDialogRef<T, R = unknown> {
      */
     readonly onClose: Observable<R | undefined> = this.onClose$.asObservable()
 
-    constructor(protected overlayRef: NbOverlayRef) {
+    /**
+     * @param sheet Whether the dialog is a sheet, which slides back down as it closes rather than fading.
+     */
+    constructor(protected overlayRef: NbOverlayRef, protected sheet = false) {
         this.onBackdropClick = this.overlayRef.backdropClick()
     }
 
@@ -43,7 +46,7 @@ export class NbDialogRef<T, R = unknown> {
         this.closing = true
         // The backdrop fades out along with the pane, and the overlay goes once both have.
         this.overlayRef.detachBackdrop()
-        void animateDialog(this.overlayRef.overlayElement, false).then(() => {
+        void animateDialog(this.overlayRef.overlayElement, false, this.sheet).then(() => {
             this.overlayRef.detach()
             disposeAfterBackdrop(this.overlayRef)
             this.onClose$.next(res)

@@ -132,6 +132,20 @@ describe('dialog-service', () => {
         overlayContainer.remove()
     })
 
+    it('should slide a sheet up as it opens and back down as it closes, without fading it', async () => {
+        document.body.appendChild(overlayContainer)
+        const ref = dialog.open(NbTestDialogComponent, { autoFocus: false, sheet: true })
+        const pane = overlayContainer.querySelector('nb-dialog-container')?.parentElement as HTMLElement
+        const frames = () => (pane.getAnimations().at(-1)?.effect as KeyframeEffect | null)?.getKeyframes() ?? []
+        expect(frames().map((frame) => [frame['transform'], frame['opacity']])).toEqual([['translateY(100%)', undefined], ['none', undefined]])
+
+        ref.close()
+        expect(frames().map((frame) => frame['transform'])).toEqual(['none', 'translateY(100%)'])
+        await new Promise((resolve) => setTimeout(resolve, 700))
+        expect(overlayContainer.querySelector('nb-dialog-container')).toBeNull()
+        overlayContainer.remove()
+    })
+
     it('should assign default backdropClass', () => {
         dialog.open(NbTestDialogComponent)
         expect(queryBackdrop()).toBeTruthy()

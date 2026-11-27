@@ -138,6 +138,8 @@ describe('responsive navigation', () => {
         await new Promise((resolve) => setTimeout(resolve))
         const container = document.querySelector('nb-dialog-container') as HTMLElement
         expect(container.classList.contains('sheet')).toBe(true)
+        // Once it has slid up into place.
+        await Promise.all((container.parentElement?.getAnimations() ?? []).map((animation) => animation.finished))
         expect(container.getBoundingClientRect().bottom).toBeCloseTo(window.innerHeight, 0)
         ref.close()
     })
