@@ -29,6 +29,10 @@ import { NbCardModule, NbThemeModule } from '@liquid-js/lyr-core'
         <div nbCardMedia class="top" style="height: 40px"></div>
         <div nbCardMedia="bottom" class="bottom" style="height: 40px"></div>
       </nb-card>
+      <nb-card class="inset-card">
+        <div nbCardMedia inset class="inset" style="height: 40px"></div>
+        <nb-card-body>Text</nb-card-body>
+      </nb-card>
     </div>
   `,
     styleUrl: './card-actions.spec.scss',
@@ -80,6 +84,25 @@ describe('NbCardComponent corners', () => {
         expect(getComputedStyle(top).borderBottomWidth).toBe('0px')
         expect(getComputedStyle(bottom).borderTopWidth).toBe('0px')
         expect(getComputedStyle(bottom).borderBottomRightRadius).toBe('16px')
+        fixture.nativeElement.remove()
+    })
+
+    // Inset, media stays inside the border, which frames it, rounded to the corners within it.
+    it('should keep inset media inside the border', () => {
+        const fixture = TestBed.configureTestingModule({
+            imports: [NbThemeModule.forRoot(), CardCornersHostComponent]
+        }).createComponent(CardCornersHostComponent)
+        document.body.appendChild(fixture.nativeElement)
+        fixture.detectChanges()
+        const card: HTMLElement = fixture.nativeElement.querySelector('.inset-card')
+        const media = card.querySelector<HTMLElement>('.inset')
+        assert(media, 'media not rendered')
+
+        const outer = card.getBoundingClientRect()
+        const inner = media.getBoundingClientRect()
+        expect(inner.width).toBe(outer.width - 4)
+        expect(inner.top).toBe(outer.top + 2)
+        expect(getComputedStyle(media).borderTopLeftRadius).toBe('14px')
         fixture.nativeElement.remove()
     })
 

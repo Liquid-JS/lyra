@@ -1,6 +1,6 @@
 import { Component, computed, Directive, input, linkedSignal } from '@angular/core'
 
-import { injectNbDefaults, NbCardAppearance, NbComponentSize, NbComponentOrCustomStatus, NbComponentStatus } from '@liquid-js/lyr-core/base'
+import { injectNbDefaults, NbBooleanInput, NbCardAppearance, NbComponentSize, NbComponentOrCustomStatus, NbComponentStatus, ɵconvertToBoolProperty as convertToBoolProperty } from '@liquid-js/lyr-core/base'
 
 /**
  * The header of an `nb-card`, coloured by the card's `status`.
@@ -132,7 +132,9 @@ export class NbCardActionsComponent {}
  * @stacked-example(Accent Card, card/card-accents.component)
  *
  * Put an image or a coloured block at a card's top with `nbCardMedia`, or its bottom with `nbCardMedia="bottom"`. It
- * reaches the card's edges and covers the card's border, as a coloured header and an accent do:
+ * reaches the card's edges and covers the card's border, as a coloured header and an accent do. For content over a
+ * picture, e.g. a tag in its corner or a caption, put `nbCardMedia` on a wrapper that holds them both, which clips
+ * them to the card's corners. With `inset`, the media stays inside the card's border, which frames it:
  * @stacked-example(Card with media, card/card-media.component)
  *
  * `appearance="filled"` makes a tinted card without an outer border, e.g. for cards inside a card or on a white page,
@@ -264,8 +266,9 @@ export class NbCardComponent {
 export class NbCardLinkDirective {}
 
 /**
- * An image, video or coloured block at a card's top, or with `nbCardMedia="bottom"` its bottom. It reaches the card's
- * edges, covers its border and follows its rounded corners.
+ * An image, video or coloured block at a card's top, or with `nbCardMedia="bottom"` its bottom, or a wrapper of a
+ * picture and what goes over it, e.g. a tag or a caption. It reaches the card's edges, covers its border and clips its
+ * content to the card's rounded corners.
  *
  * ```html
  * <nb-card>
@@ -276,9 +279,15 @@ export class NbCardLinkDirective {}
  */
 @Directive({
     selector: '[nbCardMedia]',
-    host: { class: 'card-media' }
+    host: {
+        'class': 'card-media',
+        '[class.card-media-inset]': 'inset()'
+    }
 })
 export class NbCardMediaDirective {
     /** Where the media goes: the card's top (by default), or its `bottom`; set as a plain attribute. */
     readonly nbCardMedia = input<'' | 'top' | 'bottom'>('')
+
+    /** Keeps the media inside the card's border, which then frames it, rather than over it. */
+    readonly inset = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty })
 }

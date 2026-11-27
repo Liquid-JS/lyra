@@ -3,7 +3,8 @@ import {
     NbCardBodyComponent,
     NbCardComponent,
     NbCardMediaDirective,
-    NbIconComponent
+    NbIconComponent,
+    NbTagComponent
 } from '@liquid-js/lyr-core'
 
 @Component({
@@ -21,6 +22,33 @@ import {
       height: 10rem;
     }
 
+    /* The picture and what goes over it share one grid cell, each placed in it. */
+    .with-overlay {
+      display: grid;
+    }
+
+    .with-overlay > * {
+      grid-area: 1 / 1;
+    }
+
+    .with-overlay img {
+      width: 100%;
+      object-fit: cover;
+    }
+
+    .with-overlay nb-tag {
+      place-self: start end;
+      margin: 0.75rem;
+    }
+
+    .caption {
+      align-self: end;
+      margin: 0;
+      padding: 2rem 1rem 0.75rem;
+      background: linear-gradient(transparent, rgb(0 0 0 / 60%));
+      color: white;
+    }
+
     .block {
       display: flex;
       align-items: center;
@@ -31,6 +59,6 @@ import {
       font-size: 3rem;
     }
   `,
-    imports: [NbCardComponent, NbCardBodyComponent, NbCardMediaDirective, NbIconComponent]
+    imports: [NbCardComponent, NbCardBodyComponent, NbCardMediaDirective, NbIconComponent, NbTagComponent]
 })
 export class CardMediaComponent {}
