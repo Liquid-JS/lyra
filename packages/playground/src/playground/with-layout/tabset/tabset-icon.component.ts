@@ -11,6 +11,12 @@ import {
     selector: 'nb-tabset-icon',
     templateUrl: './tabset-icon.component.html',
     styles: [`
+    :host {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
     :host nb-tab {
       padding: 1.25rem;
     }

@@ -18,9 +18,6 @@ import {
       gap: 1.5rem;
     }
 
-    nb-card {
-      margin: 0;
-    }
   `,
     imports: [
         NbCardModule,

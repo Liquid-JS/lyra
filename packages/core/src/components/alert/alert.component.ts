@@ -62,6 +62,9 @@ declare const $localize: NbLocalize
  * And `outline`, tinted with a border in the status' colour:
  * @stacked-example(Outline Alert, alert/alert-outline.component)
  * @additional-example(Multiple Sizes, alert/alert-sizes.component)
+ *
+ * An alert has no margin of its own: space it with the layout around it, e.g. a `gap`, or the theme's
+ * `alert-bottom-margin` for alerts stacked without one.
  * @styles
  *
  * alert-border-radius:

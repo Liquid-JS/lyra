@@ -355,6 +355,10 @@ in the [icon browser](icons/browse-icons).
 - Injection tokens are typed: `NB_DATE_ADAPTER` and `NB_AUTH_STRATEGIES` hold arrays, `NB_WINDOW` is
   `(Window & typeof globalThis) | undefined` (undefined outside the browser, so code using it checks for it), and
   `NB_DATE_SERVICE_OPTIONS` is `NbDateServiceOptions`.
+- Cards and alerts have no margin below them: `card-margin-bottom` and `alert-bottom-margin` are 0, so the layout
+  around them spaces them, e.g. a grid's or a column's `gap`. Cards and alerts stacked with nothing between them
+  touch; set the variables in your theme to have the old spacing, `1.875rem` and `1.5rem`. Two tiny cards are as tall
+  as a medium one 1.875rem apart.
 - The theme's `menu-item-icon-margin` (a margin shorthand, `0 0.5rem 0 0`) is `menu-item-icon-end-margin` (`0.5rem`),
   the gap after a menu item's icon on its end side, so it mirrors in RTL.
 - `NbDynamicOverlay` takes `(overlay, overlayContainer, injector)` instead of `(overlay, zone, overlayContainer)`.

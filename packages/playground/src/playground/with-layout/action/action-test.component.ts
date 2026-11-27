@@ -13,6 +13,13 @@ import {
 @Component({
     selector: 'nb-action-test',
     templateUrl: './action-test.component.html',
+    styles: `
+    nb-layout-column {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+  `,
     imports: [
         NbLayoutComponent,
         NbLayoutHeaderComponent,

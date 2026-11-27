@@ -22,11 +22,6 @@ import { loadPlaygroundTheme } from '../playground/playground-theme'
             align-items: flex-start;
             gap: 2rem;
         }
-
-        /* A showcase's last card keeps no margin below it, so a specimen ends where its card does. */
-        .design-kit [data-kit] > * > nb-card:last-child {
-            margin-bottom: 0;
-        }
     `,
     encapsulation: ViewEncapsulation.None,
     imports: [NbLayoutComponent, NbLayoutColumnComponent, RouterOutlet]

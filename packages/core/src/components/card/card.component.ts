@@ -145,7 +145,11 @@ export class NbCardActionsComponent {}
  * their own. Screen readers find the link with its own text, so give it one that names the card:
  * @stacked-example(Interactive Card, card/card-interactive.component)
  *
- * `size` gives a card a fixed height, so cards of smaller sizes stack beside a bigger one in a row:
+ * A card has no margin of its own: space cards with the layout around them, e.g. a grid's `gap`, or the theme's
+ * `card-margin-bottom` for cards stacked without one.
+ *
+ * `size` gives a card a fixed height, so cards of smaller sizes stack beside a bigger one in a row: two tiny cards
+ * 1.875rem apart are as tall as a medium one, and a tiny and a small one as a large one:
  * @stacked-example(Card sizes combinations, card/card-sizes-combinations.component)
  *
  * A card's first and last children keep to its rounded corners: their outer corners take the card's radius inside its

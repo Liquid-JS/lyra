@@ -9,6 +9,13 @@ import {
 @Component({
     selector: 'nb-card-colors',
     templateUrl: './card-colors.component.html',
+    styles: `
+    :host {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+  `,
     imports: [NbCardComponent, NbCardHeaderComponent, NbCardBodyComponent, NbCardFooterComponent]
 })
 export class CardColorsComponent {

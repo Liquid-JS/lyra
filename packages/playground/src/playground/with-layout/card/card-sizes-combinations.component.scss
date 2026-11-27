@@ -1,5 +1,8 @@
+// Two tiny cards 1.875rem apart are as tall as a medium one, so sizes combine in a row.
 :host {
-    display: block;
+    display: flex;
+    flex-direction: column;
+    gap: 1.875rem;
     max-height: 25rem;
     overflow-x: hidden;
     overflow-y: auto;
@@ -11,6 +14,9 @@
 }
 
 .card-col {
+    display: flex;
+    flex-direction: column;
+    gap: 1.875rem;
     flex: 1 0 calc(50% - 1rem);
     margin: 0 0.5rem;
 }

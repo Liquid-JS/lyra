@@ -150,7 +150,6 @@
 .side nb-card {
     position: sticky;
     top: 5.5rem;
-    margin: 0;
     overflow: hidden;
 
     nb-card-header {
@@ -165,14 +164,11 @@
     }
 }
 
-// The list and the progress bar run to the card's edges; the bar a thin square strip under the header.
-.chapter-body {
-    padding: 0;
-
-    nb-progress-bar {
-        --progress-bar-border-radius: 0;
-        --progress-bar-tiny-height: 0.5rem;
-    }
+// The list and the progress bar are straight in the card, so they run to its edges and its items start where the
+// header's text does; the bar is a thin square strip under the header.
+.chapter-progress {
+    --progress-bar-border-radius: 0;
+    --progress-bar-tiny-height: 0.5rem;
 }
 
 .chapter-lesson {

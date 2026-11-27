@@ -1,3 +1,10 @@
 p {
     margin-top: 0;
 }
+
+// The example's cards, one under another.
+:host {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}

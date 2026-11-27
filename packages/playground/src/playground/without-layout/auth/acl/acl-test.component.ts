@@ -12,6 +12,13 @@ import {
 @Component({
     selector: 'nb-actions-test',
     templateUrl: './acl-test.component.html',
+    styles: `
+    nb-layout-column {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+  `,
     imports: [
         NbLayoutComponent,
         NbLayoutColumnComponent,

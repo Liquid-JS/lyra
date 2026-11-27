@@ -16,6 +16,13 @@ import { RouterOutlet } from '@angular/router'
 @Component({
     selector: 'nb-menu-test',
     templateUrl: './menu-test.component.html',
+    styles: `
+    nb-layout-column {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+  `,
     imports: [
         NbButtonComponent,
         NbLayoutComponent,

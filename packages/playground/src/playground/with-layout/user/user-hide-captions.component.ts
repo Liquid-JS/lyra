@@ -4,6 +4,13 @@ import { NbCardComponent, NbCardBodyComponent, NbUserComponent } from '@liquid-j
 @Component({
     selector: 'nb-user-hide-captions',
     templateUrl: './user-hide-captions.component.html',
+    styles: `
+    :host {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+  `,
     imports: [NbCardComponent, NbCardBodyComponent, NbUserComponent]
 })
 export class UserHideCaptionsComponent {

@@ -2,7 +2,6 @@ import { Component, computed, signal, viewChild } from '@angular/core'
 import { RouterLink } from '@angular/router'
 import {
     NbButtonComponent,
-    NbCardBodyComponent,
     NbCardComponent,
     NbCardFooterComponent,
     NbCardHeaderComponent,
@@ -39,7 +38,6 @@ function seconds(time: string) {
     styleUrls: ['./learn-lesson.component.scss'],
     imports: [
         NbButtonComponent,
-        NbCardBodyComponent,
         NbCardComponent,
         NbCardFooterComponent,
         NbCardHeaderComponent,

@@ -16,9 +16,6 @@ import {
       gap: 1.5rem;
     }
 
-    nb-card {
-      margin: 0;
-    }
 
     img {
       height: 10rem;
