@@ -6,7 +6,8 @@
 $theme: (
     font-family-primary: string.unquote('Roboto, "Helvetica Neue", Arial, sans-serif'),
     font-family-secondary: font-family-primary,
-    // Headlines and titles are regular or medium, not bold.
+    // Display, headlines and titles are regular or medium, not bold.
+    text-display-font-weight: 400,
     text-heading-1-font-weight: 400,
     text-heading-2-font-weight: 400,
     text-heading-3-font-weight: 400,

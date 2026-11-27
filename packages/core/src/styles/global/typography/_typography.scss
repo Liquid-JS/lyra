@@ -40,6 +40,21 @@
         }
     }
 
+    // Code in the theme's third typeface: inline, in its text's size, as the browser sizes it; a block in the code
+    // typography's.
+    code,
+    kbd,
+    samp,
+    pre {
+        font-family: nb-theme(text-code-font-family);
+    }
+
+    pre {
+        font-size: nb-theme(text-code-font-size);
+        font-weight: nb-theme(text-code-font-weight);
+        line-height: nb-theme(text-code-line-height);
+    }
+
     .subtitle,
     .subtitle-2 {
         color: nb-theme(text-basic-color);

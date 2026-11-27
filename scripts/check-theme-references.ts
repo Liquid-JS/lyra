@@ -13,7 +13,7 @@ const files = readdirSync(themes).filter((file) => /^_.*\.scss$/.test(file))
 // `name: value` lines of the theme maps.
 const entry = /^\s+([a-z0-9-]+):\s*(.+?),?\s*$/
 // Words in values that look like variable names but are CSS.
-const cssWords = new Set(['sans-serif'])
+const cssWords = new Set(['sans-serif', 'ui-monospace'])
 
 const entries = files.flatMap((file) =>
     readFileSync(join(themes, file), 'utf8')

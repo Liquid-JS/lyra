@@ -1,0 +1,10 @@
+// The default theme's global styles and typography, in the order the theme installs them.
+@use "@liquid-js/lyr-core/styles/all" as *;
+@use "../overrides";
+
+$nb-enabled-themes: (default);
+
+@include nb-install {
+    @include nb-theme-base;
+    @include overrides.nb-theme-overrides;
+}

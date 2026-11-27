@@ -44,6 +44,8 @@ export interface NgdThemeDraft {
     basic?: string
     fontPrimary: string
     fontSecondary: string
+    /** The code font, the theme's third; none keeps the base theme's, as in themes saved before it could be set. */
+    fontMono?: string
     /** In rem. */
     radius: number
     /** The text sizes, as a share of the base theme's. */

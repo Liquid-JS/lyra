@@ -350,6 +350,13 @@ $theme: (
     // Fonts and text styles - headings, subtitles, paragraphs, captions, button
     font-family-primary: string.unquote("Inter, sans-serif"),
     font-family-secondary: font-family-primary,
+    // A third typeface, for code and what reads like it, e.g. an asset tag.
+    font-family-mono: string.unquote('ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace'),
+    // A size above the headings, e.g. a landing page's title.
+    text-display-font-family: font-family-secondary,
+    text-display-font-size: 3rem,
+    text-display-font-weight: 700,
+    text-display-line-height: 3.5rem,
     text-heading-1-font-family: font-family-secondary,
     text-heading-1-font-size: 2.25rem,
     text-heading-1-font-weight: 700,
@@ -402,6 +409,11 @@ $theme: (
     text-caption-2-font-size: 0.75rem,
     text-caption-2-font-weight: 600,
     text-caption-2-line-height: 1rem,
+    // Code, in the third typeface: a code block's, and an inline code's family.
+    text-code-font-family: font-family-mono,
+    text-code-font-size: 0.875rem,
+    text-code-font-weight: 400,
+    text-code-line-height: 1.25rem,
     text-button-font-family: font-family-primary,
     text-button-font-weight: 700,
     text-button-tiny-font-size: 0.625rem,

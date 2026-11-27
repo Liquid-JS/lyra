@@ -31,6 +31,7 @@ export function draftFromBase(id: string, name: string, base: string, theme: Ngd
         colors,
         fontPrimary: value(theme, 'font-family-primary'),
         fontSecondary: value(theme, 'font-family-secondary'),
+        fontMono: value(theme, 'font-family-mono'),
         radius: rem(value(theme, 'border-radius')) ?? 0.25,
         textScale: 1,
         // Material 3's buttons are fully round: the round shape, as a default.
@@ -74,6 +75,9 @@ export function themeVariables(draft: NgdThemeDraft, theme: NgdThemeValues): Rec
     }
     if (draft.fontSecondary.trim() && draft.fontSecondary !== value(theme, 'font-family-secondary')) {
         variables['font-family-secondary'] = draft.fontSecondary
+    }
+    if (draft.fontMono?.trim() && draft.fontMono !== value(theme, 'font-family-mono')) {
+        variables['font-family-mono'] = draft.fontMono
     }
     if (draft.radius !== rem(value(theme, 'border-radius'))) {
         variables['border-radius'] = `${round(draft.radius)}rem`
