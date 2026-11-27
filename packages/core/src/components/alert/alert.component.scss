@@ -1,8 +1,8 @@
 @use "../../styles/theming" as *;
 
+// Its content flows as text, so a link or emphasis stays in its line; `flow-root` keeps its children's margins inside.
 :host {
-    display: flex;
-    flex-direction: column;
+    display: flow-root;
     position: relative;
 
     .close {

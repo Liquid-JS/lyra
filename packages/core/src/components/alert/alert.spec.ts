@@ -1,3 +1,4 @@
+import { Component } from '@angular/core'
 import { ComponentFixture, TestBed } from '@angular/core/testing'
 
 import { NbAlertComponent, NbAlertModule, NbThemeModule } from '@liquid-js/lyr-core'
@@ -56,4 +57,25 @@ describe('Component: NbAlert', () => {
                 .debugElement.nativeElement.classList.contains('size-small'))
             .toBeTruthy()
     })
+
+    it('should keep inline markup in its line of text', () => {
+        TestBed.resetTestingModule()
+        TestBed.configureTestingModule({ imports: [NbThemeModule.forRoot(), NbAlertModule, InlineAlertComponent] })
+        const host = TestBed.createComponent(InlineAlertComponent)
+        document.body.appendChild(host.nativeElement)
+        host.detectChanges()
+        const alert = host.nativeElement.querySelector('nb-alert') as HTMLElement
+        const strong = alert.querySelector('strong') as HTMLElement
+        // One line: the emphasis is as tall as a line of the alert's text, and inside it, not a row of its own.
+        expect(alert.getBoundingClientRect().height).toBeLessThan(strong.getBoundingClientRect().height * 2 + 32)
+        expect(strong.offsetLeft).toBeGreaterThan(0)
+        host.destroy()
+    })
 })
+
+@Component({
+    template: '<nb-alert size="tiny" style="height: auto; width: 40rem">Check <strong>your email</strong> and the safety rules.</nb-alert>',
+    imports: [NbAlertModule]
+})
+class InlineAlertComponent {}
+
