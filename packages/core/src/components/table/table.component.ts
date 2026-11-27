@@ -111,8 +111,9 @@ export class NbNoDataRowDirective extends CdkNoDataRow {
  * (`*nbDetailRowDef`) shows under a row while it's expanded, e.g. by a button with `[nbExpandRow]="user"`:
  * @stacked-example(Selection and details, table/table-selection.component)
  *
- * `compact` takes less padding in the cells, and `striped` gives every other row a background; like the tree grid,
- * a table placed directly in `nb-card` lines up with the card. A `*nbNoDataRow` shows while there are no rows.
+ * `compact` takes less padding in the cells, `striped` gives every other row a background, and `rules="rows"` draws
+ * lines only between the rows, not between the columns. Like the tree grid, a table placed directly in `nb-card`
+ * lines up with the card, with lines between its rows. A `*nbNoDataRow` shows while there are no rows.
  * @styles
  *
  * table-cell-border-width:
@@ -167,6 +168,7 @@ export class NbNoDataRowDirective extends CdkNoDataRow {
         'class': 'nb-table',
         '[class.nb-table-compact]': 'compact()',
         '[class.nb-table-striped]': 'striped()',
+        '[class.nb-table-rules-rows]': 'rules() === \'rows\'',
         '[class]': '"appearance-" + appearance()'
     }
 })
@@ -189,6 +191,12 @@ export class NbTableComponent<T> extends NbTable<T> implements AfterContentInit,
 
     /** A background on every other row. */
     readonly striped = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty })
+
+    /**
+     * The lines between its cells, as HTML's `rules` names them: `all`, the default, around every cell, or `rows`, only
+     * between the rows, e.g. a track list's.
+     */
+    readonly rules = input<'all' | 'rows'>('all')
 
     protected readonly detailRowDefs = contentChildren(NbDetailRowDefDirective, { descendants: true })
 

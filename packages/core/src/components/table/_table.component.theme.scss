@@ -13,6 +13,11 @@
             text-align: start;
         }
 
+        // Lines only between the rows, not between the columns or at the sides.
+        &.nb-table-rules-rows > tr > :is(.nb-header-cell, .nb-cell, .nb-footer-cell) {
+            border-inline-width: 0;
+        }
+
         .nb-header-row {
             background: nb-theme(table-header-background-color);
             color: nb-theme(table-header-text-color);

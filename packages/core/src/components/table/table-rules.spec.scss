@@ -1,0 +1,9 @@
+// The default theme's tables, which specs don't load otherwise.
+@use "@liquid-js/lyr-core/styles/all" as *;
+@use "table.component.theme" as table;
+
+$nb-enabled-themes: (default);
+
+@include nb-install {
+    @include table.nb-table-theme;
+}
