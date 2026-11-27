@@ -139,6 +139,9 @@ export class NbSidebarFooterComponent {}
  * sidebar-transition-duration:
  * sidebar-padding:
  * sidebar-header-height:
+ * sidebar-header-divider-color:
+ * sidebar-header-divider-style:
+ * sidebar-header-divider-width:
  * sidebar-footer-height:
  * sidebar-shadow:
  * sidebar-menu-item-highlight-color:

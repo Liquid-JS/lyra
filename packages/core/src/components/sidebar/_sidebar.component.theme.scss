@@ -191,9 +191,13 @@
             }
         }
 
+        // At least as tall as `sidebar-header-height`, and as tall as what it holds, e.g. a user's large picture, with a
+        // divider between it and what's under it, as a card's header has.
         nb-sidebar-header {
             padding: nb-theme(sidebar-padding);
-            height: nb-theme(sidebar-header-height);
+            min-height: nb-theme(sidebar-header-height);
+            box-sizing: border-box;
+            border-bottom: nb-theme(sidebar-header-divider-width) nb-theme(sidebar-header-divider-style) nb-theme(sidebar-header-divider-color);
         }
 
         nb-sidebar-footer {

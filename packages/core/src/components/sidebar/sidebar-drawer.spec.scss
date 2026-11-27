@@ -1,0 +1,11 @@
+// The default theme's layout and sidebar, which specs don't load otherwise.
+@use "@liquid-js/lyr-core/styles/all" as *;
+@use "../layout/layout.component.theme" as layout;
+@use "sidebar.component.theme" as sidebar;
+
+$nb-enabled-themes: (default);
+
+@include nb-install {
+    @include layout.nb-layout-theme;
+    @include sidebar.nb-sidebar-theme;
+}
