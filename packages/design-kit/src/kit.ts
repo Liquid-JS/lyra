@@ -317,6 +317,111 @@ export interface CheckOptions {
     limit?: number
 }
 
+export interface InspectOptions {
+    document: string
+    /** The screens to read, by name or ID: every screen of the design's pages by default. */
+    boards?: string[]
+    /** A layer to read, by ID, with what's in it, rather than whole screens, e.g. a card. */
+    layer?: string
+    /** How many levels of layers to read under each screen or layer; deeper ones are counted, in `more`. */
+    depth?: number
+    /**
+     * A folder to export the design's own drawings to, e.g. a logo or an illustration, as SVG, and its pictures as PNG,
+     * each named by its layer's ID; each drawing's `file` names its file.
+     */
+    svg?: string
+    /**
+     * Reads the screens as an outline, a line a layer, indented by depth, with its frame, style, symbol and text, rather
+     * than JSON: a screen's structure at a glance.
+     */
+    outline?: boolean
+}
+
+/** A layer of a design as `inspect.js` reads it: in its screen's coordinates, with its look by name. */
+export interface InspectedLayer {
+    name: string
+    type: string
+    frame: { x: number, y: number, width: number, height: number }
+    /** Its layer or text style. */
+    style?: string
+    /** Its fills' colour variables, else their colours; a gradient as CSS, e.g. `linear-gradient(90deg, …)`; `image`. */
+    fills?: Array<string | undefined>
+    borders?: Array<{ paint?: string, width?: number }>
+    radius?: number[]
+    opacity?: number
+    /** How it blends with what's under it, as CSS's `mix-blend-mode`, e.g. `multiply`; normal isn't given. */
+    blend?: string
+    text?: string
+    color?: string
+    /** A text's font as the file has it, e.g. `DMMono-Regular` at 40 px, its line height, spacing and case. */
+    font?: { family: string, postscript?: string, size?: number, weight?: number, lineHeight?: number, letterSpacing?: number, transform?: string, alignment: string }
+    /** An instance's symbol, the kit's component it is, and its overrides, e.g. `Label stringValue`. */
+    symbol?: string
+    component?: string
+    overrides?: Record<string, unknown>
+    /** A frame's stack layout, and the same as CSS, e.g. `display: flex; flex-direction: column; gap: 16px`. */
+    stack?: { direction: string, gap: number, padding: unknown, align: string, justify: string, css: string }
+    layers?: InspectedLayer[]
+    /** How many layers it holds that weren't read, beyond `depth`. */
+    more?: number
+    /** The file a drawing of the design's own was exported to, with `svg`. */
+    file?: string
+}
+
+export interface MirrorOptions {
+    document: string
+    /** The screens to mirror, by name or ID: the selected ones by default. */
+    boards?: string[]
+}
+
+export interface UnwrapOptions {
+    document: string
+    /** The starters to unwrap, or the frames and groups that hold them, by ID: the selected ones by default. */
+    layers?: string[]
+    /** The symbol to swap each for, with its look, e.g. `Tag/Small/Plain`; the one it holds by default. */
+    symbol?: string
+}
+
+export interface UpdateOptions {
+    document: string
+}
+
+export interface ResizeOptions {
+    document: string
+    /** The board or frame to resize, by ID. */
+    layer: string
+    width?: number
+    height?: number
+}
+
+export interface CalendarMonthOptions {
+    document: string
+    /** The calendar instance, by ID. */
+    layer: string
+    /** The month, as `2026-11`. */
+    month: string
+    /** The week's first day: 0, Sunday, as the kit's calendars, or 1, Monday. */
+    firstDay?: 0 | 1
+    /** The days of the month that are selected, today and disabled. */
+    selected?: number[]
+    today?: number
+    disabled?: number[]
+}
+
+export interface TypographyOptions {
+    document: string
+}
+
+/** The theme's typographies, in order, for the kit's text styles and its Typography page; see typography.ts. */
+export interface TypographyData {
+    /** The typography whose text styles new ones start from, in each colour, e.g. `Paragraph/P1`. */
+    template: string
+    /** The text colours the text styles come in, by their names' last part, e.g. `Hint`. */
+    colours: string[]
+    /** Each typography's text styles' prefix, e.g. `Display`, its row's name, and its font in the kit's theme, in px. */
+    categories: Array<{ category: string, prefix: string, label: string, family: string, size: number, lineHeight: number, weight: number }>
+}
+
 /** Findings that are the same thing, e.g. a logo on every screen, as the Check page lists them once. */
 export interface CheckRow {
     kind: string

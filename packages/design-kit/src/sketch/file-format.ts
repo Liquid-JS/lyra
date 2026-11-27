@@ -15,14 +15,18 @@ export interface FileColour {
 
 export interface FilePaint {
     isEnabled?: boolean
-    /** 0 for a colour. */
+    /** 0 for a colour, 1 for a gradient, 4 for an image. */
     fillType: number
     color?: FileColour
+    /** A gradient's: 0 linear, 1 radial, 2 angular, with its stops. */
+    gradient?: { gradientType: number, stops: Array<{ position: number, color: FileColour }> }
 }
 
 export interface FileStyle {
     fills?: FilePaint[]
     borders?: FilePaint[]
+    /** How the layer blends with what's under it: `blendMode` 0 is normal, e.g. 2 multiply. */
+    contextSettings?: { blendMode?: number, opacity?: number }
     textStyle?: {
         encodedAttributes: {
             MSAttributedStringFontAttribute?: { attributes: { name: string, size: number } }

@@ -5,7 +5,7 @@ import type { Binding, KitTheme, LayerBindings, StyleMeasure, ThemeOptions, Them
 import { childrenOf, fileFormatOf, hexOf, isLocal, isStack, openDocument, pacer, settingOf } from '../document.ts'
 import type { FileLayer } from '../file-format.ts'
 import { writeThemeBoard, writeThemeCode, type BoardValues } from './board.ts'
-import { colourIn, cssOf, derive, display, firstFamily, numberOf, partsOf, shadowKey, shadowsOf, valuesOf, weightOf, type Variables } from './values.ts'
+import { colourIn, cssOf, derive, display, firstFamily, numberOf, partsOf, shadowKey, shadowsOf, valuesOf, weightOf, weightOfFace, type Variables } from './values.ts'
 
 /**
  * Applies a theme to a Sketch document made with the Lyra design kit, the way the app applies it: the theme's
@@ -19,8 +19,9 @@ import { colourIn, cssOf, derive, display, firstFamily, numberOf, partsOf, shado
  * document records as `lyra-theme-applied`: the first theme applied to a kit, or one applied with `full`, changes
  * everything. It works in Sketch's turns, and records what it did in the document's settings as `lyra-theme-result`
  * once it's done, for a script that can't wait for its promise, e.g. an MCP server's run-code tool, which returns at
- * once: `finished` when it's done, `error` if it failed. A run that changes nothing, e.g. one a tool runs again after
- * it timed out, keeps the last result that changed something, with `checkedAgain`. Without a theme it applies the one
+ * once: `finished` when it's done, `error` if it failed. A run started while another is still going, e.g. one a tool
+ * runs again after it timed out, leaves it to finish and returns `alreadyRunning`; a run that changes nothing keeps the
+ * last result that changed something, with `checkedAgain`. Without a theme it applies the one
  * the document recorded,
  * with what the designer changed on its Theme board, e.g. after the kit is rebuilt.
  */
@@ -29,16 +30,40 @@ export async function applyTheme(kit: KitTheme, options: ThemeOptions): Promise<
     const recordResult = (result: object) => sketch.Settings.setDocumentSettingForKey(doc, 'lyra-theme-result', result)
     // Kept as an object, or read back as its JSON.
     const stored = sketch.Settings.documentSettingForKey(doc, 'lyra-theme-result') as unknown
-    const previous = (typeof stored === 'string' ? JSON.parse(stored) : stored) as (ThemeOutcome & { finished?: string }) | undefined
-    recordResult({ started: new Date().toISOString() })
+    const previous = (typeof stored === 'string' ? JSON.parse(stored) : stored) as (ThemeOutcome & { started?: string, finished?: string, error?: string }) | undefined
+    // A run started and not yet done, e.g. the one a run-code tool timed out on before running the script again: this
+    // one leaves it to finish, rather than run beside it and record nothing changed. One older than any run takes was
+    // cut short, e.g. by Sketch quitting.
+    const running = previous?.started && !previous.finished && !previous.error ? Date.now() - Date.parse(previous.started) : undefined
+    if (running !== undefined && running < 20 * 60 * 1000) {
+        return JSON.stringify({ alreadyRunning: previous?.started })
+    }
+    const started = new Date().toISOString()
+    recordResult({ started })
     try {
-        const outcome = await apply(doc, kit, options)
+        // Where it is, which the result keeps if it fails, and how long each phase took, in seconds.
+        const seconds: Record<string, number> = {}
+        let phaseNow = 'start'
+        let phaseStart = Date.now()
+        const lap = () => {
+            seconds[phaseNow] = Math.round((Date.now() - phaseStart) / 100) / 10
+            phaseStart = Date.now()
+        }
+        const progress = (phase: string) => {
+            lap()
+            phaseNow = phase
+            recordResult({ started, phase, at: new Date().toISOString(), seconds })
+        }
+        const outcome = await apply(doc, kit, options, progress)
+        lap()
         const changedNothing = Object.values(outcome.counts).every((count) => !count) && !outcome.warningCount
         const changedBefore = previous?.finished && previous.counts && Object.values(previous.counts).some((count) => count)
-        recordResult(changedNothing && changedBefore ? { ...previous, checkedAgain: new Date().toISOString() } : { ...outcome, finished: new Date().toISOString() })
+        recordResult(changedNothing && changedBefore ? { ...previous, checkedAgain: new Date().toISOString() } : { ...outcome, seconds, finished: new Date().toISOString() })
         return JSON.stringify(outcome)
     } catch (error) {
-        recordResult({ error: String(error), finished: new Date().toISOString() })
+        const reached = sketch.Settings.documentSettingForKey(doc, 'lyra-theme-result') as { phase?: string } | string | undefined
+        const phase = (typeof reached === 'string' ? (JSON.parse(reached) as { phase?: string }) : reached)?.phase
+        recordResult({ error: String(error), phase, finished: new Date().toISOString() })
         throw error
     }
 }
@@ -71,7 +96,8 @@ const variablesOf = (binding: Binding): string[] => (binding.variable ? [binding
 /** Whether two `#rrggbbaa` colours differ by more than the rounding of a channel. */
 const differentColours = (a: string, b: string | undefined) => !b || [1, 3, 5, 7].some((at) => Math.abs(parseInt(a.slice(at, at + 2), 16) - parseInt(b.slice(at, at + 2), 16)) > 1)
 
-async function apply(doc: sketch.Document, kit: KitTheme, options: ThemeOptions): Promise<ThemeOutcome> {
+async function apply(doc: sketch.Document, kit: KitTheme, options: ThemeOptions, progress: (phase: string) => void): Promise<ThemeOutcome> {
+    progress('variables')
     const pace = pacer()
     const warnings: string[] = []
     const counts = { colours: 0, layerStyles: 0, textStyles: 0, layers: 0 }
@@ -281,6 +307,7 @@ async function apply(doc: sketch.Document, kit: KitTheme, options: ThemeOptions)
     }
 
     // ---- Colours ----
+    progress('colours')
 
     const localSwatches = doc.swatches.filter(isLocal)
     // The colour variables by the theme variable they stand for.
@@ -299,6 +326,7 @@ async function apply(doc: sketch.Document, kit: KitTheme, options: ThemeOptions)
     }
 
     // ---- Styles ----
+    progress('styles')
 
     // Where a style is drawn to read and change it.
     const scratchPage = () => {
@@ -398,6 +426,53 @@ async function apply(doc: sketch.Document, kit: KitTheme, options: ThemeOptions)
         shape.remove()
     }
 
+    // ---- Starters' colours ----
+    progress('starters')
+
+    // A starter's texts and icons take the colour of the component's variable they come from, e.g. a success toast's
+    // text `toastr-success-text-color`: its colour variable, where the variable follows one with that colour, else the
+    // colour itself. Only those the theme gives another colour than the kit's change, and those a theme changed before,
+    // which the document records, so they go back with the theme.
+    const tintedBefore = new Set((sketch.Settings.documentSettingForKey(doc, 'lyra-theme-tinted') ?? []) as string[])
+    const tinted = new Set<string>()
+    for (const symbol of localSymbols) {
+        const tints = kit.symbols[symbol.name]?.tints
+        if (!tints) {
+            continue
+        }
+        const wanted = new Map<string, { colour: string, swatch?: sketch.Swatch }>()
+        for (const [layer, { variable, swatch: kitSwatch }] of Object.entries(tints)) {
+            const colour = colourIn(themed(variable))
+            if (!colour) {
+                continue
+            }
+            const swatch = swatchFor(variable, colour)
+            wanted.set(layer, { colour, swatch })
+            if (swatch?.name !== kitSwatch) {
+                tinted.add(symbol.name)
+            }
+        }
+        if (!tinted.has(symbol.name) && !tintedBefore.has(symbol.name)) {
+            continue
+        }
+        await pace()
+        const instance = symbol.layers.find((layer): layer is sketch.SymbolInstance => layer.type === 'SymbolInstance')
+        for (const override of instance?.overrides ?? []) {
+            const want = wanted.get(override.affectedLayer.name)
+            if (!want || override.path.includes('/') || (override.property !== 'textColor' && override.property !== 'fillColor')) {
+                continue
+            }
+            if (want.swatch && override.swatchValue?.name !== want.swatch.name) {
+                override.swatchValue = want.swatch
+                changedSymbols.add(symbol.name)
+            } else if (!want.swatch && String(override.value ?? '').toLowerCase() !== want.colour) {
+                override.value = want.colour
+                changedSymbols.add(symbol.name)
+            }
+        }
+    }
+    sketch.Settings.setDocumentSettingForKey(doc, 'lyra-theme-tinted', [...tinted])
+
     /**
      * A typography's measure as its variables set it, e.g. `text-heading-1-font-size`; a size's font is its base's,
      * e.g. a tiny button's the button typography's.
@@ -425,6 +500,8 @@ async function apply(doc: sketch.Document, kit: KitTheme, options: ThemeOptions)
 
     // The text styles whose fonts changed, which lay out the symbols that use them.
     const changedTextStyles = new Set<string>()
+    // Faces a family lacks, by the weight wanted and the one shown, with the styles that want them.
+    const missingFaces = new Map<string, string[]>()
     for (const shared of doc.sharedTextStyles) {
         const binding = kit.styles[shared.name] ?? { at: {}, follows: {} }
         const category = typographyOf(shared.name)
@@ -462,7 +539,29 @@ async function apply(doc: sketch.Document, kit: KitTheme, options: ThemeOptions)
             style.lineHeight = lineHeight as number
         }
         if (weight !== undefined) {
-            style.fontWeight = weightOf(Number(weight))
+            // Sketch picks the family's face nearest to its index of the weight, which can be a lighter one, e.g. a
+            // family's ExtraBold for 900 where its Black has an index of its own: the indices around it are tried, and
+            // a family without the weight is a warning, as the design then shows another than the app.
+            const wanted = Math.min(900, Math.max(100, Math.round(Number(weight) / 100) * 100))
+            const faceNow = () => weightOfFace(fileFormatOf(text).style?.textStyle?.encodedAttributes.MSAttributedStringFontAttribute?.attributes.name ?? '')
+            const index = weightOf(wanted)
+            style.fontWeight = index
+            let best = { index, weight: faceNow() }
+            for (const candidate of [index + 1, index - 1, index + 2, index - 2].filter((nearby) => nearby >= 0 && nearby <= 15)) {
+                if (best.weight === wanted) {
+                    break
+                }
+                style.fontWeight = candidate
+                const found = faceNow()
+                if (Math.abs(found - wanted) < Math.abs(best.weight - wanted)) {
+                    best = { index: candidate, weight: found }
+                }
+            }
+            style.fontWeight = best.index
+            if (best.weight !== wanted) {
+                const key = `${style.fontFamily} at ${wanted}, a face Sketch doesn't have; it shows ${best.weight}`
+                missingFaces.set(key, [...(missingFaces.get(key) ?? []), shared.name])
+            }
         }
         if (letterSpacing !== undefined) {
             style.kerning = letterSpacing as number
@@ -480,8 +579,14 @@ async function apply(doc: sketch.Document, kit: KitTheme, options: ThemeOptions)
         }
         text.remove()
     }
+    // One warning for each face, with the styles that want it by their typography, e.g. Heading/H1 in every colour.
+    for (const [face, names] of missingFaces) {
+        const groups = [...new Set(names.map((name) => name.split('/').slice(0, -1).join('/') || name))]
+        warnings.push(`Font: ${groups.join(', ')} (${names.length} styles) want ${face}. Install that face, or set the weight to one the family has.`)
+    }
 
     // ---- Symbols ----
+    progress('symbols')
 
     // Each bound frame's corners, padding and gap; its stack lays it out again, and its symbol's instances follow. A
     // symbol's frames are found in its file format, and only the way to them is read through the API.
@@ -581,6 +686,7 @@ async function apply(doc: sketch.Document, kit: KitTheme, options: ThemeOptions)
     }
 
     // ---- Boards ----
+    progress('boards')
 
     /**
      * Instances of the symbols the theme changed, e.g. a card in its starters or a button in a dialog, as Sketch
@@ -671,12 +777,15 @@ async function apply(doc: sketch.Document, kit: KitTheme, options: ThemeOptions)
     }
 
     // ---- Cards a design composes ----
+    progress('cards')
 
     // A length the theme gives a variable, in pixels.
     const lengthOf = (variable: string) => numberOf(partsOf(themed(variable) ?? '')[0] ?? '')
 
-    // A frame with a card's style, as the guide composes a card, takes the card's corners, which a style can't hold.
-    if (moved('card-border-radius')) {
+    // A frame with a card's style, as the guide composes a card, takes the card's corners, which a style can't hold: in
+    // a design, every time, as its cards are drawn after the theme is applied; in the kit, when they move.
+    const isDesign = !localSymbols.some((symbol) => symbol.name === 'Button/Medium/Rectangle')
+    if (isDesign || moved('card-border-radius')) {
         const radius = lengthOf('card-border-radius')
         const cardStyles = new Set(doc.sharedLayerStyles.filter((shared) => shared.name.startsWith('Card/')).map((shared) => shared.id))
         const composed: string[] = []
@@ -692,7 +801,9 @@ async function apply(doc: sketch.Document, kit: KitTheme, options: ThemeOptions)
         }
         for (const id of radius === undefined ? [] : composed) {
             const layer = doc.getLayerWithID(id)
-            if (radius !== undefined && layer?.style && layer.style.corners.radii.some((corner) => corner !== radius)) {
+            // A frame without corners of its own gives none back.
+            const radii = layer?.style?.corners.radii ?? []
+            if (radius !== undefined && layer?.style && (radii.length === 0 || radii.some((corner) => corner !== radius))) {
                 layer.style.corners.radii = [radius, radius, radius, radius]
                 counts.layers++
             }
@@ -700,6 +811,7 @@ async function apply(doc: sketch.Document, kit: KitTheme, options: ThemeOptions)
     }
 
     // ---- The Typography page ----
+    progress('typography')
 
     // Each sample's font, weight, size and line height as the theme has them, beside its `--text-<category>-*` label,
     // and the primary font named above them.
@@ -733,12 +845,13 @@ async function apply(doc: sketch.Document, kit: KitTheme, options: ThemeOptions)
     }
 
     // ---- The Theme board ----
+    progress('theme board')
 
     const themeName = options.name ?? recorded.name ?? 'custom'
     if (options.board !== false) {
         // A design made with the kit shows the theme's own values alone, which it draws in moments; the kit's Theme page
         // has every value, which takes minutes to draw anew.
-        const design = !localSymbols.some((symbol) => symbol.name === 'Button/Medium/Rectangle')
+        const design = isDesign
         const values: BoardValues = { themeName, baseTheme, given, baseFormulas, themed, design }
         const page = boardPage ?? new sketch.Page({ name: 'Theme', parent: doc })
         const shown = design ? { ...kit, knobs: kit.knobs.filter((knob) => given[knob.variable] !== undefined) } : kit
@@ -755,11 +868,28 @@ async function apply(doc: sketch.Document, kit: KitTheme, options: ThemeOptions)
 
     // Where the theme makes text hard to read, as the Theme Editor warns: under 3:1.
     const CONTRASTS = [
-        ...['primary', 'success', 'info', 'warning', 'danger'].map((status) => ['text-control-color', `color-${status}-500`, `filled ${status} buttons' and badges' text`] as const),
+        // Each component's own colours, which a theme can set apart, e.g. dark text on warning buttons alone.
+        // Every component whose text is on a status's fill, which `text-control-<status>-color` sets for all of them.
+        ...['primary', 'success', 'info', 'warning', 'danger'].flatMap((status) => [
+            [`button-filled-${status}-text-color`, `button-filled-${status}-background-color`, `filled ${status} buttons' text`] as const,
+            [`badge-${status}-text-color`, `badge-${status}-background-color`, `${status} badges' text`] as const,
+            [`tag-filled-${status}-text-color`, `tag-filled-${status}-background-color`, `filled ${status} tags' text`] as const,
+            [`card-header-${status}-text-color`, `card-header-${status}-background-color`, `${status} card headers' text`] as const,
+            [`alert-${status}-text-color`, `alert-${status}-background-color`, `filled ${status} alerts' text`] as const,
+            [`toastr-${status}-text-color`, `toastr-${status}-background-color`, `${status} toasts' text`] as const,
+            [`tooltip-${status}-text-color`, `tooltip-${status}-background-color`, `${status} tooltips' text`] as const,
+            [`chat-${status}-text-color`, `chat-${status}-background-color`, `${status} chat messages' text`] as const,
+            [`progress-bar-${status}-text-color`, `progress-bar-${status}-filled-background-color`, `${status} progress bars' value`] as const,
+            [`user-initials-${status}-text-color`, `user-initials-${status}-background-color`, `${status} initials`] as const,
+            [`select-filled-${status}-text-color`, `select-filled-${status}-background-color`, `filled ${status} selects' text`] as const
+        ]),
         ['text-basic-color', 'background-basic-color-1', 'text on cards'] as const,
         ['text-hint-color', 'background-basic-color-1', 'hint text on cards'] as const,
         ['header-text-color', 'header-background-color', 'the header\'s text'] as const
     ]
+    // The same colours on the same fill are one warning, e.g. white on a light info fill across its components, with
+    // the variable that sets them all.
+    const unreadable = new Map<string, { ratio: number, whats: string[], texts: string[], background: string }>()
     for (const [text, background, what] of CONTRASTS) {
         // Where the theme sets either colour: the base theme's own are its own.
         if (themed(text) === plain(text) && themed(background) === plain(background)) {
@@ -769,8 +899,17 @@ async function apply(doc: sketch.Document, kit: KitTheme, options: ThemeOptions)
         const back = colourIn(themed(background))?.slice(0, 7)
         const ratio = front && back ? contrast(front, back) : undefined
         if (ratio !== undefined && ratio < MINIMUM_CONTRAST) {
-            warnings.push(`Contrast: ${text} ${front} on ${background} ${back} is ${ratio.toFixed(1)}:1, under ${MINIMUM_CONTRAST}:1, for ${what}`)
+            const key = `${front} on ${back}`
+            const entry = unreadable.get(key) ?? { ratio, whats: [], texts: [], background }
+            entry.whats.push(what)
+            entry.texts.push(text)
+            unreadable.set(key, entry)
         }
+    }
+    for (const [colours, { ratio, whats, texts, background }] of unreadable) {
+        const status = ['primary', 'success', 'info', 'warning', 'danger'].find((candidate) => texts.every((text) => text.includes(`-${candidate}-`)))
+        const fix = status ? `; text-control-${status}-color sets the text on ${status} fills` : `; ${texts[0]} or ${background}`
+        warnings.push(`Contrast: ${colours} is ${ratio.toFixed(1)}:1, under ${MINIMUM_CONTRAST}:1, for ${whats.join(', ')}${fix}`)
     }
 
     // The theme's code for the app, beside the Theme board, to copy: a script can't write files. Written again only

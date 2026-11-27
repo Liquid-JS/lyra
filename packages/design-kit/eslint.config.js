@@ -16,7 +16,7 @@ export default defineConfig(
         rules: {
             // Sketch's API is a CommonJS module, as are the scripts the plugin's commands load from beside them: a
             // require keeps them as they are in the bundle, without an ES module wrapper.
-            '@typescript-eslint/no-require-imports': ['error', { allow: ['^sketch$', '^\\./(theme|check)\\.js$'] }]
+            '@typescript-eslint/no-require-imports': ['error', { allow: ['^sketch$', '^\\./(theme|check|mirror|unwrap|update)\\.js$'] }]
         }
     }
 )

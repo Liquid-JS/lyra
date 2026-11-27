@@ -43,8 +43,9 @@ function bundle(entry: string): string {
         format: 'cjs',
         platform: 'neutral',
         target: 'es2020',
-        // Sketch's API, and the theme script and the design check that the plugin's commands load from beside them.
-        external: ['sketch', './theme.js', './check.js'],
+        // Sketch's API, and the theme script, the design check and the mirror that the plugin's commands load from beside
+        // them.
+        external: ['sketch', './theme.js', './check.js', './mirror.js', './unwrap.js', './update.js'],
         legalComments: 'none',
         logLevel: 'warning'
     })
@@ -131,8 +132,14 @@ const THEME_COLOURS = [
     'text-basic-color',
     'text-heading-color',
     'text-hint-color',
-    // Text on filled controls, e.g. a filled button's, and in the primary colour, e.g. a link's or an active tab's.
+    // Text on filled controls, e.g. a filled button's, also each status's own, e.g. dark text on a light warning fill;
+    // and in the primary colour, e.g. a link's or an active tab's.
     'text-control-color',
+    'text-control-primary-color',
+    'text-control-success-color',
+    'text-control-info-color',
+    'text-control-warning-color',
+    'text-control-danger-color',
     'text-primary-color',
     // Fields' and cards' borders.
     'border-basic-color-3',
@@ -331,7 +338,43 @@ if (!only.length || only.includes('theme')) {
     const checkScript = bundle(`const { checkDesign } = require('./check.ts')\nmodule.exports = (options) => checkDesign(${JSON.stringify(checkData(swatches))}, options)\n`)
     const checkFile = writeModule('check', checkScript)
     console.log(`Check (${Math.round(checkScript.length / 1024)} kB): require(${JSON.stringify(checkFile)})({ document: '<path>' })`)
-    writePlugin(script, checkScript)
+    const components = JSON.stringify(kit.components.map((component) => component.name))
+    const mirrorScript = bundle(`const { mirrorDesign } = require('./mirror.ts')\nmodule.exports = (options) => mirrorDesign(${components}, options)\n`)
+    const mirrorFile = writeModule('mirror', mirrorScript)
+    console.log(`Mirror (${Math.round(mirrorScript.length / 1024)} kB): require(${JSON.stringify(mirrorFile)})({ document: '<path>', boards: ['<screen>'] })`)
+    const updateScript = bundle('const { updateFromKit } = require(\'./update.ts\')\nmodule.exports = (options) => updateFromKit(options)\n')
+    const updateFile = writeModule('update', updateScript)
+    console.log(`Update (${Math.round(updateScript.length / 1024)} kB): require(${JSON.stringify(updateFile)})({ document: '<path>' })`)
+    const unwrapScript = bundle(`const { unwrapStarters } = require('./unwrap.ts')\nmodule.exports = (options) => unwrapStarters(${components}, options)\n`)
+    const unwrapFile = writeModule('unwrap', unwrapScript)
+    console.log(`Unwrap (${Math.round(unwrapScript.length / 1024)} kB): require(${JSON.stringify(unwrapFile)})({ document: '<path>', layers: ['<starter ID>'], symbol: '<symbol>' })`)
+    // The kit's typography text styles and Typography page, for typographies the theme adds, e.g. a display size.
+    const value = valuesOf(formulas)
+    const typographyData: TypographyData = {
+        template: TYPOGRAPHY['paragraph'] ?? 'Paragraph/P1',
+        colours: Object.values(TYPOGRAPHY_COLOURS),
+        categories: Object.entries(TYPOGRAPHY)
+            .filter(([category]) => !category.startsWith('button-'))
+            .map(([category, prefix]) => ({
+                category,
+                prefix,
+                label: category.replace(/(^|-)(\w)/g, (_, dash: string, letter: string) => `${dash ? ' ' : ''}${letter.toUpperCase()}`),
+                family: firstFamily(value(`text-${category}-font-family`) ?? ''),
+                size: numberOf(value(`text-${category}-font-size`) ?? '') ?? 16,
+                lineHeight: numberOf(value(`text-${category}-line-height`) ?? '') ?? 24,
+                weight: Number(value(`text-${category}-font-weight`) ?? 400)
+            }))
+    }
+    const typographyScript = bundle(`const { addTypography } = require('./typography.ts')\nmodule.exports = (options) => addTypography(${JSON.stringify(typographyData)}, options)\n`)
+    const typographyFile = writeModule('typography', typographyScript)
+    console.log(`Typography (${Math.round(typographyScript.length / 1024)} kB): require(${JSON.stringify(typographyFile)})({ document: '<kit path>' })`)
+    const inspectScript = bundle(`const { inspectDesign } = require('./inspect.ts')\nmodule.exports = (options) => inspectDesign(${components}, options)\n`)
+    const inspectFile = writeModule('inspect', inspectScript)
+    console.log(`Inspect (${Math.round(inspectScript.length / 1024)} kB): require(${JSON.stringify(inspectFile)})({ document: '<path>' })`)
+    const helpersScript = bundle('module.exports = require(\'./helpers.ts\')\n')
+    const helpersFile = writeModule('helpers', helpersScript)
+    console.log(`Helpers (${Math.round(helpersScript.length / 1024)} kB): require(${JSON.stringify(helpersFile)}).resizeLayer({ document: '<path>', layer: '<ID>', height: 1800 })`)
+    writePlugin(script, checkScript, mirrorScript, unwrapScript, updateScript, inspectScript, helpersScript)
 }
 
 /**
@@ -353,17 +396,40 @@ function checkData(swatches: Record<string, string>): KitCheck {
                 : names.find((candidate) => name === candidate || name.startsWith(`${candidate}/`) || name.startsWith(`${candidate} `)) ?? 'the kit'
         ])
     )
-    const pages = [...new Set(['Cover', 'Colors', 'Typography', 'Effects', 'Icons', 'Symbols', 'Theme', 'Check', ...Object.values(COMPONENTS).map((spec) => spec.page)])]
+    // The components whose symbols and starters draw each style, e.g. a form field its input's, drawn in place.
+    const users = new Map<string, Set<string>>()
+    const use = (style: string | undefined, component: string) => {
+        if (style && styles[style] !== component) {
+            users.set(style, new Set([...(users.get(style) ?? []), component]))
+        }
+    }
+    for (const component of kit.components) {
+        const visit = (layer: Layer) => {
+            use(layer.layerStyle, component.name)
+            use(layer.textStyle, component.name)
+            layer.children.forEach(visit)
+        }
+        component.symbols.forEach((symbol) => visit(symbol.layer))
+        component.starters.forEach((starter) => Object.values(starter.overrides).forEach((choice) => [choice.layerStyle, choice.textStyle].forEach((style) => use(style, component.name))))
+    }
+    const usedBy = Object.fromEntries([...users].map(([style, drawnBy]) => [style, [...drawnBy].sort()]))
+    // A design's symbols mirrored for right to left are on a page of their own, as the kit's.
+    const pages = [...new Set(['Cover', 'Colors', 'Typography', 'Effects', 'Icons', 'Symbols', 'Theme', 'Check', 'Right to left', ...Object.values(COMPONENTS).map((spec) => spec.page)])]
     const parts = Object.fromEntries(kit.components.flatMap((component) => component.symbols.map((symbol) => [symbol.name, symbol.layer.children.map((child) => child.name)])))
-    return { symbols, styles, swatches, pages, parts, typography: prefixes }
+    return { symbols, styles, usedBy, swatches, pages, parts, typography: prefixes }
 }
 
 /**
  * The kit's Sketch plugin, for designers: Lyra › Apply theme applies the theme on the front document's Theme board,
- * or the one it recorded, to the document, and Lyra › Check design lists what the design does beyond the kit and its
- * theme; double-click the bundle to install it.
+ * or the one it recorded, to the document, Lyra › Check design lists what the design does beyond the kit and its
+ * theme, Lyra › Mirror for right to left makes right-to-left copies of the selected screens, and Lyra › Unwrap
+ * starters turns the selected starters into their symbols with their looks, to swap for another size, and Lyra ›
+ * Update from kit brings a design's symbols and styles up to date with the kit; double-click the
+ * bundle to install it. Beside them, `helpers.js` has `resizeLayer` and `setCalendarMonth` for scripts that make a
+ * design, `inspect.js` reads a design's screens as JSON, for whoever builds them, and
+ * `theme-files.mjs`, run with Node, writes the theme a saved design records to CSS, Sass and JSON files.
  */
-function writePlugin(themeScript: string, checkScript: string) {
+function writePlugin(themeScript: string, checkScript: string, mirrorScript: string, unwrapScript: string, updateScript: string, inspectScript: string, helpersScript: string) {
     const plugin = join(kitDir, 'Lyra design kit.sketchplugin')
     const scripts = join(plugin, 'Contents', 'Sketch')
     rmSync(plugin, { recursive: true, force: true })
@@ -391,13 +457,52 @@ function writePlugin(themeScript: string, checkScript: string) {
                 description: 'Lists what the design does beyond the kit and its theme, and what each takes in the app.',
                 script: 'commands.js',
                 handler: 'checkDesign'
+            },
+            {
+                name: 'Mirror for right to left',
+                identifier: 'mirror-design',
+                description: 'Makes a right-to-left copy of each selected screen, as the app lays it out with dir="rtl".',
+                script: 'commands.js',
+                handler: 'mirrorDesign'
+            },
+            {
+                name: 'Unwrap starters',
+                identifier: 'unwrap-starters',
+                description: 'Turns the selected starters into the symbols they hold, with their looks, so another size keeps the look.',
+                script: 'commands.js',
+                handler: 'unwrapStarters'
+            },
+            {
+                name: 'Update from kit',
+                identifier: 'update-from-kit',
+                description: 'Brings the design\'s symbols and styles up to date with the kit it uses as a library.',
+                script: 'commands.js',
+                handler: 'updateFromKit'
             }
         ],
-        menu: { title: 'Lyra', items: ['apply-theme', 'check-design'] }
+        menu: { title: 'Lyra', items: ['apply-theme', 'check-design', 'mirror-design', 'unwrap-starters', 'update-from-kit'] }
     }
     writeFileSync(join(scripts, 'manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`)
     writeFileSync(join(scripts, 'theme.js'), themeScript)
     writeFileSync(join(scripts, 'check.js'), checkScript)
+    writeFileSync(join(scripts, 'mirror.js'), mirrorScript)
+    writeFileSync(join(scripts, 'unwrap.js'), unwrapScript)
+    writeFileSync(join(scripts, 'update.js'), updateScript)
+    // For whoever builds the design, e.g. an agent: the screens as JSON, and, with Node, the theme it records as files.
+    writeFileSync(join(scripts, 'inspect.js'), inspectScript)
+    // For scripts that make a design: resizing a board without scaling it, and setting a calendar's month.
+    writeFileSync(join(scripts, 'helpers.js'), helpersScript)
+    const themeFiles = buildSync({
+        entryPoints: [join(import.meta.dirname, 'theme-files.ts')],
+        bundle: true,
+        write: false,
+        format: 'esm',
+        platform: 'node',
+        target: 'node20',
+        legalComments: 'none',
+        logLevel: 'warning'
+    })
+    writeFileSync(join(scripts, 'theme-files.mjs'), themeFiles.outputFiles[0]?.text ?? '')
     writeFileSync(join(scripts, 'commands.js'), bundle('module.exports = require("./commands.ts")\n'))
     console.log(`Plugin: ${plugin}`)
 }

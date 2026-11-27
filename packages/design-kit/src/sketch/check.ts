@@ -1,14 +1,46 @@
 import sketch = require('sketch')
 
 import type { CheckFinding, CheckOptions, CheckRow, KitCheck } from '../kit.ts'
-import { childrenOf, fileFormatOf, hexOf, isLocal, openDocument } from './document.ts'
+import { childrenOf, fileFormatOf, hexOf, isLocal, isMirroredBoard, openDocument, unmirrored } from './document.ts'
 import type { FileLayer } from './file-format.ts'
+
+/** A CSS colour, `#rgb`, `#rrggbb`, `#rrggbbaa` or `rgb(…)`, as `#rrggbbaa`, as the API gives colours. */
+function hexColour(value: unknown): string | undefined {
+    const text = typeof value === 'string' ? value.trim().toLowerCase() : ''
+    const short = /^#([0-9a-f])([0-9a-f])([0-9a-f])$/.exec(text)
+    if (short) {
+        return `#${short.slice(1).map((digit) => digit + digit).join('')}ff`
+    }
+    if (/^#[0-9a-f]{6}([0-9a-f]{2})?$/.test(text)) {
+        return text.length === 7 ? `${text}ff` : text
+    }
+    const rgb = /^rgba?\(\s*([\d.]+)[\s,]+([\d.]+)[\s,]+([\d.]+)(?:[\s,/]+([\d.]+)(%?))?\s*\)$/.exec(text)
+    if (rgb) {
+        const alpha = rgb[4] === undefined ? 1 : Number(rgb[4]) / (rgb[5] ? 100 : 1)
+        return `#${[rgb[1], rgb[2], rgb[3]].map(Number).concat(Math.round(alpha * 255)).map((channel) => Math.round(channel).toString(16).padStart(2, '0')).join('')}`
+    }
+    return undefined
+}
+
+/** What a colour is on: a text, a fill or a border. */
+type ColourRole = 'text' | 'fill' | 'border'
+
+/** The colour variables' group for each role, e.g. a text's are `Text/…`. */
+const ROLE_GROUPS: Record<ColourRole, string> = { text: 'Text', fill: 'Background', border: 'Border' }
+
+/** A colour that isn't a colour variable, and what it's on. */
+interface LooseColour {
+    colour: string
+    role: ColourRole
+}
 
 /**
  * Checks a design made with the Lyra design kit for what goes beyond its theme, for the designer to keep it consistent
- * and the developer to know what to build: colours that aren't the kit's colour variables, texts without a text style
- * or with one of the design's own, instances given another component's look, symbols of the design's own, detached or
- * changed copies of the kit's symbols, and components composed from the kit's parts and styles, e.g. a card. Each is
+ * and the developer to know what to build: colours that aren't the kit's colour variables, colour variables of the
+ * design's own, texts without a text style, with one of the design's own or with the kit's changed, instances given
+ * another component's look, symbols of the design's own, also swapped into the kit's, e.g. a logo, detached or changed
+ * copies of the kit's symbols, the design's own drawings with their gradients and blend modes, and components composed
+ * from the kit's parts and styles, e.g. a card. Each is
  * listed with where it is and what it takes in the app, on a Check page and in the result, as JSON.
  */
 export function checkDesign(kit: KitCheck, options: CheckOptions): string {
@@ -34,25 +66,34 @@ export function checkDesign(kit: KitCheck, options: CheckOptions): string {
         childrenOf(layer).forEach(walkStyles)
     }
     doc.getSymbols().forEach(walkStyles)
+    // And every colour variable of the kit, in the theme the design last applied, e.g. `Text/Hint`, which it may not
+    // have imported.
+    const applied = sketch.Settings.documentSettingForKey(doc, 'lyra-theme-applied') as { values?: Record<string, unknown> } | undefined
+    for (const [name, variable] of Object.entries(kit.swatches)) {
+        const colour = hexColour(applied?.values?.[variable])
+        if (colour && !swatchColours.has(name)) {
+            swatchColours.set(name, colour)
+        }
+    }
     const swatches = [...swatchColours].map(([name, color]) => ({ name, color }))
     const channels = (hex: string) => [1, 3, 5, 7].map((at) => parseInt(hex.slice(at, at + 2) || 'ff', 16))
     // The nearest colour variable, where one is close enough to be what was meant: a colour far from all of them, e.g.
     // an ink of the design's own, is a colour of its own, not a variable's.
     const CLOSE = 24
-    const nearest = (hex: string) => {
+    // Of colour variables with the same colour, the one for what the colour is on: a text's `Text/…`, a fill's
+    // `Background/…`, a border's `Border/…`; then the palette's, and a component state's last.
+    const rank = (name: string, role: ColourRole) => (name.startsWith(`${ROLE_GROUPS[role]}/`) ? 0 : name.startsWith('Palette/') ? 1 : name.startsWith('State/') ? 3 : 2)
+    const nearest = (hex: string, role: ColourRole = 'fill') => {
         const [r = 0, g = 0, b = 0, a = 0] = channels(hex)
-        let best: (typeof swatches)[number] | undefined
-        let distance = Infinity
-        for (const swatch of swatches) {
+        const measured = swatches.map((swatch) => {
             const [sr = 0, sg = 0, sb = 0, sa = 0] = channels(swatch.color)
             // Weighted as the eye weighs the channels, roughly.
-            const next = 2 * (r - sr) ** 2 + 4 * (g - sg) ** 2 + 3 * (b - sb) ** 2 + 3 * (a - sa) ** 2
-            if (next < distance) {
-                distance = next
-                best = swatch
-            }
-        }
-        return Math.sqrt(distance / 3) <= CLOSE ? best : undefined
+            return { swatch, distance: 2 * (r - sr) ** 2 + 4 * (g - sg) ** 2 + 3 * (b - sb) ** 2 + 3 * (a - sa) ** 2 }
+        })
+        const distance = Math.min(...measured.map((entry) => entry.distance))
+        // As near as the nearest but for a channel's rounding.
+        const best = measured.filter((entry) => entry.distance <= distance + 4).sort((x, y) => rank(x.swatch.name, role) - rank(y.swatch.name, role) || x.distance - y.distance)[0]
+        return best && Math.sqrt(distance / 3) <= CLOSE ? best.swatch : undefined
     }
     const cssVariable = (name: string) => (kit.swatches[name] ? `var(--${kit.swatches[name]})` : undefined)
 
@@ -78,23 +119,52 @@ export function checkDesign(kit: KitCheck, options: CheckOptions): string {
      * The colours that aren't colour variables in a layer as the file keeps it: its fills', borders' and text's, and
      * with `deep`, those of everything in it.
      */
-    const looseColours = (data: FileLayer, deep = false): string[] => {
+    const looseColours = (data: FileLayer, deep = false): LooseColour[] => {
         const style = data.style ?? {}
-        const colours: string[] = []
-        for (const paint of [...(style.fills ?? []), ...(style.borders ?? [])]) {
+        const colours: LooseColour[] = []
+        const paints = [...(style.fills ?? []).map((paint) => ({ paint, role: 'fill' as const })), ...(style.borders ?? []).map((paint) => ({ paint, role: 'border' as const }))]
+        for (const { paint, role } of paints) {
             if (paint.isEnabled !== false && paint.fillType === 0 && paint.color && !paint.color.swatchID && paint.color.alpha > 0) {
-                colours.push(hexOf(paint.color))
+                colours.push({ colour: hexOf(paint.color), role })
             }
         }
         const text = style.textStyle?.encodedAttributes.MSAttributedStringColorAttribute
         if (data._class === 'text' && text && !text.swatchID) {
-            colours.push(hexOf(text))
+            colours.push({ colour: hexOf(text), role: 'text' })
         }
-        return deep ? [...new Set([...colours, ...(data.layers ?? []).flatMap((child) => looseColours(child, true))])] : colours
+        if (!deep) {
+            return colours
+        }
+        const all = [...colours, ...(data.layers ?? []).flatMap((child) => looseColours(child, true))]
+        return [...new Map(all.map((entry) => [entry.colour, entry])).values()]
+    }
+    /** CSS's `mix-blend-mode` of the file format's blend modes, by number; 0 is normal. */
+    const BLEND_MODES = ['normal', 'darken', 'multiply', 'color-burn', 'lighten', 'screen', 'color-dodge', 'overlay', 'soft-light', 'hard-light', 'difference', 'exclusion', 'hue', 'saturation', 'color', 'luminosity', 'plus-darker', 'plus-lighter']
+    /** The blend modes in a layer and everything in it, other than normal, e.g. a plate printed in multiply. */
+    const blendsOf = (data: FileLayer): string[] => {
+        const own = data.style?.contextSettings?.blendMode ? [BLEND_MODES[data.style.contextSettings.blendMode] ?? 'a blend mode'] : []
+        return [...new Set([...own, ...(data.layers ?? []).flatMap(blendsOf)])]
+    }
+    const blendText = (data: FileLayer) => {
+        const blends = blendsOf(data)
+        return blends.length ? `, blended with ${blends.join(', ')} (\`mix-blend-mode\`)` : ''
+    }
+    /** A layer's gradients, e.g. `a linear gradient, #f2d7a8ff to #c4461bff`. */
+    const gradientsOf = (data: FileLayer): string[] => {
+        const own = (data.style?.fills ?? [])
+            .filter((paint) => paint.isEnabled !== false && paint.fillType === 1 && paint.gradient)
+            .map((paint) => `a ${['linear', 'radial', 'angular'][paint.gradient?.gradientType ?? 0] ?? 'linear'} gradient, ${(paint.gradient?.stops ?? []).map((stop) => hexOf(stop.color)).join(' to ')}`)
+        return [...new Set([...own, ...(data.layers ?? []).flatMap(gradientsOf)])]
+    }
+    /** A layer's tilt and its shadows, as CSS takes them, e.g. `, rotated -4°, shadow 4px 4px 0 Text/Basic`. */
+    const placementOf = (layer: sketch.Layer) => {
+        const rotation = Math.round((layer.transform?.rotation ?? 0) * 10) / 10
+        const shadows = (layer.style?.shadows ?? []).filter((shadow) => shadow.enabled !== false).map((shadow) => `shadow ${shadow.x}px ${shadow.y}px ${shadow.blur}px${shadow.spread ? ` ${shadow.spread}px` : ''} ${shadow.swatch?.name ?? String(shadow.color).toLowerCase()}`)
+        return `${rotation ? `, rotated ${-rotation}°` : ''}${shadows.length ? `, ${shadows.join(', ')}` : ''}`
     }
     /** A colour with the colour variable nearest to it, e.g. `#141110ff, nearest Background/Basic/3 (#151211ff)`. */
-    const colourText = (colour: string) => {
-        const close = nearest(colour)
+    const colourText = ({ colour, role }: LooseColour) => {
+        const close = nearest(colour, role)
         return `${colour}${close ? `, nearest ${close.name} (${close.color})` : ', no colour variable near it'}`
     }
     /** Whether two `#rrggbbaa` colours are the same, but for the rounding of a channel. */
@@ -137,7 +207,7 @@ export function checkDesign(kit: KitCheck, options: CheckOptions): string {
             })[0] as sketch.SymbolInstance | undefined
             const symbolId = swap ? String(swap.value) : nested?.symbolId
             master = symbolId ? doc.getSymbolMasterWithID(symbolId) : undefined
-            const component = master ? kitSymbols[master.name] : undefined
+            const component = master ? kitSymbols[unmirrored(master.name)] : undefined
             if (component) {
                 found.push(component)
             }
@@ -150,10 +220,10 @@ export function checkDesign(kit: KitCheck, options: CheckOptions): string {
         if (!master) {
             return
         }
-        // The kit's icons are its own too, e.g. Icon/Outline/star.
-        const component = kitSymbols[master.name] ?? (master.name.startsWith('Icon/') ? 'Icon' : undefined)
+        // The kit's icons are its own too, e.g. Icon/Outline/star; so are its symbols mirrored for right to left.
+        const component = kitSymbols[unmirrored(master.name)] ?? (master.name.startsWith('Icon/') ? 'Icon' : undefined)
         if (!component) {
-            add('Own component', layer, `An instance of ${master.name}, which isn't the kit's`, 'The design\'s own component: build it with Lyra\'s components or as custom markup and CSS.')
+            add('Own component', layer, `An instance of ${master.name}, which isn't the kit's${placementOf(layer)}`, 'The design\'s own component: build it with Lyra\'s components or as custom markup and CSS.')
             return
         }
         // A look of another component, e.g. a card's style on a button, isn't one the component has in the app.
@@ -177,9 +247,20 @@ export function checkDesign(kit: KitCheck, options: CheckOptions): string {
             const colour = String(override.value ?? '').toLowerCase()
             // A colour the part has in the symbol anyway, e.g. a filled button's label, changes nothing.
             if (!swatches.some((swatch) => swatch.color === colour) && !sameColour(colour, ownColourOf(override.affectedLayer, override.property))) {
-                const close = nearest(colour)
+                const close = nearest(colour, override.property === 'textColor' ? 'text' : 'fill')
                 const variable = close && cssVariable(close.name)
                 add('Colour', layer, `${master.name}'s ${override.affectedLayer.name} in ${colour}${close ? `, nearest ${close.name} (${close.color})` : ''}`, `Custom CSS for the ${component}'s ${override.affectedLayer.name}, e.g. its colour${variable ? ` or ${variable}` : ''}.`)
+            }
+        }
+        // A symbol of the design's own swapped into the component, e.g. its logo in a layout's brand: the design's own
+        // element, in the component's markup.
+        for (const override of layer.overrides) {
+            if (override.isDefault || override.property !== 'symbolID') {
+                continue
+            }
+            const swapped = override.value ? doc.getSymbolMasterWithID(String(override.value)) : undefined
+            if (swapped && !kitSymbols[unmirrored(swapped.name)] && !swapped.name.startsWith('Icon/')) {
+                add('Own component', layer, `${swapped.name} as ${master.name}'s ${override.affectedLayer.name}, which isn't the kit's`, `The design's own element in the ${component}'s ${override.affectedLayer.name}, e.g. a logo as an SVG in the header's markup.`)
             }
         }
         const style = layer.style
@@ -219,10 +300,11 @@ export function checkDesign(kit: KitCheck, options: CheckOptions): string {
             const data = fileFormatOf(layer)
             const count = (part: FileLayer): number => (part.layers?.length ? part.layers.reduce((total, child) => total + count(child), 0) : 1)
             const colours = looseColours(data, true)
+            const gradients = gradientsOf(data)
             add(
                 'Own drawing',
                 layer,
-                `${sizeOf(layer)}, ${count(data)} shapes${colours.length ? `, in ${colours.slice(0, 4).map(colourText).join('; ')}${colours.length > 4 ? ` and ${colours.length - 4} more` : ''}` : ''}`,
+                `${sizeOf(layer)}, ${count(data)} shapes${colours.length ? `, in ${colours.slice(0, 4).map(colourText).join('; ')}${colours.length > 4 ? ` and ${colours.length - 4} more` : ''}` : ''}${gradients.length ? `, with ${gradients.slice(0, 2).join('; ')}` : ''}${blendText(data)}${placementOf(layer)}`,
                 'The design\'s own element, e.g. an SVG or an image in the app, with the theme\'s variables for colours that follow the theme.'
             )
             return
@@ -234,10 +316,31 @@ export function checkDesign(kit: KitCheck, options: CheckOptions): string {
         if ((layer.type === 'ShapePath' || layer.type === 'Shape' || (layer.type === 'Group' && !copied)) && draws) {
             const radii = look.corners.radii.filter(Boolean)
             const shared = layer.sharedStyle ? `, ${layer.sharedStyle.name}` : ''
-            add('Own drawing', layer, `${sizeOf(layer)}${radii.length ? `, corners ${radii.join(' ')}` : ''}${shared}`, 'The design\'s own element: markup and CSS in the app, with the theme\'s variables for its colours.')
+            // An image fill, e.g. a texture tiled over a band: the element's background image in the app.
+            const pattern = look.fills.find((fill) => fill.enabled !== false && fill.fillType === 'Pattern')?.pattern
+            const image = pattern ? `, ${pattern.patternType === 'Tile' ? 'a tiled image fill' : 'an image fill'}` : ''
+            const data = fileFormatOf(layer)
+            const gradients = gradientsOf({ ...data, layers: [] })
+            // Its colours by their colour variables, else as they are, e.g. a rule's `Border/Basic/4`.
+            const paints = [
+                ...look.fills.filter((fill) => fill.enabled !== false && fill.fillType === 'Color').map((fill) => `fill ${fill.swatch?.name ?? String(fill.color).toLowerCase()}`),
+                ...look.borders.filter((border) => border.enabled !== false).map((border) => `${border.thickness ?? 1} px border ${border.swatch?.name ?? String(border.color).toLowerCase()}`)
+            ]
+            // A layer a pixel or two thick is a line, e.g. a rule between rows.
+            const line = Math.min(layer.frame.width, layer.frame.height) <= 2 && Math.max(layer.frame.width, layer.frame.height) > 8
+            add(
+                'Own drawing',
+                layer,
+                `${line ? `A ${layer.frame.width < layer.frame.height ? 'vertical' : 'horizontal'} line, ` : ''}${sizeOf(layer)}${radii.length ? `, corners ${radii.join(' ')}` : ''}${paints.length ? `, ${paints.join(', ')}` : ''}${image}${gradients.length ? `, ${gradients.join('; ')}` : ''}${shared}${blendText({ ...data, layers: [] })}${placementOf(layer)}`,
+                line
+                    ? 'A border of the element beside it, or Lyra\'s Divider (`nb-divider`) between blocks, with the theme\'s colour variable.'
+                    : pattern
+                        ? `The design's own element: markup with the image as its CSS background${pattern.patternType === 'Tile' ? ', repeated' : ''}, and the theme's variables for its colours.`
+                        : 'The design\'s own element: markup and CSS in the app, with the theme\'s variables for its colours.'
+            )
         }
         if (layer.type === 'Image') {
-            add('Own drawing', layer, `An image, ${sizeOf(layer)}`, 'An image in the app.')
+            add('Own drawing', layer, `An image, ${sizeOf(layer)}${blendText(fileFormatOf(layer))}${placementOf(layer)}`, 'An image in the app.')
         }
         // A text style of the design's own, e.g. a display size or a third typeface: a typography class of the app's own.
         const kitTextStyle = (name: string) => !!kit.styles[name] || kit.typography.some((prefix) => name.startsWith(`${prefix}/`))
@@ -254,6 +357,36 @@ export function checkDesign(kit: KitCheck, options: CheckOptions): string {
             ]
             add('Own text style', layer, `${ownTextStyle.name}: ${textLook.filter(Boolean).join(', ')}`, 'A typography class of the app\'s own, with this font, size, line height and spacing; its colour as the design gives it.')
         }
+        // A kit text style with its font, size, line height or spacing changed on the text: a size of the design's own.
+        // A library's style doesn't give its values, so they're read from a text that has it unchanged, where one does.
+        if (layer.type === 'Text' && layer.sharedStyle && kitTextStyle(layer.sharedStyle.name) && layer.style.isOutOfSyncWithSharedStyle(layer.sharedStyle)) {
+            const shared = layer.sharedStyle
+            const typeOf = (text: sketch.Layer) => {
+                const attributes = fileFormatOf(text).style?.textStyle?.encodedAttributes
+                const font = attributes?.MSAttributedStringFontAttribute?.attributes
+                return {
+                    font: font?.name,
+                    size: font ? Math.round(font.size * 100) / 100 : undefined,
+                    line: attributes?.paragraphStyle?.minimumLineHeight,
+                    spacing: attributes?.kerning ? Math.round(attributes.kerning * 100) / 100 : undefined,
+                    transform: ['', 'uppercase', 'lowercase'][attributes?.MSAttributedStringTextTransformAttribute ?? 0] || undefined
+                }
+            }
+            const own = typeOf(layer)
+            const unchanged = shared.getAllInstancesLayers().find((other) => other.id !== layer.id && !other.style.isOutOfSyncWithSharedStyle(shared))
+            const kitType = unchanged ? typeOf(unchanged) : undefined
+            const differs = (key: keyof typeof own) => !kitType || own[key] !== kitType[key]
+            const changes = [
+                own.font && differs('font') ? own.font : undefined,
+                own.size && differs('size') ? `${own.size} px` : undefined,
+                own.line && differs('line') ? `line ${own.line} px` : undefined,
+                differs('spacing') && (own.spacing || kitType) ? `spacing ${own.spacing ?? 0} px` : undefined,
+                differs('transform') && (own.transform || kitType) ? own.transform ?? 'no case' : undefined
+            ].filter(Boolean)
+            if (changes.length) {
+                add('Own text style', layer, `${shared.name}, ${kitType ? 'changed to' : 'changed, now'} ${changes.join(', ')}`, 'A typography class of the app\'s own, or the kit\'s with custom CSS for what changed; a text style of the design\'s own keeps it in one place.')
+            }
+        }
         if (layer.type === 'Text' && !layer.sharedStyle) {
             // By how it looks, so texts that look alike, e.g. every print's frame code, are one style to make.
             const attributes = fileFormatOf(layer).style?.textStyle?.encodedAttributes
@@ -263,18 +396,34 @@ export function checkDesign(kit: KitCheck, options: CheckOptions): string {
             add('Text without a style', layer, textLook.filter(Boolean).join(', '), `A text style, or a typography class and custom CSS, e.g. for "${String((layer as sketch.Text).text).slice(0, 30)}".`)
         }
         if (layer.type !== 'Artboard') {
-            for (const colour of looseColours(fileFormatOf(layer))) {
-                const close = nearest(colour)
+            for (const loose of looseColours(fileFormatOf(layer))) {
+                const close = nearest(loose.colour, loose.role)
                 const variable = close && cssVariable(close.name)
-                add('Colour', layer, colourText(colour), close?.color === colour && variable ? `${variable}: link it to ${close.name}.` : `A theme colour${variable ? `, e.g. ${variable}` : ''}, or a custom colour in CSS.`)
+                add('Colour', layer, colourText(loose), close?.color === loose.colour && variable ? `${variable}: link it to ${close.name}.` : `A theme colour${variable ? `, e.g. ${variable}` : ''}, or a custom colour in CSS.`)
             }
         }
         childrenOf(layer).forEach(visit)
     }
 
-    // The kit's own pages, and its boards elsewhere, e.g. a design's Theme board, aren't the design.
+    // The kit's own pages, and its boards elsewhere, e.g. a design's Theme board, aren't the design, nor are the
+    // screens mirrored for right to left, copies of the design's.
     for (const page of doc.pages.filter((candidate) => !kit.pages.includes(candidate.name))) {
-        page.layers.filter((layer) => layer.name !== 'Theme' && layer.name !== 'Check').forEach(visit)
+        page.layers.filter((layer) => layer.name !== 'Theme' && layer.name !== 'Check' && !isMirroredBoard(layer)).forEach(visit)
+    }
+
+    // Colour variables of the design's own, e.g. a palette of categories: colours the app defines, as theme variables or
+    // custom properties of its own.
+    if (!isKitDocument) {
+        for (const swatch of doc.swatches.filter((candidate) => !candidate.getLibrary() && !kit.swatches[candidate.name])) {
+            findings.push({
+                kind: 'Own colour variable',
+                layer: swatch.name,
+                id: swatch.id,
+                place: 'Colour variables',
+                detail: `${swatch.name}: ${String(swatch.color).toLowerCase()}`,
+                app: `A colour of the app's own, e.g. a CSS custom property, --${swatch.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}, beside the theme's.`
+            })
+        }
     }
 
     // A design's own copy of a kit symbol, changed from the kit's: its instances aren't the kit's any more.

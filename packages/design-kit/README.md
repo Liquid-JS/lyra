@@ -11,8 +11,9 @@ this is for regenerating it.
   to code. `src/kit.ts` has the model's types and the data each Sketch script takes.
 - `src/sketch/`: what runs in Sketch, in TypeScript against `sketch.d.ts`, the parts of Sketch's API the scripts use,
   and `file-format.ts`, what they read of a layer's file format. `component.ts` builds a component, `theme/` applies a
-  theme (`values.ts` is its maths, with unit tests), `check.ts` checks a design and `commands.ts` is the plugin's
-  menu. The generator bundles each with its data, with esbuild, into a CommonJS script for Sketch's JavaScriptCore.
+  theme (`values.ts` is its maths, with unit tests), `check.ts` checks a design, `mirror.ts` mirrors a design's
+  screens for right to left, `unwrap.ts` turns starters into their symbols with their looks, `inspect.ts` reads a
+  design's screens as JSON and `commands.ts` is the plugin's menu. The generator bundles each with its data, with esbuild, into a CommonJS script for Sketch's JavaScriptCore.
 
 `yarn workspace design-kit lint` type-checks both sides and lints them; `yarn workspace design-kit test` runs the unit
 tests.

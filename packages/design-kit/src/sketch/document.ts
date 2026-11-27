@@ -39,6 +39,24 @@ export function pacer(): () => Promise<void> {
     }
 }
 
+/**
+ * The page a design's symbols mirrored for right to left are on, and the prefix of their names, e.g.
+ * `Right to left/Button/Medium/Rectangle`.
+ */
+export const MIRRORED = 'Right to left'
+
+/** The setting of a mirrored copy, a symbol's or a screen's, that says what it mirrors, by its ID. */
+export const MIRROR_OF = 'lyra-mirror-of'
+
+/** The end of a mirrored screen's name, e.g. `Home · Phone · RTL`. */
+export const MIRRORED_BOARD = ' · RTL'
+
+/** Whether a screen is a mirrored copy of another, for checking right to left rather than a screen of the design. */
+export const isMirroredBoard = (board: sketch.Layer): boolean => typeof sketch.Settings.layerSettingForKey(board, MIRROR_OF) === 'string' || board.name.endsWith(MIRRORED_BOARD)
+
+/** The kit's symbol a symbol is, or mirrors. */
+export const unmirrored = (name: string): string => (name.startsWith(`${MIRRORED}/`) ? name.slice(MIRRORED.length + 1) : name)
+
 /** A layer and everything in it as the file format keeps it, in one call; see file-format.ts. */
 export const fileFormatOf = (layer: sketch.Layer): FileLayer => sketch.export(layer, { formats: 'json', output: false }) as FileLayer
 
@@ -63,3 +81,75 @@ export const childrenOf = (layer: sketch.Layer | sketch.Page): sketch.Layer[] =>
  * uses the kit as a library has copies that follow the kit's.
  */
 export const isLocal = (item: { getLibrary(): sketch.Library | null }): boolean => !item.getLibrary()
+
+/** A layer in a container by its ID, however deep. */
+export const findLayer = (container: sketch.Layer, id: string): sketch.Layer | undefined => {
+    for (const child of childrenOf(container)) {
+        const found = child.id === id ? child : findLayer(child, id)
+        if (found) {
+            return found
+        }
+    }
+    return undefined
+}
+
+/**
+ * Which layer an override changes, and what of it, by the names of the layers on its way there, e.g.
+ * `Tab 2/Title_stringValue`: the same in a symbol and in a copy or another size of it, whose layers have IDs of their
+ * own. Each nested instance's symbol is the one the instance's overrides swap in, if any.
+ */
+export function overrideKeyOf(doc: sketch.Document, instance: sketch.SymbolInstance, override: sketch.Override): string | undefined {
+    const ids = override.path.split('/')
+    const names: string[] = []
+    let master = instance.master
+    for (let depth = 0; depth < ids.length && master; depth++) {
+        const found = findLayer(master, ids[depth])
+        if (!found) {
+            return undefined
+        }
+        names.push(found.name)
+        const path = ids.slice(0, depth + 1).join('/')
+        const swap = instance.overrides.find((candidate) => candidate.property === 'symbolID' && candidate.path === path && !candidate.isDefault)
+        master = swap ? doc.getSymbolMasterWithID(String(swap.value)) : (found as sketch.SymbolInstance).master
+    }
+    return `${names.join('/')}_${override.property}`
+}
+
+/** An override as a key and its value, to set on another instance, e.g. one of a copy of its symbol. */
+export interface SavedOverride {
+    key: string
+    property: string
+    value: unknown
+    swatch?: sketch.Swatch
+    depth: number
+}
+
+/** An instance's overrides that aren't its symbol's own values, swaps first, outermost first. */
+export function savedOverrides(doc: sketch.Document, instance: sketch.SymbolInstance): SavedOverride[] {
+    return instance.overrides
+        .filter((override) => !override.isDefault)
+        .map((override) => ({ key: overrideKeyOf(doc, instance, override) ?? '', property: override.property, value: override.value, swatch: override.swatchValue, depth: override.path.split('/').length }))
+        .filter((override) => override.key)
+        .sort((a, b) => Number(b.property === 'symbolID') - Number(a.property === 'symbolID') || a.depth - b.depth)
+}
+
+/**
+ * Sets saved overrides on an instance, where it has a layer by the same names, e.g. after its symbol was swapped; the
+ * symbols they swap in through `swapIn`, e.g. mirrored copies.
+ */
+export function restoreOverrides(doc: sketch.Document, instance: sketch.SymbolInstance, saved: SavedOverride[], swapIn = (master: sketch.SymbolMaster) => master): void {
+    for (const { key, property, value, swatch } of saved) {
+        const target = instance.overrides.find((override) => override.property === property && overrideKeyOf(doc, instance, override) === key)
+        if (!target) {
+            continue
+        }
+        if (property === 'symbolID') {
+            const swapped = doc.getSymbolMasterWithID(String(value))
+            target.value = swapped ? swapIn(swapped).symbolId : value
+        } else if (swatch) {
+            target.swatchValue = swatch
+        } else {
+            target.value = value
+        }
+    }
+}

@@ -281,5 +281,32 @@ export const WEIGHT_INDEX: Readonly<Record<number, number>> = { 100: 2, 200: 3, 
 /** A CSS weight as Sketch's index, the nearest hundred's. */
 export const weightOf = (value: number): number => WEIGHT_INDEX[Math.min(900, Math.max(100, Math.round(value / 100) * 100))] ?? 5
 
-/** A font stack's first family, e.g. `Inter` for `Inter, sans-serif`. */
-export const firstFamily = (value: string): string => value.split(',')[0]?.replace(/["']/g, '').trim() ?? ''
+/** CSS weights by the face names fonts give them, e.g. the `ExtraBold` of `BigShouldersDisplay-ExtraBold`. */
+const FACE_WEIGHTS: ReadonlyArray<[RegExp, number]> = [
+    [/(extra|ultra)light/, 200],
+    [/thin|hairline/, 100],
+    [/light/, 300],
+    [/(semi|demi)bold/, 600],
+    [/(extra|ultra)bold|heavy/, 800],
+    [/black/, 900],
+    [/bold/, 700],
+    [/medium/, 500]
+]
+
+/** The CSS weight of a font by its PostScript name's face, e.g. 800 for `Inter-ExtraBold`; 400 for a regular one. */
+export const weightOfFace = (name: string): number => {
+    const face = (name.split('-').slice(1).join('-') || '').toLowerCase().replace(/italic|oblique/g, '')
+    return FACE_WEIGHTS.find(([pattern]) => pattern.test(face))?.[1] ?? 400
+}
+
+/** Names in a font stack a design tool can't use: CSS's generic families and the system fonts' aliases. */
+const UNNAMED_FONTS = new Set(['ui-monospace', 'ui-sans-serif', 'ui-serif', 'ui-rounded', 'system-ui', '-apple-system', 'blinkmacsystemfont', 'sfmono-regular', 'monospace', 'sans-serif', 'serif', 'cursive', 'fantasy', 'math', 'emoji'])
+
+/**
+ * A font stack's first font a design tool can use, e.g. `Menlo` of `ui-monospace, SFMono-Regular, Menlo, monospace`;
+ * else its first.
+ */
+export const firstFamily = (value: string): string => {
+    const families = value.split(',').map((family) => family.replace(/["']/g, '').trim()).filter(Boolean)
+    return families.find((family) => !UNNAMED_FONTS.has(family.toLowerCase())) ?? families[0] ?? ''
+}

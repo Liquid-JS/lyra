@@ -303,9 +303,23 @@ for (const [variable, uses] of colourUses) {
     }
 }
 
+// The kit's icons, `Icon/Outline/{name}` and `Icon/Fill/{name}`, as the icon pack has them.
+const iconNames = (style: 'fill' | 'outline') =>
+    ['eva', 'lyra']
+        .flatMap((set) => readdirSync(join(root, 'packages', 'icons', 'svg', set, style)))
+        .filter((entry) => entry.endsWith('.svg'))
+        .map((entry) => entry.slice(0, -'.svg'.length))
+        .sort()
+const icons = {
+    $comment:
+        'Each icon is a symbol, Icon/Outline/{name} or Icon/Fill/{name}, and in code <nb-icon icon="{name}-outline" /> or <nb-icon icon="{name}" />. A component\'s icon is swapped by the symbol override of its layer named … Glyph.',
+    outline: iconNames('outline'),
+    fill: iconNames('fill')
+}
+
 const manifest = {
     $comment:
-        'The Lyra design kit\'s map to code. A symbol is a component, named by its layout inputs; a starter is a symbol with a look chosen: layer styles, and text and icon colours. A style, or a colour on a layer, stands for the inputs in usedBy; styles use the theme\'s CSS variables, and a colour variable is a CSS variable. A typography text style\'s class gives a text its typography and colour, e.g. h4 text-hint. follows lists the theme variables a component\'s own parts, or a style, follow: corners, padding, gaps, sizes, borders, fonts and colours. A component\'s notes say what its drawings take for granted that code does otherwise unless it\'s set, e.g. a badge\'s position.',
+        'The Lyra design kit\'s map to code. A symbol is a component, named by its layout inputs; a starter is a symbol with a look chosen: layer styles, and text and icon colours. A style, or a colour on a layer, stands for the inputs in usedBy; styles use the theme\'s CSS variables, and a colour variable is a CSS variable. A typography text style\'s class gives a text its typography and colour, e.g. h4 text-hint; one without a class, e.g. Display, is its css variables. follows lists the theme variables a component\'s own parts, or a style, follow: corners, padding, gaps, sizes, borders, fonts and colours. A component\'s notes say what its drawings take for granted that code does otherwise unless it\'s set, e.g. a badge\'s position.',
     kit: 'Lyra design kit',
     version,
     theme: kit.theme,
@@ -314,8 +328,11 @@ const manifest = {
     variables,
     components,
     layerStyles,
-    textStyles
+    textStyles,
+    icons
 }
 const file = join(kitDir, 'lyra-kit.json')
 writeFileSync(file, `${JSON.stringify(manifest, null, 1)}\n`)
-console.log(`${Object.keys(components).length} components, ${Object.keys(variables).length} variables, ${Object.keys(layerStyles).length + Object.keys(textStyles).length} styles → ${file}`)
+console.log(
+    `${Object.keys(components).length} components, ${Object.keys(variables).length} variables, ${Object.keys(layerStyles).length + Object.keys(textStyles).length} styles, ${icons.outline.length + icons.fill.length} icons → ${file}`
+)

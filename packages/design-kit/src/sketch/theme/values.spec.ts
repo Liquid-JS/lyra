@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { colourIn, cssOf, derive, display, numberOf, partsOf, pixels, shadowsOf, sketchColour, valuesOf, weightOf } from './values.ts'
+import { colourIn, cssOf, derive, display, firstFamily, numberOf, partsOf, pixels, shadowsOf, sketchColour, valuesOf, weightOf, weightOfFace } from './values.ts'
 
 describe('the theme values', () => {
     it('works out variables as the browser does, with fallbacks', () => {
@@ -60,5 +60,23 @@ describe('the theme values', () => {
         expect(weightOf(400)).toBe(5)
         expect(weightOf(650)).toBe(9)
         expect(weightOf(1000)).toBe(12)
+    })
+
+    it('takes a font stack\'s first font a design tool can use', () => {
+        expect(firstFamily('Inter, sans-serif')).toBe('Inter')
+        expect(firstFamily('ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace')).toBe('Menlo')
+        expect(firstFamily('"Big Shoulders Display", system-ui')).toBe('Big Shoulders Display')
+        expect(firstFamily('monospace')).toBe('monospace')
+    })
+
+    it('reads a font\'s weight from its face\'s name', () => {
+        expect(weightOfFace('BigShouldersDisplay-ExtraBold')).toBe(800)
+        expect(weightOfFace('BigShouldersDisplay-Black')).toBe(900)
+        expect(weightOfFace('Inter-SemiBoldItalic')).toBe(600)
+        expect(weightOfFace('Inter-Bold')).toBe(700)
+        expect(weightOfFace('DMMono-Medium')).toBe(500)
+        expect(weightOfFace('InstrumentSans-Regular')).toBe(400)
+        expect(weightOfFace('Inter-ExtraLight')).toBe(200)
+        expect(weightOfFace('Helvetica')).toBe(400)
     })
 })

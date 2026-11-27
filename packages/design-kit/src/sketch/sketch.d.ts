@@ -28,7 +28,9 @@ declare module 'sketch' {
     }
 
     export interface Library {
+        readonly id: string
         readonly name: string
+        getImportableSymbolReferencesForDocument(document: Document): Array<{ readonly name: string, import(): SymbolMaster }>
     }
 
     export interface GradientStop {
@@ -45,11 +47,14 @@ declare module 'sketch' {
     }
 
     export interface Fill {
+        /** `Color`, `Gradient` or `Pattern`, an image. */
         fillType: string
         enabled?: boolean
         color?: Colour
         gradient?: Gradient
         swatch?: Swatch
+        /** An image fill's image and how it covers the layer: `Tile`, `Fill`, `Stretch` or `Fit`. */
+        pattern?: { patternType: string, image: unknown }
     }
 
     export interface Border extends Fill {
@@ -74,6 +79,8 @@ declare module 'sketch' {
         shadows: Shadow[]
         innerShadows: Shadow[]
         opacity: number
+        /** How the layer blends with what's under it, e.g. `Normal` or `Multiply`. */
+        blendingMode?: string
         blur?: { enabled: boolean }
         corners: { radii: number[] }
         /** An icon's colour: a colour variable, or a colour. */
@@ -89,6 +96,8 @@ declare module 'sketch' {
         textColor: Colour
         textSwatch?: Swatch
         syncWithSharedStyle(shared: SharedStyle): void
+        /** Whether the layer's style differs from its shared style's, e.g. a text style with its size overridden. */
+        isOutOfSyncWithSharedStyle(shared: SharedStyle): boolean
     }
 
     export interface SharedStyle {
@@ -98,6 +107,8 @@ declare module 'sketch' {
         style: Style
         getLibrary(): Library | null
         getAllInstancesLayers(): Layer[]
+        /** Updates a library's style from its library; throws where there's no front document, e.g. in an MCP script. */
+        syncWithLibrary(): boolean
     }
 
     export interface StackLayout {
@@ -141,6 +152,8 @@ declare module 'sketch' {
         stackLayout?: StackLayout
         remove(): void
         moveToBack(): void
+        /** A copy beside it, with layers and a symbol's ID of its own; a library's symbol's copy is the document's. */
+        duplicate(): Layer
     }
 
     export interface Group extends Layer {
@@ -181,10 +194,13 @@ declare module 'sketch' {
         readonly overrides: Override[]
         createNewInstance(): SymbolInstance
         getLibrary(): Library | null
+        /** Updates a library's symbol from its library. */
+        syncWithLibrary(): boolean
     }
 
     export interface SymbolInstance extends Layer {
-        readonly symbolId: string
+        /** Set it to swap the instance's symbol: Sketch keeps its overrides on layers the new symbol has by name. */
+        symbolId: string
         readonly master: SymbolMaster | undefined
         readonly overrides: Override[]
         /** Sizes the instance to its symbol's content again, as Sketch does when it changes. */
@@ -203,6 +219,7 @@ declare module 'sketch' {
         readonly path: string | undefined
         pages: Page[]
         selectedPage: Page
+        selectedLayers: { layers: Layer[] }
         swatches: Swatch[]
         sharedLayerStyles: SharedStyle[]
         sharedTextStyles: SharedStyle[]
@@ -229,8 +246,10 @@ declare module 'sketch' {
     export function fromSketchJSON(json: unknown): Layer
     export function createLayerFromData(data: string, type: 'svg'): Layer
 
-    function exportJSON(layer: Layer, options: { formats: 'json', output: false }): unknown
-    export { exportJSON as export }
+    function exportLayer(layer: Layer, options: { formats: 'json', output: false }): unknown
+    /** Writes the layer to files in `output`, named by its ID with `use-id-for-name`. */
+    function exportLayer(layer: Layer, options: { 'formats': string, 'output': string, 'use-id-for-name'?: boolean, 'overwriting'?: boolean, 'scales'?: string }): void
+    export { exportLayer as export }
 
     export const Page: {
         new (init: { name: string, parent: Document }): Page
@@ -254,7 +273,11 @@ declare module 'sketch' {
         GradientType: { Linear: string, Radial: string, Angular: string }
         BorderPosition: { Center: string, Inside: string, Outside: string }
     }
-    export const StackLayout: { Direction: { Row: number, Column: number } }
+    export const StackLayout: {
+        Direction: { Row: number, Column: number }
+        AlignItems: { Start: number, Center: number, End: number, Stretch: number }
+        JustifyContent: { Start: number, Center: number, End: number, Between: number }
+    }
     export const FlexSizing: { Fixed: number, Fit: number, Fill: number, Relative: number }
     export const Pin: { None: number, Min: number, Max: number, All: number }
 

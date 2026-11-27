@@ -39,13 +39,20 @@ change it in its overrides:
   `Body`, and the colour variables for its texts and icons, e.g. `Text/Basic` for its `Label` and `Icon`. A starter
   shows which colours go with each style.
 - **Size and shape**: swap a symbol you placed for another, e.g. `Button/Small/Round`. Its look stays, and its texts
-  take the new size's fonts. A starter's look is set inside it, so for another size, place that size's symbol.
+  take the new size's fonts. A starter's look is set inside it, so first choose **Lyra › Unwrap starters** with the
+  starters, or the screens that hold them, selected: each becomes the symbol it holds, with the starter's look and
+  your overrides set on it, and then keeps them when you swap it.
 - **Texts and icons**: override the text; an icon is its `Glyph`, any `Icon/Outline/…` or `Icon/Fill/…` symbol.
 - **Components inside components**, such as a dialog's buttons or a table's paginator, are the kit's symbols too, with
   their own overrides.
-- **Values**: swap a symbol for the one that shows yours, e.g. `Progress Bar/Bar/Medium/30%`, a calendar's day for
-  its `Calendar Cell/…/Selected`, `Today` or `Range Start`, or a stepper's step for its `Stepper Step/…/Completed`,
-  `Current` or `Upcoming`. A user with a picture is `User/…/Image`, whose `Image` takes yours.
+- **Values**: swap a symbol for the one that shows yours, e.g. `Progress Bar/Bar/Medium/30%` or
+  `Slider/Medium/Single/70%`, a calendar's day for its `Calendar Cell/…/Selected`, `Today` or `Range Start`, or a
+  stepper's step for its `Stepper Step/…/Completed`, `Current` or `Upcoming`. A user with a picture is
+  `User/…/Image`, whose `Image` takes yours. A picture covers its place whatever its shape, cropped as code crops it,
+  as do a swatch's and a card's media.
+- **Swatches**: `Swatch/…` for a colour, whose `Fill` colour is an override; `/Split` for two, `Fill` and `Second`;
+  `/Picture` for a fabric or a pattern, whose `Image` takes yours; and `/Unavailable` for an option that's out of
+  stock. The `Selected` look rings the chosen one. In code they're an `nb-swatch-group`, one choice or several.
 
 Swapping keeps your overrides wherever the new symbol has a layer of the same name, as the kit's values do.
 
@@ -99,18 +106,20 @@ item's kind is an `NbMenuItem` with `children` or a `badge`, and the table heade
 The kit follows Lyra's theme as the app does: its colours, fonts, corners, spacing and borders come from the theme's
 variables, and the kit's plugin, **Lyra design kit.sketchplugin**, applies them. Install it by double-clicking it.
 
-- **In your copy of the kit**, the **Theme** page lists every variable the kit follows: the colours a theme starts
-  from, with the text on filled controls, primary text and borders; the foundations; the typography and its text case,
-  e.g. buttons' and tabs'; and each component's own, with its value or the formula it follows, e.g.
-  `border-radius * 3` for a semi-round button's corners. Change a value or a colour's chip, then choose **Lyra › Apply
-  theme**: everything that follows it changes with it, e.g. every button's corners with `border-radius`, and every
-  danger shade and state with `color-danger-500`. Clear a value to follow the base theme again. Any other variable in
-  `tokens.json` works too: give it to the theme script, as [For agents](#for-agents) shows, and the theme keeps it.
+- **In your copy of the kit**, the **Theme** page lists every variable the kit follows: the colours a theme starts from,
+  with the text on filled controls, also each status's own, e.g. dark text on a light warning fill, primary text and
+  borders; the foundations; the typography and its text case, e.g. buttons' and tabs'; and each component's own, with
+  its value or the formula it follows, e.g. `border-radius * 3` for a semi-round button's corners. Change a value or a
+  colour's chip, then choose **Lyra › Apply theme**: everything that follows it changes with it, e.g. every button's
+  corners with `border-radius`, and every danger shade and state with `color-danger-500`. Clear a value to follow the
+  base theme again. Any other variable in `tokens.json` works too: give it to the theme script, as [For
+  agents](#for-agents) shows, and the theme keeps it.
 - **From the [Theme Editor](theme/theme-editor)**, its **Design kit** tab gives a script that applies the theme you
   made there in the same way: run it in the kit from Plugins › Run Script.
 - **In each design file you hand over**, apply the theme too. The design's symbols and styles come from the kit, as a
   library; the design records the theme, on its Theme page, which shows the theme's own values, and in its settings as
-  `lyra-theme`, with its CSS and Sass for the app, so the design and the app use one theme.
+  `lyra-theme`, with its CSS and Sass for the app, which the plugin's `theme-files.mjs` writes to files, so the design
+  and the app use one theme.
 
 A theme starts from one of Lyra's themes, as in the Theme Editor: Default, Dark, Cosmic, Corporate, Material Light or
 Material Dark. The base theme sets everything your theme doesn't, e.g. Dark's backgrounds, borders, text colours and
@@ -133,8 +142,10 @@ loads, e.g. from Google Fonts; their static files, one per weight, work best.
 ### Kit changes in your designs
 
 When the kit changes, e.g. you apply a theme or take a new Lyra release, save it: Sketch offers the update in each
-design that uses the kit as a library, under **Library Updates** at the top right. Accept it: instances keep their
-overrides, as the kit keeps its layers' identities. Apply the theme in the design again, to record it for the app.
+design that uses the kit as a library, under **Library Updates** at the top right. Accept it, or choose **Lyra ›
+Update from kit**, which takes every symbol and style the design uses from the kit at once: instances keep their
+overrides, as the kit keeps its layers' identities. Don't place a kit style again to update it, as that adds another
+copy. Apply the theme in the design again, to record it for the app.
 
 ---
 
@@ -217,10 +228,13 @@ In code:
 
 Write the inputs the design shows: those you leave out follow your app's defaults, or the component's, such as a
 `basic` status. Your own layers' colour variables and text styles are CSS variables, e.g.
-`color: var(--text-hint-color)`, or a typography style's `class`, e.g. `<h2 class="h4 text-hint">`, so the app
-follows the theme. **Lyra › Check design** lists what a design does beyond the kit and its theme, with what each takes
-in the app: that's the design's own CSS, and the design's own text styles, e.g. a display size or a third typeface,
-as typography classes of the app's own. A frame with a component's style, e.g. a card composed as above, is that
+`color: var(--text-hint-color)`, or a typography style's `class`, e.g. `<h2 class="h4 text-hint">`, or, for
+`Display` and `Code`, which have none, its `css` variables, e.g. `font-size: var(--text-display-font-size)`, so the app
+follows the theme; a `<pre>` is in `Code` already. **Lyra › Check design** lists what a design does beyond the kit and
+its theme, with what each takes in the app: that's the design's own CSS, and the design's own text styles, e.g. a
+second display size, or a kit text style changed on a text, as typography classes of the app's own. It lists the
+design's own colour variables with their colours, its own symbols, also one swapped into a kit symbol, e.g. a logo in
+a layout's brand, and its drawings' gradients and blend modes, e.g. a picture in multiply. A frame with a component's style, e.g. a card composed as above, is that
 component, with your content, and a layer with `Effect/Backdrop` is the backdrop Lyra draws under a dialog. Its Check page puts alike things together, e.g. a logo's shapes as one drawing and texts
 that look alike as one style to make; the design's `lyra-check` setting has every finding, and the page's `rows`.
 
