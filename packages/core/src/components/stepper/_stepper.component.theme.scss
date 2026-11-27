@@ -88,16 +88,16 @@
             padding-inline: 0;
         }
 
-        // On a narrow screen, a horizontal stepper's steps are their indexes, side by side, and only the current step's
-        // label shows, under them all, so a stepper of any number of steps fits across a phone. The other labels are
-        // still there for assistive technologies.
+        // On a narrow screen, a compact horizontal stepper's steps are their indexes, side by side, and only the current
+        // step's label shows, under them all, so a stepper of any number of steps fits across a phone. The other labels
+        // are still there for assistive technologies.
         @media screen and (max-width: $stepper-compact-breakpoint) {
             // The content starts where the first step's index does, at the stepper's edge.
             &.horizontal .step-content {
                 padding: nb-theme(stepper-step-content-small-padding);
             }
 
-            &.horizontal .header {
+            &.horizontal.compact .header {
                 position: relative;
                 padding-bottom: nb-theme(stepper-step-text-line-height);
 

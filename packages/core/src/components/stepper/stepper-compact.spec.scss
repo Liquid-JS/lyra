@@ -1,0 +1,9 @@
+// The default theme's stepper, which specs don't load otherwise.
+@use "@liquid-js/lyr-core/styles/all" as *;
+@use "stepper.component.theme" as stepper;
+
+$nb-enabled-themes: (default);
+
+@include nb-install {
+    @include stepper.nb-stepper-theme;
+}

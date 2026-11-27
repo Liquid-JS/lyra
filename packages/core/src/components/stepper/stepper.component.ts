@@ -101,6 +101,13 @@ export interface NbStepChangeEvent {
  * <nb-stepper [finished]="booked()">…</nb-stepper>
  * ```
  *
+ * On a narrow screen, up to 576 px wide, a horizontal stepper shows only the current step's label, under the steps'
+ * indexes, so any number of steps fits across a phone; the other labels are still there for assistive technologies.
+ * `compact="false"` keeps every label, for a few short ones:
+ * ```html
+ * <nb-stepper compact="false">…</nb-stepper>
+ * ```
+ *
  * `stepChange` emits an `NbStepChangeEvent` with the step selected and the one left:
  * @stacked-example(Step change event, stepper/stepper-step-change-event.component)
  * @styles
@@ -141,7 +148,8 @@ export interface NbStepChangeEvent {
     imports: [NbIconComponent, NgTemplateOutlet],
     host: {
         '[class.vertical]': "orientation() === 'vertical'",
-        '[class.horizontal]': "orientation() === 'horizontal'"
+        '[class.horizontal]': "orientation() === 'horizontal'",
+        '[class.compact]': 'compact()'
     }
 })
 export class NbStepperComponent {
@@ -159,6 +167,13 @@ export class NbStepperComponent {
 
     /** A step can be reached only once the steps before it are completed; on by default. */
     readonly linear = input<boolean, NbBooleanInput>(true, { transform: convertToBoolProperty })
+
+    /**
+     * On a narrow screen, up to 576 px wide, shows the current step's label alone, under the steps' indexes, so any
+     * number of steps fits across a phone; on by default. Off, a horizontal stepper keeps every label there, for a few
+     * short ones.
+     */
+    readonly compact = input<boolean, NbBooleanInput>(true, { transform: convertToBoolProperty })
 
     /** Shows every step completed and none current, once the user is through them. */
     readonly finished = input<boolean, NbBooleanInput>(false, { transform: convertToBoolProperty })
