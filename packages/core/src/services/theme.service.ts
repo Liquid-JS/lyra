@@ -61,6 +61,19 @@ export class NbThemeService {
     /** How large the content is. */
     readonly contentSize = signal<NbContentSize>('medium')
 
+    private readonly currentBreakpoint = signal<NbMediaBreakpoint | undefined>(undefined)
+
+    /**
+     * The media breakpoint the window's width is in, e.g. `md` from 768 px, as `nb-layout` measures it; until it
+     * does, e.g. on the server, none. For what changes with the window's size in code, e.g. how many items a header
+     * shows; `*nbShownBelow` and `*nbShownAbove` show or hide markup.
+     *
+     * ```ts
+     * readonly phone = computed(() => (this.themeService.breakpoint()?.width ?? Infinity) < 768)
+     * ```
+     */
+    readonly breakpoint = this.currentBreakpoint.asReadonly()
+
     currentTheme?: string
     private themeChanges$ = new ReplaySubject<NbThemeChange>(1)
     private appendLayoutClass$ = new Subject<string>()
@@ -182,8 +195,12 @@ export class NbThemeService {
         return `${prefix}-${name}`
     }
 
-    /** Called by `nb-layout` with the window's width, which `onMediaQueryChange` follows. */
+    /** Called by `nb-layout` with the window's width, which `breakpoint` and `onMediaQueryChange` follow. */
     changeWindowWidth(width: number) {
+        const point = this.breakpointService.getByWidth(width)
+        if (point.name !== this.currentBreakpoint()?.name) {
+            this.currentBreakpoint.set(point)
+        }
         this.changeWindowWidth$.next(width)
     }
 
@@ -198,7 +215,7 @@ export class NbThemeService {
 
     /**
      * Emits when the window's width enters another media breakpoint, as the previous breakpoint and the current one;
-     * the first emission's previous breakpoint is `unknown`.
+     * the first emission's previous breakpoint is `unknown`. `breakpoint` is the current one as a signal.
      * ```ts
      *  [{ name: 'xs', width: 0 }, { name: 'md', width: 768 }] // change from `xs` to `md`
      * ```

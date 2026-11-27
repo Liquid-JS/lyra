@@ -22,6 +22,7 @@ import { NbDialogRef } from './dialog-ref'
 /** @internal */
 declare const $localize: NbLocalize
 
+/** What `NbDialogService.confirm` asks, and its buttons. */
 export interface NbConfirmDialogOptions {
     /**
      * The question, e.g. "Delete the invoice?".

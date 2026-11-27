@@ -102,6 +102,18 @@ describe('theme-service', () => {
         }
     })
 
+    it('gives the window\'s media breakpoint as a signal', () => {
+        expect(themeService.breakpoint()).toBeUndefined()
+        themeService.changeWindowWidth(360)
+        expect(themeService.breakpoint()?.name).toEqual(breakpointService.getByWidth(360).name)
+        const first = themeService.breakpoint()
+        themeService.changeWindowWidth(380)
+        expect(themeService.breakpoint()).toBe(first)
+        themeService.changeWindowWidth(1440)
+        expect(themeService.breakpoint()?.width).toBeLessThanOrEqual(1440)
+        expect(themeService.breakpoint()?.name).not.toEqual(first?.name)
+    })
+
     it('listens to theme variables change', () => {
         let current: any
 

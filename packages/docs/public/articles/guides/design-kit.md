@@ -251,7 +251,8 @@ the design's Check page and every finding in its `lyra-check` setting. Then, wit
 - Compare a screenshot of the result with the design.
 - A design with phone and laptop screens is one layout in code: the parts that show at one size alone take
   `*nbShownBelow="'md'"` or `*nbShownAbove="'md'"`, actions `collapse="menu" below="md"`, and a phone's drawer is a
-  `fixed drawer` sidebar; the `Adaptive Layout` symbols' notes in `lyra-kit.json` show how.
+  `fixed drawer` sidebar; the `Adaptive Layout` symbols' notes in `lyra-kit.json` show how. What changes in code with
+  the size, e.g. how many tabs a header shows, follows `NbThemeService.breakpoint()`, a signal.
 
 ### Scripting the kit
 

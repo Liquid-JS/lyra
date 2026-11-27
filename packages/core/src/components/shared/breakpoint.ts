@@ -1,6 +1,4 @@
 import { computed, inject, Signal } from '@angular/core'
-import { toSignal } from '@angular/core/rxjs-interop'
-import { map } from 'rxjs/operators'
 
 import { NbMediaBreakpointsService } from '../../services/breakpoints.service'
 import { NbThemeService } from '../../services/theme.service'
@@ -12,10 +10,10 @@ import { NbThemeService } from '../../services/theme.service'
  */
 export function belowBreakpoint(name: () => string | undefined): Signal<boolean> {
     const breakpoints = inject(NbMediaBreakpointsService)
-    const current = toSignal(inject(NbThemeService).onMediaQueryChange().pipe(map(([, point]) => point)))
+    const theme = inject(NbThemeService)
     return computed(() => {
         const wanted = name()
-        const point = current()
+        const point = theme.breakpoint()
         if (!wanted || !point || isNaN(point.width)) {
             return false
         }
