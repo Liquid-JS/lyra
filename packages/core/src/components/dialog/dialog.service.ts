@@ -3,7 +3,7 @@ import { NavigationStart, Router, UrlTree } from '@angular/router'
 import { filter, takeUntil } from 'rxjs/operators'
 
 import { NbComponentPortal, NbOverlayRef, NbScrollStrategy, NbTemplatePortal, NbGlobalPositionStrategy, NbPositionBuilderService, NbEscapeStack, NbOverlayService, setComponentContext, NbGlobalPosition, NbPositionHelper } from '@liquid-js/lyr-core/cdk'
-import { NB_DOCUMENT } from '@liquid-js/lyr-core/base'
+import { NB_DOCUMENT, ɵnbSwipeToDismiss as nbSwipeToDismiss } from '@liquid-js/lyr-core/base'
 import { NB_DIALOG_CONFIG, NbDialogConfig } from './dialog-config'
 import { NbDialogRef } from './dialog-ref'
 import { NbDialogContainerComponent } from './dialog-container'
@@ -132,7 +132,8 @@ import { animateDialog } from './dialog-animation'
  * @stacked-example(Position, dialog/dialog-position.component)
  *
  * `sheet` - a sheet along the bottom of the screen, as a phone's: a card's details under the thumb, as wide as the
- * screen up to 36rem, flush with the bottom.
+ * screen up to 36rem, flush with the bottom. It slides up as it opens and back down as it closes, rather than fading.
+ * One that `closeOnBackdropClick` closes is swiped down to close too, once its content is scrolled to the top.
  * ```ts
  * this.dialogService.open(DetailsComponent, { sheet: true, closeOnBackdropClick: true })
  * ```
@@ -320,6 +321,16 @@ export class NbDialogService {
         dialogRef: NbDialogRef<T, R>) {
         if (config.closeOnBackdropClick) {
             overlayRef.backdropClick().subscribe(() => dialogRef.close())
+
+            // A sheet that its backdrop closes is swiped down to close too, its backdrop fading as it goes.
+            if (config.sheet) {
+                const stop = nbSwipeToDismiss(overlayRef.overlayElement, {
+                    edge: 'bottom',
+                    progress: (fraction) => overlayRef.backdropElement?.style.setProperty('opacity', fraction ? String(1 - fraction) : ''),
+                    dismiss: () => dialogRef.close()
+                })
+                dialogRef.onClose.subscribe(() => stop())
+            }
         }
 
         const router = this.router

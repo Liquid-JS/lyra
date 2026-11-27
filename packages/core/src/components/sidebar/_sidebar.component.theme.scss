@@ -7,11 +7,6 @@
             background-color: nb-theme(sidebar-drawer-backdrop-color);
         }
 
-        // Over its backdrop, a drawer's panel has the sidebar's background of its own.
-        &.drawer .main-container {
-            background-color: nb-theme(sidebar-background-color);
-        }
-
         background-color: nb-theme(sidebar-background-color);
         box-shadow: nb-theme(sidebar-shadow);
         color: nb-theme(sidebar-text-color);
@@ -20,6 +15,18 @@
         font-weight: nb-theme(sidebar-text-font-weight);
         line-height: nb-theme(sidebar-text-line-height);
         width: nb-theme(sidebar-width);
+
+        // Over its backdrop, a drawer's panel has the sidebar's background and shadow of its own, and nothing's behind
+        // it as it's swiped away.
+        &.drawer {
+            background-color: transparent;
+            box-shadow: none;
+
+            .main-container {
+                background-color: nb-theme(sidebar-background-color);
+                box-shadow: nb-theme(sidebar-shadow);
+            }
+        }
 
         .main-container {
             height: nb-theme(sidebar-height);

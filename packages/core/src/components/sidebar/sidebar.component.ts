@@ -1,5 +1,6 @@
 import { DOCUMENT } from '@angular/common'
 import {
+    afterRenderEffect,
     Component,
     computed,
     effect,
@@ -18,7 +19,7 @@ import { NavigationEnd, Router } from '@angular/router'
 import { combineLatest, fromEvent, Observable } from 'rxjs'
 import { filter, map } from 'rxjs/operators'
 
-import { ɵconvertToBoolProperty as convertToBoolProperty, NbBooleanInput, NbThemeService, NbMediaBreakpoint, ɵenableTransitionsAfterRender as enableTransitionsAfterRender } from '@liquid-js/lyr-core/base'
+import { ɵconvertToBoolProperty as convertToBoolProperty, NbBooleanInput, NbThemeService, NbMediaBreakpoint, ɵenableTransitionsAfterRender as enableTransitionsAfterRender, ɵnbSwipeToDismiss as nbSwipeToDismiss } from '@liquid-js/lyr-core/base'
 import { ɵNB_MENU_PARENT as NB_MENU_PARENT, type NbMenuItem } from '@liquid-js/lyr-core/menu'
 import { NbSidebarService, getSidebarState$, getSidebarResponsiveState$ } from './sidebar.service'
 
@@ -112,9 +113,10 @@ export class NbSidebarFooterComponent {}
  * `closeOnOutsideClick` when the user clicks outside it. It then compacts on tablets and collapses otherwise. A
  * click that expands the sidebar, e.g. on a toggle button in the header, doesn't close it.
  *
- * A `drawer` lies over the page while it's expanded, with a backdrop that closes it, as a phone's menu does: a `fixed`
+ * A `drawer` lies over the page and its header while it's expanded, from the top of the screen, with a backdrop that
+ * closes it, as a phone's menu does: a `fixed`
  * one whenever it's expanded, e.g. a phone's alone, toggled from its header; a `responsive` one on its collapsed
- * breakpoints.
+ * breakpoints. On a touch screen it's swiped back toward its side to close too.
  * ```html
  * <nb-sidebar *nbShownBelow="'md'" fixed drawer state="collapsed" tag="drawer" closeOnNavigation>
  *   <nb-sidebar-header><nb-user name="Jane Doe" title="Designer" /></nb-sidebar-header>
@@ -326,6 +328,51 @@ export class NbSidebarComponent {
         })
 
         this.subscribeToMediaQueryChange()
+
+        // An open drawer is swiped back toward its side to close, its backdrop fading as it goes.
+        afterRenderEffect((onCleanup) => {
+            if (!this.drawerOpen()) {
+                return
+            }
+            const host = this.element.nativeElement as HTMLElement
+            const panel = host.querySelector<HTMLElement>(':scope > .main-container')
+            if (!panel) {
+                return
+            }
+            const { left, width } = panel.getBoundingClientRect()
+            const edge = left + width / 2 < (host.ownerDocument.defaultView?.innerWidth ?? 0) / 2 ? 'left' : 'right'
+            let slide: Animation | undefined
+            const stop = nbSwipeToDismiss(panel, {
+                edge,
+                progress: (fraction) => host.querySelector<HTMLElement>(':scope > .drawer-backdrop')?.style.setProperty('opacity', fraction ? String(1 - fraction) : ''),
+                // It slides the rest of the way, then closes behind it without animating its width, as it's gone.
+                dismiss: () => {
+                    const close = () => {
+                        host.style.transition = panel.style.transition = 'none'
+                        this.collapse()
+                    }
+                    const reduced = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches
+                    if (typeof panel.animate !== 'function' || reduced) {
+                        close()
+                        return
+                    }
+                    slide = panel.animate([{ transform: panel.style.transform }, { transform: `translateX(${edge === 'left' ? '-100%' : '100%'})` }], {
+                        duration: 120,
+                        easing: 'ease-in',
+                        fill: 'forwards'
+                    })
+                    slide.finished.then(close, close)
+                }
+            })
+            onCleanup(() => {
+                stop()
+                // Closed by then: its width takes its new size before the transitions come back.
+                void host.offsetWidth
+                slide?.cancel()
+                panel.style.transform = ''
+                host.style.transition = panel.style.transition = ''
+            })
+        })
 
         this.router?.events
             .pipe(

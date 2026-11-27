@@ -19,10 +19,14 @@ export function animatePane(pane: HTMLElement, opening: boolean, sheet = false):
     ) {
         return Promise.resolve()
     }
-    const duration = opening ? 150 : 100
-    const animation = pane.animate(opening ? [hidden, shown] : [shown, hidden], {
+    const slide = sheet ? expandDuration(pane.getBoundingClientRect().height) : 0
+    const duration = sheet ? (opening ? slide : Math.round(slide * 0.75)) : opening ? 150 : 100
+    const [from, to] = sheet ? [below, inPlace] : [hidden, shown]
+    // A sheet swiped partway down goes on from there.
+    const swiped: Keyframe | undefined = sheet && !opening && pane.style.transform ? { transform: pane.style.transform } : undefined
+    const animation = pane.animate(opening ? [from, to] : [swiped ?? to, from], {
         duration,
-        easing: opening ? 'ease-out' : 'ease-in',
+        easing: sheet ? (opening ? 'cubic-bezier(0.2, 0.8, 0.2, 1)' : 'cubic-bezier(0.4, 0, 1, 1)') : opening ? 'ease-out' : 'ease-in',
         // Closing holds the end, so the pane doesn't flash back before it's removed.
         fill: opening ? 'none' : 'forwards'
     })
