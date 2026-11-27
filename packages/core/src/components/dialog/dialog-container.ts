@@ -32,7 +32,7 @@ import { NbDialogConfig } from './dialog-config'
             margin: 0;
             border-end-start-radius: 0;
             border-end-end-radius: 0;
-            padding-bottom: env(safe-area-inset-bottom, 0);
+            padding-bottom: var(--nb-safe-area-bottom, env(safe-area-inset-bottom, 0px));
         }
     `,
     host: {

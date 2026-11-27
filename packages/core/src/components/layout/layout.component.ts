@@ -68,6 +68,16 @@ import { NbRestoreScrollTopHelper } from './restore-scroll-top.service'
  * the theme's styles are scoped to. See [Enable Customizable Theme](theme/customization/enable-customizable-theme).
  * @stacked-example(Layout With Footer, layout/layout-w-footer.component)
  *
+ * An app that draws under a phone's notch and home bar, with `viewport-fit=cover` in its viewport meta tag, keeps
+ * them clear: the header's colour reaches the top of the screen with its bar below the notch, an open drawer and a
+ * fixed footer reach its edges with their content clear of them, and the page and toasts stay inside them, also held
+ * sideways. The browser gives the insets; a native shell that knows them otherwise sets `--nb-safe-area-top`,
+ * `--nb-safe-area-right`, `--nb-safe-area-bottom` and `--nb-safe-area-left`.
+ *
+ * ```html
+ * <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+ * ```
+ *
  * With `center`, the columns take the theme's `layout-content-width` and sit in the middle of wider screens:
  *
  * ```html

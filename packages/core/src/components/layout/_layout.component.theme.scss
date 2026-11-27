@@ -1,4 +1,5 @@
 @use "../../styles/global/breakpoints" as *;
+@use "../../styles/global/safe-area" as *;
 @use "../../styles/theming" as *;
 
 @mixin window-mode($padding-top) {
@@ -148,12 +149,38 @@
         line-height: nb-theme(layout-text-line-height);
         min-height: nb-theme(layout-min-height);
 
+        // The page's content is clear of a phone's notch and rounded corners on its sides, e.g. held sideways.
+        padding-left: $safe-left;
+        padding-right: $safe-right;
+
         // A subheader is in the content column, next to the sidebar, so only a top header moves the sidebar down.
         > nb-layout-header ~ .layout-container {
             > nb-sidebar {
                 &.fixed,
                 .main-container-fixed {
-                    top: nb-theme(header-height);
+                    top: calc(#{nb-theme(header-height)} + #{$safe-top});
+                }
+            }
+
+            // An open drawer lies over the header too, from the top of the screen, as a phone's menu does; its backdrop
+            // covers both.
+            > nb-sidebar.drawer {
+                &.fixed,
+                .main-container-fixed {
+                    top: 0;
+                }
+
+                &.fixed,
+                .main-container-fixed {
+                    z-index: 1050;
+                }
+
+                // Its panel reaches the screen's edges, its content clear of a phone's notch and home bar.
+                .main-container {
+                    height: nb-theme(sidebar-height);
+                    padding-top: $safe-top;
+                    padding-bottom: $safe-bottom;
+                    box-sizing: border-box;
                 }
             }
         }
@@ -165,7 +192,7 @@
 
                     // Clear of a phone's home bar, in the footer's colour.
                     &.fixed {
-                        padding-bottom: env(safe-area-inset-bottom, 0);
+                        padding-bottom: $safe-bottom;
                         background-color: nb-theme(footer-background-color);
                     }
 
@@ -207,6 +234,8 @@
     }
 
     nb-layout-header {
+        // Under a phone's notch in its own colour, its bar below it.
+        padding-top: $safe-top;
         background-color: nb-theme(header-background-color);
         color: nb-theme(header-text-color);
         font-family: nb-theme(header-text-font-family);
@@ -234,14 +263,30 @@
             min-height: calc(#{nb-theme(layout-min-height)} - #{nb-theme(header-height)});
         }
 
+        // A fixed header spans the screen, over the page's edges, its bar clear of a phone's notch on its sides.
+        &.fixed {
+            padding-left: $safe-left;
+            padding-right: $safe-right;
+        }
+
         &.fixed ~ .layout-container {
-            padding-top: nb-theme(header-height);
+            padding-top: calc(#{nb-theme(header-height)} + #{$safe-top});
             min-height: nb-theme(layout-min-height);
         }
 
         // The sidebar container stays fixed below the header, fixed or not, so it is shorter by the header height.
         & ~ .layout-container nb-sidebar .main-container {
-            height: calc(#{nb-theme(sidebar-height)} - #{nb-theme(header-height)});
+            height: calc(#{nb-theme(sidebar-height)} - #{nb-theme(header-height)} - #{$safe-top});
+        }
+    }
+
+    // The links in what the footer holds, as weak as the header's, so a component's links, e.g. a phone's tab bar, keep
+    // their own colours.
+    nb-layout-footer > nav a {
+        color: nb-theme(footer-text-highlight-color);
+
+        @include hover-focus-active {
+            color: nb-theme(footer-text-highlight-color);
         }
     }
 

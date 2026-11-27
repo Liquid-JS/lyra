@@ -1,0 +1,6 @@
+// A phone's notch, rounded corners and home bar, where the app draws under them with `viewport-fit=cover`, and 0
+// otherwise. An app can set them itself, e.g. in a native shell that knows them, with `--nb-safe-area-top` and the rest.
+$safe-top: var(--nb-safe-area-top, env(safe-area-inset-top, 0px));
+$safe-right: var(--nb-safe-area-right, env(safe-area-inset-right, 0px));
+$safe-bottom: var(--nb-safe-area-bottom, env(safe-area-inset-bottom, 0px));
+$safe-left: var(--nb-safe-area-left, env(safe-area-inset-left, 0px));

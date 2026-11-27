@@ -1,4 +1,5 @@
 @use "../../styles/theming" as *;
+@use "../../styles/global/safe-area" as *;
 
 @mixin nb-toast-theme() {
     nb-toast {
@@ -70,9 +71,13 @@
         z-index: 1041;
     }
 
-    // The toasts' distance from the screen's edges, besides their own margin, e.g. below a fixed header.
+    // The toasts' distance from the screen's edges, besides their own margin, e.g. below a fixed header, and from a
+    // phone's notch and home bar; the toasts narrow to fit inside it on a phone.
     .toastr-overlay-container nb-toastr-container {
         display: block;
+        box-sizing: border-box;
+        max-width: calc(100vw - #{$safe-left} - #{$safe-right});
+        margin: $safe-top $safe-right $safe-bottom $safe-left;
         padding: nb-theme(toastr-offset);
     }
 }
