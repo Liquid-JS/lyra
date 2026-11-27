@@ -5,8 +5,10 @@
     type="button"
     class="menu-button"
     [attr.aria-label]="texts().menu"
-    [nbContextMenu]="menuItems()">
-    <nb-icon icon="menu-outline" />
+    [nbContextMenu]="menuItems()"
+    [nbContextMenuTag]="menuTag">
+    <nb-icon icon="menu-outline"
+        pack="essentials" />
 </button>
 } @else {
 <ul class="route-tabset">
@@ -54,9 +56,10 @@
 
 <ng-template #content
     let-tab>
-    @if (tab.icon) {
+    @let icon = showIcons() ? tab.icon : undefined;
+    @if (icon) {
     <span class="tab-icon">
-        <nb-icon [config]="tab.icon" />
+        <nb-icon [config]="icon" />
         @if (appearance() === 'bar' && (tab.badgeDot || tab.badgeText)) {
         <nb-badge [text]="tab.badgeText"
             [dotMode]="!!tab.badgeDot"
@@ -69,7 +72,7 @@
     <span class="tab-text"
         dir="auto">{{ tab.title }}</span>
     }
-    @if ((appearance() !== 'bar' || !tab.icon) && (tab.badgeDot || tab.badgeText)) {
+    @if ((appearance() !== 'bar' || !icon) && (tab.badgeDot || tab.badgeText)) {
     <nb-badge class="tab-count"
         position="inline"
         [text]="tab.badgeDot ? '' : tab.badgeText"

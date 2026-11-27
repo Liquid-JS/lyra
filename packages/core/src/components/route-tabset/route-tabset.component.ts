@@ -14,16 +14,27 @@ import {
 import { NbButtonComponent } from '@liquid-js/lyr-core/button'
 import { NbContextMenuDirective } from '@liquid-js/lyr-core/context-menu'
 import { NbIconConfig, NbIconComponent } from '@liquid-js/lyr-core/icon'
-import { NbMenuItem } from '@liquid-js/lyr-core/menu'
+import { NbMenuItem, NbMenuService } from '@liquid-js/lyr-core/menu'
 import { NbMergeConfigsPipe } from './merge-configs.pipe'
+
+let nextMenuId = 0
 
 declare const $localize: NbLocalize
 
+/**
+ * A tab of an `nb-route-tabset`: a router link, with the `routerLink` options it passes on, and its look. A tab is
+ * active while its route is the page's, by `activeLinkOptions`.
+ */
 export interface NbRouteTab {
+    /** The route, as `routerLink` takes it. */
     route?: RouterLink['routerLink']
+    /** The tab's title; without one, its icon alone, which then needs a name in its `icon` config's `options`. */
     title?: string
+    /** An icon before the title, or over it in a `bar`: its name in the default pack, or an `NbIconConfig`. */
     icon?: string | NbIconConfig
+    /** Shows the tab without making it a link. */
     disabled?: boolean
+    /** Hides the title on a screen up to 576 px wide, `$route-tabset-tab-text-hide-breakpoint`, e.g. to leave its icon. */
     responsive?: boolean
     queryParams?: RouterLink['queryParams']
     queryParamsHandling?: RouterLink['queryParamsHandling']
@@ -85,7 +96,7 @@ export type NbRouteTabsetAppearance = 'tabs' | 'bar'
  *
  * ```html
  * <nb-layout-header fixed>
- *   <nb-route-tabset *nbShownAbove="'md'" [tabs]="sections" outlet="false" />
+ *   <nb-route-tabset *nbShownAbove="'md'" [tabs]="sections" outlet="false" showIcons="false" />
  * </nb-layout-header>
  * <nb-layout-footer fixed *nbShownBelow="'md'">
  *   <nb-route-tabset [tabs]="sections" outlet="false" appearance="bar" />
@@ -209,7 +220,7 @@ export class NbRouteTabsetComponent {
     /** The media breakpoint, e.g. `md`, below which the tabs `collapse`. */
     readonly below = input<string>()
 
-    /** Emits the tab whose link was clicked. */
+    /** Emits the tab whose link was clicked, also in the menu the tabs fold into. */
     readonly tabChange = output<NbRouteTab>()
 
     protected readonly router = inject(Router)
@@ -229,10 +240,11 @@ export class NbRouteTabsetComponent {
             .map((tab) => ({
                 title: tab.title ?? '',
                 link: this.linkOf(tab),
-                icon: tab.icon,
+                icon: this.showIcons() ? tab.icon : undefined,
                 queryParams: tab.queryParams ?? undefined,
                 queryParamsHandling: tab.queryParamsHandling ?? undefined,
                 fragment: tab.fragment,
+                data: tab,
                 ...(tab.badgeText || tab.badgeDot ? { badge: { text: tab.badgeText, status: tab.badgeStatus ?? 'basic', dotMode: tab.badgeDot } } : {})
             }))
     )

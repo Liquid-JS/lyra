@@ -2,7 +2,7 @@ import { Component } from '@angular/core'
 import { TestBed } from '@angular/core/testing'
 import { provideRouter, Router } from '@angular/router'
 
-import { NbRouteTab, NbRouteTabsetModule } from '@liquid-js/lyr-core'
+import { NbIconLibraries, NbRouteTab, NbRouteTabsetModule } from '@liquid-js/lyr-core'
 
 @Component({
     template: '<nb-route-tabset [tabs]="tabs" />',
@@ -23,6 +23,20 @@ class RouteNavigationTestComponent {
     readonly tabs: NbRouteTab[] = [
         { title: 'Orders', route: '/orders' },
         { title: 'Archive', route: '/archive' }
+    ]
+}
+
+@Component({
+    template: `
+    <nb-route-tabset class="header" [tabs]="tabs" outlet="false" showIcons="false" />
+    <nb-route-tabset class="bar" [tabs]="tabs" outlet="false" appearance="bar" />
+  `,
+    imports: [NbRouteTabsetModule]
+})
+class RouteIconsTestComponent {
+    readonly tabs: NbRouteTab[] = [
+        { title: 'Orders', route: '/orders', icon: 'archive-outline', badgeText: '2' },
+        { title: 'Archive', route: '/archive', icon: 'inbox-outline' }
     ]
 }
 
@@ -69,5 +83,21 @@ describe('nb-route-tabset', () => {
         fixture.detectChanges()
 
         expect((fixture.nativeElement as HTMLElement).querySelector('router-outlet')).not.toBeNull()
+    })
+
+    it('should leave the icons out with showIcons off, its badges beside the titles', () => {
+        TestBed.configureTestingModule({ providers: [provideRouter([])] })
+        TestBed.inject(NbIconLibraries).registerSvgPack('test', { 'archive-outline': '<svg></svg>', 'inbox-outline': '<svg></svg>' })
+        TestBed.inject(NbIconLibraries).setDefaultPack('test')
+        const fixture = TestBed.createComponent(RouteIconsTestComponent)
+        fixture.detectChanges()
+
+        const element: HTMLElement = fixture.nativeElement
+        const header = element.querySelector('.header') as HTMLElement
+        const bar = element.querySelector('.bar') as HTMLElement
+        expect(header.querySelectorAll('nb-icon')).toHaveLength(0)
+        expect(header.querySelector('.tab-count')?.textContent?.trim()).toBe('2')
+        expect(bar.querySelectorAll('.tab-icon nb-icon')).toHaveLength(2)
+        expect(bar.querySelector('.tab-icon nb-badge')?.textContent?.trim()).toBe('2')
     })
 })

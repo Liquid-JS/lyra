@@ -1,6 +1,6 @@
 import { Component, signal } from '@angular/core'
 import { TestBed } from '@angular/core/testing'
-import { provideRouter } from '@angular/router'
+import { provideRouter, Router } from '@angular/router'
 
 import {
     NbActionsModule,
@@ -22,7 +22,7 @@ const tabs: NbRouteTab[] = [
 
 @Component({
     template: `
-        <nb-route-tabset class="header-tabs" [tabs]="tabs" outlet="false" collapse="menu" below="md" />
+        <nb-route-tabset class="header-tabs" [tabs]="tabs" outlet="false" collapse="menu" below="md" (tabChange)="picked.set($event.title)" />
         <nb-route-tabset class="bar" [tabs]="tabs" outlet="false" appearance="bar" />
         <nb-actions collapse="menu" below="md">
             <nb-action class="search" icon="search-outline" title="Search" (click)="searched.set(true)" />
@@ -34,6 +34,7 @@ const tabs: NbRouteTab[] = [
 class NavigationHostComponent {
     readonly tabs = tabs
     readonly searched = signal(false)
+    readonly picked = signal<string | undefined>(undefined)
 }
 
 @Component({
@@ -80,6 +81,22 @@ describe('responsive navigation', () => {
         expect(element.querySelector('nb-action.search')?.classList.contains('folded')).toBe(true)
         expect(element.querySelector('nb-action.own')?.classList.contains('folded')).toBe(false)
         expect(element.querySelector('nb-action.more')).not.toBeNull()
+    })
+
+    it('should tell which tab was picked from the menu the tabs fold into, as for a tab clicked', async () => {
+        // The tabs' pages aren't routes here.
+        vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true)
+        const fixture = TestBed.createComponent(NavigationHostComponent)
+        const element: HTMLElement = fixture.nativeElement
+        width(400)
+        fixture.detectChanges()
+        ;(element.querySelector('.header-tabs .menu-button') as HTMLElement).click()
+        fixture.detectChanges()
+        await fixture.whenStable()
+        const item = [...document.querySelectorAll<HTMLElement>('nb-context-menu .menu-title')].find((title) => title.textContent?.trim() === 'Inbox')
+        ;(item?.closest('a') as HTMLElement).click()
+        fixture.detectChanges()
+        expect(fixture.componentInstance.picked()).toBe('Inbox')
     })
 
     it('should show a bar with its tabs sharing the width and a badge on the icon', () => {
