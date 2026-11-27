@@ -318,6 +318,13 @@ $theme: (
     text-heading-color: text-basic-color,
     text-alternate-color: color-basic-100,
     text-control-color: color-basic-100,
+    // Text on each status's fill, e.g. a filled button's, a badge's or a coloured card header's: the control text unless a
+    // theme sets it apart, e.g. dark text on a light lime success or amber warning.
+    text-control-primary-color: text-control-color,
+    text-control-success-color: text-control-color,
+    text-control-info-color: text-control-color,
+    text-control-warning-color: text-control-color,
+    text-control-danger-color: text-control-color,
     text-disabled-color: color-basic-transparent-600,
     // The status text is each status's own colour, so it matches the colours an app sets; the Theme Editor offers the
     // shades that read on the backgrounds to a theme that wants them.

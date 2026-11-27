@@ -214,13 +214,22 @@ export class NgdThemeControlsComponent {
         return `${what} reads at ${this.ratioText(ratio)}${under}.`
     }
 
-    /** The note when the control text, as a filled button's, reads under the target on a status colour. */
+    /** The note when the text on a status colour, as a filled button's, reads under the target. */
     protected controlText(ratio?: number): string {
         if (ratio === undefined || ratio >= this.target()) {
             return ''
         }
-        return `The control text on it, as a filled button's, reads at only ${this.ratioText(ratio)}: a darker colour, ` +
-            'or another text-control-color, would read.'
+        return `The text on it, as a filled button's, reads at only ${this.ratioText(ratio)}.`
+    }
+
+    /** Whether the basic text would read on a status colour where its own text doesn't, e.g. on a light lime. */
+    protected darkReads(reading: { control?: number, darkControl?: number }): boolean {
+        return (reading.control ?? Infinity) < this.target() && (reading.darkControl ?? 0) >= this.target()
+    }
+
+    /** Gives a status's fills the basic text, e.g. ink on a light lime, as the status's own variable. */
+    protected makeControlDark(status: NgdThemeStatus) {
+        this.themes.setVariable(`text-control-${status}-color`, 'var(--text-basic-color)')
     }
 
     /** Gives a status the text shades that read on the backgrounds, as the theme's own variables. */

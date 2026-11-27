@@ -111,15 +111,16 @@ export function themeBackgrounds(variables: Record<string, string>, theme: NgdTh
 
 /**
  * How a status's text reads in the draft: the lowest contrast of `text-<status>-color` on the backgrounds 1 to 3, the
- * shades that would reach the `target` contrast when it doesn't, and how the control text (a filled button's) reads on
- * the status colour itself, for the editor's hint by the status colour. `undefined` when a colour can't be read.
+ * shades that would reach the `target` contrast when it doesn't, and how the text on its fill, a filled button's,
+ * `text-control-<status>-color`, reads on the status colour itself, and whether the basic text would read there
+ * instead, for the editor's hint by the status colour. `undefined` when a colour can't be read.
  */
 export function statusTextContrast(
     variables: Record<string, string>,
     theme: NgdThemeValues,
     status: NgdThemeStatus,
     target = MINIMUM_CONTRAST
-): { ratio: number, control?: number, readable?: ReturnType<typeof readableShades> } | undefined {
+): { ratio: number, control?: number, darkControl?: number, readable?: ReturnType<typeof readableShades> } | undefined {
     const backgrounds = themeBackgrounds(variables, theme)
     const text = themeValue(variables, theme, `text-${status}-color`)
     const ratios = backgrounds.map((background) => contrast(text, background))
@@ -130,8 +131,9 @@ export function statusTextContrast(
     const palette = SHADES.map((shade) => themeValue(variables, theme, `color-${status}-${shade}`))
     const readable = ratio < target ? readableShades(palette, backgrounds, target) : undefined
     const fill = themeValue(variables, theme, `color-${status}-500`)
-    const control = contrast(themeValue(variables, theme, 'text-control-color'), fill)
-    return { ratio, control, readable }
+    const control = contrast(themeValue(variables, theme, `text-control-${status}-color`), fill)
+    const darkControl = contrast(themeValue(variables, theme, 'text-basic-color'), fill)
+    return { ratio, control, darkControl, readable }
 }
 
 /**

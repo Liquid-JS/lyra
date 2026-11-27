@@ -53,6 +53,13 @@
                     (click)="makeReadable(status)">Use the {{ reading.readable.text }} shade</button>
                 }
                 {{ controlText(reading.control) }}
+                @if (darkReads(reading)) {
+                <button nbButton
+                    ghost
+                    size="tiny"
+                    type="button"
+                    (click)="makeControlDark(status)">Use the text colour on it</button>
+                }
             </p>
             }
         </div>
