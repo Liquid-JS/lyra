@@ -134,9 +134,11 @@
                 margin-bottom: 0;
             }
 
+            // A bubble grows to the room beside the avatar, or as wide as the theme lets it, before its text wraps.
             .text {
                 padding: 1rem;
                 border-radius: 0.5rem;
+                max-width: nb-theme(chat-message-max-width);
             }
         }
 

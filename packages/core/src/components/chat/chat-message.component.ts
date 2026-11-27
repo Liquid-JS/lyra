@@ -54,6 +54,7 @@ import { NbChatMessageTextComponent } from './chat-message-text.component'
  * chat-message-quote-text-color:
  * chat-message-file-text-color:
  * chat-message-file-background-color:
+ * chat-message-max-width:
  */
 @Component({
     selector: 'nb-chat-message',

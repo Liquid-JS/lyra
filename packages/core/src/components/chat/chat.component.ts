@@ -258,6 +258,7 @@ declare const $localize: NbLocalize
  * chat-message-quote-text-color:
  * chat-message-file-text-color:
  * chat-message-file-background-color:
+ * chat-message-max-width:
  * chat-form-input-max-height:
  */
 @Component({
