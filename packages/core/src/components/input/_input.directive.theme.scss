@@ -21,6 +21,12 @@
             vertical-align: middle;
         }
 
+        // A full-width textarea is alone on its line: by its top, it leaves no room under it for the line's descenders,
+        // e.g. above a field's hint.
+        &:is(textarea).input-full-width {
+            vertical-align: top;
+        }
+
         @each $status in nb-get-statuses() {
             &.status-#{$status} {
                 @include look.status($status, ":disabled");
