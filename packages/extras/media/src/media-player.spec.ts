@@ -38,11 +38,12 @@ describe('the media player\'s texts', () => {
 })
 
 describe('nbFormatMediaTime', () => {
-    it('gives minutes and seconds, and hours when the length has them', () => {
+    it('gives minutes and seconds, and hours from an hour', () => {
         expect(nbFormatMediaTime(0)).toBe('0:00')
         expect(nbFormatMediaTime(65.9)).toBe('1:05')
-        expect(nbFormatMediaTime(65, 3600)).toBe('0:01:05')
-        expect(nbFormatMediaTime(3725)).toBe('1:02:05')
+        expect(nbFormatMediaTime(2832)).toBe('47:12')
+        expect(nbFormatMediaTime(3600)).toBe('1:00:00')
+        expect(nbFormatMediaTime(7084)).toBe('1:58:04')
     })
 
     it('gives 0:00 for what isn\'t a time yet', () => {

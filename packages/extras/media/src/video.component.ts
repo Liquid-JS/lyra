@@ -76,6 +76,10 @@ interface Quality {
  * ```bash
  * npm install @videojs/core @videojs/media @videojs/store
  * ```
+ *
+ * The app's build lists about 50 small chunks of Video.js's own translations, e.g. `bg` or `ru`, which `@videojs/core`
+ * keeps within reach of its captions. They load only if a player asks Video.js for a language, which Lyra's don't, as
+ * their controls take Lyra's texts.
  */
 @Component({
     selector: 'nb-video',

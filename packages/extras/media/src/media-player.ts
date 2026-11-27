@@ -18,13 +18,16 @@ import { NbMediaController, NbMediaKind } from './media-controller'
 import type { NbMediaError, NbMediaSource, NbMediaStore, NbMediaTrack } from './media-types'
 import { injectNbMediaPlayerTexts } from './texts'
 
-/** A position or length in the media as text: `m:ss`, or `h:mm:ss` when `length` is an hour or longer. */
-export function nbFormatMediaTime(seconds: number, length = seconds): string {
+/**
+ * A position or length in the media as text: `m:ss`, or `h:mm:ss` from an hour, e.g. `47:12` into an episode of
+ * `1:58:04`, as podcast and video players write them.
+ */
+export function nbFormatMediaTime(seconds: number): string {
     const total = Number.isFinite(seconds) && seconds > 0 ? Math.floor(seconds) : 0
     const hours = Math.floor(total / 3600)
     const minutes = Math.floor((total % 3600) / 60)
     const rest = String(total % 60).padStart(2, '0')
-    return Number.isFinite(length) && length >= 3600 ? `${hours}:${String(minutes).padStart(2, '0')}:${rest}` : `${minutes}:${rest}`
+    return hours ? `${hours}:${String(minutes).padStart(2, '0')}:${rest}` : `${minutes}:${rest}`
 }
 
 let nextId = 0
@@ -111,11 +114,11 @@ export abstract class NbMediaPlayer {
         },
         { equal: (a, b) => a?.message === b?.message && a?.code === b?.code }
     )
-    protected readonly elapsed = computed(() => nbFormatMediaTime(this.currentTime(), this.duration()))
+    protected readonly elapsed = computed(() => nbFormatMediaTime(this.currentTime()))
     protected readonly length = computed(() => nbFormatMediaTime(this.duration()))
     /** The position as assistive technologies read it, with the length. */
     protected readonly formatPosition = (value: number) =>
-        this.texts().time(nbFormatMediaTime(value, this.duration()), this.length())
+        this.texts().time(nbFormatMediaTime(value), this.length())
     protected readonly formatVolume = (value: number) => this.percentFormat.format(value)
     /** A speed, e.g. 1.5×, which reads left to right in every language, also where the select copies its text. */
     protected readonly formatRate = (rate: number) => `\u2066${this.rateFormat.format(rate)}×\u2069`
