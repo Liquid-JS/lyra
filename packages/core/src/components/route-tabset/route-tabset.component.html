@@ -12,7 +12,7 @@
 </button>
 } @else {
 <ul class="route-tabset">
-    @for (tab of tabs(); track tab) {
+    @for (tab of tabs(); track $index) {
     @if (tab.disabled) {
     <li [class.responsive]="tab.responsive"
         class="route-tab disabled"

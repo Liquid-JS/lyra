@@ -39,9 +39,9 @@
 </div>
 <div class="step-content">
     <!-- A step's content fades in as it becomes the selected one. -->
-    @for (step of selectedSteps(); track step) {
+    @for (shown of selectedSteps(); track shown.index) {
     <div animate.enter="step-enter">
-        <ng-container [ngTemplateOutlet]="step.content()" />
+        <ng-container [ngTemplateOutlet]="shown.step.content()" />
     </div>
     }
 </div>

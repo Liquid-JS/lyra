@@ -169,10 +169,13 @@ export class NbStepperComponent {
     readonly steps = contentChildren(NbStepComponent)
 
     readonly selected = computed<NbStepComponent | undefined>(() => this.steps()[this.selectedIndex()])
-    /** The selected step as a list, so its content is a view of its own, entering as the step is selected. */
+    /**
+     * The selected step as a list, so its content is a view of its own, entering as the step is selected: tracked by its
+     * index, which tells Angular a new step's content replaces the last one's on purpose.
+     */
     protected readonly selectedSteps = computed(() => {
         const selected = this.selected()
-        return selected ? [selected] : []
+        return selected ? [{ step: selected, index: this.selectedIndex() }] : []
     })
 
     // The index the stepper last reported with `stepChange`; undefined until the steps render.
