@@ -8,6 +8,17 @@ variables and its typography as text styles. It's for Sketch; Figma and Penpot f
 style to the inputs it stands for, each colour variable to its CSS variable. Developers and agents use it to turn a
 design into Angular.
 
+**From a design to code, in short:**
+
+1. Write the design's theme to files with the plugin's `theme-files.mjs`, and load it in the app, as
+   [For agents](#for-agents) shows.
+2. Read a screen's outline with the plugin's `inspect.js` and `outline: true`: its layers, instances and overrides.
+3. Look up each instance's symbol in `lyra-kit.json`: its component's `selector` and inputs, its look's inputs from
+   `layerStyles`, and its `notes`. [From design to code](#from-design-to-code) has the steps.
+4. Lay the components out as the frames are, with the theme's CSS variables and typography classes for the design's
+   own layers; **Lyra › Check design** lists what's the design's own.
+5. Compare a screenshot of the result with the design.
+
 ---
 
 ## What's in it
@@ -56,12 +67,25 @@ change it in its overrides:
 
 Swapping keeps your overrides wherever the new symbol has a layer of the same name, as the kit's values do.
 
-Components that take their container's width in code, such as inputs and alerts, stretch when you resize them;
-buttons, tags and badges grow with their text, and texts that wrap in code, such as a toast's message or a field's
-hint, wrap at the width you give them. Keep instances attached: a detached copy no longer maps to code.
+Components that take their container's width in code, such as inputs and alerts, stretch when you resize them; buttons,
+tags and badges grow with their text, and texts that wrap in code, such as a toast's message, a field's hint or a
+textarea's value, wrap at the width you give them; draw a textarea as tall as its text where it grows with its value,
+`nbAutosize` in code, or taller, where it keeps its rows and scrolls a longer value. A button as wide as its container,
+e.g. a phone's main action, is `Button/…/Full Width`, `fullWidth` in code. Where a component lays its content out by its
+width in a way a resized symbol can't, the kit has it at a phone's width too, e.g. `Chat/Phone`, whose messages wrap as
+they do there, and `Audio Player/Phone`, which keeps play, the position and mute, as a player narrower than 24rem does.
+An audio player's position lengthens as you widen it. A chat's messages wrap at the width their text is drawn at, and
+the chat grows down with them; widen a message's text for a longer line, up to its bubble's room, which the theme's
+`chat-message-max-width` sets in code, e.g. `75%`. A chat takes the height you give it, as its messages scroll in code:
+drawn shorter than its six messages, it shows those that fit. A field with a textarea is `Field/…/Textarea`; a required
+field is `Field/…/Required` in every state, as the app marks its label throughout. Keep instances attached: a detached
+copy no longer maps to code.
 
 Use the colour variables and text styles for your own layers too, so they map to the theme's variables. Hover, focus
 and active looks show what a component looks like as people use it; in code they come with interaction.
+
+An instance of your own symbol drawn at another size scales its shapes but not their borders' widths, as Sketch does:
+draw a symbol you place at several sizes, e.g. a show's artwork at 48 and 240 px, with fills rather than borders.
 
 ---
 
@@ -76,7 +100,13 @@ of. Stack them in a frame with auto layout to build your own:
 - **Phones, tablets and laptops**: `Adaptive Layout/Laptop`, `/Tablet` and `/Phone` show one layout at each size: a
   header with the sections as tabs, the actions and the user; on a phone, a top bar whose actions fold into a menu,
   `Route Tabset/Bar/…` with the sections along the bottom, and `/Phone/Drawer`, the drawer with the user and the
-  account's links over the page. Design each screen at the sizes it's used at, from these.
+  account's links over the page. Design each screen at the sizes it's used at, from these: a phone's is narrower than
+  768 px, Lyra's `md` breakpoint, e.g. 390; a tablet's from 768, e.g. 834; a laptop's from 992, e.g. 1440. The
+  header's `Brand` is `Adaptive Layout/Brand`: swap it for your logo's symbol, and the tabs make room for it. Build
+  your logo's symbol as `Adaptive Layout/Brand` is: the symbol holds one frame, a stack sized to fit, with the mark
+  and the wordmark in it; then the logo takes its own size in the slot, where a symbol whose layers sit in it directly
+  is squeezed to the slot's. A longer user's name widens the user too.
+  The tabs' titles and their icons' `Glyph` are overrides too.
 - **Menus**: `Menu Item/…` for each item, by kind: `Icon`, `Collapsed` and `Expanded` for items with children,
   `Child`, `Badge` and `Group`, each also `Selected`. Starters show them at rest, hovered and selected.
 - **Actions**: `Action/…` side by side, by size, with an icon alone, a `Dot` or a `Badge`; the `Disabled` look. In
@@ -91,13 +121,38 @@ of. Stack them in a frame with auto layout to build your own:
 - **Tables**: a row of `Table Header Cell/…`, `Unsorted` or sorted by its column, above rows of `Table Cell`.
 - **Lists**: `List Item`, one below another.
 - **Cards**: a frame with a card's layer style, such as `Card/Outline`, holding a `Card Header` starter for its
-  status, a frame with your content, padded as a `Card Body` is, and a `Card Footer`. Applying the theme gives the
-  frame the card's corners. In code, it's an `nb-card` with the inputs the style stands for.
-- **Dialogs**: a card on a layer filled with `Effect/Backdrop`, over the screen.
+  status, a frame with your content, padded as a `Card Body` is, and a `Card Footer`. The card's corners come with the
+  theme, as a style can't hold them: until you apply the theme in the design, as [Your brand](#your-brand) says, the
+  frame's corners are square, so apply it early, or round the frame by `card-border-radius` yourself. In code, it's an
+  `nb-card` with the inputs the style stands for.
+- **Dialogs**: `Dialog` is the one `NbDialogService.confirm()` opens, with a title, a message and its two buttons. For
+  other content, a card on a layer filled with `Effect/Backdrop`, over the screen: in code, a component of your own
+  that `open()` opens.
 
 Each part maps to code as the components do: `lyra-kit.json` says what each part is in its component, e.g. a menu
 item's kind is an `NbMenuItem` with `children` or a `badge`, and the table header cell's sort is its column's
 `nbSortHeader`.
+
+### Right to left
+
+Lyra lays a page out right to left with `dir="rtl"`: rows run from the right, parts sit at the other end, e.g. a
+field's icon or a progress bar's value, and arrows that point along the line point the other way. Sketch has no
+right-to-left layout, so design in the kit's direction and let the plugin mirror the screens that need checking:
+select them and choose **Lyra › Mirror for right to left**.
+
+- Each selected screen gets a mirrored copy beside the others, named like it with ` · RTL`.
+- The kit's components in it become mirrored copies of their symbols, `Right to left/…`, made once on the design's
+  **Right to left** page and reused on the next run, with your overrides kept. The design's own symbols, e.g. a logo,
+  stay as they are: Lyra doesn't mirror what the app draws itself.
+- Texts align to the right and keep their own direction, as Sketch draws them. On the page, English sample text in a
+  right-to-left layout reads that way only where its element has `dir="auto"`, as the texts Lyra's components show
+  do, e.g. a menu's or a tab's titles, a chat's messages and a toast's; in the app's own markup, without it, its
+  punctuation moves to the start of the line. [Right to left](docs/usability/right-to-left-rtl) has a rule that marks the app's text
+  elements all at once. Right-to-left text needs nothing.
+
+The copies are for checking, not for handing over as a second design: the app takes one design and lays it out both
+ways, and Lyra › Check design leaves them out. Mirror again after you change a screen: the new copy replaces the one
+made before, where it was. Delete the Right to left page to mirror the kit's symbols afresh, e.g. after a kit update.
 
 ---
 
@@ -125,6 +180,10 @@ A theme starts from one of Lyra's themes, as in the Theme Editor: Default, Dark,
 Material Dark. The base theme sets everything your theme doesn't, e.g. Dark's backgrounds, borders, text colours and
 shadows, so a dark design starts from Dark and changes only what makes it yours. Pick the base in the Theme Editor:
 its script applies your theme over it, and the Theme page names it. The starters boards take the theme's background.
+
+A progress bar's track is the page's own colour, `background-basic-color-3`, and in the Default theme filled basic
+buttons and tags are too, `color-basic-300`: they show on cards, `background-basic-color-1`. Placed on the page itself,
+they need colours of their own, e.g. `progress-bar-primary-background-color` or `button-filled-basic-background-color`.
 
 Where the kit shows one value for parts the theme can set apart, e.g. buttons' text case in each appearance, Apply
 theme says so, with the variables; it warns where the theme makes text hard to read, too. What you change in a design
@@ -247,20 +306,49 @@ case, are in their group's `$extensions`, under `io.github.liquid-js.lyra` › `
 
 ## For agents
 
-Read the design with your design tool's MCP server or plugin API: the layer tree, each instance's symbol and its
-overrides, and its theme, in its document settings as `lyra-theme` (`name`, `id`, `base`, `variables`, `css`, `scss`)
-and on its **Theme** page: use its Sass with `provideNbTheme({ name: id })`, or its CSS over the base theme. To apply a theme to the kit, run the plugin's theme script, `Contents/Sketch/theme.js` in the
-plugin, with the document, the base theme and the theme's variables:
-`require('…/theme.js')({ document: '<path>', base: 'dark', theme: { 'border-radius': '0.75rem' } })`. Without a
-`base`, the theme goes over Default. Name the document by its path: copies of a file share its ID. The first theme
-applied to a document changes everything that follows it, in a minute or so; after that, it changes only what follows
-the variables whose values changed, in seconds, and `full: true` changes everything again. It works in Sketch's turns:
-it returns a promise, so a run-code tool may return, or time out, before it's done. When it's done, the document's
-`lyra-theme-result` setting has what changed, with `finished`, or the `error`; wait for it before running other
-scripts on the document. A run that changes nothing, e.g. one a tool runs again after it timed out, keeps the result
-before it, with `checkedAgain`. Its `check.js` is Lyra › Check design:
+Read the design with the plugin's `inspect.js`, `Contents/Sketch/inspect.js` in the plugin: `require('…/inspect.js')({
+document: '<path>' })` returns each screen as a JSON string, or those named in `boards`: every layer's place in its screen, its
+frame's stack, its styles and colour variables by name, and each instance's `symbol`, the kit's `component` it is and
+its `overrides`, by the names of the layers they change, e.g. `Label stringValue` or `Input/Body layerStyle`. A whole
+design is a lot of JSON: read a screen at a time, its outline first with `depth: 1`, whose layers say how many they
+hold in `more`, then a part of it by its ID with `layer`. With `outline: true` it returns lines rather than JSON, a
+layer a line, indented by depth, with its frame, symbol or style, overrides, text and font: a screen's structure at a
+glance. A frame's `stack` has its layout as CSS too, a text's `font` its size, line height, spacing and case as the
+file has them, a fill its gradient as CSS, and a layer that blends with what's under it its `blend`, e.g.
+`multiply`. With `svg: '<folder>'`, the design's own drawings, e.g. a
+logo, a map or a photo, go to that folder as SVG, or PNG for a picture, and each one's `file` names its file. Your
+design tool's MCP server or plugin API reads the rest: the design's theme, in its document settings as `lyra-theme`
+(`name`, `id`, `base`, `variables`, `css`, `scss`) and on its **Theme** page: use its Sass with `provideNbTheme({ name:
+id })`, or its CSS over the base theme. To have them as files, run the plugin's `theme-files.mjs` with Node on the saved
+design, `node "…/Contents/Sketch/theme-files.mjs" Design.sketch src/theme`, without Sketch: it writes
+`<id>-theme.css`, `<id>-theme.scss` and `<id>-theme.json`.
+
+To apply a theme to the kit, run the plugin's theme script, `Contents/Sketch/theme.js` in the plugin, with the document,
+the base theme, the theme's name and its variables: `require('…/theme.js')({ document: '<path>', base: 'dark', name:
+'Drumroll', theme: { 'border-radius': '0.75rem' } })`. Without a `base`, the theme goes over Default; the `name` gives
+the theme its `id`, e.g. `drumroll`, which `provideNbTheme` takes. Values are CSS, as in the app: another variable is
+`var(--text-basic-color)`. A status's `color-<status>-500` gives its other shades and transparencies, and
+`color-basic-600` the greys, as the Theme Editor makes them, unless the theme sets them too. Name the document by its
+path: copies of a file share its ID. The first theme applied to a document changes everything that follows it, which
+takes several minutes for the whole kit; after that, it changes only what follows the variables whose values changed, in seconds, and `full: true`
+changes everything again. It works in Sketch's turns: it returns a promise, so a run-code tool may return, or time out,
+before it's done, and Sketch runs other scripts only after it, so they wait, or time out too. When it's done, the
+document's `lyra-theme-result` setting has what changed, with `finished`, or the `error`, with the `phase` it was in,
+e.g. `symbols`; read it before running other scripts on the document. A run started while another is still going, e.g.
+one a tool runs again after it timed out, leaves it to finish and returns `alreadyRunning`; a run that changes nothing
+keeps the result before it, with `checkedAgain`. Its `check.js` is Lyra › Check design:
 `require('…/check.js')({ document: '<path>' })` lists what a design does beyond the kit and its theme, and puts it on
-the design's Check page and every finding in its `lyra-check` setting. Then, with `lyra-kit.json`:
+the design's Check page and every finding in its `lyra-check` setting. Its `mirror.js` is Lyra › Mirror for right to
+left, for the screens you name: `require('…/mirror.js')({ document: '<path>', boards: ['Home · Phone'] })`. Its
+`unwrap.js` is Lyra › Unwrap starters, for the layers you name, and swaps each for `symbol` with its look:
+`require('…/unwrap.js')({ document: '<path>', layers: ['<ID>'], symbol: 'Tag/Small/Plain' })`; a starter without an
+icon unwrapped to a symbol with one, e.g. `Icon Start`, gives the icon its label's colour. Its `update.js` is Lyra ›
+Update from kit: `require('…/update.js')({ document: '<path>' })`. Its `helpers.js` has `resizeLayer`, which resizes
+a board or frame without scaling what's in it, `require('…/helpers.js').resizeLayer({ document: '<path>', layer:
+'<ID>', height: 1800 })`, and `setCalendarMonth`, which sets a calendar instance to a month, with its title,
+weekdays and days, and the days in its other looks: `setCalendarMonth({ document: '<path>', layer: '<ID>', month:
+'2026-11', firstDay: 1, selected: [28], today: 27, disabled: [30] })`. Then, with
+`lyra-kit.json`:
 
 - Use Lyra's component for every kit symbol in the design, with the inputs the steps above give; don't rebuild one
   from plain elements.
@@ -282,13 +370,34 @@ Sketch's plugin API, as a run-code tool uses it, has a few traps:
   `/private/tmp/…`; the kit's scripts take either, and your own should compare paths so too.
 - A script can't read files: give it the theme's variables, or anything else it needs, in the script.
 - Resizing a frame scales what's in it, unless it's a stack or its layers are pinned: size a board before you place
-  layers in it.
+  layers in it, or resize it after with `helpers.js`'s `resizeLayer`, which keeps its layers as they are.
 - In a stack, a frame sizes to its content, so one whose layers are placed on their own collapses: set its
   `horizontalSizing` and `verticalSizing` to `sketch.FlexSizing.Fixed`.
-- Link a colour to a colour variable with `fill.swatch = swatch`, or an override's `value = swatch`; a library
-  swatch's `referencingColor` can paint another colour.
+- Link a colour to a colour variable with `fill.swatch = swatch`, a text's with `style.textSwatch = swatch`, or an
+  override's with `swatchValue = swatch`. A library swatch's `referencingColor` throws where Sketch takes a colour,
+  e.g. an override's value or a board's background: give the board a fill linked to the swatch instead.
+- Swap an instance's symbol with `instance.symbolId = master.symbolId`, which keeps the overrides on layers the new
+  symbol has by name; `instance.master = …` drops them, e.g. a starter's look and its label. A starter's look is
+  inside it: unwrap it first, with `unwrap.js` and the `symbol` to swap to.
+- An instance doesn't resize to its overrides by itself: after changing a text in a tag or a button, call
+  `instance.resizeWithSmartLayout()` so it grows with it; a text of your own with a fixed width wraps again after
+  `text.adjustToFit()`.
+- An empty text override goes back to the symbol's own text, e.g. a user's title to "Designer": to leave a text out,
+  use a symbol without it where the kit has one, e.g. `User/Picture/…` for the picture alone, or a single space, which
+  keeps its line.
+- A group's frame follows its layers: moving or resizing a layer can move the group's origin, and the other layers'
+  places in it. Use a frame for layers you place yourself.
 - An override that swaps a symbol holds the symbol's ID: the design's `getSymbols()` names the kit's symbols it uses.
 - Add the kit as a library once, with `Library.getLibraryForDocumentAtPath`, then find it in `Library.getLibraries()`;
-  `remove()` it when you're done.
+  `remove()` it when you're done. After the kit changes, e.g. its theme, run `update.js` on the design: Sketch
+  syncs the kit's symbols, whose layers carry its looks. The styles your own layers and overrides use, e.g. a starter's
+  unwrapped look, sync only while Sketch is the front app with the design in front: run `osascript -e 'tell
+  application "Sketch" to activate'`, open the design last, and run `update.js` again; until then its result counts
+  them in `stylesFromMenu`. Don't import a library style again to update it:
+  Sketch adds another copy, and the layers stay on the old one.
+- A text's `style.fontWeight` may read `null` and not change the font, e.g. for a variable font, and a font's
+  PostScript name as its `fontFamily` falls back to Helvetica: for a weight the API doesn't set, start from a text
+  style that has it, e.g. a heading's, and change its size, line height and case.
+- Closing a document from a script saves it: to read a design without changing it, open a copy.
 - The kit has thousands of layers: read what you need into plain objects in one script, rather than the whole
   document, and save as you go.

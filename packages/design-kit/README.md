@@ -26,8 +26,12 @@ All in `dist/design-kit`:
 - `components/<component>.json`: what capture read from each specimen page.
 - `kit.json`: the tool-neutral model: symbols, starters, layer and text styles, images.
 - `sketch/<component>.<hash>.js`: a script per component that builds it in a Sketch document.
-- `sketch/theme.<hash>.js` and `sketch/check.<hash>.js`: the theme script and the design check, and the plugin with
-  both, `Lyra design kit.sketchplugin`.
+- `sketch/theme.<hash>.js`, `sketch/check.<hash>.js`, `sketch/mirror.<hash>.js`, `sketch/unwrap.<hash>.js` and
+  `sketch/inspect.<hash>.js`: the theme script, the design check, the right-to-left mirror, the starters' unwrap and
+  the design's reader, and the plugin with all of them, `update.js`, which updates a design from the kit, and
+  `theme-files.mjs`, which writes the theme a saved design records to files with Node, `Lyra design kit.sketchplugin`.
+- `sketch/typography.<hash>.js`: adds the theme's typographies the kit lacks, e.g. a display size, as text styles and
+  rows on its Typography page; run it on the kit after the theme gains one.
 - `lyra-kit.json`: the kit's map to code, published with the kit.
 
 ## Regenerate

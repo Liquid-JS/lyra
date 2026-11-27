@@ -343,7 +343,11 @@ export const COMPONENTS: Record<string, ComponentSpec> = {
     },
     'textarea': {
         name: 'Textarea',
-        code: { class: 'NbInputDirective', inputs: { size: '`fieldSize`.', content: 'The `placeholder` shows until the field has a value.' } },
+        code: {
+            class: 'NbInputDirective',
+            inputs: { size: '`fieldSize`.', content: 'The `placeholder` shows until the field has a value.' },
+            notes: ['A textarea drawn as tall as its text is `nbAutosize`, which grows with its value from its `rows` (or `minRows`) up to `maxRows`; one drawn taller than its text keeps its `rows` and scrolls a longer value.']
+        },
         selector: 'textarea[nbInput]',
         sharesStyles: 'input',
         page: 'Form controls',
@@ -724,7 +728,13 @@ export const COMPONENTS: Record<string, ComponentSpec> = {
     },
     'layout': {
         name: 'Layout',
-        code: { inputs: { sidebar: 'The `<nb-sidebar>`\'s `state`.' } },
+        code: {
+            inputs: { sidebar: 'The `<nb-sidebar>`\'s `state`.' },
+            notes: [
+                '`Layout/Brand` is the app\'s own brand, e.g. its logo, in the header\'s markup: a design swaps it for a symbol of its own.',
+                'The header is `header-height` tall, padded by `header-padding`; the column pads the page by `layout-padding` from 992 px wide, `layout-medium-padding` below it and `layout-small-padding` below 768 px: for a block that runs edge to edge, e.g. a hero, set them to 0 and pad your own content.'
+            ]
+        },
         page: 'Navigation',
         board: 'Layouts',
         viewport: { width: 1280, height: 800 },
@@ -906,7 +916,10 @@ export const COMPONENTS: Record<string, ComponentSpec> = {
         name: 'Progress Bar',
         page: 'Feedback',
         board: 'Progress bars',
-        code: { inputs: { value: '`value`, shown by `displayValue`; the kit has bars in steps of 10, and rings at 60%.' } },
+        code: {
+            inputs: { value: '`value`, shown by `displayValue`; the kit has bars in steps of 10, and rings at 60%.' },
+            notes: ['Its track is the page\'s colour, `background-basic-color-3`: on the page itself rather than a card, it needs its own, e.g. `progress-bar-primary-background-color`.']
+        },
         // How full it is changes its layout, so each value is a symbol; swapping one for another keeps the overrides.
         symbol: { shape: size, size, value: (value) => `${String(value)}%` },
         style: ['status'],
@@ -1013,7 +1026,13 @@ export const COMPONENTS: Record<string, ComponentSpec> = {
     },
     'toast': {
         name: 'Toast',
-        code: { class: 'NbToastrService', inputs: { status: 'The `status` option of `NbToastrService.show()`.' } },
+        code: {
+            class: 'NbToastrService',
+            inputs: { status: 'The `status` option of `NbToastrService.show()`.' },
+            notes: [
+                'Toasts open at a corner of the window, the config\'s `position`, by default `top-end`. `toastr-offset` (`--toastr-offset`) keeps them from the window\'s edges, e.g. `calc(var(--header-height) + 0.5rem) 1.5rem 0` below a fixed header; each toast has a margin of 0.5rem of its own besides.'
+            ]
+        },
         page: 'Feedback',
         board: 'Toasts',
         symbol: {},
@@ -1027,8 +1046,10 @@ export const COMPONENTS: Record<string, ComponentSpec> = {
         code: {
             class: 'NbDialogService',
             notes: [
+                'It\'s the dialog `NbDialogService.confirm()` opens: its `title`, `message`, `confirmText`, `cancelText` and the confirm button\'s `status`. For other content, `open()` a component of your own with a card, as the guide\'s Dialogs compose one.',
                 'A dialog opens in the middle of the window: place it as drawn with the `position` and `positionOffset` of its config, e.g. `top` and `150px`.',
-                'Its container clips what runs past it: draw what\'s around a dialog, e.g. a glow, on the overlay pane, with the config\'s `dialogClass`.'
+                'Its container clips what runs past it, e.g. the card\'s shadow from the theme\'s `shadow`: draw what\'s around a dialog, e.g. a shadow or a glow, on the overlay pane, with the config\'s `dialogClass`.',
+                'The confirm dialog is as wide as its content, up to 32rem; a narrower drawing is a `max-width` of your own on `nb-confirm-dialog`.'
             ]
         },
         page: 'Feedback',
@@ -1098,11 +1119,21 @@ export const COMPONENTS: Record<string, ComponentSpec> = {
     },
     'chat': {
         name: 'Chat',
+        code: {
+            inputs: { device: 'Its width: a chat takes its container\'s, and its messages wrap at it, as they do at a phone\'s.' },
+            notes: [
+                'A message\'s text wraps at the width its bubble is drawn at; in code a bubble grows to the room beside the avatar before its text wraps, or as wide as the theme\'s `chat-message-max-width` lets it, e.g. `75%`: draw a long message\'s bubble that wide, or set it to the width drawn.',
+                'Its height: a `size`, or its container\'s. Drawn shorter than its six messages, it shows those that fit, as code scrolls to the rest.'
+            ]
+        },
         page: 'Content',
         board: 'Chats',
-        symbol: {},
+        // At a phone's width its messages wrap, which a resized symbol's can't.
+        symbol: { device: (value) => (value === 'phone' ? 'Phone' : '') },
         style: [],
-        starter: {},
+        starter: { device: 'laptop' },
+        wrapsAsDrawn: ['Message Bubble Content Text', 'Reply Bubble Content Text'],
+        scrolls: 'Messages',
         parts: {
             'root': 'Chat',
             '.header': 'Header',
@@ -1159,13 +1190,22 @@ export const COMPONENTS: Record<string, ComponentSpec> = {
     },
     'audio': {
         name: 'Audio Player',
+        code: {
+            class: 'NbAudioComponent',
+            inputs: { device: 'Its width: a player takes its container\'s, and below 24rem (384 px) it keeps play, the position and mute, as at a phone\'s.' },
+            notes: ['Its times and position are the file\'s at `src`, where it starts at `startTime`: the times a design writes over the drawing, e.g. `47:12` of `1:58:04`, come from the app\'s own audio, which it needs to show them.']
+        },
         page: 'Content',
         board: 'Audio players',
-        symbol: {},
+        // Narrower, it drops its volume and speed, which a resized symbol can't.
+        symbol: { device: (value) => (value === 'phone' ? 'Phone' : '') },
         style: [],
-        starter: {},
+        starter: { device: 'laptop' },
         uniqueParts: true,
-        parts: { root: 'Audio Player' }
+        grows: ['Position'],
+        relative: ['Slider Fill', 'Slider Fill 2'],
+        floats: ['Slider Thumb'],
+        parts: { 'root': 'Audio Player', '.position': 'Position', '.volume': 'Volume', '.speed': 'Speed' }
     },
     'video': {
         name: 'Video Player',
