@@ -27,43 +27,39 @@ nb-layout-header ::ng-deep nav {
     }
 }
 
+// The pages take the room up to the actions; on a phone, they fold into a menu button at its end.
 .pages {
     display: flex;
-    gap: 1.75rem;
+    flex: 1;
+    margin-inline: -0.875rem;
 
-    a {
-        color: nb-theme(text-hint-color);
-        font-weight: 700;
-        letter-spacing: 0.02em;
-        text-decoration: none;
-        text-transform: uppercase;
+    // The tabs' titles take it, as text does.
+    letter-spacing: 0.02em;
+}
 
-        &:hover,
-        &.active {
-            color: nb-theme(text-basic-color);
-        }
-    }
+// The pages as the header's links: bold capitals in the hint colour, the basic one for the page's, without the tabs' line.
+nb-route-tabset {
+    --route-tabset-divider-width: 0;
+    --route-tabset-tab-padding: 0.5rem 0.875rem;
+    --route-tabset-tab-text-font-family: #{nb-theme(header-text-font-family)};
+    --route-tabset-tab-text-font-size: #{nb-theme(header-text-font-size)};
+    --route-tabset-tab-text-font-weight: 700;
+    --route-tabset-tab-text-line-height: #{nb-theme(header-text-line-height)};
+    --route-tabset-tab-text-transform: uppercase;
+    --route-tabset-tab-underline-width: 0;
+    --route-tabset-tab-active-text-color: #{nb-theme(text-basic-color)};
+    --route-tabset-tab-hover-background-color: transparent;
+    --route-tabset-tab-hover-text-color: #{nb-theme(text-basic-color)};
+    --route-tabset-tab-focus-text-color: #{nb-theme(text-basic-color)};
+
+    flex: 1;
+    justify-content: flex-end;
 }
 
 .actions {
     display: flex;
     gap: 0.5rem;
     margin-inline-start: auto;
-}
-
-.menu {
-    display: none;
-}
-
-// Phones: the pages move to a menu.
-@media (width <= 767.98px) {
-    .pages {
-        display: none;
-    }
-
-    .menu {
-        display: inline-flex;
-    }
 }
 
 .page {

@@ -3,15 +3,15 @@
         <a class="brand"
             routerLink="catalogue"><span class="logo"
                 aria-hidden="true"></span>Acme <em>Learn</em></a>
-        <div class="sections"
-            role="navigation"
+        <nav class="sections"
             aria-label="Sections">
-            <a routerLink="catalogue"
-                routerLinkActive="active">Catalogue</a>
-            <a routerLink="course"
-                routerLinkActive="active">My learning</a>
-        </div>
-        <nb-form-field class="search">
+            <nb-route-tabset [tabs]="sections"
+                outlet="false"
+                collapse="menu"
+                below="md" />
+        </nav>
+        <nb-form-field *nbShownAbove="'md'"
+            class="search">
             <nb-icon nbPrefix
                 icon="search-outline" />
             <input nbInput
@@ -25,16 +25,9 @@
                 name="Jane Doe"
                 title="Product designer"
                 size="small"
+                [onlyPicture]="phone()"
                 [picture]="userPhoto"
                 [nbContextMenu]="userMenu" />
-            <button nbButton
-                ghost
-                class="menu"
-                type="button"
-                aria-label="Menu"
-                [nbContextMenu]="sections">
-                <nb-icon icon="menu-outline" />
-            </button>
         </div>
     </nb-layout-header>
 

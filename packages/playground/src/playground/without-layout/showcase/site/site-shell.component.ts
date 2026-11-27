@@ -1,20 +1,21 @@
-import { ApplicationRef, Component, DestroyRef, inject, signal } from '@angular/core'
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
-import { ActivatedRoute, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router'
+import { ApplicationRef, Component, computed, inject, signal } from '@angular/core'
+import { ActivatedRoute, Router, RouterLink, RouterOutlet } from '@angular/router'
 import {
     NbButtonComponent,
-    NbContextMenuDirective,
-    NbIconComponent,
     NbInputDirective,
     NbLayoutColumnComponent,
     NbLayoutComponent,
     NbLayoutFooterComponent,
     NbLayoutHeaderComponent,
-    NbMenuItem,
-    NbMenuService,
-    NB_DOCUMENT
+    NbRouteTabsetComponent,
+    NbShownAboveDirective,
+    NbThemeService,
+    NB_DOCUMENT,
+    type NbRouteTab
 } from '@liquid-js/lyr-core'
-import { filter } from 'rxjs'
+
+// A section's tab is the page's while the page shows that section.
+const sectionActive = { paths: 'exact', queryParams: 'ignored', fragment: 'exact', matrixParams: 'ignored' } as const
 
 /** A product site's frame: a header with its sections and sign-in, and a footer with links and a newsletter. */
 @Component({
@@ -23,15 +24,14 @@ import { filter } from 'rxjs'
     styleUrls: ['./site-shell.component.scss'],
     imports: [
         NbButtonComponent,
-        NbContextMenuDirective,
-        NbIconComponent,
         NbInputDirective,
         NbLayoutColumnComponent,
         NbLayoutComponent,
         NbLayoutFooterComponent,
         NbLayoutHeaderComponent,
+        NbRouteTabsetComponent,
+        NbShownAboveDirective,
         RouterLink,
-        RouterLinkActive,
         RouterOutlet
     ]
 })
@@ -42,42 +42,36 @@ export class SiteShellComponent {
     protected readonly route = inject(ActivatedRoute)
     protected readonly appRef = inject(ApplicationRef)
     protected readonly document = inject(NB_DOCUMENT)
+    protected readonly themeService = inject(NbThemeService)
 
     readonly year = new Date().getFullYear()
-    // The phone menu: the home page's sections, the blog and sign-in.
-    readonly sections: NbMenuItem[] = [
-        { title: 'Features', data: { section: 'features' } },
-        { title: 'Pricing', data: { section: 'pricing' } },
-        { title: 'Blog', data: { path: 'blog' } },
-        { title: 'Sign in', data: { path: '../auth/sign-in' } }
+    // The home page's sections and the blog; on a phone, they fold into a menu, which has sign-in too.
+    protected readonly pages: NbRouteTab[] = [
+        { title: 'Features', route: this.link('home'), fragment: 'features', activeLinkOptions: sectionActive },
+        { title: 'Pricing', route: this.link('home'), fragment: 'pricing', activeLinkOptions: sectionActive },
+        { title: 'Blog', route: this.link('blog') }
     ]
-
-    constructor() {
-        inject(NbMenuService)
-            .onItemClick()
-            .pipe(
-                filter(({ tag }) => tag === 'site-sections'),
-                takeUntilDestroyed(inject(DestroyRef))
-            )
-            .subscribe(({ item }) => {
-                const { section, path } = item.data as { section?: string, path?: string }
-                if (section) {
-                    void this.router.navigate(['home'], { relativeTo: this.route, fragment: section })
-                    void this.scrollTo(section)
-                } else if (path) {
-                    void this.router.navigate([path], { relativeTo: this.route })
-                }
-            })
-    }
+    protected readonly signIn: NbRouteTab = { title: 'Sign in', route: this.link('../auth/sign-in') }
+    protected readonly phone = computed(() => (this.themeService.breakpoint()?.width ?? Infinity) < 768)
+    readonly sections = computed(() => (this.phone() ? [...this.pages, this.signIn] : this.pages))
 
     /**
      * Scrolls to a section of the home page once the link's navigation to it settles, also when it's the page shown, so a
      * second click on the same link scrolls there again.
      */
-    async scrollTo(section: string) {
+    async scrollTo(section?: string) {
+        if (!section) {
+            return
+        }
         await this.appRef.whenStable()
         this.document.getElementById(section)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
     }
+
+    // A page of this site, wherever it's mounted: in the playground, or in the docs' examples.
+    protected link(page: string): string {
+        return this.router.serializeUrl(this.router.createUrlTree([page], { relativeTo: this.route }))
+    }
+
     readonly footer = [
         { title: 'Product', links: ['Features', 'Pricing', 'Integrations', 'Changelog'] },
         { title: 'Company', links: ['About', 'Careers', 'Press', 'Contact'] },

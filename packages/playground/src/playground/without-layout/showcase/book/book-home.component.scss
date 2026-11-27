@@ -5,6 +5,11 @@
     overflow-x: hidden;
 }
 
+// A section scrolled to from the header lands below it.
+section[id] {
+    scroll-margin-top: nb-theme(header-height);
+}
+
 .section {
     box-sizing: border-box;
     width: 100%;

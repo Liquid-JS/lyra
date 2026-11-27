@@ -1,14 +1,13 @@
 import { Component, inject } from '@angular/core'
-import { ActivatedRoute, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router'
+import { ActivatedRoute, Router, RouterLink, RouterOutlet } from '@angular/router'
 import {
     NbButtonComponent,
-    NbContextMenuDirective,
-    NbIconComponent,
     NbLayoutColumnComponent,
     NbLayoutComponent,
     NbLayoutFooterComponent,
     NbLayoutHeaderComponent,
-    NbMenuItem
+    NbRouteTabsetComponent,
+    type NbRouteTab
 } from '@liquid-js/lyr-core'
 
 import { SUMMIT } from './summit-data'
@@ -20,14 +19,12 @@ import { SUMMIT } from './summit-data'
     styleUrls: ['./summit-shell.component.scss'],
     imports: [
         NbButtonComponent,
-        NbContextMenuDirective,
-        NbIconComponent,
         NbLayoutColumnComponent,
         NbLayoutComponent,
         NbLayoutFooterComponent,
         NbLayoutHeaderComponent,
+        NbRouteTabsetComponent,
         RouterLink,
-        RouterLinkActive,
         RouterOutlet
     ]
 })
@@ -36,13 +33,12 @@ export class SummitShellComponent {
     protected readonly route = inject(ActivatedRoute)
 
     readonly summit = SUMMIT
-    readonly pages = [
-        { path: 'agenda', title: 'Agenda' },
-        { path: 'speakers', title: 'Speakers' },
-        { path: 'tickets', title: 'Tickets' }
+    /** The pages, as links that work wherever the site is mounted; they fold into a menu on a phone. */
+    readonly pages: NbRouteTab[] = [
+        { route: this.link('agenda'), title: 'Agenda' },
+        { route: this.link('speakers'), title: 'Speakers' },
+        { route: this.link('tickets'), title: 'Tickets' }
     ]
-    /** The phone menu: the pages, as links that work wherever the site is mounted. */
-    readonly menu: NbMenuItem[] = this.pages.map(({ path, title }) => ({ title, link: this.link(path) }))
 
     readonly footer = [
         { title: 'Conference', links: ['Agenda', 'Speakers', 'Tickets', 'Venue'] },

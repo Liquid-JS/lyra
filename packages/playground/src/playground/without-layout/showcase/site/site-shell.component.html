@@ -3,35 +3,22 @@
         <a class="brand"
             routerLink="home"><span class="logo"
                 aria-hidden="true"></span> Acme</a>
-        <div class="sections"
-            role="navigation"
+        <nav class="sections"
             aria-label="Sections">
-            <a routerLink="home"
-                fragment="features"
-                (click)="scrollTo('features')">Features</a>
-            <a routerLink="home"
-                fragment="pricing"
-                (click)="scrollTo('pricing')">Pricing</a>
-            <a routerLink="blog"
-                routerLinkActive="active">Blog</a>
-        </div>
+            <nb-route-tabset [tabs]="sections()"
+                outlet="false"
+                collapse="menu"
+                below="md"
+                (tabChange)="scrollTo($event.fragment)" />
+        </nav>
         <div class="actions">
-            <a nbButton
+            <a *nbShownAbove="'md'"
+                nbButton
                 ghost
-                class="sign-in"
                 routerLink="../auth/sign-in">Sign in</a>
             <a nbButton
                 status="primary"
                 routerLink="../auth/sign-up">Get started</a>
-            <button nbButton
-                ghost
-                class="menu"
-                type="button"
-                aria-label="Menu"
-                nbContextMenuTag="site-sections"
-                [nbContextMenu]="sections">
-                <nb-icon icon="menu-outline" />
-            </button>
         </div>
     </nb-layout-header>
 
