@@ -168,9 +168,10 @@ describe('NbColorPickerComponent', () => {
         expect(host.color.value).toBe('#3366ff')
         expect(host.color.errors).toEqual({ nbColorPicker: { kind: 'nbColorPicker', message: 'Enter a valid color' } })
 
-        // With the dialog open.
+        // With the dialog open, as the user opens it.
+        await openDialog()
         await retype('#12345')
-        await expect.poll(dialog).toBeTruthy()
+        expect(dialog()).toBeTruthy()
         expect(host.color.value).toBe('#3366ff')
 
         // The text stays, so the user can correct it, and the field shows the error.
