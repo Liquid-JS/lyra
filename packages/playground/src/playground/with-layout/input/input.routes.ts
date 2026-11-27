@@ -36,5 +36,9 @@ export const INPUT_ROUTES: Routes = [
     {
         path: 'input-number.component',
         loadComponent: () => import('./input-number.component').then((m) => m.InputNumberComponent)
+    },
+    {
+        path: 'input-autosize.component',
+        loadComponent: () => import('./input-autosize.component').then((m) => m.InputAutosizeComponent)
     }
 ]

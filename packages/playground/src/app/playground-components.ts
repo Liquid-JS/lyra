@@ -885,6 +885,12 @@ export const PLAYGROUND_COMPONENTS: ComponentLink[] = [
                 link: '/input/input-number.component',
                 component: 'InputNumberComponent',
                 name: 'Input Number'
+            },
+            {
+                path: 'input-autosize.component',
+                link: '/input/input-autosize.component',
+                component: 'InputAutosizeComponent',
+                name: 'Input Autosize'
             }
         ]
     },

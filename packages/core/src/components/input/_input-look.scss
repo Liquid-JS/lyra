@@ -78,6 +78,15 @@
         $line: nb-theme(input-#{$size}-text-line-height);
 
         padding-block: calc((#{$height} - #{$line}) / 2 - #{nb-theme(input-border-width)});
+
+        // `nbAutosize`: as tall as its value, between its fewest and most rows, each with the padding and border, which
+        // add up to a one-line field's height less its line. Without most rows, the max height is invalid, so none.
+        &.input-autosize {
+            field-sizing: content;
+            resize: none;
+            min-height: calc(var(--nb-input-min-rows, 1) * #{$line} + #{$height} - #{$line});
+            max-height: calc(var(--nb-input-max-rows) * #{$line} + #{$height} - #{$line});
+        }
     }
 }
 

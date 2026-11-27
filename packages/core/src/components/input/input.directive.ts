@@ -68,6 +68,10 @@ import { NbFocusMonitor } from '@liquid-js/lyr-core/cdk'
  * `fullWidth` makes the field fill its container:
  * @stacked-example(Full width inputs, input/input-full-width.component)
  *
+ * A textarea with `nbAutosize` grows with its value, from its `rows`, or `minRows`, up to `maxRows`; see
+ * `NbTextareaAutosizeDirective`:
+ * @stacked-example(Growing textarea, input/input-autosize.component)
+ *
  * A `ghost` input shows no background or border until it's hovered or focused, for fields edited in place:
  * @stacked-example(Ghost inputs, input/input-ghost.component)
  *

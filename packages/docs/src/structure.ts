@@ -325,7 +325,7 @@ export const structure: NgdAreaEntry[] = [
                         type: 'tabs',
                         name: 'Input',
                         icon: 'input.svg',
-                        source: ['NbInputDirective', 'NbNumberInputDirective', 'NbFormFieldComponent', 'NbPrefixDirective', 'NbSuffixDirective']
+                        source: ['NbInputDirective', 'NbNumberInputDirective', 'NbTextareaAutosizeDirective', 'NbFormFieldComponent', 'NbPrefixDirective', 'NbSuffixDirective']
                     },
                     {
                         type: 'tabs',

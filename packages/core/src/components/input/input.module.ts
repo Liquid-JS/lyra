@@ -1,10 +1,12 @@
 import { NgModule } from '@angular/core'
 import { NbInputDirective } from './input.directive'
 import { NbNumberInputDirective } from './number-input.directive'
+import { NbTextareaAutosizeDirective } from './textarea-autosize.directive'
 
 const NB_INPUT_COMPONENTS = [
     NbInputDirective,
-    NbNumberInputDirective
+    NbNumberInputDirective,
+    NbTextareaAutosizeDirective
 ]
 
 @NgModule({
