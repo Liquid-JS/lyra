@@ -280,7 +280,11 @@ function themedSymbols(): Record<string, ThemedSymbol> {
             const textStyles = new Set<string>()
             const layerStyles = new Set<string>()
             const uses = new Set([starter.symbol])
-            for (const choice of Object.values(starter.overrides)) {
+            const tints: NonNullable<ThemedSymbol['tints']> = {}
+            for (const [layer, choice] of Object.entries(starter.overrides)) {
+                if (choice.tint && choice.follows) {
+                    tints[layer] = { variable: choice.follows, ...(choice.tint.variable ? { swatch: choice.tint.variable } : {}) }
+                }
                 if (choice.textStyle) {
                     textStyles.add(choice.textStyle)
                 }
@@ -291,7 +295,7 @@ function themedSymbols(): Record<string, ThemedSymbol> {
                     uses.add(choice.symbol)
                 }
             }
-            symbols[starter.name] = { board, uses: listed(uses), textStyles: listed(textStyles), layerStyles: listed(layerStyles) }
+            symbols[starter.name] = { board, uses: listed(uses), textStyles: listed(textStyles), layerStyles: listed(layerStyles), ...(Object.keys(tints).length ? { tints } : {}) }
         }
     }
     return symbols

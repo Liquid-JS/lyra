@@ -557,10 +557,15 @@ class ComponentBuilder {
             made.horizontalPins = near(layer.x, layer.width, parentLayer.width)
             made.verticalPins = near(layer.y, layer.height, parentLayer.height)
         }
-        // At its share of its parent's width, e.g. a progress bar's value, as the instance is drawn wider or narrower.
+        // At its share of its parent's width, e.g. a progress bar's value, as the instance is drawn wider or narrower:
+        // pinned to neither side, its place scales with its parent too, e.g. a range slider's fill.
         if (layer.relative) {
-            made.horizontalPins = sketch.Pin.Min
+            made.horizontalPins = sketch.Pin.None
             made.horizontalSizing = sketch.FlexSizing.Relative
+        }
+        // At its share of its parent's width, keeping its own, e.g. a slider's thumb.
+        if (layer.floats) {
+            made.horizontalPins = sketch.Pin.None
         }
         return made
     }
@@ -580,11 +585,17 @@ class ComponentBuilder {
             made.style.corners.radii = layer.radius
         }
         made.clipsContents = !!layer.clip
-        // An image, e.g. a flag or a QR code, behind the frame's content, stretched over it: an SVG as its own layers,
-        // a raster image as an image layer.
+        // An image, e.g. a flag or a QR code, behind the frame's content: an SVG as its own layers, stretched over it; a
+        // raster image as a shape it fills, covering it and cropped to it as code's `object-fit: cover` does, so another
+        // size or a design's own picture, an override, keeps its proportions.
         const data = layer.image ? this.kit.images[layer.image] : undefined
         if (data) {
-            const image = data.startsWith('data:') ? new sketch.Image({ image: { base64: data.slice(data.indexOf(',') + 1) } }) : sketch.createLayerFromData(data, 'svg')
+            const raster = data.startsWith('data:')
+            const image = raster ? new sketch.ShapePath({ name: 'Image' }) : sketch.createLayerFromData(data, 'svg')
+            if (raster) {
+                image.style.fills = [{ fillType: sketch.Style.FillType.Pattern, pattern: { patternType: sketch.Style.PatternFillType.Fill, image: { base64: data.slice(data.indexOf(',') + 1) } } }]
+                image.style.borders = []
+            }
             image.name = 'Image'
             image.parent = made
             image.frame = { x: 0, y: 0, width: layer.width, height: layer.height }
@@ -594,10 +605,11 @@ class ComponentBuilder {
             image.moveToBack()
         }
         // A stack lays out its top layer first, so the children go in back to front; the ones placed on their own go
-        // last, on top, as they are in the browser.
+        // last, on top, as they are in the browser, but for the frame's border's sides, which go first, under them.
         const inFlow = layer.children.filter((child) => !child.absolute)
-        const placedOnTheirOwn = layer.children.filter((child) => child.absolute)
-        for (const child of [...(layer.layout ? inFlow.slice().reverse() : inFlow), ...placedOnTheirOwn]) {
+        const placedOnTheirOwn = layer.children.filter((child) => child.absolute && !child.band)
+        const bands = layer.children.filter((child) => child.band)
+        for (const child of [...bands, ...(layer.layout ? inFlow.slice().reverse() : inFlow), ...placedOnTheirOwn]) {
             this.place(child, made, layer)
         }
         made.frame = frame
@@ -913,12 +925,20 @@ function lockOverrides(made: sketch.SymbolMaster, root: Layer) {
             editable = true
         }
         // A picture, e.g. a user's, can be the design's own.
-        if (depth === 1 && override.property === 'image' && override.affectedLayer.type === 'Image') {
+        if (depth === 1 && override.property === 'image' && (override.affectedLayer.type === 'Image' || override.affectedLayer.name === 'Image')) {
             editable = true
         }
-        // Inside a component of the kit: what its own symbol lets its users set, two levels deep at most.
+        // A fill a design colours, e.g. a swatch's.
+        if (depth === 1 && override.property.startsWith('color:fill') && layer?.recolour) {
+            editable = true
+        }
+        // Inside a component of the kit: what its own symbol lets its users set, two levels deep at most, e.g. a phone
+        // bar's tabs' titles and icons.
         if (depth === 2) {
-            editable = holdsKitSymbol && ['stringValue', 'layerStyle', 'textStyle', 'fillColor', 'textColor', 'image'].includes(override.property)
+            editable =
+                holdsKitSymbol &&
+                (['stringValue', 'layerStyle', 'textStyle', 'fillColor', 'textColor', 'image'].includes(override.property) ||
+                    (override.property === 'symbolID' && override.affectedLayer.name.endsWith(' Glyph')))
         }
         override.editable = editable
     }

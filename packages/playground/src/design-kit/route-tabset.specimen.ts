@@ -4,7 +4,7 @@ import { NbRouteTabsetComponent, type NbRouteTab } from '@liquid-js/lyr-core'
 import { combinations, kit } from './specimen'
 
 /**
- * Route tabs: the page's own active, one with an icon and a disabled one, as wide as their titles or the set; and a
+ * Route tabs: the page's own active, one with an icon and two plain ones, as wide as their titles or the set; and a
  * phone's bar along the bottom with three to five tabs, icons over titles, one with a badge.
  */
 @Component({
@@ -29,7 +29,7 @@ export class RouteTabsetSpecimenComponent {
         { title: 'Overview', route: '/design-kit/route-tabset' },
         { title: 'Files', icon: 'folder-outline', route: '/design-kit/route-tabset/files' },
         { title: 'Settings', route: '/design-kit/route-tabset/settings' },
-        { title: 'Archive', route: '/design-kit/route-tabset/archive', disabled: true }
+        { title: 'Archive', route: '/design-kit/route-tabset/archive' }
     ]
 
     // The capture adds query parameters, which don't make another tab active.

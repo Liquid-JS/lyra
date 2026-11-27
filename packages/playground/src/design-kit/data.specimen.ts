@@ -16,28 +16,42 @@ import { TreeGridShowcaseComponent } from '../playground/with-layout/tree-grid/t
                 style="width: 48rem">
                 <nb-tree-grid-showcase />
             </div>
-            <nb-chat [attr.data-kit]="kit('chat')"
+            @for (chat of chats; track chat.device) {
+            <nb-chat [attr.data-kit]="kitWith('chat', chat)"
                 title="Support"
-                size="large"
                 [scrollBottom]="false"
-                style="width: 28rem">
-                <nb-chat-message message="Hi! How can we help?"
-                    sender="Alex Taylor"
-                    [date]="sent" />
-                <nb-chat-message message="My invoice shows the wrong address."
-                    sender="Jane Doe"
+                [style.width]="chat.width"
+                [style.height]="chat.height">
+                @for (message of messages; track $index) {
+                <nb-chat-message [message]="message.text"
+                    [sender]="message.reply ? 'Jane Doe' : 'Alex Taylor'"
                     [date]="sent"
-                    reply />
-                <nb-chat-message message="Sorry about that, I've fixed it and sent a new one."
-                    sender="Alex Taylor"
-                    [date]="sent" />
+                    [reply]="message.reply" />
+                }
                 <nb-chat-form messagePlaceholder="Type a message" />
             </nb-chat>
+            }
         </div>
     `,
     imports: [TableShowcaseComponent, TreeGridShowcaseComponent, NbChatComponent, NbChatMessageComponent, NbChatFormComponent]
 })
 export class DataSpecimenComponent {
     readonly kit = (component: string) => JSON.stringify({ component })
+    readonly kitWith = (component: string, { device }: { device: string }) => JSON.stringify({ component, device })
+    // A chat as wide as a phone's screen, less its margins, where its messages wrap; each as tall as its six messages,
+    // which scroll in a shorter one.
+    readonly chats = [
+        { device: 'laptop', width: '28rem', height: '51.75rem' },
+        { device: 'phone', width: '21.375rem', height: '55.5rem' }
+    ]
     readonly sent = new Date(2026, 2, 18, 9, 30)
+    // Six messages, as tall as they are: a chat drawn shorter shows those that fit, as code scrolls to the rest.
+    readonly messages = [
+        { text: 'Hi! How can we help?', reply: false },
+        { text: 'My invoice shows the wrong address.', reply: true },
+        { text: 'Sorry about that. Which address should it show?', reply: false },
+        { text: '12 High Street, Oxford.', reply: true },
+        { text: 'Thanks, I\'ve fixed it and sent you a new invoice.', reply: false },
+        { text: 'Got it, thank you!', reply: true }
+    ]
 }

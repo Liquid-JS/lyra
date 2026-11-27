@@ -468,7 +468,7 @@ function textStyleOf(node: CapturedNode): TextStyle {
 
 // ---- Layers ----
 
-/** A captured node's layers: itself as a layer, with its bands as layers of their own on top. */
+/** A captured node's layers: itself as a layer, with its bands as layers of their own under its content. */
 interface Draft {
     layer: Layer
     /** The look of each layer of the draft, by its path, to name styles by what changes them. */
@@ -477,7 +477,7 @@ interface Draft {
      * Each icon's and text's colour, by its layer's name: a tint, not a style, so a look's colours carry over when a
      * symbol is swapped for another size, whose texts have their own fonts.
      */
-    tints: Map<string, { part: string, paint: Paint, symbol?: string }>
+    tints: Map<string, { part: string, paint: Paint, symbol?: string, follows?: string }>
     /** The sides each part has bands on. */
     bandSides: Map<string, Set<string>>
 }
@@ -589,7 +589,11 @@ function layoutOf(node: CapturedNode, children: CapturedNode[]): Layer['layout']
                     ? 'center'
                     : 'end'
                 : display === 'block'
-                    ? 'stretch'
+                    ? // A block lays inline boxes out on a line, at their own widths, e.g. a checkbox's label; inline text, e.g.
+                    // a title's, flows across it.
+                    flowing.every((child) => child.style.display === 'inline-flex' || child.style.display === 'inline-grid')
+                        ? 'start'
+                        : 'stretch'
                     : flexValue(node.style.alignItems, 'stretch')
     return {
         direction,
@@ -613,6 +617,8 @@ const wrapping = new WeakSet<Layer>()
 const fixedLayers = new WeakSet<Layer>()
 /** The fixed layers a clipping frame let out, which its parent places beside it. */
 const escaping = new WeakMap<Layer, Layer[]>()
+/** Fixed layers' z-indexes, by which a fixed part goes over or under another, e.g. a drawer over a fixed header. */
+const fixedZ = new WeakMap<Layer, number>()
 
 /**
  * A row that sizes to its content can't stretch what's in it, so a column in it sizes to its content too, e.g. a
@@ -707,6 +713,10 @@ function wrapIn(layer: Layer, part: string) {
     } else if (layer.layout) {
         found.fill = true
     }
+    // A text on its own, e.g. a textarea's value, wraps at the width it takes.
+    if (found.kind === 'text') {
+        found.textSizing = 'fixed'
+    }
     const spread = (frame: Layer) => {
         if (!frame.layout || frame.layout.direction !== 'column') {
             return
@@ -722,6 +732,153 @@ function wrapIn(layer: Layer, part: string) {
         }
     }
     spread(found)
+}
+
+/**
+ * Makes the texts in a part, and in each numbered copy of it, e.g. `Text 2`, wrap at the width they're drawn at, and the
+ * frames around it, up to `stop`, grow down with them: a row's parts keep their own heights, and a frame without a
+ * layout that holds the part alone lays it out where it is.
+ */
+function wrapAsDrawn(layer: Layer, part: string, stop?: string, around: Layer[] = []) {
+    const isPart = layer.name === part || (layer.name.startsWith(`${part} `) && /^\d+$/.test(layer.name.slice(part.length + 1)))
+    if (!isPart) {
+        layer.children.forEach((child) => wrapAsDrawn(child, part, stop, layer.name === stop ? [] : [...around, layer]))
+        return
+    }
+    const fix = (inner: Layer) => {
+        if (inner.kind === 'text') {
+            inner.textSizing = 'fixed'
+        }
+        inner.children.forEach(fix)
+    }
+    fix(layer)
+    for (const frame of [layer, ...around].reverse()) {
+        const inFlow = frame.children.filter((child) => !child.absolute)
+        if (!frame.layout && inFlow.length === 1) {
+            const [only] = inFlow
+            frame.layout = {
+                direction: 'row',
+                gap: 0,
+                padding: [only.y, round(frame.width - only.x - only.width), round(frame.height - only.y - only.height), only.x],
+                align: 'start',
+                justify: 'start',
+                hug: { width: false, height: true }
+            }
+        }
+        if (frame.layout) {
+            frame.layout.hug.height = true
+            if (frame.layout.direction === 'row') {
+                inFlow.forEach((child) => (child.fill = false))
+            }
+        }
+    }
+}
+
+/**
+ * The part named `name`, e.g. a chat's messages or a layout's column, takes the height the component is given, and each
+ * frame around it with it, so an instance drawn taller grows that part, e.g. a layout's on a long screen.
+ */
+function takeHeight(top: Layer, name: string) {
+    const pathTo = (layer: Layer): Layer[] | undefined => {
+        if (layer.name === name) {
+            return [layer]
+        }
+        for (const child of layer.children.filter((candidate) => !candidate.absolute)) {
+            const below = pathTo(child)
+            if (below) {
+                return [layer, ...below]
+            }
+        }
+        return undefined
+    }
+    const path = pathTo(top)
+    if (!path) {
+        throw new Error(`No part ${name} scrolls: it isn't in the component`)
+    }
+    // The part itself takes the height too, e.g. a chat's messages drawn as tall as they are.
+    const part = path[path.length - 1]
+    if (part.layout) {
+        part.layout.hug.height = false
+    }
+    for (let index = 1; index < path.length; index++) {
+        const parent = path[index - 1]
+        const child = path[index]
+        if (!parent.layout) {
+            return
+        }
+        parent.layout.hug.height = false
+        // Along a column it takes the room its siblings leave; across a row, the row's height, as do its siblings where
+        // the row stretches them, e.g. a layout's sidebar beside its column.
+        if (parent.layout.direction === 'column') {
+            child.grow = true
+        } else if (parent.layout.align === 'stretch') {
+            parent.children.filter((candidate) => !candidate.absolute).forEach((sibling) => (sibling.fill = true))
+        } else {
+            child.fill = true
+        }
+    }
+}
+
+/**
+ * Makes the part `name` take the room its row leaves, and the frames around it, up to `top`, the width they're given,
+ * e.g. an audio player's position, which code's `flex: 1` lengthens as the player widens: what it holds stretches across.
+ */
+function takeWidth(top: Layer, name: string) {
+    const pathTo = (layer: Layer): Layer[] | undefined => {
+        if (layer.name === name) {
+            return [layer]
+        }
+        for (const child of layer.children.filter((candidate) => !candidate.absolute)) {
+            const below = pathTo(child)
+            if (below) {
+                return [layer, ...below]
+            }
+        }
+        return undefined
+    }
+    const path = pathTo(top)
+    if (!path) {
+        throw new Error(`No part ${name} grows: it isn't in the component`)
+    }
+    for (let index = 1; index < path.length; index++) {
+        const parent = path[index - 1]
+        const child = path[index]
+        if (!parent.layout) {
+            return
+        }
+        parent.layout.hug.width = false
+        if (parent.layout.direction === 'row') {
+            child.grow = true
+        } else {
+            child.fill = true
+        }
+    }
+    const part = path[path.length - 1]
+    if (part.layout) {
+        part.layout.hug.width = false
+        for (const child of part.children.filter((candidate) => !candidate.absolute && candidate.kind !== 'text')) {
+            child.fill = true
+        }
+    }
+}
+
+/**
+ * Rows named `name`, e.g. a calendar's weeks, whose parts share their width alike: drawn narrower or wider, each part
+ * takes its share, as code's cells shrink to fit a narrower calendar.
+ */
+function shareRows(layer: Layer, name: string) {
+    if (layer.layout?.direction === 'row' && (layer.name === name || new RegExp(`^${name} \\d+$`).test(layer.name))) {
+        layer.layout.justify = 'start'
+        layer.layout.gap = 0
+        layer.layout.hug.width = false
+        for (const child of layer.children.filter((candidate) => !candidate.absolute)) {
+            child.grow = true
+            if (child.ref) {
+                child.ref.hug = { width: false, height: child.ref.hug?.height ?? false }
+            }
+        }
+    }
+    layer.children.forEach((child) => shareRows(child, name))
 }
 
 /**
@@ -789,10 +946,26 @@ function stretchToField(top: Layer) {
     }
 }
 
+/** The side of a frame's padding a child reaches into, e.g. a removable tag's button, which follows no variable alone. */
+const reachedInto = new WeakMap<Layer, number>()
+
 function stacks(layer: Layer, retried = false): boolean {
     const layout = layer.layout
     if (!layout) {
         return false
+    }
+    // Spread around or evenly, which a design tool's stack can't: spread apart, the room before the first and after
+    // the last as its padding, e.g. a full-width tabset's tabs, so they move apart or together as it's resized.
+    const spread = layer.children.filter((child) => !child.absolute)
+    if ((layout.justify === 'space-around' || layout.justify === 'space-evenly') && spread.length > 1) {
+        const firstPart = spread[0]
+        const lastPart = spread[spread.length - 1]
+        if (layout.direction === 'row') {
+            layout.padding = [layout.padding[0], round(layer.width - lastPart.x - lastPart.width), layout.padding[2], round(firstPart.x)]
+        } else {
+            layout.padding = [round(firstPart.y), layout.padding[1], round(layer.height - lastPart.y - lastPart.height), layout.padding[3]]
+        }
+        layout.justify = 'between'
     }
     const [top, right, bottom, left] = layout.padding
     const row = layout.direction === 'row'
@@ -957,8 +1130,17 @@ function stacks(layer: Layer, retried = false): boolean {
     if (inFlow.some((child) => child.grow) && trailing > 0.6) {
         layout.padding[row ? 1 : 2] = round(layout.padding[row ? 1 : 2] + trailing)
     }
+    // A last child that reaches into the padding at the end, e.g. a removable tag's button with a negative margin: the
+    // padding as far as it reaches, so the frame still sizes to its content.
+    const end = row ? 1 : 2
+    const reached = layout.justify === 'start' && trailing < -0.6 && layout.padding[end] + trailing >= 0
+    if (reached) {
+        layout.padding[end] = round(layout.padding[end] + trailing)
+        // It no longer follows the padding's variable alone, but the child's margin too.
+        reachedInto.set(layer, end)
+    }
     // A frame hugs its content where its size is its padding and its content's, unless children stretch to it.
-    const along = mainSize + (row ? left + right : top + bottom)
+    const along = mainSize + (row ? left : top) + (reached ? layout.padding[end] : row ? right : bottom)
     const across = Math.max(0, ...inFlow.map((child) => (row ? child.height : child.width))) + (row ? top + bottom : left + right)
     const stretched = inFlow.some((child) => child.fill)
     if (layout.align === 'stretch' && (!stretched || inFlow.some((child) => !child.fill && child.kind !== 'text'))) {
@@ -1090,7 +1272,7 @@ function layerBindingsOf(node: CapturedNode, layer: Layer): LayerBindings | unde
     if (layer.layout) {
         INSETS.forEach((inset, index) => {
             const binding = bound[inset]
-            if (binding) {
+            if (binding && reachedInto.get(layer) !== index) {
                 bindings.padding = { ...bindings.padding, [index]: binding }
             }
         })
@@ -1152,7 +1334,9 @@ function draftOf(
         if (current.tag === '#text') {
             const textStyle = textStyleOf(current)
             looks.set(name, { kind: 'text', look: textStyle, part, bindings: textBindingsOf(current) })
-            tints.set(name, { part, paint: textStyle.paint })
+            // The component's colour variable it's in, which its element's parent records.
+            const follows = (current.colourVariables ?? parent?.colourVariables)?.text
+            tints.set(name, { part, paint: textStyle.paint, ...(follows ? { follows } : {}) })
             const lineHeight = textStyle.font.lineHeight
             const lines = current.lines ?? 1
             const height = lineHeight * lines
@@ -1179,7 +1363,8 @@ function draftOf(
         if (current.icon && !current.ref) {
             const paint = paintOf(current.style.color) ?? { color: '#000000' }
             const symbol = iconSymbol(current.icon.name)
-            tints.set(name, { part, paint, symbol })
+            const follows = current.colourVariables?.text
+            tints.set(name, { part, paint, symbol, ...(follows ? { follows } : {}) })
             const turned = Math.round(turn) % 360
             return { ...base, kind: 'icon', icon: { symbol, paint, ...(turned ? { turn: turned } : {}) } }
         }
@@ -1256,9 +1441,12 @@ function draftOf(
         const z = (child: CapturedNode) => (child.style.zIndex === undefined ? 0 : Number(child.style.zIndex) || 0)
         if (current.style.position === 'fixed' && parent) {
             fixedLayers.add(layer)
+            fixedZ.set(layer, z(current))
             layer.absolute = true
         }
         const drafted = current.children.map((child, index) => ({ z: z(child), index, layer: visit(child, current, layer, part) }))
+        // A positioned child's z-index, kept by the layer it became, which may not be the one its visit started with.
+        drafted.forEach((entry, index) => ['fixed', 'absolute'].includes(current.children[index]?.style.position ?? '') && entry.z && fixedZ.set(entry.layer, entry.z))
         layer.children = drafted.map((entry) => entry.layer)
         // A fixed part that a child clipping its content let out goes beside that child, just before it, e.g. a
         // drawer's backdrop: over the page, under the drawer.
@@ -1266,6 +1454,8 @@ function draftOf(
             const out = escaping.get(entry.layer) ?? []
             if (out.length) {
                 out.forEach((escaped) => Object.assign(escaped, { x: round(escaped.x + entry.layer.x), y: round(escaped.y + entry.layer.y), absolute: true }))
+                // In the stacking of the part it belongs to, e.g. a drawer's backdrop goes where the drawer does.
+                out.forEach((escaped) => fixedZ.set(escaped, Math.max(fixedZ.get(escaped) ?? 0, fixedZ.get(entry.layer) ?? entry.z)))
                 const at = layer.children.indexOf(entry.layer)
                 layer.children.splice(at, 0, ...out)
                 drafted.splice(drafted.indexOf(entry), 0, ...out.map((escaped) => ({ z: entry.z, index: entry.index, layer: escaped })))
@@ -1277,6 +1467,20 @@ function draftOf(
                 escaping.set(layer, out)
                 layer.children = layer.children.filter((child) => !out.includes(child))
                 drafted.splice(0, drafted.length, ...drafted.filter((entry) => !out.includes(entry.layer)))
+            }
+        }
+        // A fixed part over a fixed sibling of the frame it's in, e.g. an open drawer over a fixed header, is drawn over it:
+        // beside it, in front, where a design tool's order can put it.
+        const front = Math.max(-Infinity, ...drafted.filter((entry) => entry.layer.absolute && entry.z > 0 && layer.children.includes(entry.layer)).map((entry) => entry.z))
+        if (front > -Infinity) {
+            for (const holder of layer.children.filter((child) => !child.absolute)) {
+                const over = holder.children.filter((child) => (fixedZ.get(child) ?? 0) > front)
+                if (over.length) {
+                    holder.children = holder.children.filter((child) => !over.includes(child))
+                    over.forEach((lifted) => Object.assign(lifted, { x: round(lifted.x + holder.x), y: round(lifted.y + holder.y) }))
+                    layer.children.push(...over)
+                    drafted.push(...over.map((lifted) => ({ z: fixedZ.get(lifted) ?? 0, index: drafted.length, layer: lifted })))
+                }
             }
         }
         // A reversed row or column, e.g. a chat's reply, lists its children as they show.
@@ -1319,6 +1523,15 @@ function draftOf(
             if (spec.relative?.includes(child.name)) {
                 child.relative = true
                 delete layer.layout
+                // A design tool doesn't lay out a stack its share resizes: what it centres floats at its middle instead,
+                // e.g. a progress bar's value in its fill.
+                if (child.layout && child.layout.direction === 'row' && child.layout.justify === 'center') {
+                    delete child.layout
+                    child.children.filter((grandchild) => !grandchild.absolute).forEach((grandchild) => (grandchild.floats = true))
+                }
+            }
+            if (spec.floats?.some((floating) => child.name === floating || child.name.startsWith(`${floating} `))) {
+                child.floats = true
             }
         }
         if (layer.layout && !stacks(layer)) {
@@ -1336,7 +1549,9 @@ function draftOf(
         if (layerBindings) {
             layer.bindings = layerBindings
         }
-        // Bands over the element's content, clipped to its corners where they run along a rounded edge.
+        // Bands under the element's content, as the browser paints a border under its children, e.g. a tabset's line
+        // under the active tab's, over its fill; clipped to its corners where they run along a rounded edge.
+        const bandLayers: Layer[] = []
         for (const band of bands) {
             const bandName = unique(`${part} ${title(band.side)}`)
             const horizontal = band.side === 'top' || band.side === 'bottom'
@@ -1344,7 +1559,7 @@ function draftOf(
             const r = layer.radius ?? [0, 0, 0, 0]
             const bandRadius: Layer['radius'] =
                 band.side === 'top' ? [r[0], r[1], 0, 0] : band.side === 'bottom' ? [0, 0, r[2], r[3]] : band.side === 'left' ? [r[0], 0, 0, r[3]] : [0, r[1], r[2], 0]
-            layer.children.push({
+            bandLayers.push({
                 name: bandName,
                 kind: 'frame',
                 x: band.side === 'right' ? round(current.width - band.size) : 0,
@@ -1355,6 +1570,7 @@ function draftOf(
                 // As thick as its border, e.g. an accent alert's, which follows `alert-border-radius`.
                 ...(sizeBinding ? { bindings: horizontal ? { height: sizeBinding } : { width: sizeBinding } } : {}),
                 absolute: true,
+                band: true,
                 children: []
             })
             const colour = current.colourVariables?.border
@@ -1365,6 +1581,7 @@ function draftOf(
                 ...(colour ? { bindings: { fill: [{ variable: colour }] } } : {})
             })
         }
+        layer.children.push(...bandLayers)
         return layer
     }
     const top = visit(node, undefined, undefined, undefined)
@@ -1394,6 +1611,18 @@ function draftOf(
     growOnlyWithRoom(top)
     for (const part of spec.wraps ?? []) {
         wrapIn(top, part)
+    }
+    for (const part of spec.wrapsAsDrawn ?? []) {
+        wrapAsDrawn(top, part, spec.scrolls)
+    }
+    if (spec.scrolls) {
+        takeHeight(top, spec.scrolls)
+    }
+    for (const part of spec.grows ?? []) {
+        takeWidth(top, part)
+    }
+    for (const rows of spec.shares ?? []) {
+        shareRows(top, rows)
     }
     if (spec.stretches && top.layout) {
         stretchToField(top)
@@ -1478,7 +1707,12 @@ function layoutDifferences(a: Layer, b: Layer, path = a.name, resized = false, r
         // full-width input, lays out alike if its text starts where it did: a text that sizes to its words needn't match.
         const sized = property === 'width' || property === 'height'
         // Nor need a part that sizes to its content, e.g. a step's label, where the text is another.
-        const stretched = resized && sized && (path === a.name ? !a.layout?.hug?.[property] : (a.kind === 'text' && a.textSizing === 'auto') || !!a.layout?.hug?.[property])
+        // Nor a layer placed over its parent that spans half of it or more, e.g. a tab's underline: it's pinned to both
+        // sides, so it stretches with it.
+        const spans = !!a.absolute && !!parent && a[property] >= (property === 'width' ? parent.width : parent.height) / 2 - 0.5
+        // A text that sizes to its words, or one that takes the room it's given, e.g. a textarea's value, needn't either.
+        const textSizes = a.kind === 'text' && (a.textSizing === 'auto' || !!a.grow || !!a.fill)
+        const stretched = resized && sized && (path === a.name ? !a.layout?.hug?.[property] : textSizes || !!a.layout?.hug?.[property] || spans)
         // A text centred across its row, e.g. a calendar cell's day, starts where its words' width puts it.
         const centredText = centred && property === 'x' && ((a.kind === 'text' && a.textSizing === 'auto') || !!a.layout?.hug?.width)
         const followsText = (reflows && property === 'width') || (reflowed && property === 'x') || centredText
@@ -1600,15 +1834,16 @@ function build(component: string, spec: ComponentSpec, captured: Captured[], kit
         const own = allLooks.filter(({ look }) => !(look as TextStyle).typography)
         const looks = own.length ? own : allLooks
         // A text's own styles are named by what changes its font and by its colour, as typography's are, so texts
-        // that look alike share a style; a layer's by what changes its look.
-        const aspect = (look: LayerStyle | TextStyle) => (kind === 'text' ? (look as TextStyle).font : look)
+        // that look alike share a style; a layer's by what changes its look, or the variables it follows, as a theme
+        // can set those apart, e.g. a toggle's knob on and off.
+        const aspect = ({ look, bindings }: (typeof looks)[number]) => (kind === 'text' ? (look as TextStyle).font : { look, bindings })
         const changing = allInputs.filter((input) =>
             looks.some((a) =>
                 looks.some(
                     (b) =>
                         a.inputs[input] !== b.inputs[input] &&
                         allInputs.every((other) => other === input || a.inputs[other] === b.inputs[other]) &&
-                        keyOf(aspect(a.look)) !== keyOf(aspect(b.look))
+                        keyOf(aspect(a)) !== keyOf(aspect(b))
                 )
             )
         )
@@ -1756,8 +1991,9 @@ function build(component: string, spec: ComponentSpec, captured: Captured[], kit
         const template = templates.get(symbol)
         for (const [icon, text] of template ? followersOf(template) : []) {
             const colour = overrides[text]?.tint
+            const follows = overrides[text]?.follows
             if (colour && !overrides[icon]?.tint) {
-                overrides[icon] = { ...overrides[icon], tint: colour }
+                overrides[icon] = { ...overrides[icon], tint: colour, ...(follows ? { follows } : {}) }
             }
         }
     }
@@ -1783,9 +2019,9 @@ function build(component: string, spec: ComponentSpec, captured: Captured[], kit
         // Colours: icons' and texts', and the icons that follow their text's.
         // Icons the combination shows another of, e.g. each toast status's, by their glyph's layer.
         const symbolIcons = iconsOf(symbols.find((symbol) => symbol.name === symbolName(capture.inputs))?.layer)
-        for (const [layerName, { part, paint, symbol }] of draft.tints) {
+        for (const [layerName, { part, paint, symbol, follows }] of draft.tints) {
             if (tinted.has(part)) {
-                overrides[layerName] = { ...overrides[layerName], tint: paint }
+                overrides[layerName] = { ...overrides[layerName], tint: paint, ...(follows ? { follows } : {}) }
             }
             if (symbol && symbolIcons.get(layerName) && symbolIcons.get(layerName) !== symbol) {
                 overrides[`${layerName} Glyph`] = { symbol }
@@ -1855,6 +2091,61 @@ function build(component: string, spec: ComponentSpec, captured: Captured[], kit
         }
         follow(overrides, symbolName(shape.capture.inputs))
         return { symbol: symbolName(shape.capture.inputs), overrides, layer: shape.draft.layer }
+    }
+    // Parts whose fill colour a design sets, e.g. a swatch's.
+    const recolour = new Set(spec.recolour ?? [])
+    const markRecolour = (layer: Layer) => {
+        if (recolour.has(layer.name)) {
+            layer.recolour = true
+        }
+        layer.children.forEach(markRecolour)
+    }
+    symbols.forEach((symbol) => markRecolour(symbol.layer))
+    // Parts whose look a design chooses, e.g. a stepper's connectors, which follow its steps: their style is a parameter.
+    const restyle = spec.restyle ?? []
+    const markRestyle = (layer: Layer) => {
+        if (layer.layerStyle && restyle.some((name) => layer.name === name || new RegExp(`^${name} \\d+$`).test(layer.name))) {
+            layer.styled = true
+        }
+        layer.children.forEach(markRestyle)
+    }
+    symbols.forEach((symbol) => markRestyle(symbol.layer))
+    // A slot is a symbol of its own, placed in the others, for a design to swap for its own, e.g. its logo: drawn as
+    // the narrowest of them, before the symbols that hold it, and its layers' overrides go through it.
+    for (const slot of spec.slots ?? []) {
+        const name = `${spec.name}/${slot}`
+        const found = symbols.map((symbol) => layerNamed(symbol.layer, slot)).filter((layer): layer is Layer => !!layer)
+        const narrowest = found.sort((a, b) => a.width - b.width)[0]
+        if (!narrowest) {
+            throw new Error(`${component}: no symbol has the slot ${slot}`)
+        }
+        const { absolute: _absolute, fill: _fill, grow: _grow, ...own } = narrowest
+        const made: KitSymbol = { name, inputs: {}, width: narrowest.width, height: narrowest.height, layer: { ...own, x: 0, y: 0 } }
+        const inSlot = new Set<string>()
+        const visit = (inner: Layer) => {
+            for (const child of inner.children) {
+                inSlot.add(child.name)
+                visit(child)
+            }
+        }
+        visit(narrowest)
+        const replace = (layer: Layer): Layer => {
+            if (layer.name !== slot) {
+                return { ...layer, children: layer.children.map(replace) }
+            }
+            const { x, y, width, height, absolute, fill } = layer
+            const hug = layer.layout?.hug ?? { width: true, height: true }
+            // Wider than the symbol where it takes the room its row leaves, e.g. a phone's brand before the actions.
+            const grow = layer.grow || width > made.width + 0.5
+            return { name: layer.name, kind: 'ref', x, y, width, height, absolute, fill, grow, ref: { component, inputs: {}, symbol: name, hug: { width: hug.width && !grow, height: hug.height } }, children: [] }
+        }
+        for (const symbol of symbols) {
+            symbol.layer = replace(symbol.layer)
+        }
+        symbols.unshift(made)
+        for (const starter of starters) {
+            starter.overrides = Object.fromEntries(Object.entries(starter.overrides).map(([layer, choice]) => [inSlot.has(layer) ? `${slot}/${layer}` : layer, choice]))
+        }
     }
     // A starter named like a symbol would replace it and hold an instance of itself, which draws nothing.
     const clash = starters.find((starter) => symbols.some((symbol) => symbol.name === starter.name))

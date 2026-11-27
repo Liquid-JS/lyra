@@ -239,7 +239,7 @@ declare module 'sketch' {
     export const Artboard: new (init: Parented) => Artboard
     export const SymbolMaster: new (init: Parented) => SymbolMaster
     export const ShapePath: {
-        new (init: Parented): Layer
+        new (init: Parented & { name?: string }): Layer
         fromSVGPath(path: string): Layer
     }
     export const Text: new (init: Parented & { text: string }) => Text
@@ -249,6 +249,8 @@ declare module 'sketch' {
 
     export const Style: {
         FillType: { Color: string, Gradient: string, Pattern: string }
+        /** How an image fill covers its layer: `Fill` covers it, cropped, as CSS's `cover`. */
+        PatternFillType: { Tile: string, Fill: string, Stretch: string, Fit: string }
         GradientType: { Linear: string, Radial: string, Angular: string }
         BorderPosition: { Center: string, Inside: string, Outside: string }
     }

@@ -108,12 +108,19 @@ export interface Layer {
     bindings?: LayerBindings
     /** Placed where it is, outside its parent's layout. */
     absolute?: boolean
+    /** A side of its parent's border, which the browser paints under the parent's content. */
+    band?: boolean
     /** How it sizes in its parent's layout across the main axis. */
     fill?: boolean
     /** Takes the room its parent's layout leaves along it, as a flex item that grows does, e.g. a list item's title. */
     grow?: boolean
     /** Scales with its parent's width, which has no stack, e.g. a progress bar's value at its share of the track. */
     relative?: boolean
+    /**
+     * Keeps its place at the same share of its parent's width, pinned to neither side, as its parent is drawn wider or
+     * narrower, e.g. a slider's thumb.
+     */
+    floats?: boolean
     clip?: boolean
     children: Layer[]
 }
@@ -158,7 +165,11 @@ export interface Starter {
     /** How the style inputs' values read, e.g. `Disabled` for `disabled: true`. */
     labels: Record<string, string>
     /** Styles by the name of the layer they're for. */
-    overrides: Record<string, { layerStyle?: string, textStyle?: string, tint?: Paint, text?: string, symbol?: string }>
+    /**
+     * By layer: `follows` is the component's colour variable a tint comes from, e.g. a toast's text from
+     * `toastr-success-text-color`, which a theme can set apart from the colour variable the tint links to.
+     */
+    overrides: Record<string, { layerStyle?: string, textStyle?: string, tint?: Paint, follows?: string, text?: string, symbol?: string }>
 }
 
 export interface KitComponent {
@@ -247,6 +258,11 @@ export interface ThemedSymbol {
     /** The variables its frames' padding, gaps and sizes follow, which lay it out, and those its corners follow. */
     layout?: string[]
     corners?: string[]
+    /**
+     * A starter's texts' and icons' colours, by layer: the component's colour variable each comes from, and the colour
+     * variable it's linked to in the kit.
+     */
+    tints?: Record<string, { variable: string, swatch?: string }>
 }
 
 export interface ThemeOptions {
@@ -282,6 +298,8 @@ export interface KitCheck {
     symbols: Record<string, string>
     /** The component of each style, `typography` for the theme's, by its name. */
     styles: Record<string, string>
+    /** The other components whose symbols draw a style, by its name, e.g. a form field its input's. */
+    usedBy: Record<string, string[]>
     swatches: Record<string, string>
     /** The kit's own pages, which aren't checked. */
     pages: string[]

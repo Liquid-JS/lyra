@@ -163,8 +163,9 @@ export function checkDesign(kit: KitCheck, options: CheckOptions): string {
             }
             const shared = override.property === 'layerStyle' ? doc.getSharedLayerStyleWithID(override.value) : doc.getSharedTextStyleWithID(override.value)
             const owner = shared ? kit.styles[shared.name] : undefined
-            // A look of a component the instance holds is that component's, e.g. a select's value in a field.
-            if (shared && owner !== component && owner !== 'typography' && !heldComponents(layer, override).includes(owner ?? '')) {
+            // A look of a component the instance holds is that component's, e.g. a select's value in a field, as is one
+            // its symbols draw, e.g. a form field's input's.
+            if (shared && owner !== component && owner !== 'typography' && !kit.usedBy[shared.name]?.includes(component) && !heldComponents(layer, override).includes(owner ?? '')) {
                 add('Other look', layer, `${master.name}'s ${override.affectedLayer.name} has ${shared.name}, ${owner ? `a look of ${owner}` : 'a style of the design\'s own'}`, `Custom CSS for the ${component}'s ${override.affectedLayer.name}.`)
             }
         }

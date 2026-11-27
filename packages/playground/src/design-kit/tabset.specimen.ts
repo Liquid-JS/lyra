@@ -3,7 +3,10 @@ import { NbTabComponent, NbTabsetComponent } from '@liquid-js/lyr-core'
 
 import { combinations, kit } from './specimen'
 
-/** Tabs: the active one, one with a badge, one with an icon and a disabled one, as wide as their titles or the set. */
+/**
+ * Tabs: the active one, one with a badge, one with an icon and a plain one, as wide as their titles or the set; a
+ * disabled one is the Tab symbol's look.
+ */
 @Component({
     template: `
         <div class="specimens">
@@ -18,8 +21,7 @@ import { combinations, kit } from './specimen'
                     badgeStatus="danger">Activity content</nb-tab>
                 <nb-tab tabTitle="Files"
                     tabIcon="folder-outline">Files content</nb-tab>
-                <nb-tab tabTitle="Archive"
-                    [disabled]="true">Archive content</nb-tab>
+                <nb-tab tabTitle="Archive">Archive content</nb-tab>
             </nb-tabset>
             }
         </div>

@@ -4,9 +4,6 @@ import {
     NbActionComponent,
     NbActionsComponent,
     NbButtonComponent,
-    NbCardBodyComponent,
-    NbCardComponent,
-    NbCardHeaderComponent,
     NbIconComponent,
     NbLayoutModule,
     NbMenuComponent,
@@ -80,17 +77,8 @@ import { kit } from './specimen'
                 <nb-menu [items]="account" />
             </nb-sidebar>
             }
-            <nb-layout-column>
-                <nb-card>
-                    <nb-card-header>Today</nb-card-header>
-                    <nb-card-body>
-                        <p>Three tasks are due today, and the weekly review is at 4 PM.</p>
-                        <button nbButton
-                            status="primary"
-                            type="button">See tasks</button>
-                    </nb-card-body>
-                </nb-card>
-            </nb-layout-column>
+            <!-- The page's content is the design's own. -->
+            <nb-layout-column />
             <nb-layout-footer *nbShownBelow="'md'"
                 fixed>
                 <nb-route-tabset [tabs]="sections"
@@ -129,10 +117,7 @@ import { kit } from './specimen'
         NbButtonComponent,
         NbIconComponent,
         NbUserComponent,
-        NbRouteTabsetComponent,
-        NbCardComponent,
-        NbCardHeaderComponent,
-        NbCardBodyComponent
+        NbRouteTabsetComponent
     ]
 })
 export class AdaptiveLayoutSpecimenComponent {

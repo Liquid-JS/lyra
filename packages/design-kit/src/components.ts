@@ -44,6 +44,15 @@ export interface ComponentSpec {
      * their texts wrap at that width, e.g. an app's layout at a device's size.
      */
     fluid?: boolean
+    /**
+     * Parts that hold a design's own content, e.g. a layout's brand: each is a symbol of its own, `{name}/{part}`, placed
+     * in the component's symbols, which a design swaps for its own symbol, e.g. its logo.
+     */
+    slots?: string[]
+    /** Parts whose fill colour a design sets, e.g. a swatch's: their fill's colour is an override. */
+    recolour?: string[]
+    /** Parts whose look a design chooses from the component's styles, e.g. a stepper's connectors: their style is an override. */
+    restyle?: string[]
     /** Gives every element a part, and so a style, of its own, for content that repeats elements, e.g. markdown. */
     uniqueParts?: boolean
     /**
@@ -53,12 +62,31 @@ export interface ComponentSpec {
     wraps?: string[]
     /**
      * Where another component holds this one, the inputs its classes say, its own or those of the container `from`
-     * selects: the first of `classes` it has, else `otherwise`, e.g. a calendar cell's state; or how many elements
-     * in it `count` selects, e.g. a tabset's tabs.
+     * selects: the first of `classes` it has, else that of the first of `has` it holds, else `otherwise`, e.g. a
+     * calendar cell's state or a tab's content; or how many elements in it `count` selects, e.g. a tabset's tabs.
      */
-    refInputs?: Record<string, { from?: string, classes?: Record<string, string>, otherwise?: string, count?: string }>
+    refInputs?: Record<string, { from?: string, classes?: Record<string, string>, has?: Record<string, string>, otherwise?: string, count?: string }>
+    /**
+     * Parts whose texts wrap at the width they're drawn at, e.g. a chat message's bubble, which code wraps at a largest
+     * width a design tool can't hold: a longer text grows down rather than out of its part, which can be made wider.
+     */
+    wrapsAsDrawn?: string[]
+    /**
+     * The part that takes the height the component is given, at any depth, with the frames around it, e.g. a chat's
+     * messages, which scroll in code, or a layout's column, which grows with a longer screen.
+     */
+    scrolls?: string
+    /**
+     * Parts that take the room their row leaves, at any depth, with the frames around them and what they hold, e.g. an
+     * audio player's position, which lengthens as the player is drawn wider.
+     */
+    grows?: string[]
     /** Parts as wide as a share of their parent, which scale with it, e.g. a progress bar's value. */
     relative?: string[]
+    /** Parts that keep their place at a share of their parent's width as it scales, e.g. a slider's thumb. */
+    floats?: string[]
+    /** Rows whose parts share their width alike, as it's drawn narrower or wider, e.g. a calendar's weeks. */
+    shares?: string[]
     /** Where another component holds this one, its texts in order are the instance's, e.g. a step's number and label. */
     refTexts?: boolean
     /** The part whose styles have the component's own name, if not the root, e.g. a select's button. */
@@ -196,6 +224,8 @@ export const COMPONENTS: Record<string, ComponentSpec> = {
         board: 'Calendars',
         symbol: { kind: size, size, view: size },
         style: [],
+        // A calendar drawn narrower shares its width among its days, as code's cells shrink.
+        shares: ['Picker Row', 'Days Names'],
         starter: { kind: 'single', size: 'medium', view: 'date' },
         // The most particular of a cell's states first: its part is the first that matches.
         parts: {
@@ -318,6 +348,7 @@ export const COMPONENTS: Record<string, ComponentSpec> = {
         sharesStyles: 'input',
         page: 'Form controls',
         board: 'Textareas',
+        wraps: ['Text'],
         symbol: { size, shape: size },
         style: ['status', 'state', 'content'],
         starter: { size: 'medium', shape: 'rectangle', status: 'basic', state: 'default', content: 'placeholder' }
@@ -335,16 +366,18 @@ export const COMPONENTS: Record<string, ComponentSpec> = {
     },
     'field': {
         name: 'Field',
-        code: { class: 'NbInputDirective', inputs: { size: 'The `nbInput`\'s `fieldSize`.', required: 'A required control: its `label[nbLabel]` shows the marker.', message: '`<nb-validation-errors>` shows its content as the hint, and the errors once the control is touched and invalid.' } },
+        code: { class: 'NbInputDirective', inputs: { control: 'An `input[nbInput]` or a `textarea[nbInput]`; another control, e.g. a select, takes the input\'s place.', size: 'The `nbInput`\'s `fieldSize`.', required: 'A required control: its `label[nbLabel]` shows the marker.', message: '`<nb-validation-errors>` shows its content as the hint, and the errors once the control is touched and invalid.' } },
         page: 'Form controls',
         board: 'Fields',
+        // A textarea is taller than an input, so the field around it is too.
         symbol: {
             size,
             required: (value) => (value ? 'Required' : 'Optional'),
-            message: (value) => (value === 'error' ? 'Error' : 'Hint')
+            message: (value) => (value === 'error' ? 'Error' : 'Hint'),
+            control: (value) => (value === 'textarea' ? 'Textarea' : '')
         },
         style: ['state'],
-        starter: { size: 'medium', required: false, message: 'hint', state: 'default' },
+        starter: { size: 'medium', control: 'input', required: false, message: 'hint', state: 'default' },
         parts: {
             '.label': 'Label',
             '.label-required': 'Required',
@@ -399,6 +432,23 @@ export const COMPONENTS: Record<string, ComponentSpec> = {
         starter: { status: 'none' },
         parts: { root: 'Header' }
     },
+    'card-media': {
+        name: 'Card Media',
+        code: {
+            class: 'NbCardMediaDirective',
+            notes: [
+                'A picture at a card\'s top, `nbCardMedia` on its `<img>`, or at its bottom, `nbCardMedia="bottom"`: it reaches the card\'s edges, over its border, and takes its corners. Its picture is an override, e.g. a product photo, which covers the media whatever its size, cropped, as code\'s `object-fit: cover` does.',
+                'What goes over the picture, e.g. a tag in its corner or a caption, is the design\'s own layers over it; in code, `nbCardMedia` goes on a wrapper that holds the picture and them, placed with the app\'s CSS.', 'Media drawn inside the card\'s border, which frames it, is `nbCardMedia inset`.'
+            ]
+        },
+        page: 'Content',
+        board: 'Card media',
+        symbol: {},
+        style: [],
+        container: true,
+        starter: {},
+        parts: { root: 'Media' }
+    },
     'card-body': {
         name: 'Card Body',
         page: 'Content',
@@ -421,6 +471,7 @@ export const COMPONENTS: Record<string, ComponentSpec> = {
     },
     'tag': {
         name: 'Tag',
+        code: { notes: ['Tags side by side are an `<nb-tag-list>`\'s, which wraps them onto more lines; with `wrap="false"` they stay on one line that scrolls sideways, e.g. a phone\'s filters.'] },
         page: 'Form controls',
         board: 'Tags',
         symbol: { size, removable: (value) => (value ? 'Removable' : 'Plain') },
@@ -442,11 +493,19 @@ export const COMPONENTS: Record<string, ComponentSpec> = {
     },
     'slider': {
         name: 'Slider',
+        code: {
+            inputs: { value: '`value`, a number, or a `range`\'s `{ start, end }`; the kit has single sliders in steps of 10, and ranges at 20–70.' },
+            notes: ['Its labels are its `min` and `max`, 0 and 100 unless set: write the slider\'s own range in them, as the thumb\'s place is its value\'s share of that range. Drawn wider or narrower, the fill and thumbs keep their share.']
+        },
         page: 'Form controls',
         board: 'Sliders',
-        symbol: { size, range: (value) => (value ? 'Range' : 'Single') },
+        // Where its thumb is changes its layout, so each value is a symbol; swapping one for another keeps the overrides.
+        symbol: { size, range: (value) => (value ? 'Range' : 'Single'), value: (value) => `${String(value)}%` },
         style: ['status', 'state'],
-        starter: { size: 'medium', range: false, status: 'primary', state: 'default' },
+        // A slider drawn wider keeps its value: the fill at its share of the track, the thumbs and ticks at theirs.
+        relative: ['Fill'],
+        floats: ['Thumb', 'Thumb 2', 'Tick'],
+        starter: { size: 'medium', range: false, value: '40', status: 'primary', state: 'default' },
         parts: {
             '.slider-track': 'Track',
             '.slider-fill': 'Fill',
@@ -584,10 +643,12 @@ export const COMPONENTS: Record<string, ComponentSpec> = {
     },
     'stepper': {
         name: 'Stepper',
+        code: { notes: ['On a screen up to 576 px wide, a horizontal stepper shows the current step\'s label alone, under the steps\' indexes; a phone screen that shows every label is `compact="false"`.', 'A connector has the look of the step before it: after a completed step, `Stepper Past Connector`; give a connector that look where the design completes the step before it, as code does.'] },
         page: 'Navigation',
         board: 'Steppers',
         symbol: { orientation: size },
         style: [],
+        restyle: ['Connector', 'Past Connector'],
         starter: { orientation: 'horizontal' },
         parts: {
             'root': 'Stepper',
@@ -670,6 +731,9 @@ export const COMPONENTS: Record<string, ComponentSpec> = {
         variants: ['sidebar=expanded', 'sidebar=compacted', 'sidebar=collapsed'],
         symbol: { sidebar: size },
         style: [],
+        // The column and the sidebar take the screen's height, so a layout drawn on a longer screen fills it.
+        scrolls: 'Column',
+        slots: ['Brand'],
         starter: { sidebar: 'expanded' },
         parts: {
             'root': 'Layout',
@@ -791,10 +855,15 @@ export const COMPONENTS: Record<string, ComponentSpec> = {
         code: {
             class: 'NbLayoutComponent',
             inputs: {
-                device: 'The window\'s width: a phone\'s is below `md`, where `*nbShownBelow` and `*nbShownAbove` show the phone\'s parts or the others, and the header\'s actions `collapse` into a menu.',
+                device: 'The window\'s width: a phone\'s is below `md`, 768 px, where `*nbShownBelow` and `*nbShownAbove` show the phone\'s parts or the others, and the header\'s actions `collapse` into a menu.',
                 drawer: 'The phone\'s `fixed` `drawer` sidebar expanded, e.g. by the top bar\'s menu button with `NbSidebarService.toggle()`.'
             },
-            notes: ['The playground\'s `/design-kit/adaptive-layout` page is this layout\'s markup, at every size.']
+            notes: [
+                '`Adaptive Layout/Brand` is the app\'s own brand, e.g. its logo, in the header\'s markup: a design swaps it for a symbol of its own.',
+                'The header is `header-height` tall, padded by `header-padding`; the column pads the page by `layout-padding` from 992 px wide, `layout-medium-padding` below it and `layout-small-padding` below 768 px: for a block that runs edge to edge, e.g. a hero, set them to 0 and pad your own content.',
+                'A phone top bar that shows fewer actions than the laptop\'s header, without a menu for the others, shows each with `*nbShownAbove` or `*nbShownBelow` rather than `collapse`.',
+                'One `<nb-layout>` at every size: an `<nb-layout-header fixed>` with the brand, an `<nb-route-tabset *nbShownAbove="\'md\'" outlet="false">` (with `showIcons="false"` where the header\'s tabs are text and the phone bar\'s have icons) and an `<nb-actions collapse="menu" below="md">` whose last action holds the `<nb-user>` above `md`; on a phone, a menu button before the brand that opens an `<nb-sidebar fixed drawer tag="drawer">` with `NbSidebarService.toggle(false, \'drawer\')`; an `<nb-layout-column>` with the page; and an `<nb-layout-footer fixed *nbShownBelow="\'md\'">` with an `<nb-route-tabset appearance="bar" outlet="false">`. The Layout, Sidebar, Actions and Tabs pages show each part.'
+            ]
         },
         page: 'Navigation',
         board: 'Adaptive layouts',
@@ -804,6 +873,9 @@ export const COMPONENTS: Record<string, ComponentSpec> = {
         symbol: { device: size, drawer: (value) => (value === 'open' ? 'Drawer' : '') },
         style: [],
         fluid: true,
+        // The column takes the screen's height, so a layout drawn on a longer screen keeps its footer at the bottom.
+        scrolls: 'Column',
+        slots: ['Brand'],
         starter: { device: 'laptop', drawer: 'closed' },
         parts: {
             'root': 'Layout',
