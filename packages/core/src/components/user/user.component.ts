@@ -55,7 +55,7 @@ function firstGrapheme(word: string): string {
  * @stacked-example(Hide captions in user component, user/user-hide-captions.component)
  *
  * The avatar is `picture`, a URL or a data URL, or else the name's initials on a `color` or `status` background;
- * `showInitials` turns the initials off:
+ * `initials` sets them where the name's first letters aren't right, and `showInitials` turns them off:
  * @stacked-example(Avatar image settings, user/user-avatar-settings.component)
  *
  * `shape` sets the avatar's corners:
@@ -195,6 +195,12 @@ export class NbUserComponent {
     /** Shows the title. */
     readonly showTitle = input<boolean, NbBooleanInput>(true, { transform: convertToBoolProperty })
 
+    /**
+     * The initials to show, in place of the ones from the name, e.g. for a name whose initials aren't its first two
+     * words' first letters.
+     */
+    readonly initials = input<string>()
+
     /** Shows the initials when there's no picture; without them, the background shows on its own. */
     readonly showInitials = input<boolean, NbBooleanInput>(true, { transform: convertToBoolProperty })
 
@@ -218,10 +224,15 @@ export class NbUserComponent {
     protected readonly titleVisible = computed(() => this.showTitle() && !this.onlyPicture())
 
     /**
-     * The first letters of the first two words of the name: whole characters, so an emoji or a letter with a combining
-     * mark stays whole. A name that's initials already, two or three capitals such as `PS`, is shown as it is.
+     * The initials shown: `initials`, or the first letters of the first two words of the name: whole characters, so an
+     * emoji or a letter with a combining mark stays whole. A name that's initials already, two or three capitals such
+     * as `PS`, is shown as it is.
      */
     getInitials(): string {
+        const initials = this.initials()
+        if (initials) {
+            return initials
+        }
         const words = this.displayName().split(/\s+/).filter(Boolean)
         if (words.length === 1 && /^\p{Lu}{2,3}$/u.test(words[0] ?? '')) {
             return words[0] ?? ''
