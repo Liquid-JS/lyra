@@ -97,6 +97,12 @@ export interface NbTexts {
         /** Names a page's dot, given the page, from 1, and how many there are. */
         page: (page: number, count: number) => string
     }
+    swatch: {
+    /** Tells assistive technologies a swatch's option is out of stock, or otherwise unavailable, after its name. */
+        unavailable: string
+        /** Names the button that shows a swatch group's other swatches, given how many there are. */
+        more: (count: number) => string
+    }
     slider: {
     /** Names the start thumb of a range slider, after the slider's own name. */
         start: string

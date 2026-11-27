@@ -1,0 +1,109 @@
+@use "../../styles/theming" as *;
+
+@mixin nb-swatch-theme() {
+    nb-swatch-group {
+        gap: nb-theme(swatch-gap);
+    }
+
+    // The ring around a swatch, apart from it: clear at rest, in the hover colour under the pointer, and the chosen one's.
+    nb-swatch .swatch,
+    nb-swatch-group .swatch-more {
+        padding: nb-theme(swatch-ring-gap);
+        border: nb-theme(swatch-ring-width) solid transparent;
+        transition-duration: 0.15s;
+        transition-property: border-color, box-shadow;
+
+        &:focus-visible {
+            outline: none;
+
+            @include nb-outline(nb-theme(swatch-outline-width), nb-theme(swatch-outline-color));
+        }
+    }
+
+    nb-swatch .swatch:hover:not(:disabled) {
+        border-color: nb-theme(swatch-hover-ring-color);
+    }
+
+    nb-swatch.selected .swatch,
+    nb-swatch.selected .swatch:hover {
+        border-color: nb-theme(swatch-selected-ring-color);
+    }
+
+    // An edge, so a light swatch shows on a light page.
+    nb-swatch .swatch-fill {
+        box-shadow: inset 0 0 0 nb-theme(swatch-border-width) nb-theme(swatch-border-color);
+    }
+
+    @each $size in nb-get-sizes() {
+        nb-swatch.size-#{$size} .swatch-fill,
+        nb-swatch-group .swatch-more.size-#{$size} {
+            width: nb-theme(swatch-#{$size}-size);
+            height: nb-theme(swatch-#{$size}-size);
+        }
+
+        nb-swatch-group .swatch-more.size-#{$size} {
+            font-size: nb-theme(swatch-#{$size}-more-text-font-size);
+        }
+    }
+
+    // The swatch's corners, and the ring's around them.
+    @each $shape in (rectangle, semi-round, round) {
+        $radius: nb-theme(swatch-#{$shape}-border-radius);
+        $ring: calc(#{$radius} + #{nb-theme(swatch-ring-gap)} + #{nb-theme(swatch-ring-width)});
+
+        nb-swatch.shape-#{$shape} .swatch,
+        nb-swatch-group .swatch-more.shape-#{$shape} {
+            border-radius: $ring;
+        }
+
+        nb-swatch.shape-#{$shape} .swatch-fill,
+        nb-swatch.shape-#{$shape}.unavailable .swatch::after {
+            border-radius: $radius;
+        }
+    }
+
+    // Faded, with a line corner to corner and a halo that keeps it apart from any fill.
+    nb-swatch.unavailable .swatch-fill {
+        opacity: nb-theme(swatch-unavailable-opacity);
+    }
+
+    nb-swatch.unavailable .swatch:after {
+        $line: calc(#{nb-theme(swatch-unavailable-line-width)} / 2);
+        $halo: calc(#{nb-theme(swatch-unavailable-line-width)} / 2 + 1px);
+
+        // From inside the ring, the swatch's padding.
+        inset: nb-theme(swatch-ring-gap);
+        background:
+            linear-gradient(
+                to top right,
+                transparent calc(50% - #{$halo}),
+                nb-theme(swatch-unavailable-halo-color) calc(50% - #{$halo}),
+                nb-theme(swatch-unavailable-halo-color) calc(50% - #{$line}),
+                nb-theme(swatch-unavailable-line-color) calc(50% - #{$line}),
+                nb-theme(swatch-unavailable-line-color) calc(50% + #{$line}),
+                nb-theme(swatch-unavailable-halo-color) calc(50% + #{$line}),
+                nb-theme(swatch-unavailable-halo-color) calc(50% + #{$halo}),
+                transparent calc(50% + #{$halo})
+            );
+    }
+
+    nb-swatch.disabled .swatch,
+    nb-swatch-group .swatch-more:disabled {
+        opacity: nb-theme(swatch-disabled-opacity);
+    }
+
+    nb-swatch-group .swatch-more {
+        background-color: nb-theme(swatch-more-background-color);
+        color: nb-theme(swatch-more-text-color);
+        font-family: nb-theme(swatch-more-text-font-family);
+        font-weight: nb-theme(swatch-more-text-font-weight);
+        line-height: 1;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        nb-swatch .swatch,
+        nb-swatch-group .swatch-more {
+            transition: none;
+        }
+    }
+}

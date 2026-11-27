@@ -249,6 +249,10 @@ export const WITH_LAYOUT_ROUTES: Routes = [
             {
                 path: 'table',
                 loadChildren: () => import('./table/table.routes').then((m) => m.TABLE_ROUTES)
+            },
+            {
+                path: 'swatch',
+                loadChildren: () => import('./swatch/swatch.routes').then((m) => m.SWATCH_ROUTES)
             }
         ]
     }

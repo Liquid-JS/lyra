@@ -35,7 +35,7 @@ export interface NbControlDefaults {
 /**
  * Defaults for the components' `shape`, `size` and `appearance`, which a component's own inputs override. `shape` and
  * `size` at the top apply to the controls (buttons, button groups, fields, selects, tags, checkboxes, radios, toggles,
- * sliders, file drops), `appearance` at the top to each component that has it, and each type's own defaults to that
+ * sliders, file drops, swatches), `appearance` at the top to each component that has it, and each type's own defaults to that
  * type.
  */
 export interface NbComponentDefaults extends NbControlDefaults {
@@ -65,6 +65,8 @@ export interface NbComponentDefaults extends NbControlDefaults {
     toggle?: { size?: NbComponentSize }
     slider?: { size?: NbComponentSize }
     fileDrop?: NbControlDefaults
+    /** Swatch groups; their swatches are round unless the app sets another shape. */
+    swatch?: NbControlDefaults
     /** Alerts; their size is a height, so the controls' size doesn't apply. */
     alert?: { appearance?: NbAlertAppearance }
     /** Cards; their size is a height, so the controls' size doesn't apply. */
@@ -101,7 +103,8 @@ const CONTROLS: ReadonlySet<NbComponentDefaultsType> = new Set([
     'radio',
     'toggle',
     'slider',
-    'fileDrop'
+    'fileDrop',
+    'swatch'
 ])
 
 // The appearances each type has, which the appearance at the top reaches. Toggles outside a group take the buttons'.

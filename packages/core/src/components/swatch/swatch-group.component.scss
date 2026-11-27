@@ -1,0 +1,19 @@
+:host {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+// The button that shows the swatches past `max`: a swatch's size, shape and ring.
+.swatch-more {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: content-box;
+    background-clip: content-box;
+    cursor: pointer;
+
+    &:disabled {
+        cursor: default;
+    }
+}

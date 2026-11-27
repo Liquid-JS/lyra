@@ -384,6 +384,12 @@ export const structure: NgdAreaEntry[] = [
                     },
                     {
                         type: 'tabs',
+                        name: 'Swatch',
+                        icon: 'swatch.svg',
+                        source: ['NbSwatchGroupComponent', 'NbSwatchComponent']
+                    },
+                    {
+                        type: 'tabs',
                         name: 'Select',
                         icon: 'select.svg',
                         source: [

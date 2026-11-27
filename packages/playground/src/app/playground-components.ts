@@ -2293,6 +2293,35 @@ export const PLAYGROUND_COMPONENTS: ComponentLink[] = [
         ]
     },
     {
+        path: 'swatch',
+        children: [
+            {
+                path: 'swatch-filter.component',
+                link: '/swatch/swatch-filter.component',
+                component: 'SwatchFilterComponent',
+                name: 'Swatch Filter'
+            },
+            {
+                path: 'swatch-showcase.component',
+                link: '/swatch/swatch-showcase.component',
+                component: 'SwatchShowcaseComponent',
+                name: 'Swatch Showcase'
+            },
+            {
+                path: 'swatch-sizes.component',
+                link: '/swatch/swatch-sizes.component',
+                component: 'SwatchSizesComponent',
+                name: 'Swatch Sizes'
+            },
+            {
+                path: 'swatch-form.component',
+                link: '/swatch/swatch-form.component',
+                component: 'SwatchFormComponent',
+                name: 'Swatch Form'
+            }
+        ]
+    },
+    {
         path: 'showcase',
         children: [
             {

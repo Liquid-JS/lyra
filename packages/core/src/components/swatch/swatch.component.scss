@@ -1,0 +1,34 @@
+:host {
+    display: inline-flex;
+}
+
+:host([hidden]) {
+    display: none;
+}
+
+// A button around the swatch: its border is the ring the theme colours, apart from the swatch by its padding.
+.swatch {
+    position: relative;
+    display: block;
+    box-sizing: content-box;
+    background: none;
+    cursor: pointer;
+
+    &:disabled {
+        cursor: default;
+    }
+}
+
+// What fills it: its colours, its picture, or its content.
+.swatch-fill {
+    position: relative;
+    display: block;
+    overflow: hidden;
+}
+
+// The strike across an unavailable option, over its faded fill.
+:host(.unavailable) .swatch:after {
+    content: "";
+    position: absolute;
+    pointer-events: none;
+}

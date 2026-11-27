@@ -126,6 +126,9 @@
             "@liquid-js/lyr-core/stepper": [
                 "./dist/core/stepper"
             ],
+            "@liquid-js/lyr-core/swatch": [
+                "./dist/core/swatch"
+            ],
             "@liquid-js/lyr-core/table": [
                 "./dist/core/table"
             ],

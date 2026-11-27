@@ -17,6 +17,7 @@
 @forward "../../components/progress-bar/progress-bar.component.theme";
 @forward "../../components/badge/badge.component.theme";
 @forward "../../components/divider/divider.component.theme";
+@forward "../../components/swatch/swatch.component.theme";
 @forward "../../components/slider/slider.component.theme";
 @forward "../../components/skeleton/skeleton.directive.theme";
 @forward "../../components/page-indicator/page-indicator.component.theme";
@@ -70,6 +71,7 @@
 @use "../../components/progress-bar/progress-bar.component.theme" as progress-bar-theme;
 @use "../../components/badge/badge.component.theme" as badge-theme;
 @use "../../components/divider/divider.component.theme" as divider-theme;
+@use "../../components/swatch/swatch.component.theme" as swatch-theme;
 @use "../../components/slider/slider.component.theme" as slider-theme;
 @use "../../components/skeleton/skeleton.directive.theme" as skeleton-theme;
 @use "../../components/page-indicator/page-indicator.component.theme" as page-indicator-theme;
@@ -126,6 +128,7 @@
     @include progress-bar-theme.nb-progress-bar-theme;
     @include badge-theme.nb-badge-theme;
     @include divider-theme.nb-divider-theme;
+    @include swatch-theme.nb-swatch-theme;
     @include slider-theme.nb-slider-theme;
     @include skeleton-theme.nb-skeleton-theme;
     @include page-indicator-theme.nb-page-indicator-theme;

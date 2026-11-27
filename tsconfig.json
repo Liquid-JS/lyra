@@ -143,6 +143,9 @@
             "@liquid-js/lyr-core/stepper": [
                 "./packages/core/src/components/stepper/public-api.ts"
             ],
+            "@liquid-js/lyr-core/swatch": [
+                "./packages/core/src/components/swatch/public-api.ts"
+            ],
             "@liquid-js/lyr-core/table": [
                 "./packages/core/src/components/table/public-api.ts"
             ],

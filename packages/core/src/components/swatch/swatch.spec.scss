@@ -1,0 +1,9 @@
+// The default theme's swatches, which specs don't load otherwise.
+@use "@liquid-js/lyr-core/styles/all" as *;
+@use "swatch.component.theme" as swatch;
+
+$nb-enabled-themes: (default);
+
+@include nb-install {
+    @include swatch.nb-swatch-theme;
+}
