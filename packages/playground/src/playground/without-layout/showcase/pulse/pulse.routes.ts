@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router'
+import { provideNbDialog } from '@liquid-js/lyr-core'
 import { NB_BAR_CHART_PARTS, NB_LINE_CHART_PARTS, provideNbCharts } from '@liquid-js/lyr-extras/chart'
 
 /** Pulse's screens, in its frame. */
@@ -6,8 +7,8 @@ export const PULSE_ROUTES: Routes = [
     {
         path: '',
         loadComponent: () => import('./pulse-shell.component').then((m) => m.PulseShellComponent),
-        // The chart types the trends draw.
-        providers: [provideNbCharts(...NB_BAR_CHART_PARTS, ...NB_LINE_CHART_PARTS)],
+        // The chart types the trends draw, and the dialogs today's screen opens.
+        providers: [provideNbCharts(...NB_BAR_CHART_PARTS, ...NB_LINE_CHART_PARTS), provideNbDialog()],
         children: [
             { path: '', pathMatch: 'full', redirectTo: 'today' },
             {
